@@ -54,14 +54,19 @@
                     <button class="auth-submit" type="submit">Link senden</button>
                 </form>
                 <p id="auth-status" class="auth-status" role="status" aria-live="polite"></p>
-                <p class="auth-hint">
-                    In Supabase muss unter Authentication → Providers → Email der Login aktiv sein.
-                </p>
             </section>
         </div>
     </main>
 
     <script src="/js/config.js"></script>
+    <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            var code = params.get("code");
+            if (!code) return;
+            window.location.replace("/auth/callback.html?code=" + encodeURIComponent(code));
+        })();
+    </script>
     <script type="module" src="/js/auth-nav.js"></script>
     <script type="module" src="/js/auth-login.js"></script>
 </body>

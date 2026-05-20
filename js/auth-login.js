@@ -55,10 +55,13 @@ async function initLoginPage() {
         submitButton.disabled = true;
         setStatus("Magic Link wird gesendet…");
 
+        const redirectTo = getAuthRedirectUrl();
+
         const { error } = await supabase.auth.signInWithOtp({
             email,
             options: {
-                emailRedirectTo: getAuthRedirectUrl(),
+                emailRedirectTo: redirectTo,
+                shouldCreateUser: true,
             },
         });
 
