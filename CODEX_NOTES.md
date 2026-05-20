@@ -97,6 +97,27 @@ In GitHub Desktop:
 
 Netlify deploys automatically after the push.
 
+## Supabase Auth
+
+Static login via Magic Link (E-Mail).
+
+Files:
+
+- `js/config.js` — URL, Publishable Key, `SITE_URL` (für Redirects)
+- `js/config.example.js` — Vorlage
+- `js/supabase-client.js`, `js/auth-nav.js`, `js/auth-login.js`, `js/auth-callback.js`
+- `login.html` — Magic-Link-Formular
+- `auth/callback.html` — Redirect nach E-Mail-Link
+
+Supabase Dashboard → Authentication → URL configuration:
+
+- Site URL: `https://kalterkaktus.de`
+- Redirect URLs: `https://kalterkaktus.de/auth/callback.html`
+
+Provider: **Email** muss aktiv sein (Magic Link).
+
+Nach Änderung an `js/config.js`: committen und nach Netlify pushen.
+
 ## Suggested Next Design Direction
 
 The visual direction should stay poisonous green / Matrix-inspired:
