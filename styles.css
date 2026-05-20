@@ -10,24 +10,14 @@
     --bg-secondary: #1a1f29;      /* Slate-Blau */
     --text-primary: #f0ede6;      /* Cremiges Weiß */
     --text-secondary: #9ca3af;    /* Kühles Grau */
-    --accent: #1e4d3a;            /* Dunkles Smaragd (passt zu Light Mode) */
+    --accent: #1e4d3a;            /* Dunkles Smaragd */
     --accent-light: #6ee7b7;      /* Minzgrün (edler als Limette) */
     --border: #2d3748;            /* Slate Border */
 }
 
-body.light-mode {
-    --bg-primary: #f5f1e8;        /* Warmes Creme-Beige */
-    --bg-secondary: #fdfbf7;      /* Off-White Beige */
-    --text-primary: #2c2416;      /* Dunkles Braun statt Schwarz */
-    --text-secondary: #8b7355;    /* Warmes Taupe */
-    --accent: #0f4d3c;            /* Tiefes Smaragdgrün */
-    --accent-light: #50C878;      /* Helles Smaragdgrün */
-    --border: #d4c4a8;            /* Sanftes Gold-Beige */
-}
-
-
 html {
     scroll-behavior: smooth;
+    scrollbar-gutter: stable;
 }
 
 body {
@@ -66,12 +56,13 @@ body {
     font-weight: 700;
     letter-spacing: 2px;
     color: #90EE90;
-
+    text-decoration: none;
 }
 
 .nav-links {
     display: flex;
     gap: 2rem;
+    align-items: center;
 }
 
 .nav-link {
@@ -510,53 +501,6 @@ body {
     transition: background-color 0.3s ease;
 }
 
-.theme-toggle {
-    background: none;
-    border: 2px solid var(--border);
-    border-radius: 50%;
-    width: 45px;
-    height: 45px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    position: relative;
-    margin-left: 1rem;
-    color: var(--text-primary);
-}
-
-.theme-toggle:hover {
-    border-color: var(--accent-light);
-    transform: rotate(20deg) scale(1.05);
-}
-
-.theme-toggle svg {
-    position: absolute;
-    transition: all 0.4s ease;
-}
-
-/* Dark Mode - zeige Mond */
-.moon-icon {
-    opacity: 1;
-    transform: rotate(0deg) scale(1);
-}
-
-.sun-icon {
-    opacity: 0;
-    transform: rotate(90deg) scale(0);
-}
-
-/* Light Mode - zeige Sonne */
-body.light-mode .moon-icon {
-    opacity: 0;
-    transform: rotate(-90deg) scale(0);
-}
-
-body.light-mode .sun-icon {
-    opacity: 1;
-    transform: rotate(0deg) scale(1);
-}
 
 @media (max-width: 768px) {
     .live-timer {
@@ -595,17 +539,3 @@ body.light-mode .sun-icon {
     }
 }
 
-.spotify-player {
-    margin-top: 3rem;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-    opacity: 0;                    /* <- KOMMENTAR WEG */
-    transform: translateY(20px);   /* <- KOMMENTAR WEG */
-    transition: all 0.8s ease 1s;
-}
-
-.spotify-player.visible {
-    opacity: 1;
-    transform: translateY(0);
-}

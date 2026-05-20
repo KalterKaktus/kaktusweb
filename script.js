@@ -1,47 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Theme Toggle Functionality
-    const themeToggle = document.getElementById('themeToggle');
-    const body = document.body;
-    const nav = document.querySelector('.nav');
-
-    // Check for saved theme preference or default to dark mode
-    const currentTheme = localStorage.getItem('theme') || 'dark';
-    if (currentTheme === 'light') {
-        body.classList.add('light-mode');
-    }
-
-    // Nav update function - DEFINIERT HIER OBEN!
-    function updateNavColors() {
-        const isLightMode = body.classList.contains('light-mode');
-        
-        if (window.scrollY > 50) {
-            if (isLightMode) {
-                nav.style.background = 'rgba(253, 251, 247, 0.98)';
-                nav.style.borderBottom = '1px solid rgba(212, 196, 168, 0.3)';
-            } else {
-                nav.style.background = 'rgba(26, 29, 35, 0.95)';
-                nav.style.borderBottom = '1px solid #3a3d45';
-            }
-        } else {
-            if (isLightMode) {
-                nav.style.background = 'rgba(253, 251, 247, 0.85)';
-                nav.style.borderBottom = '1px solid rgba(212, 196, 168, 0.2)';
-            } else {
-                nav.style.background = 'rgba(26, 29, 35, 0.8)';
-                nav.style.borderBottom = '1px solid #3a3d45';
-            }
-        }
-    }
-
-    // Toggle theme on button click
-    themeToggle.addEventListener('click', () => {
-        body.classList.toggle('light-mode');
-        const theme = body.classList.contains('light-mode') ? 'light' : 'dark';
-        localStorage.setItem('theme', theme);
-        console.log(`Theme switched to: ${theme}`);
-        updateNavColors();
-    });
-
     // Smooth scroll for navigation links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
@@ -79,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, observerOptions);
 
     const elementsToObserve = document.querySelectorAll(
-    '.section-title, .about-paragraph, .live-timer, .social-btn, .spotify-player'
+    '.section-title, .about-paragraph, .live-timer, .social-btn'
 );
 
     elementsToObserve.forEach(el => observer.observe(el));
@@ -111,9 +68,6 @@ function updateTimer() {
 
 updateTimer();
 setInterval(updateTimer, 1000);
-
-    // Nav background on scroll
-    window.addEventListener('scroll', updateNavColors);
 
     // Parallax effect for gradient orbs
     window.addEventListener('scroll', () => {
