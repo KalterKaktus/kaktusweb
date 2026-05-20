@@ -103,7 +103,7 @@ function formatOffers(offers) {
   return offers
     .slice(0, MAX_OFFERS_PER_CATEGORY)
     .map((offer) => {
-      return `**${offer.title}** (${formatPriceLine(offer)})\n${offer.url}`;
+      return `**${offer.title}** (${formatPriceLine(offer)})\n<${offer.url}>`;
     })
     .join("\n\n");
 }
