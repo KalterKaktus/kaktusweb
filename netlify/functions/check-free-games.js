@@ -50,7 +50,11 @@ exports.handler = async function () {
 
 async function getBlobStore() {
   const { getStore } = await import("@netlify/blobs");
-  return getStore(STORE_NAME);
+
+  return getStore(STORE_NAME, {
+    siteID: process.env.NETLIFY_SITE_ID,
+    token: process.env.NETLIFY_AUTH_TOKEN,
+  });
 }
 
 async function getSeenState(store) {
