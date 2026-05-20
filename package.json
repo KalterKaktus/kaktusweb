@@ -1,0 +1,8 @@
+{
+  "name": "kaktusweb",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "@netlify/blobs": "^10.0.11"
+  }
+}

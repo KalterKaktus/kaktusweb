@@ -17,7 +17,10 @@ Netlify deploys automatically from the GitHub repo after pushes to `main`.
 - Main JavaScript: `script.js`
 - Free games page: `free-games.html`
 - Netlify Function: `netlify/functions/steamfree.js`
+- Discord checker: `netlify/functions/check-free-games.js`
+- Shared Steam parser: `netlify/functions/lib/steamDeals.js`
 - Netlify config: `netlify.toml`
+- Dependencies: `package.json`
 
 ## Changes Made
 
@@ -27,6 +30,8 @@ Netlify deploys automatically from the GitHub repo after pushes to `main`.
 - The site is fixed in dark mode.
 - Removed the particle background.
 - Removed the Spotify embed.
+- Reworked the homepage hero into a dark Matrix-inspired grid design with a large centered `KalterKaktus` title and Steam Deals CTA.
+- Added a subtle Matrix-rain canvas background.
 - Unified the navigation:
   - `KK`
   - `Home`
@@ -36,12 +41,33 @@ Netlify deploys automatically from the GitHub repo after pushes to `main`.
 
 ## Free Games
 
-The free games page is available at `/free-games.html`.
+The free games/deals page is available at `/free-games.html`.
 
-The Function `netlify/functions/steamfree.js` uses Steam Store search:
-`https://store.steampowered.com/search/?maxprice=free&specials=1`
+The Function `netlify/functions/steamfree.js` uses Steam Store search for:
 
-It parses Steam search results with `-100%` discount and returns JSON to the page.
+- free games with `-100%`
+- strong discount deals from `-80%` to `-99%`
+
+It returns JSON with:
+
+- `active`: free games
+- `discounted`: deals with at least 80% discount, excluding free games
+
+## Discord Announcements
+
+There is a scheduled Netlify Function:
+`netlify/functions/check-free-games.js`
+
+Schedule in `netlify.toml`:
+`@hourly`
+
+It checks Steam free games and 80%+ deals, stores seen app IDs in Netlify Blobs, and posts only newly discovered offers to Discord.
+Discord posts are capped at 5 free games and 5 discount deals per message. The message links to `/free-games.html` at the top and bottom.
+
+Required Netlify environment variable:
+`DISCORD_WEBHOOK_URL`
+
+Never commit the real Discord webhook URL into the repo.
 
 Opening the HTML file locally by double click will not run the Netlify Function. Correct test flow:
 
