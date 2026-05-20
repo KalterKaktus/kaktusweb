@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil - KalterKaktus</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a class="logo" href="/">KK</a>
+            <div class="nav-links">
+                <a href="/#home" class="nav-link">Home</a>
+                <a href="/#about" class="nav-link">About</a>
+                <a href="/free-games.html" class="nav-link">Deals</a>
+                <a href="/games/" class="nav-link">Games</a>
+                <div id="auth-nav" class="auth-nav" aria-live="polite"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+
+    <main class="page-shell">
+        <div class="page-container auth-page">
+            <header class="page-header">
+                <div>
+                    <div class="page-kicker">KalterKaktus Account</div>
+                    <h1 class="page-title">Profil</h1>
+                    <p class="page-subtitle">
+                        Lege einen Benutzernamen fest. In der Navigation wird er statt deiner E-Mail angezeigt.
+                    </p>
+                </div>
+            </header>
+
+            <section class="auth-card" aria-labelledby="profile-overview-title">
+                <h2 id="profile-overview-title" class="auth-card-title">Übersicht</h2>
+                <dl class="profile-facts">
+                    <div>
+                        <dt>Angezeigt als</dt>
+                        <dd id="profile-display-name">—</dd>
+                    </div>
+                    <div>
+                        <dt>E-Mail</dt>
+                        <dd id="profile-email">—</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="auth-card" aria-labelledby="profile-edit-title">
+                <h2 id="profile-edit-title" class="auth-card-title">Benutzername</h2>
+                <form id="profile-form" class="auth-form">
+                    <label class="auth-label" for="profile-username">Benutzername</label>
+                    <input
+                        class="auth-input"
+                        id="profile-username"
+                        name="username"
+                        type="text"
+                        autocomplete="username"
+                        minlength="3"
+                        maxlength="24"
+                        pattern="[a-zA-Z0-9_]+"
+                        required
+                        placeholder="z. B. KalterKaktus"
+                    >
+                    <p class="auth-hint">3–24 Zeichen, nur Buchstaben, Zahlen und Unterstriche.</p>
+                    <button class="auth-submit" type="submit">Speichern</button>
+                </form>
+                <p id="profile-status" class="auth-status" role="status" aria-live="polite"></p>
+            </section>
+        </div>
+    </main>
+
+    <script src="/js/config.js"></script>
+    <script type="module" src="/js/auth-nav.js"></script>
+    <script type="module" src="/js/profile-page.js"></script>
+</body>
+</html>

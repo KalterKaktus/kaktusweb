@@ -1,4 +1,10 @@
-"use strict";
+import {
+  fetchLeaderboard,
+  getGameSession,
+  loadCloudSave,
+  pickNewerSave,
+  pushCloudSave,
+} from "/js/game-cloud.js";
 
 const STORAGE_KEY = "kaktus-clicker-save-v1";
 
@@ -102,9 +108,12 @@ const initialState = {
   lastSavedAt: Date.now()
 };
 
-let state = loadState();
+let state = structuredClone(initialState);
 let lastTick = performance.now();
 let lastProductionRender = 0;
+let cloudSync = { enabled: false, user: null };
+let cloudSaveTimer = null;
+let leaderboardLoaded = false;
 
 const elements = {
   cactusCount: document.querySelector("#cactus-count"),
@@ -122,10 +131,12 @@ const elements = {
   saveButton: document.querySelector("#save-button"),
   resetButton: document.querySelector("#reset-button"),
   tabs: document.querySelectorAll(".tab"),
-  panels: document.querySelectorAll(".tab-panel")
+  panels: document.querySelectorAll(".tab-panel"),
+  leaderboardList: document.querySelector("#leaderboard-list"),
+  leaderboardHint: document.querySelector("#leaderboard-hint")
 };
 
-function loadState() {
+function loadLocalState() {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (!saved) {
     return structuredClone(initialState);
@@ -133,43 +144,98 @@ function loadState() {
 
   try {
     const parsed = JSON.parse(saved);
-    const loaded = {
-      ...structuredClone(initialState),
-      ...parsed,
-      buildings: { ...initialState.buildings, ...parsed.buildings },
-      upgrades: Array.isArray(parsed.upgrades) ? parsed.upgrades : [],
-      achievements: Array.isArray(parsed.achievements) ? parsed.achievements : []
-    };
-
-    loaded.cactus = Number(loaded.cactus) || 0;
-    loaded.totalEarned = Number(loaded.totalEarned) || 0;
-    loaded.totalClicks = Number(loaded.totalClicks) || 0;
-    loaded.lastSavedAt = Number(loaded.lastSavedAt) || Date.now();
-
-    for (const building of buildings) {
-      loaded.buildings[building.id] = Math.max(0, Math.floor(Number(loaded.buildings[building.id]) || 0));
-    }
-
-    loaded.upgrades = loaded.upgrades.filter((id, index, list) => {
-      return upgrades.some((upgrade) => upgrade.id === id) && list.indexOf(id) === index;
-    });
-    loaded.achievements = loaded.achievements.filter((id, index, list) => {
-      return achievements.some((achievement) => achievement.id === id) && list.indexOf(id) === index;
-    });
-
-    return loaded;
+    return normalizeLoadedState(parsed);
   } catch {
     return structuredClone(initialState);
   }
+}
+
+function getIdleSaveLabel() {
+  return cloudSync.enabled ? "Cloud aktiv" : "Lokal · Login für Cloud";
+}
+
+function scheduleCloudSave() {
+  if (!cloudSync.enabled || !cloudSync.user) {
+    return;
+  }
+
+  window.clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = window.setTimeout(async () => {
+    const result = await pushCloudSave(cloudSync.user, state);
+    if (result?.error) {
+      elements.saveStatus.textContent = "Cloud-Fehler";
+      return;
+    }
+
+    elements.saveStatus.textContent = "Cloud gespeichert";
+    window.setTimeout(() => {
+      elements.saveStatus.textContent = getIdleSaveLabel();
+    }, 1300);
+  }, 900);
 }
 
 function saveState(label = "Gespeichert") {
   state.lastSavedAt = Date.now();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   elements.saveStatus.textContent = label;
+  scheduleCloudSave();
   window.setTimeout(() => {
-    elements.saveStatus.textContent = "Bereit";
+    if (elements.saveStatus.textContent === label) {
+      elements.saveStatus.textContent = getIdleSaveLabel();
+    }
   }, 1300);
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+async function renderLeaderboard(force = false) {
+  if (!elements.leaderboardList) {
+    return;
+  }
+
+  if (leaderboardLoaded && !force) {
+    return;
+  }
+
+  elements.leaderboardList.innerHTML = `<p class="item-description">Rangliste wird geladen…</p>`;
+
+  const { entries, error } = await fetchLeaderboard(30);
+
+  if (error) {
+    elements.leaderboardList.innerHTML = `<p class="item-description">${escapeHtml(error.message)}</p>`;
+    return;
+  }
+
+  leaderboardLoaded = true;
+
+  if (!entries.length) {
+    elements.leaderboardList.innerHTML = `<p class="item-description">Noch keine Einträge. Sei der Erste.</p>`;
+    if (elements.leaderboardHint) {
+      elements.leaderboardHint.textContent = cloudSync.enabled
+        ? "Tipp: Lege unter Profil einen Benutzernamen fest — der erscheint in der Rangliste."
+        : "Melde dich an, um deinen Score zu speichern und in der Rangliste zu erscheinen.";
+    }
+    return;
+  }
+
+  elements.leaderboardList.innerHTML = entries.map((entry) => `
+    <div class="leaderboard-row ${entry.rank <= 3 ? "is-top" : ""}">
+      <span class="leaderboard-rank">#${entry.rank}</span>
+      <span class="leaderboard-name">${escapeHtml(entry.name)}</span>
+      <span class="leaderboard-score">${escapeHtml(formatNumber(entry.totalEarned))}</span>
+    </div>
+  `).join("");
+
+  if (elements.leaderboardHint) {
+    elements.leaderboardHint.textContent = "Sortiert nach gesamt geernteten Kakteen. Benutzername aus dem Profil hat Vorrang.";
+  }
 }
 
 function formatNumber(value) {
@@ -330,7 +396,7 @@ function renderAchievements() {
   }).join("");
 }
 
-function render() {
+function renderStatsOnly() {
   elements.cactusCount.textContent = formatNumber(state.cactus);
   elements.cactusRate.textContent = formatNumber(getCps());
   elements.clickPower.textContent = formatNumber(getClickPower());
@@ -338,7 +404,10 @@ function render() {
   elements.totalClicks.textContent = formatNumber(state.totalClicks);
   elements.totalBuildings.textContent = formatNumber(totalBuildings(state));
   elements.totalUpgrades.textContent = formatNumber(state.upgrades.length);
+}
 
+function render() {
+  renderStatsOnly();
   renderShop();
   renderUpgrades();
   renderAchievements();
@@ -353,8 +422,8 @@ function tick(now) {
     addCactus(production);
     updateAchievements();
     if (now - lastProductionRender > 250) {
-      lastProductionRender = now;
-      render();
+  lastProductionRender = now;
+  renderStatsOnly();
     }
   }
 
@@ -385,6 +454,10 @@ function bindEvents() {
       elements.panels.forEach((panel) => {
         panel.classList.toggle("is-active", panel.id === `${tab.dataset.tab}-panel`);
       });
+
+      if (tab.dataset.tab === "leaderboard") {
+        renderLeaderboard(true);
+      }
     });
   });
 
@@ -397,13 +470,65 @@ function bindEvents() {
     state = structuredClone(initialState);
     saveState("Zurückgesetzt");
     render();
+    leaderboardLoaded = false;
   });
 
   window.setInterval(() => saveState("Automatisch gespeichert"), 15000);
   window.addEventListener("beforeunload", () => saveState("Gespeichert"));
 }
 
-bindEvents();
-updateAchievements();
-render();
-requestAnimationFrame(tick);
+async function initGame() {
+  const localState = loadLocalState();
+  const session = await getGameSession();
+
+  if (session?.user) {
+    cloudSync.enabled = true;
+    cloudSync.user = session.user;
+    const cloud = await loadCloudSave(session.user);
+    state = normalizeLoadedState(pickNewerSave(localState, cloud?.state));
+
+    const localTime = Number(localState.lastSavedAt) || 0;
+    const cloudTime = Number(cloud?.state?.lastSavedAt) || 0;
+    if (!cloud || localTime >= cloudTime) {
+      scheduleCloudSave();
+    }
+  } else {
+    state = localState;
+  }
+
+  bindEvents();
+  updateAchievements();
+  render();
+  elements.saveStatus.textContent = getIdleSaveLabel();
+  requestAnimationFrame(tick);
+}
+
+function normalizeLoadedState(loaded) {
+  const parsed = {
+    ...structuredClone(initialState),
+    ...loaded,
+    buildings: { ...initialState.buildings, ...loaded.buildings },
+    upgrades: Array.isArray(loaded.upgrades) ? loaded.upgrades : [],
+    achievements: Array.isArray(loaded.achievements) ? loaded.achievements : []
+  };
+
+  parsed.cactus = Number(parsed.cactus) || 0;
+  parsed.totalEarned = Number(parsed.totalEarned) || 0;
+  parsed.totalClicks = Number(parsed.totalClicks) || 0;
+  parsed.lastSavedAt = Number(parsed.lastSavedAt) || Date.now();
+
+  for (const building of buildings) {
+    parsed.buildings[building.id] = Math.max(0, Math.floor(Number(parsed.buildings[building.id]) || 0));
+  }
+
+  parsed.upgrades = parsed.upgrades.filter((id, index, list) => {
+    return upgrades.some((upgrade) => upgrade.id === id) && list.indexOf(id) === index;
+  });
+  parsed.achievements = parsed.achievements.filter((id, index, list) => {
+    return achievements.some((achievement) => achievement.id === id) && list.indexOf(id) === index;
+  });
+
+  return parsed;
+}
+
+initGame();

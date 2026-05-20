@@ -48,6 +48,19 @@ button {
   font: inherit;
 }
 
+html,
+body {
+  touch-action: manipulation;
+}
+
+button,
+.shop-item,
+.tab,
+.cactus-button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .site-link {
   position: fixed;
   top: 18px;
@@ -161,12 +174,33 @@ h1 {
 
 .icon-button:hover,
 .tab:hover,
-.shop-item:not(:disabled):hover,
 .danger-button:hover {
   color: var(--bg);
   background: var(--green);
   text-shadow: none;
   box-shadow: 0 0 22px rgba(55, 255, 117, 0.68);
+}
+
+.shop-item {
+  will-change: transform;
+  backface-visibility: hidden;
+  transition: border-color 120ms ease,
+              background 120ms ease,
+              box-shadow 120ms ease;
+}
+
+.shop-item:not(:disabled):hover {
+  color: var(--green-hot);
+  background: rgba(6, 35, 18, 0.92);
+  border-color: var(--line-hot);
+  box-shadow: 0 0 18px rgba(55, 255, 117, 0.34), inset 0 0 22px rgba(55, 255, 117, 0.08);
+}
+
+.shop-item:not(:disabled):hover .item-description,
+.shop-item:not(:disabled):hover .item-meta,
+.shop-item:not(:disabled):hover .item-price,
+.shop-item:not(:disabled):hover .item-name {
+  color: var(--green-hot);
 }
 
 .score-card {
@@ -363,11 +397,6 @@ h2 {
   transition: transform 120ms ease, border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
 }
 
-.shop-item:not(:disabled):hover .item-description,
-.shop-item:not(:disabled):hover .item-meta,
-.shop-item:not(:disabled):hover .item-price {
-  color: var(--bg);
-}
 
 .shop-item:disabled {
   cursor: not-allowed;
@@ -513,6 +542,53 @@ h3 {
     opacity: 0;
     transform: translate(-50%, -86px) scale(1.08);
   }
+}
+
+.leaderboard-list {
+  display: grid;
+  gap: 8px;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(74, 255, 124, 0.22);
+  border-radius: 8px;
+  background: rgba(4, 22, 12, 0.55);
+}
+
+.leaderboard-row.is-top {
+  border-color: var(--line-hot);
+  box-shadow: 0 0 16px rgba(55, 255, 117, 0.16);
+}
+
+.leaderboard-rank {
+  color: var(--green-hot);
+  font-weight: 800;
+}
+
+.leaderboard-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.leaderboard-score {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.leaderboard-hint {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 @media (max-width: 900px) {

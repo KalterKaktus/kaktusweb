@@ -39,7 +39,7 @@ Netlify deploys automatically from the GitHub repo after pushes to `main`.
   - `KK`
   - `Home`
   - `About`
-  - `Free Games`
+  - `Deals`
   - `Games`
 - Added `scrollbar-gutter: stable;` so the `KK` logo does not shift between pages.
 - Added a Games hub at `/games/` with a first card for KaktusClicker. Future games should be added as sibling folders under `games/` and linked from `games/index.html`.
@@ -114,10 +114,23 @@ Supabase Dashboard → Authentication → URL configuration:
 - Site URL: `https://kalterkaktus.de`
 - Redirect URLs: `https://kalterkaktus.de/auth/callback.html`
 
-Provider: **Email** (Magic Link), **Google**, **Discord** — OAuth-Redirects in den Anbietern auf  
+Provider: **Email** (Magic Link), **Google** — OAuth-Redirect bei Google auf  
 `https://rdqbkpowntebcrsnwyqp.supabase.co/auth/v1/callback` setzen.
 
-Login-UI: `login.html` (Google/Discord-Buttons + Magic Link).
+Login-UI: `login.html` (Google-Button + Magic Link). Nav: **Login** / **Logout**.
+
+Profil: Tabelle `public.profiles` (`id`, `username`). Seite `profile.html` — Benutzername ersetzt E-Mail in der Nav, wenn gesetzt. Klick auf den Namen in der Nav öffnet das Profil.
+
+Dateien: `js/profile.js`, `js/profile-page.js`, `js/auth-nav.js`.
+
+KaktusClicker Cloud-Save + Rangliste:
+
+- Tabelle `public.game_saves` (`payload`, `total_earned`, `display_name`)
+- Eingeloggt: Spielstand in Supabase, lokal als Fallback (neuerer Stand gewinnt)
+- Tab **Rangliste** im Spiel, sortiert nach `total_earned`
+- Anzeigename: Profil-Benutzername, sonst E-Mail; Rangliste aktualisiert sich beim Speichern des Profils
+
+Dateien: `js/game-cloud.js`, `games/KaktusClicker/game.js`, `games/KaktusClicker/index.html`
 
 Nach Änderung an `js/config.js`: committen und nach Netlify pushen.
 

@@ -33,7 +33,7 @@ async function startOAuth(provider) {
     }
 
     setOAuthLoading(true);
-    setStatus(`${provider === "google" ? "Google" : "Discord"}-Login wird gestartet…`);
+    setStatus("Google-Login wird gestartet…");
 
     const { error } = await supabase.auth.signInWithOAuth({
         provider,
@@ -50,10 +50,7 @@ async function startOAuth(provider) {
 
 function bindOAuthButtons() {
     const googleButton = document.getElementById("oauth-google");
-    const discordButton = document.getElementById("oauth-discord");
-
     googleButton?.addEventListener("click", () => startOAuth("google"));
-    discordButton?.addEventListener("click", () => startOAuth("discord"));
 }
 
 async function initLoginPage() {

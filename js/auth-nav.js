@@ -1,4 +1,5 @@
 import { getSupabase, isConfigReady } from "./supabase-client.js";
+import { ensureProfile, fetchProfile, getDisplayName } from "./profile.js";
 
 function escapeHtml(value) {
     return String(value || "")
@@ -13,26 +14,34 @@ function escapeAttr(value) {
     return escapeHtml(value);
 }
 
+function truncateLabel(value, maxLength = 18) {
+    const text = String(value || "");
+    return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
+}
+
 function loginHref() {
     const next = encodeURIComponent(window.location.pathname + window.location.search);
     return `/login.html?next=${next}`;
 }
 
 function renderLoggedOut(container) {
-    container.innerHTML = `<a class="nav-link auth-link" href="${loginHref()}">Anmelden</a>`;
+    container.innerHTML = `<a class="nav-link auth-link" href="${loginHref()}">Login</a>`;
 }
 
 function renderConfigMissing(container) {
     container.innerHTML = `<span class="auth-muted" title="js/config.js anlegen (siehe js/config.example.js)">Login</span>`;
 }
 
-function renderLoggedIn(container, user) {
-    const email = user.email || "Account";
-    const label = email.length > 20 ? `${email.slice(0, 18)}…` : email;
+function renderLoggedIn(container, user, profile) {
+    const displayName = getDisplayName(user, profile);
+    const label = truncateLabel(displayName);
+    const title = profile?.username
+        ? `Benutzername: ${displayName}`
+        : `E-Mail: ${user.email || displayName}`;
 
     container.innerHTML = `
-        <span class="auth-user" title="${escapeAttr(email)}">${escapeHtml(label)}</span>
-        <button type="button" class="auth-btn" id="auth-sign-out-btn">Abmelden</button>
+        <a class="nav-link auth-profile-link" href="/profile.html" title="${escapeAttr(title)}">${escapeHtml(label)}</a>
+        <button type="button" class="auth-btn" id="auth-sign-out-btn">Logout</button>
     `;
 
     const signOutButton = container.querySelector("#auth-sign-out-btn");
@@ -46,6 +55,17 @@ function renderLoggedIn(container, user) {
         await supabase.auth.signOut();
         renderLoggedOut(container);
     });
+}
+
+async function renderSession(container, session) {
+    if (!session?.user) {
+        renderLoggedOut(container);
+        return;
+    }
+
+    await ensureProfile(session.user.id);
+    const profile = await fetchProfile(session.user.id);
+    renderLoggedIn(container, session.user, profile);
 }
 
 async function initAuthNav() {
@@ -62,18 +82,10 @@ async function initAuthNav() {
     const supabase = getSupabase();
     const { data: { session } } = await supabase.auth.getSession();
 
-    if (session?.user) {
-        renderLoggedIn(container, session.user);
-    } else {
-        renderLoggedOut(container);
-    }
+    await renderSession(container, session);
 
-    supabase.auth.onAuthStateChange((_event, nextSession) => {
-        if (nextSession?.user) {
-            renderLoggedIn(container, nextSession.user);
-        } else {
-            renderLoggedOut(container);
-        }
+    supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+        await renderSession(container, nextSession);
     });
 }
 

@@ -125,8 +125,16 @@ body::before {
     margin-left: 0.25rem;
 }
 
-.auth-link {
+.auth-link,
+.auth-profile-link {
     white-space: nowrap;
+}
+
+.auth-profile-link {
+    color: var(--accent-light);
+    max-width: 10rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .auth-user {
@@ -223,10 +231,6 @@ body::before {
     border-color: #8ab4f8;
 }
 
-.auth-oauth-btn.is-discord:hover {
-    border-color: #7289da;
-}
-
 .auth-divider {
     margin: 1rem 0;
     color: var(--text-secondary);
@@ -294,6 +298,26 @@ body::before {
     color: var(--text-secondary);
     font-size: 0.88rem;
     line-height: 1.55;
+}
+
+.profile-facts {
+    display: grid;
+    gap: 1rem;
+}
+
+.profile-facts dt {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+
+.profile-facts dd {
+    color: var(--text-primary);
+    font-size: 1.05rem;
+    font-weight: 700;
 }
 
 .source-link {
