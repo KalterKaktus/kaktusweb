@@ -150,6 +150,11 @@
             font-size: 0.85rem;
         }
 
+        .source-link {
+            color: var(--accent-light);
+            font-weight: 700;
+        }
+
         .state-box {
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -213,7 +218,7 @@
                     <div class="games-kicker">Steam Deals</div>
                     <h1 class="games-title">Kostenlose Spiele</h1>
                     <p class="games-subtitle">
-                        Aktuelle Steam-Angebote, die gerade kostenlos gelistet sind.
+                        Aktuelle Steam-Giveaways und zeitlich begrenzte Gratis-Aktionen.
                     </p>
                 </div>
                 <a class="back-link" href="index.html">Zurück</a>
@@ -249,7 +254,8 @@
             const title = escapeHtml(game.title);
             const image = escapeHtml(game.image);
             const url = escapeHtml(game.url);
-            const oldPrice = game.normalPrice ? `${escapeHtml(game.normalPrice)} USD` : 'Steam';
+            const oldPrice = game.normalPrice ? escapeHtml(game.normalPrice) : 'Steam';
+            const ends = game.endDate ? `<span class="game-price">Endet: ${escapeHtml(game.endDate)}</span>` : '';
 
             return `
                 <a class="game-card" href="${url}" target="_blank" rel="noopener noreferrer">
@@ -259,6 +265,7 @@
                         <div class="game-card-meta">
                             <span class="game-badge">Kostenlos</span>
                             <span class="game-price">statt ${oldPrice}</span>
+                            ${ends}
                         </div>
                     </div>
                 </a>
@@ -294,7 +301,7 @@
                 const time = data.fetchedAt
                     ? new Date(data.fetchedAt).toLocaleString('de-DE')
                     : new Date().toLocaleString('de-DE');
-                meta.textContent = `${games.length} Angebote gefunden. Zuletzt aktualisiert: ${time}`;
+                meta.innerHTML = `${games.length} Angebote gefunden. Zuletzt aktualisiert: ${time}. Quelle: <a class="source-link" href="https://www.gamerpower.com/" target="_blank" rel="noopener noreferrer">GamerPower</a>`;
             } catch (error) {
                 app.className = 'state-box';
                 app.innerHTML = `Fehler beim Laden der Steam-Angebote.<br>${escapeHtml(error.message)}`;

@@ -1,7 +1,7 @@
 const https = require("https");
 
-const CHEAPSHARK_URL =
-  "https://www.cheapshark.com/api/1.0/deals?storeID=1&upperPrice=0&pageSize=24&sortBy=DealRating";
+const GIVEAWAYS_URL =
+  "https://www.gamerpower.com/api/giveaways?platform=steam&type=game&sort-by=date";
 
 exports.handler = async function () {
   const headers = {
@@ -12,21 +12,8 @@ exports.handler = async function () {
   };
 
   try {
-    const deals = await fetchJson(CHEAPSHARK_URL);
-    const active = deals
-      .filter((deal) => Number(deal.salePrice) === 0)
-      .map((deal) => ({
-        id: deal.dealID,
-        title: deal.title,
-        normalPrice: deal.normalPrice,
-        salePrice: deal.salePrice,
-        savings: Math.round(Number(deal.savings || 0)),
-        steamAppId: deal.steamAppID || null,
-        image: deal.thumb || "",
-        url: deal.steamAppID
-          ? `https://store.steampowered.com/app/${deal.steamAppID}/`
-          : `https://www.cheapshark.com/redirect?dealID=${deal.dealID}`,
-      }));
+    const giveaways = await fetchJson(GIVEAWAYS_URL);
+    const active = normalizeGiveaways(giveaways);
 
     return {
       statusCode: 200,
@@ -34,7 +21,8 @@ exports.handler = async function () {
       body: JSON.stringify({
         active,
         upcoming: [],
-        source: "CheapShark Steam deals",
+        source: "GamerPower",
+        sourceUrl: "https://www.gamerpower.com/",
         fetchedAt: new Date().toISOString(),
       }),
     };
@@ -80,4 +68,22 @@ function fetchJson(url) {
       })
       .on("error", reject);
   });
+}
+
+function normalizeGiveaways(giveaways) {
+  if (!Array.isArray(giveaways)) {
+    return [];
+  }
+
+  return giveaways.map((giveaway) => ({
+    id: String(giveaway.id),
+    title: giveaway.title,
+    description: giveaway.description || "",
+    normalPrice: giveaway.worth || "",
+    salePrice: "0.00",
+    endDate: giveaway.end_date || "",
+    image: giveaway.thumbnail || giveaway.image || "",
+    url: giveaway.open_giveaway_url || giveaway.gamerpower_url,
+    platforms: giveaway.platforms || "Steam",
+  }));
 }
