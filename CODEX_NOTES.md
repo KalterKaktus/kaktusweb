@@ -16,6 +16,8 @@ Netlify deploys automatically from the GitHub repo after pushes to `main`.
 - Styles: `styles.css`
 - Main JavaScript: `script.js`
 - Free games page: `free-games.html`
+- Games hub: `games/index.html`
+- KaktusClicker game: `games/KaktusClicker/`
 - Netlify Function: `netlify/functions/steamfree.js`
 - Discord checker: `netlify/functions/check-free-games.js`
 - Shared Steam parser: `netlify/functions/lib/steamDeals.js`
@@ -38,7 +40,10 @@ Netlify deploys automatically from the GitHub repo after pushes to `main`.
   - `Home`
   - `About`
   - `Free Games`
+  - `Games`
 - Added `scrollbar-gutter: stable;` so the `KK` logo does not shift between pages.
+- Added a Games hub at `/games/` with a first card for KaktusClicker. Future games should be added as sibling folders under `games/` and linked from `games/index.html`.
+- KaktusClicker has a small `Zurück zu Games` link and should keep visible German text with real umlauts.
 
 ## Free Games
 

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KaktusClicker</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="site-link" href="../">Zurück zu Games</a>
+
+    <main class="game-shell" aria-label="KaktusClicker Spiel">
+      <section class="click-zone" aria-labelledby="game-title">
+        <header class="brand-row">
+          <div>
+            <h1 id="game-title">KaktusClicker</h1>
+            <p class="tagline">[ neon desert terminal online ]</p>
+          </div>
+          <button class="icon-button" id="save-button" type="button" title="Jetzt speichern" aria-label="Jetzt speichern">
+            <span aria-hidden="true">S</span>
+          </button>
+        </header>
+
+        <div class="score-card">
+          <p class="score-label">Kakteen</p>
+          <p class="score" id="cactus-count">0</p>
+          <p class="rate"><span id="cactus-rate">0</span> pro Sekunde</p>
+        </div>
+
+        <button class="cactus-button" id="cactus-button" type="button" aria-label="Kaktus ernten">
+          <pre class="cactus-art" aria-hidden="true">⠀⠀⠀⠀⠀⠀⠀⠀⠰⣱⣷⣼⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⢀⣹⣿⢼⡻⣍⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢀⠮⢇⡞⣾⣿⣿⣦⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⣀⡄⡀⠀⢸⠈⠚⡄⣿⣿⣾⣿⠀⠀⣀⢤⣀⠀⠀
+⢠⣺⣿⣼⡟⠀⢸⠀⠐⡐⣿⣿⣿⣿⠀⠀⣛⣽⣻⣦⡀
+⡇⠄⣿⣿⡄⠀⢸⠀⠸⢀⣿⣿⣻⣿⠀⠀⠈⠙⢻⣿⡇
+⡇⡁⣿⣯⠇⠀⢸⠀⠐⢂⣿⡷⣿⣿⠀⠀⠀⠈⣼⣿⡇
+⡏⡗⣻⣿⡄⠀⠸⠀⠈⢄⣻⣟⣿⣿⠒⣒⡒⢎⣿⣯⡇
+⢣⢡⠻⣿⣿⣶⡇⢀⢬⠀⣿⣿⣿⣿⣁⣛⣡⣼⣿⡿⠃
+⠀⠁⠶⢶⣿⣿⡇⠀⢀⠃⢿⣯⣿⣿⠛⠛⠛⠛⠛⠁⠀
+⠀⠀⠀⠀⠀⠀⢸⠀⢀⠊⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢸⠀⢀⠆⣿⣿⣽⣿⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢸⠀⢘⠂⣿⣯⣿⣿⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢸⠀⢰⠁⣿⣿⣾⣿⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢸⠀⡨⠐⣿⣷⣿⣿⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢸⠈⠅⢃⣿⣯⣿⣿⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠒⠒⠂⠒⠚⠛⠛⠛⠛⠛⠛⠛⠒⠒⠒⠒⠒⠀⠀</pre>
+        </button>
+
+        <div class="click-info">
+          <span>+<strong id="click-power">1</strong> pro Klick</span>
+          <span id="save-status">Bereit</span>
+        </div>
+      </section>
+
+      <aside class="panel" aria-label="Shop und Fortschritt">
+        <nav class="tabs" aria-label="Bereiche">
+          <button class="tab is-active" data-tab="shop" type="button">Shop</button>
+          <button class="tab" data-tab="upgrades" type="button">Upgrades</button>
+          <button class="tab" data-tab="stats" type="button">Stats</button>
+        </nav>
+
+        <section class="tab-panel is-active" id="shop-panel">
+          <div class="section-title">
+            <h2>Produktion</h2>
+            <p>Automatische Kakteenquellen</p>
+          </div>
+          <div class="item-list" id="building-list"></div>
+        </section>
+
+        <section class="tab-panel" id="upgrades-panel">
+          <div class="section-title">
+            <h2>Upgrades</h2>
+            <p>Mehr Stacheln, mehr Ertrag</p>
+          </div>
+          <div class="item-list" id="upgrade-list"></div>
+        </section>
+
+        <section class="tab-panel" id="stats-panel">
+          <div class="section-title">
+            <h2>Fortschritt</h2>
+            <p>Deine Wüstenbilanz</p>
+          </div>
+          <dl class="stats-grid">
+            <div>
+              <dt>Gesamt geerntet</dt>
+              <dd id="total-earned">0</dd>
+            </div>
+            <div>
+              <dt>Klicks</dt>
+              <dd id="total-clicks">0</dd>
+            </div>
+            <div>
+              <dt>Gebäude</dt>
+              <dd id="total-buildings">0</dd>
+            </div>
+            <div>
+              <dt>Upgrades</dt>
+              <dd id="total-upgrades">0</dd>
+            </div>
+          </dl>
+
+          <div class="achievements">
+            <h3>Abzeichen</h3>
+            <div id="achievement-list" class="achievement-list"></div>
+          </div>
+
+          <button class="danger-button" id="reset-button" type="button">Spielstand zurücksetzen</button>
+        </section>
+      </aside>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>
