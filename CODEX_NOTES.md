@@ -31,7 +31,8 @@ Netlify deploys automatically from the GitHub repo after pushes to `main`.
 - Removed the particle background.
 - Removed the Spotify embed.
 - Reworked the homepage hero into a dark Matrix-inspired grid design with a large centered `KalterKaktus` title and Steam Deals CTA.
-- Added a subtle Matrix-rain canvas background.
+- Keep the static green grid vibe as the homepage background direction.
+- Added a Discord status card powered by Lanyard.
 - Unified the navigation:
   - `KK`
   - `Home`
@@ -93,12 +94,13 @@ Netlify deploys automatically after the push.
 
 ## Suggested Next Design Direction
 
-The user wants something more exciting than generic particles. Good direction:
+The visual direction should stay poisonous green / Matrix-inspired:
 
-- dark cactus dashboard
-- animated neon cactus
-- small live tiles
-- free-games teaser
-- social/online status
+- dark background
+- toxic green accents
+- subtle grid background
+- glassy dark cards with green borders/glow
+- 8px radius for main UI containers where possible
+- avoid light mode, beige palettes, and generic particles unless the user asks again
 
 Important: Do not reintroduce light mode or generic particles unless the user explicitly asks for them.

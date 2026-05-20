@@ -67,6 +67,117 @@ document.addEventListener('DOMContentLoaded', () => {
             orb2.style.transform = `translate(${-scrollY * 0.08}px, ${-scrollY * 0.12}px)`;
         }
     });
-
 });
 
+const DISCORD_USER_ID = "419902218922229760";
+const DISCORD_STATUS_REFRESH_MS = 5000;
+
+async function loadDiscordStatus() {
+    const statusEl = document.getElementById("discord-status");
+    const activityEl = document.getElementById("discord-activity");
+
+    if (!statusEl || !activityEl) return;
+
+    try {
+        const response = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_USER_ID}`);
+        const json = await response.json();
+
+        if (!json.success) {
+            statusEl.textContent = "Status nicht verfügbar";
+            return;
+        }
+
+        const data = json.data;
+
+        const statusMap = {
+            online: "Online",
+            idle: "Abwesend",
+            dnd: "Nicht stören",
+            offline: "Offline",
+        };
+
+        statusEl.textContent = statusMap[data.discord_status] || "Unbekannt";
+
+        const cards = [];
+        const game = data.activities?.find((activity) => activity.type === 0);
+
+        if (game) {
+            const started = game.timestamps?.start
+                ? formatElapsedTime(Date.now() - game.timestamps.start)
+                : null;
+
+            let imageUrl = "";
+
+            if (game.assets?.large_image && game.application_id) {
+                imageUrl = `https://cdn.discordapp.com/app-assets/${encodeURIComponent(game.application_id)}/${encodeURIComponent(game.assets.large_image)}.png`;
+            }
+
+            cards.push(renderActivityCard({
+                imageUrl,
+                imageAlt: "Game Cover",
+                title: `Game: ${game.name}`,
+                detail: started ? `Seit ${started}` : "",
+            }));
+        }
+
+        if (data.listening_to_spotify && data.spotify) {
+            cards.push(renderActivityCard({
+                imageUrl: data.spotify.album_art_url,
+                imageAlt: "Spotify Cover",
+                title: `Spotify: ${data.spotify.song}`,
+                detail: data.spotify.artist,
+            }));
+        }
+
+        activityEl.innerHTML = cards.length
+            ? cards.join("")
+            : "Keine aktive Aktivität";
+    } catch (error) {
+        statusEl.textContent = "Status konnte nicht geladen werden";
+        activityEl.textContent = "";
+    }
+}
+
+loadDiscordStatus();
+setInterval(loadDiscordStatus, DISCORD_STATUS_REFRESH_MS);
+
+function renderActivityCard({ imageUrl, imageAlt, title, detail }) {
+    const safeImageUrl = sanitizeImageUrl(imageUrl);
+
+    return `
+        <div class="activity-box">
+            ${safeImageUrl ? `<img src="${safeImageUrl}" class="activity-cover" alt="${escapeHtml(imageAlt)}">` : ""}
+            <div>
+                <div>${escapeHtml(title)}</div>
+                ${detail ? `<div>${escapeHtml(detail)}</div>` : ""}
+            </div>
+        </div>
+    `;
+}
+
+function sanitizeImageUrl(value) {
+    const url = String(value || "");
+    return /^https:\/\/[\w.-]+\/[\w./?=&%:-]+$/.test(url) ? url : "";
+}
+
+function escapeHtml(value) {
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function formatElapsedTime(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+    }
+
+    return `${minutes}m`;
+}
