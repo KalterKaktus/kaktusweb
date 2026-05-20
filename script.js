@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Theme Toggle Functionality mit DISCO MODE 🎉
+    // Theme Toggle Functionality
     const themeToggle = document.getElementById('themeToggle');
     const body = document.body;
     const nav = document.querySelector('.nav');
@@ -9,13 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentTheme === 'light') {
         body.classList.add('light-mode');
     }
-
-    // Disco Mode Easter Egg
-    let clickCount = 0;
-    let clickTimer = null;
-    let discoMode = false;
-    let discoInterval = null;
-    let faceInterval = null;
 
     // Nav update function - DEFINIERT HIER OBEN!
     function updateNavColors() {
@@ -42,81 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Toggle theme on button click
     themeToggle.addEventListener('click', () => {
-        console.log('🔥 BUTTON CLICKED!');
-        
-        // Disco Mode Check
-        clickCount++;
-        console.log(`Click ${clickCount}/20`);
-        
-        if (clickTimer) clearTimeout(clickTimer);
-        clickTimer = setTimeout(() => {
-            clickCount = 0;
-        }, 5000); // 5 Sekunden statt 60
-        
-        // Im Disco Mode - erlaube Theme Toggle aber kein Deaktivieren
-        if (discoMode) {
-            console.log('🎊 DISCO MODE LÄUFT! (Theme wechselt trotzdem) 🎊');
-            body.classList.toggle('light-mode');
-            const theme = body.classList.contains('light-mode') ? 'light' : 'dark';
-            localStorage.setItem('theme', theme);
-            updateNavColors();
-            return;
-        }
-        
-        // Aktiviere Disco Mode bei 5 Klicks
-        if (clickCount >= 5) {
-            discoMode = true;
-            body.classList.add('disco-mode');
-            clickCount = 0;
-            console.log('🎊🎉 DISCO MODE ACTIVATED! 🎉🎊');
-            
-            // Flying Face Animation
-            const discoFace = document.getElementById('discoFace');
-            
-            if (discoFace) {
-                function moveFaceRandomly() {
-                    const maxX = window.innerWidth - 150;
-                    const maxY = window.innerHeight - 150;
-                    const randomX = Math.random() * maxX;
-                    const randomY = Math.random() * maxY;
-                    const randomDuration = 2 + Math.random() * 3;
-                    
-                    discoFace.style.transition = `all ${randomDuration}s ease-in-out`;
-                    discoFace.style.left = randomX + 'px';
-                    discoFace.style.top = randomY + 'px';
-                }
-                
-                moveFaceRandomly();
-                faceInterval = setInterval(moveFaceRandomly, 3000);
-            }
-            
-            // RGB Animation starten
-            let hue = 0;
-            discoInterval = setInterval(() => {
-                hue = (hue + 2) % 360;
-                const color1 = `hsl(${hue}, 70%, 50%)`;
-                const color2 = `hsl(${(hue + 120) % 360}, 70%, 50%)`;
-                const color3 = `hsl(${(hue + 240) % 360}, 70%, 50%)`;
-                
-                document.documentElement.style.setProperty('--accent', color1);
-                document.documentElement.style.setProperty('--accent-light', color2);
-                document.documentElement.style.setProperty('--border', color3);
-                
-                if (nav) {
-                    nav.style.borderBottom = `2px solid ${color1}`;
-                }
-                
-                themeToggle.style.borderColor = color2;
-                
-                if (discoFace) {
-                    discoFace.style.filter = `drop-shadow(0 0 30px ${color1}) hue-rotate(${hue}deg)`;
-                }
-            }, 50);
-            
-            return;
-        }
-        
-        // NORMALES THEME TOGGLE - passiert bei JEDEM Klick
         body.classList.toggle('light-mode');
         const theme = body.classList.contains('light-mode') ? 'light' : 'dark';
         localStorage.setItem('theme', theme);

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kostenlose Steam-Spiele - KalterKaktus</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .games-page {
+            min-height: 100vh;
+            padding: 8rem 2rem 5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .games-container {
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        .games-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .games-kicker {
+            color: var(--accent-light);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .games-title {
+            font-size: clamp(2.2rem, 6vw, 4.8rem);
+            line-height: 0.95;
+            color: var(--text-primary);
+        }
+
+        .games-subtitle {
+            color: var(--text-secondary);
+            max-width: 620px;
+            margin-top: 1rem;
+            line-height: 1.7;
+        }
+
+        .back-link,
+        .refresh-btn {
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            background: var(--card-bg);
+            border-radius: 999px;
+            padding: 0.8rem 1rem;
+            text-decoration: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .back-link:hover,
+        .refresh-btn:hover {
+            border-color: var(--accent-light);
+            transform: translateY(-2px);
+        }
+
+        .games-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .game-card {
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+        }
+
+        .game-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-light);
+            background: var(--card-hover);
+        }
+
+        .game-card img {
+            width: 100%;
+            aspect-ratio: 460 / 215;
+            object-fit: cover;
+            background: var(--bg-secondary);
+            display: block;
+        }
+
+        .game-card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+            padding: 1rem;
+            flex: 1;
+        }
+
+        .game-card-title {
+            font-size: 1.05rem;
+            line-height: 1.35;
+        }
+
+        .game-card-meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+
+        .game-badge {
+            border: 1px solid rgba(64, 224, 208, 0.35);
+            background: rgba(64, 224, 208, 0.08);
+            color: var(--accent-light);
+            border-radius: 999px;
+            padding: 0.35rem 0.55rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .game-price {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .state-box {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            padding: 2rem;
+            text-align: center;
+            line-height: 1.7;
+        }
+
+        .loader {
+            width: 28px;
+            height: 28px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent-light);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            animation: gameSpin 0.8s linear infinite;
+        }
+
+        @keyframes gameSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 760px) {
+            .games-page {
+                padding: 6.5rem 1rem 4rem;
+            }
+
+            .games-header,
+            .games-toolbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a class="logo" href="index.html">KK</a>
+            <div class="nav-links">
+                <a href="index.html#home" class="nav-link">Home</a>
+                <a href="index.html#about" class="nav-link">About</a>
+                <a href="free-games.html" class="nav-link">Free Games</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+
+    <main class="games-page">
+        <div class="games-container">
+            <header class="games-header">
+                <div>
+                    <div class="games-kicker">Steam Deals</div>
+                    <h1 class="games-title">Kostenlose Spiele</h1>
+                    <p class="games-subtitle">
+                        Aktuelle Steam-Angebote, die gerade kostenlos gelistet sind.
+                    </p>
+                </div>
+                <a class="back-link" href="index.html">Zurück</a>
+            </header>
+
+            <div class="games-toolbar">
+                <div id="gamesMeta">Lade Angebote...</div>
+                <button class="refresh-btn" id="refreshGames" type="button">Aktualisieren</button>
+            </div>
+
+            <section id="gamesApp" class="state-box">
+                <div class="loader"></div>
+                <div>Steam-Angebote werden geladen...</div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        const app = document.getElementById('gamesApp');
+        const meta = document.getElementById('gamesMeta');
+        const refreshButton = document.getElementById('refreshGames');
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function renderGame(game) {
+            const title = escapeHtml(game.title);
+            const image = escapeHtml(game.image);
+            const url = escapeHtml(game.url);
+            const oldPrice = game.normalPrice ? `${escapeHtml(game.normalPrice)} USD` : 'Steam';
+
+            return `
+                <a class="game-card" href="${url}" target="_blank" rel="noopener noreferrer">
+                    <img src="${image}" alt="${title}" loading="lazy">
+                    <div class="game-card-body">
+                        <h2 class="game-card-title">${title}</h2>
+                        <div class="game-card-meta">
+                            <span class="game-badge">Kostenlos</span>
+                            <span class="game-price">statt ${oldPrice}</span>
+                        </div>
+                    </div>
+                </a>
+            `;
+        }
+
+        async function loadGames() {
+            app.className = 'state-box';
+            app.innerHTML = '<div class="loader"></div><div>Steam-Angebote werden geladen...</div>';
+            meta.textContent = 'Lade Angebote...';
+            refreshButton.disabled = true;
+
+            try {
+                const response = await fetch('/.netlify/functions/steamfree');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                const games = Array.isArray(data.active) ? data.active : [];
+                if (!games.length) {
+                    app.className = 'state-box';
+                    app.innerHTML = 'Gerade wurden keine kostenlosen Steam-Angebote gefunden.';
+                } else {
+                    app.className = 'games-grid';
+                    app.innerHTML = games.map(renderGame).join('');
+                }
+
+                const time = data.fetchedAt
+                    ? new Date(data.fetchedAt).toLocaleString('de-DE')
+                    : new Date().toLocaleString('de-DE');
+                meta.textContent = `${games.length} Angebote gefunden. Zuletzt aktualisiert: ${time}`;
+            } catch (error) {
+                app.className = 'state-box';
+                app.innerHTML = `Fehler beim Laden der Steam-Angebote.<br>${escapeHtml(error.message)}`;
+                meta.textContent = 'Keine Daten geladen.';
+            } finally {
+                refreshButton.disabled = false;
+            }
+        }
+
+        refreshButton.addEventListener('click', loadGames);
+        loadGames();
+    </script>
+</body>
+</html>
