@@ -19,6 +19,43 @@ function setStatus(message, isError = false) {
     status.classList.toggle("is-error", isError);
 }
 
+function setOAuthLoading(isLoading) {
+    document.querySelectorAll(".auth-oauth-btn").forEach((button) => {
+        button.disabled = isLoading;
+    });
+}
+
+async function startOAuth(provider) {
+    const supabase = getSupabase();
+    if (!supabase) {
+        setStatus("Supabase-Client konnte nicht geladen werden.", true);
+        return;
+    }
+
+    setOAuthLoading(true);
+    setStatus(`${provider === "google" ? "Google" : "Discord"}-Login wird gestartet…`);
+
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+            redirectTo: getAuthRedirectUrl(),
+        },
+    });
+
+    if (error) {
+        setStatus(`Fehler: ${error.message}`, true);
+        setOAuthLoading(false);
+    }
+}
+
+function bindOAuthButtons() {
+    const googleButton = document.getElementById("oauth-google");
+    const discordButton = document.getElementById("oauth-discord");
+
+    googleButton?.addEventListener("click", () => startOAuth("google"));
+    discordButton?.addEventListener("click", () => startOAuth("discord"));
+}
+
 async function initLoginPage() {
     const form = document.getElementById("magic-link-form");
     if (!form) {
@@ -28,9 +65,12 @@ async function initLoginPage() {
     const returnPath = getReturnPath();
     sessionStorage.setItem("auth_return_to", returnPath);
 
+    bindOAuthButtons();
+
     if (!isConfigReady()) {
         setStatus("Supabase ist nicht konfiguriert. Lege js/config.js an (siehe js/config.example.js).", true);
         form.querySelector("button")?.setAttribute("disabled", "disabled");
+        setOAuthLoading(true);
         return;
     }
 
@@ -53,6 +93,7 @@ async function initLoginPage() {
         }
 
         submitButton.disabled = true;
+        setOAuthLoading(true);
         setStatus("Magic Link wird gesendet…");
 
         const redirectTo = getAuthRedirectUrl();
@@ -64,6 +105,8 @@ async function initLoginPage() {
                 shouldCreateUser: true,
             },
         });
+
+        setOAuthLoading(false);
 
         if (error) {
             setStatus(`Fehler: ${error.message}`, true);

@@ -114,7 +114,10 @@ Supabase Dashboard → Authentication → URL configuration:
 - Site URL: `https://kalterkaktus.de`
 - Redirect URLs: `https://kalterkaktus.de/auth/callback.html`
 
-Provider: **Email** muss aktiv sein (Magic Link).
+Provider: **Email** (Magic Link), **Google**, **Discord** — OAuth-Redirects in den Anbietern auf  
+`https://rdqbkpowntebcrsnwyqp.supabase.co/auth/v1/callback` setzen.
+
+Login-UI: `login.html` (Google/Discord-Buttons + Magic Link).
 
 Nach Änderung an `js/config.js`: committen und nach Netlify pushen.
 

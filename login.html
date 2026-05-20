@@ -33,10 +33,24 @@
                     <div class="page-kicker">KalterKaktus Account</div>
                     <h1 class="page-title">Anmelden</h1>
                     <p class="page-subtitle">
-                        Wir schicken dir einen Magic Link per E-Mail. Kein Passwort nötig.
+                        Mit Google oder Discord — oder per Magic Link per E-Mail.
                     </p>
                 </div>
             </header>
+
+            <section class="auth-card" aria-labelledby="oauth-title">
+                <h2 id="oauth-title" class="auth-card-title">Schnell anmelden</h2>
+                <div class="auth-oauth-buttons">
+                    <button class="auth-oauth-btn is-google" id="oauth-google" type="button">
+                        Mit Google anmelden
+                    </button>
+                    <button class="auth-oauth-btn is-discord" id="oauth-discord" type="button">
+                        Mit Discord anmelden
+                    </button>
+                </div>
+            </section>
+
+            <p class="auth-divider" aria-hidden="true">oder</p>
 
             <section class="auth-card" aria-labelledby="login-title">
                 <h2 id="login-title" class="auth-card-title">Magic Link</h2>

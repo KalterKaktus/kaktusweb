@@ -189,6 +189,54 @@ body::before {
     max-width: 520px;
 }
 
+.auth-oauth-buttons {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.auth-oauth-btn {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(8, 12, 16, 0.65);
+    color: var(--text-primary);
+    padding: 0.85rem 1rem;
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color 0.25s ease, transform 0.25s ease, background 0.25s ease;
+}
+
+.auth-oauth-btn:hover {
+    transform: translateY(-1px);
+    border-color: var(--accent-light);
+}
+
+.auth-oauth-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.auth-oauth-btn.is-google:hover {
+    border-color: #8ab4f8;
+}
+
+.auth-oauth-btn.is-discord:hover {
+    border-color: #7289da;
+}
+
+.auth-divider {
+    margin: 1rem 0;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
 .auth-card {
     border: 1px solid var(--border);
     border-radius: 8px;
