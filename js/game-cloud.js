@@ -163,17 +163,38 @@ export async function fetchLeaderboard(limit = 25) {
         return { error: new Error("Rangliste konnte nicht geladen werden.") };
     }
 
+    const rows = data || [];
+    const previousPeriod = getWeeklyLeaderboardPeriod(new Date(period.resetAt.getTime() - 1000));
+    const toEntry = (row, leaderboard) => ({
+        name: row.display_name || "Spieler",
+        score: Number(leaderboard?.score) || 0,
+        periodId: leaderboard?.periodId,
+        updatedAt: row.updated_at,
+    });
+    const sortByScore = (left, right) => right.score - left.score;
+    const currentEntries = rows
+        .map((row) => toEntry(row, row.payload?.weeklyLeaderboard))
+        .filter((entry) => entry.periodId === period.id && entry.score > 0)
+        .sort(sortByScore);
+    const previousEntries = rows
+        .flatMap((row) => [
+            toEntry(row, row.payload?.weeklyLeaderboard),
+            toEntry(row, row.payload?.previousWeeklyLeaderboard),
+        ])
+        .filter((entry) => entry.periodId === previousPeriod.id && entry.score > 0)
+        .sort(sortByScore);
+
     return {
         period,
-        entries: (data || [])
-            .map((row) => ({
-                name: row.display_name || "Spieler",
-                score: Number(row.payload?.weeklyLeaderboard?.score) || 0,
-                periodId: row.payload?.weeklyLeaderboard?.periodId,
-                updatedAt: row.updated_at,
-            }))
-            .filter((entry) => entry.periodId === period.id && entry.score > 0)
-            .sort((left, right) => right.score - left.score)
+        previousPeriod,
+        previousWinner: previousEntries[0]
+            ? {
+                name: previousEntries[0].name,
+                score: previousEntries[0].score,
+                updatedAt: previousEntries[0].updatedAt,
+            }
+            : null,
+        entries: currentEntries
             .slice(0, limit)
             .map((entry, index) => ({
             rank: index + 1,

@@ -14,7 +14,7 @@
         <header class="brand-row">
           <div>
             <h1 id="game-title">KaktusClicker</h1>
-            <p class="tagline">[ neon desert terminal online ]</p>
+            <p class="tagline">Klicken. Produktion bauen. Rangliste jagen.</p>
           </div>
           <button class="icon-button" id="save-button" type="button" title="Jetzt speichern" aria-label="Jetzt speichern">
             <svg class="save-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -55,9 +55,9 @@
         </div>
       </section>
 
-      <aside class="panel" aria-label="Shop und Fortschritt">
+      <aside class="panel" aria-label="Gebäude und Fortschritt">
         <nav class="tabs" aria-label="Bereiche">
-          <button class="tab is-active" data-tab="shop" type="button">Shop</button>
+          <button class="tab is-active" data-tab="shop" type="button">Gebäude</button>
           <button class="tab" data-tab="upgrades" type="button">Upgrades</button>
           <button class="tab" data-tab="stats" type="button">Stats</button>
           <button class="tab" data-tab="leaderboard" type="button">Rangliste</button>
@@ -65,8 +65,8 @@
 
         <section class="tab-panel is-active" id="shop-panel">
           <div class="section-title">
-            <h2>Produktion</h2>
-            <p>Automatische Kakteenquellen</p>
+            <h2>Gebäude</h2>
+            <p>Automatische Ernte ausbauen</p>
           </div>
           <div class="item-list" id="building-list"></div>
         </section>
@@ -74,7 +74,7 @@
         <section class="tab-panel" id="upgrades-panel">
           <div class="section-title">
             <h2>Upgrades</h2>
-            <p>Mehr Stacheln, mehr Ertrag</p>
+            <p>Klicks und Produktion verstärken</p>
           </div>
           <div class="item-list" id="upgrade-list"></div>
         </section>
@@ -117,6 +117,7 @@
             <p>Top-Spieler dieser Woche</p>
           </div>
           <p id="leaderboard-reset" class="leaderboard-reset" aria-live="polite"></p>
+          <p id="leaderboard-last-winner" class="leaderboard-last-winner" aria-live="polite"></p>
           <div id="leaderboard-list" class="leaderboard-list" aria-live="polite"></div>
           <p id="leaderboard-hint" class="leaderboard-hint"></p>
         </section>

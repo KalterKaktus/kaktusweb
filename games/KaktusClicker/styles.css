@@ -263,17 +263,15 @@ dt {
   border: 0;
   cursor: pointer;
   transform: translateZ(0);
-  transition: transform 120ms ease, filter 120ms ease;
+  transition: filter 120ms ease;
 }
 
 .cactus-button:hover {
-  transform: translateY(-4px) scale(1.015);
   filter: drop-shadow(0 0 22px rgba(55, 255, 117, 0.7));
 }
 
-.cactus-button:active,
-.cactus-button.is-popping {
-  transform: translateY(4px) scale(0.98);
+.cactus-button:active {
+  filter: drop-shadow(0 0 30px rgba(184, 255, 200, 0.88));
 }
 
 .cactus-art {
@@ -325,7 +323,7 @@ dt {
 }
 
 .panel::before {
-  content: "+-- shop matrix --------------------------------+";
+  content: "+-- system matrix ------------------------------+";
 }
 
 .tabs {
@@ -507,6 +505,33 @@ h3 {
   font-weight: 800;
 }
 
+.achievement-copy {
+  min-width: 0;
+}
+
+.achievement-copy strong,
+.achievement-copy small {
+  display: block;
+}
+
+.achievement-copy strong {
+  color: inherit;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.achievement-copy small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.achievement.is-unlocked .achievement-copy small {
+  color: rgba(184, 255, 200, 0.76);
+}
+
 .achievement.is-unlocked {
   color: var(--green-hot);
   border-color: var(--line-hot);
@@ -564,6 +589,18 @@ h3 {
   color: var(--green-hot);
   font-size: 12px;
   font-weight: 700;
+  line-height: 1.5;
+}
+
+.leaderboard-last-winner {
+  margin: -4px 0 12px;
+  padding: 9px 11px;
+  border: 1px solid rgba(244, 234, 141, 0.22);
+  border-radius: 8px;
+  background: rgba(29, 25, 5, 0.42);
+  color: #f4ea8d;
+  font-size: 12px;
+  font-weight: 750;
   line-height: 1.5;
 }
 

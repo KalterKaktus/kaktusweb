@@ -46,7 +46,7 @@
                     <a class="primary-link" href="/steam-deals/">Steam Deals ansehen</a>
                 </div>
                 <p class="hero-purpose">
-                    KalterKaktus bietet Browser-Games, Steam Deals und Accounts für Cloud-Spielstände und Ranglisten.
+                    KalterKaktus ist der Hub für Games, Steam Deals, Streams und neue Projekte rund um KalterKaktus.
                 </p>
             </div>
 
@@ -54,6 +54,45 @@
         <div class="hero-background">
         </div>
     </section>
+
+<section class="app-purpose" aria-labelledby="app-purpose-title">
+    <div class="app-purpose-inner">
+        <p class="page-kicker">KalterKaktus</p>
+        <h2 id="app-purpose-title">Games, Deals und KalterKaktus</h2>
+        <p>
+            Auf KalterKaktus findest du Browser-Games, ausgewählte Steam Deals und alles, was den Hub
+            nach und nach größer macht.
+        </p>
+        <p>
+            Mit einem Account nimmst du deine Fortschritte mit, tauchst in Ranglisten auf und bist bereit
+            für kommende Games und Features.
+        </p>
+    </div>
+</section>
+
+<section class="home-leaderboard" aria-labelledby="home-leaderboard-title">
+    <a class="home-leaderboard-card" href="/games/KaktusClicker/">
+        <span class="home-leaderboard-badge" aria-hidden="true">
+            <img src="/favicon-32x32.png" alt="">
+            <span>♛</span>
+        </span>
+        <span class="home-leaderboard-copy">
+            <span class="page-kicker">KaktusClicker Rangliste</span>
+            <strong id="home-leaderboard-title">Top Player of the Week</strong>
+            <span class="home-leaderboard-grid" aria-live="polite">
+                <span>
+                    <small>Diese Woche</small>
+                    <b id="home-weekly-player">Wird geladen...</b>
+                </span>
+                <span>
+                    <small>Letzte Woche</small>
+                    <b id="home-last-week-player">Wird geladen...</b>
+                </span>
+            </span>
+        </span>
+        <span class="home-leaderboard-cta">Zum Grind</span>
+    </a>
+</section>
 
 <section class="discord-card">
   <div class="discord-title">Discord Status</div>
@@ -140,6 +179,7 @@
     <!-- Scripts -->
     <script src="/js/config.js"></script>
     <script type="module" src="/js/auth-nav.js"></script>
+    <script type="module" src="/js/home-leaderboard.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

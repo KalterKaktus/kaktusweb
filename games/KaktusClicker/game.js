@@ -16,7 +16,7 @@ const buildings = [
     icon: "K",
     baseCost: 15,
     cps: 0.1,
-    description: "Ein kleiner Topf, der langsam nachlegt."
+    description: "Kleine Produktion für den Anfang."
   },
   {
     id: "greenhouse",
@@ -24,7 +24,7 @@ const buildings = [
     icon: "G",
     baseCost: 100,
     cps: 1,
-    description: "Sammelt Sonnenlicht für saftige Ernten."
+    description: "Mehr Kakteen aus kontrolliertem Anbau."
   },
   {
     id: "ranch",
@@ -32,7 +32,7 @@ const buildings = [
     icon: "R",
     baseCost: 1100,
     cps: 8,
-    description: "Reihenweise Stacheln, ordentlich bewacht."
+    description: "Reihenweise Kakteen für den nächsten Schub."
   },
   {
     id: "oasis",
@@ -40,7 +40,7 @@ const buildings = [
     icon: "O",
     baseCost: 12000,
     cps: 47,
-    description: "Macht aus trockenem Boden grünes Gold."
+    description: "Stabile Ernte auch im trockenen Boden."
   },
   {
     id: "factory",
@@ -48,7 +48,39 @@ const buildings = [
     icon: "F",
     baseCost: 130000,
     cps: 260,
-    description: "Industrielle Kaktusvermehrung mit Rhythmus."
+    description: "Industrielle Produktion für große Zahlen."
+  },
+  {
+    id: "harvest-drone",
+    name: "Erntedrohne",
+    icon: "D",
+    baseCost: 1400000,
+    cps: 1400,
+    description: "Automatisiert die schnelle Ernte."
+  },
+  {
+    id: "lab",
+    name: "Kaktuslabor",
+    icon: "L",
+    baseCost: 20000000,
+    cps: 7800,
+    description: "Züchtet stärkere Produktionslinien."
+  },
+  {
+    id: "server-farm",
+    name: "Wüstenserver",
+    icon: "S",
+    baseCost: 330000000,
+    cps: 44000,
+    description: "Optimiert jeden Produktionszyklus."
+  },
+  {
+    id: "orbital-greenhouse",
+    name: "Orbit-Gewächshaus",
+    icon: "O",
+    baseCost: 5100000000,
+    cps: 260000,
+    description: "Kakteenproduktion ohne Tageslimit."
   }
 ];
 
@@ -57,46 +89,125 @@ const upgrades = [
     id: "gloves",
     name: "Dicke Handschuhe",
     icon: "H",
-    cost: 50,
-    description: "Klicks geben doppelt so viel.",
-    clickMultiplier: 2,
-    productionMultiplier: 1
+    cost: 100,
+    description: "Klick-Ertrag x2.",
+    clickMultiplier: 2
   },
   {
-    id: "watering-can",
-    name: "Goldene Giesskanne",
+    id: "soft-gloves",
+    name: "Weiche Handschuhe",
     icon: "W",
     cost: 500,
-    description: "Alle Gebäude produzieren 25% mehr.",
-    clickMultiplier: 1,
-    productionMultiplier: 1.25
+    description: "Klick-Ertrag x2.",
+    clickMultiplier: 2
   },
   {
     id: "sun-map",
-    name: "Sonnenkarte",
-    icon: "M",
-    cost: 5000,
-    description: "Klicks werden nochmal doppelt so stark.",
-    clickMultiplier: 2,
-    productionMultiplier: 1
+    name: "Doppelte Zange",
+    icon: "Z",
+    cost: 10000,
+    description: "Klick-Ertrag x2.",
+    clickMultiplier: 2
   },
   {
-    id: "desert-union",
-    name: "Wüstenverband",
-    icon: "V",
-    cost: 50000,
-    description: "Alle Gebäude produzieren 50% mehr.",
-    clickMultiplier: 1,
-    productionMultiplier: 1.5
+    id: "seedling-pots",
+    name: "Stabile Töpfe",
+    icon: "K",
+    cost: 100,
+    description: "Mini-Kaktus Produktion x2.",
+    buildingId: "seedling",
+    buildingMultiplier: 2
+  },
+  {
+    id: "greenhouse-glass",
+    name: "Klares Glas",
+    icon: "G",
+    cost: 1000,
+    description: "Gewächshaus Produktion x2.",
+    buildingId: "greenhouse",
+    buildingMultiplier: 2
+  },
+  {
+    id: "ranch-irrigation",
+    name: "Ranch-Bewässerung",
+    icon: "R",
+    cost: 11000,
+    description: "Kaktus-Ranch Produktion x2.",
+    buildingId: "ranch",
+    buildingMultiplier: 2
+  },
+  {
+    id: "oasis-pressure",
+    name: "Hochdruckpumpe",
+    icon: "O",
+    cost: 120000,
+    description: "Oasenpumpe Produktion x2.",
+    buildingId: "oasis",
+    buildingMultiplier: 2
+  },
+  {
+    id: "factory-lines",
+    name: "Doppelschicht",
+    icon: "F",
+    cost: 1300000,
+    description: "Stachelwerk Produktion x2.",
+    buildingId: "factory",
+    buildingMultiplier: 2
+  },
+  {
+    id: "drone-bay",
+    name: "Drohnenhangar",
+    icon: "D",
+    cost: 14000000,
+    description: "Erntedrohne Produktion x2.",
+    buildingId: "harvest-drone",
+    buildingMultiplier: 2
+  },
+  {
+    id: "lab-culture",
+    name: "Schnellkultur",
+    icon: "L",
+    cost: 200000000,
+    description: "Kaktuslabor Produktion x2.",
+    buildingId: "lab",
+    buildingMultiplier: 2
+  },
+  {
+    id: "server-cluster",
+    name: "Servercluster",
+    icon: "S",
+    cost: 3300000000,
+    description: "Wüstenserver Produktion x2.",
+    buildingId: "server-farm",
+    buildingMultiplier: 2
+  },
+  {
+    id: "orbital-cycle",
+    name: "Orbit-Zyklus",
+    icon: "O",
+    cost: 51000000000,
+    description: "Orbit-Gewächshaus Produktion x2.",
+    buildingId: "orbital-greenhouse",
+    buildingMultiplier: 2
   }
 ];
 
 const achievements = [
-  { id: "first-click", name: "Erster Stich", test: (state) => state.totalClicks >= 1 },
-  { id: "hundred", name: "Kleiner Garten", test: (state) => state.totalEarned >= 100 },
-  { id: "thousand", name: "Grüne Welle", test: (state) => state.totalEarned >= 1000 },
-  { id: "builder", name: "Wüstenbau", test: (state) => totalBuildings(state) >= 10 },
-  { id: "collector", name: "Stachelbaron", test: (state) => state.totalEarned >= 100000 }
+  { id: "first-click", name: "Erster Stich", goal: "Ernte deinen ersten Kaktus.", test: (state) => state.totalClicks >= 1 },
+  { id: "hundred-clicks", name: "Klickroutine", goal: "Klicke 100 Mal auf den Kaktus.", test: (state) => state.totalClicks >= 100 },
+  { id: "thousand-clicks", name: "Hornhaut", goal: "Klicke 1.000 Mal auf den Kaktus.", test: (state) => state.totalClicks >= 1000 },
+  { id: "hundred", name: "Kleiner Garten", goal: "Sammle insgesamt 100 Kakteen.", test: (state) => state.totalEarned >= 100 },
+  { id: "thousand", name: "Grüne Welle", goal: "Sammle insgesamt 1.000 Kakteen.", test: (state) => state.totalEarned >= 1000 },
+  { id: "ten-thousand", name: "Stachelvorrat", goal: "Sammle insgesamt 10.000 Kakteen.", test: (state) => state.totalEarned >= 10000 },
+  { id: "builder", name: "Wüstenbau", goal: "Kaufe 10 Gebäude.", test: (state) => totalBuildings(state) >= 10 },
+  { id: "production-crew", name: "Produktionscrew", goal: "Kaufe 50 Gebäude.", test: (state) => totalBuildings(state) >= 50 },
+  { id: "first-upgrade", name: "Besser ernten", goal: "Kaufe dein erstes Upgrade.", test: (state) => state.upgrades.length >= 1 },
+  { id: "upgrade-stack", name: "Upgrade-Stapel", goal: "Kaufe 5 Upgrades.", test: (state) => state.upgrades.length >= 5 },
+  { id: "collector", name: "Stachelbaron", goal: "Sammle insgesamt 100.000 Kakteen.", test: (state) => state.totalEarned >= 100000 },
+  { id: "million", name: "Millionenernte", goal: "Sammle insgesamt 1 Mio. Kakteen.", test: (state) => state.totalEarned >= 1000000 },
+  { id: "ten-million", name: "Wüstenmaschine", goal: "Sammle insgesamt 10 Mio. Kakteen.", test: (state) => state.totalEarned >= 10000000 },
+  { id: "hundred-million", name: "Kaktusmogul", goal: "Sammle insgesamt 100 Mio. Kakteen.", test: (state) => state.totalEarned >= 100000000 },
+  { id: "billion", name: "Orbit-Ernte", goal: "Sammle insgesamt 1 Mrd. Kakteen.", test: (state) => state.totalEarned >= 1000000000 }
 ];
 
 const initialState = {
@@ -136,7 +247,8 @@ const elements = {
   panels: document.querySelectorAll(".tab-panel"),
   leaderboardList: document.querySelector("#leaderboard-list"),
   leaderboardHint: document.querySelector("#leaderboard-hint"),
-  leaderboardReset: document.querySelector("#leaderboard-reset")
+  leaderboardReset: document.querySelector("#leaderboard-reset"),
+  leaderboardLastWinner: document.querySelector("#leaderboard-last-winner")
 };
 
 function createWeeklyLeaderboard() {
@@ -151,6 +263,13 @@ function ensureWeeklyLeaderboard(currentState = state) {
   const weekly = currentState.weeklyLeaderboard;
 
   if (weekly?.periodId !== period.id) {
+    if (weekly?.periodId && weekly.score > 0) {
+      currentState.previousWeeklyLeaderboard = {
+        periodId: weekly.periodId,
+        score: Number(weekly.score) || 0
+      };
+    }
+
     currentState.weeklyLeaderboard = {
       periodId: period.id,
       score: 0
@@ -232,14 +351,22 @@ async function renderLeaderboard(force = false) {
 
   elements.leaderboardList.innerHTML = `<p class="item-description">Rangliste wird geladen…</p>`;
 
-  const { entries, error } = await fetchLeaderboard(30);
+  if (elements.leaderboardLastWinner) {
+    elements.leaderboardLastWinner.textContent = "Top-Spieler der letzten Woche wird geladen...";
+  }
+
+  const { entries, previousWinner, error } = await fetchLeaderboard(30);
 
   if (error) {
     elements.leaderboardList.innerHTML = `<p class="item-description">${escapeHtml(error.message)}</p>`;
+    if (elements.leaderboardLastWinner) {
+      elements.leaderboardLastWinner.textContent = "Top-Spieler der letzten Woche gerade nicht verfügbar.";
+    }
     return;
   }
 
   leaderboardLoaded = true;
+  renderPreviousWinner(previousWinner);
 
   if (!entries.length) {
     elements.leaderboardList.innerHTML = `<p class="item-description">Noch keine Einträge. Sei der Erste.</p>`;
@@ -264,6 +391,16 @@ async function renderLeaderboard(force = false) {
   }
 }
 
+function renderPreviousWinner(previousWinner) {
+  if (!elements.leaderboardLastWinner) {
+    return;
+  }
+
+  elements.leaderboardLastWinner.innerHTML = previousWinner
+    ? `Letzte Woche ganz oben: <strong>${escapeHtml(previousWinner.name)}</strong> mit ${escapeHtml(formatNumber(previousWinner.score))} Kakteen.`
+    : "Top-Spieler der letzten Woche: Noch kein Ergebnis gespeichert.";
+}
+
 function formatNumber(value) {
   if (value >= 1000000) {
     return Intl.NumberFormat("de-DE", { maximumFractionDigits: 2, notation: "compact" }).format(value);
@@ -285,9 +422,10 @@ function getClickPower() {
 }
 
 function getCps() {
-  const { productionMultiplier } = getUpgradeMultipliers();
+  const { productionMultiplier, buildingMultipliers } = getUpgradeMultipliers();
   return buildings.reduce((sum, building) => {
-    return sum + state.buildings[building.id] * building.cps * productionMultiplier;
+    const buildingMultiplier = buildingMultipliers[building.id] || 1;
+    return sum + state.buildings[building.id] * building.cps * buildingMultiplier * productionMultiplier;
   }, 0);
 }
 
@@ -298,11 +436,15 @@ function getUpgradeMultipliers() {
       return multipliers;
     }
 
-    return {
-      clickMultiplier: multipliers.clickMultiplier * upgrade.clickMultiplier,
-      productionMultiplier: multipliers.productionMultiplier * upgrade.productionMultiplier
-    };
-  }, { clickMultiplier: 1, productionMultiplier: 1 });
+    if (upgrade.buildingId) {
+      multipliers.buildingMultipliers[upgrade.buildingId] =
+        (multipliers.buildingMultipliers[upgrade.buildingId] || 1) * (upgrade.buildingMultiplier || 1);
+    }
+
+    multipliers.clickMultiplier *= upgrade.clickMultiplier || 1;
+    multipliers.productionMultiplier *= upgrade.productionMultiplier || 1;
+    return multipliers;
+  }, { clickMultiplier: 1, productionMultiplier: 1, buildingMultipliers: {} });
 }
 
 function totalBuildings(currentState) {
@@ -348,9 +490,6 @@ function clickCactus(event) {
   addCactus(earned);
   state.totalClicks += 1;
   spawnFloat(event.clientX, event.clientY, `+${formatNumber(earned)}`);
-  elements.cactusButton.classList.remove("is-popping");
-  void elements.cactusButton.offsetWidth;
-  elements.cactusButton.classList.add("is-popping");
   updateAchievements();
   render();
 }
@@ -400,10 +539,11 @@ function updateAchievements() {
 }
 
 function renderShop() {
-  const { productionMultiplier } = getUpgradeMultipliers();
+  const { productionMultiplier, buildingMultipliers } = getUpgradeMultipliers();
   elements.buildingList.innerHTML = buildings.map((building) => {
     const cost = getBuildingCost(building);
     const owned = state.buildings[building.id];
+    const buildingCps = building.cps * (buildingMultipliers[building.id] || 1) * productionMultiplier;
     const disabled = state.cactus < cost ? "disabled" : "";
     return `
       <button class="shop-item" type="button" data-building="${building.id}" ${disabled}>
@@ -411,7 +551,7 @@ function renderShop() {
         <span>
           <span class="item-name">${building.name}</span>
           <span class="item-description">${building.description}</span>
-          <span class="item-meta">${formatNumber(building.cps * productionMultiplier)}/Sek. - Besitz: ${owned}</span>
+          <span class="item-meta">${formatNumber(buildingCps)}/Sek. - Besitz: ${owned}</span>
         </span>
         <span class="item-price">${formatNumber(cost)}</span>
       </button>
@@ -436,7 +576,7 @@ function renderUpgrades() {
         </button>
       `;
     }).join("")
-    : `<p class="item-description">Alle Upgrades gekauft. Das Terminal leuchtet zufrieden.</p>`;
+    : `<p class="item-description">Alle Upgrades gekauft. Deine Produktion läuft auf Anschlag.</p>`;
 }
 
 function renderAchievements() {
@@ -444,7 +584,10 @@ function renderAchievements() {
     const unlocked = state.achievements.includes(achievement.id);
     return `
       <div class="achievement ${unlocked ? "is-unlocked" : ""}">
-        <span>${achievement.name}</span>
+        <span class="achievement-copy">
+          <strong>${achievement.name}</strong>
+          <small>${achievement.goal}</small>
+        </span>
         <span>${unlocked ? "Freigeschaltet" : "Offen"}</span>
       </div>
     `;
@@ -574,7 +717,8 @@ function normalizeLoadedState(loaded) {
     weeklyLeaderboard: {
       ...createWeeklyLeaderboard(),
       ...loaded.weeklyLeaderboard
-    }
+    },
+    previousWeeklyLeaderboard: loaded.previousWeeklyLeaderboard
   };
 
   parsed.cactus = Number(parsed.cactus) || 0;
