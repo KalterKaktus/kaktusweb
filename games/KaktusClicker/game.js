@@ -1,6 +1,7 @@
 import {
   fetchLeaderboard,
   getGameSession,
+  getWeeklyLeaderboardPeriod,
   loadCloudSave,
   pickNewerSave,
   pushCloudSave,
@@ -105,6 +106,7 @@ const initialState = {
   buildings: Object.fromEntries(buildings.map((building) => [building.id, 0])),
   upgrades: [],
   achievements: [],
+  weeklyLeaderboard: createWeeklyLeaderboard(),
   lastSavedAt: Date.now()
 };
 
@@ -133,25 +135,49 @@ const elements = {
   tabs: document.querySelectorAll(".tab"),
   panels: document.querySelectorAll(".tab-panel"),
   leaderboardList: document.querySelector("#leaderboard-list"),
-  leaderboardHint: document.querySelector("#leaderboard-hint")
+  leaderboardHint: document.querySelector("#leaderboard-hint"),
+  leaderboardReset: document.querySelector("#leaderboard-reset")
 };
+
+function createWeeklyLeaderboard() {
+  return {
+    periodId: getWeeklyLeaderboardPeriod().id,
+    score: 0
+  };
+}
+
+function ensureWeeklyLeaderboard(currentState = state) {
+  const period = getWeeklyLeaderboardPeriod();
+  const weekly = currentState.weeklyLeaderboard;
+
+  if (weekly?.periodId !== period.id) {
+    currentState.weeklyLeaderboard = {
+      periodId: period.id,
+      score: 0
+    };
+    leaderboardLoaded = false;
+  }
+
+  currentState.weeklyLeaderboard.score = Math.max(0, Number(currentState.weeklyLeaderboard.score) || 0);
+  return period;
+}
 
 function loadLocalState() {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (!saved) {
-    return structuredClone(initialState);
+    return null;
   }
 
   try {
     const parsed = JSON.parse(saved);
     return normalizeLoadedState(parsed);
   } catch {
-    return structuredClone(initialState);
+    return null;
   }
 }
 
 function getIdleSaveLabel() {
-  return cloudSync.enabled ? "Cloud aktiv" : "Lokal · Login für Cloud";
+  return cloudSync.enabled ? "Speicherstatus: Cloud aktiv" : "Speicherstatus: Lokal gespeichert";
 }
 
 function scheduleCloudSave() {
@@ -234,7 +260,7 @@ async function renderLeaderboard(force = false) {
   `).join("");
 
   if (elements.leaderboardHint) {
-    elements.leaderboardHint.textContent = "Sortiert nach gesamt geernteten Kakteen. Benutzername aus dem Profil hat Vorrang.";
+    elements.leaderboardHint.textContent = "Sortiert nach Kakteen, die in der laufenden Woche geerntet wurden.";
   }
 }
 
@@ -284,8 +310,37 @@ function totalBuildings(currentState) {
 }
 
 function addCactus(amount) {
+  ensureWeeklyLeaderboard();
   state.cactus += amount;
   state.totalEarned += amount;
+  state.weeklyLeaderboard.score += amount;
+}
+
+function formatLeaderboardCountdown(ms) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${days}T ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
+}
+
+function updateLeaderboardResetCountdown() {
+  if (!elements.leaderboardReset) {
+    return;
+  }
+
+  const previousPeriodId = state.weeklyLeaderboard?.periodId;
+  const period = ensureWeeklyLeaderboard();
+  elements.leaderboardReset.textContent =
+    `Reset Sonntag 23:00 · noch ${formatLeaderboardCountdown(period.nextResetAt.getTime() - Date.now())}`;
+
+  if (previousPeriodId && previousPeriodId !== period.id) {
+    saveState("Wochenrangliste resettet");
+    if (document.querySelector("#leaderboard-panel")?.classList.contains("is-active")) {
+      renderLeaderboard(true);
+    }
+  }
 }
 
 function clickCactus(event) {
@@ -474,6 +529,7 @@ function bindEvents() {
   });
 
   window.setInterval(() => saveState("Automatisch gespeichert"), 15000);
+  window.setInterval(updateLeaderboardResetCountdown, 1000);
   window.addEventListener("beforeunload", () => saveState("Gespeichert"));
 }
 
@@ -485,20 +541,25 @@ async function initGame() {
     cloudSync.enabled = true;
     cloudSync.user = session.user;
     const cloud = await loadCloudSave(session.user);
-    state = normalizeLoadedState(pickNewerSave(localState, cloud?.state));
+    const savedState = pickNewerSave(localState, cloud?.state);
+    state = savedState
+      ? normalizeLoadedState(savedState)
+      : structuredClone(initialState);
 
-    const localTime = Number(localState.lastSavedAt) || 0;
+    const localTime = Number(localState?.lastSavedAt) || 0;
     const cloudTime = Number(cloud?.state?.lastSavedAt) || 0;
     if (!cloud || localTime >= cloudTime) {
       scheduleCloudSave();
     }
   } else {
-    state = localState;
+    state = localState || structuredClone(initialState);
   }
 
   bindEvents();
+  ensureWeeklyLeaderboard();
   updateAchievements();
   render();
+  updateLeaderboardResetCountdown();
   elements.saveStatus.textContent = getIdleSaveLabel();
   requestAnimationFrame(tick);
 }
@@ -509,13 +570,18 @@ function normalizeLoadedState(loaded) {
     ...loaded,
     buildings: { ...initialState.buildings, ...loaded.buildings },
     upgrades: Array.isArray(loaded.upgrades) ? loaded.upgrades : [],
-    achievements: Array.isArray(loaded.achievements) ? loaded.achievements : []
+    achievements: Array.isArray(loaded.achievements) ? loaded.achievements : [],
+    weeklyLeaderboard: {
+      ...createWeeklyLeaderboard(),
+      ...loaded.weeklyLeaderboard
+    }
   };
 
   parsed.cactus = Number(parsed.cactus) || 0;
   parsed.totalEarned = Number(parsed.totalEarned) || 0;
   parsed.totalClicks = Number(parsed.totalClicks) || 0;
   parsed.lastSavedAt = Number(parsed.lastSavedAt) || Date.now();
+  ensureWeeklyLeaderboard(parsed);
 
   for (const building of buildings) {
     parsed.buildings[building.id] = Math.max(0, Math.floor(Number(parsed.buildings[building.id]) || 0));

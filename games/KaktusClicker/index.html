@@ -17,7 +17,9 @@
             <p class="tagline">[ neon desert terminal online ]</p>
           </div>
           <button class="icon-button" id="save-button" type="button" title="Jetzt speichern" aria-label="Jetzt speichern">
-            <span aria-hidden="true">S</span>
+            <svg class="save-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 4h12l2 2v14H5V4Zm3 1.8v5h8v-5H8Zm0 9.2v3h8v-3H8Z"/>
+            </svg>
           </button>
         </header>
 
@@ -49,7 +51,7 @@
 
         <div class="click-info">
           <span>+<strong id="click-power">1</strong> pro Klick</span>
-          <span id="save-status">Bereit</span>
+          <span id="save-status">Speicherstatus wird geladen</span>
         </div>
       </section>
 
@@ -112,8 +114,9 @@
         <section class="tab-panel" id="leaderboard-panel">
           <div class="section-title">
             <h2>Rangliste</h2>
-            <p>Top-Spieler nach gesamt geernteten Kakteen</p>
+            <p>Top-Spieler dieser Woche</p>
           </div>
+          <p id="leaderboard-reset" class="leaderboard-reset" aria-live="polite"></p>
           <div id="leaderboard-list" class="leaderboard-list" aria-live="polite"></div>
           <p id="leaderboard-hint" class="leaderboard-hint"></p>
         </section>

@@ -20,7 +20,7 @@ function setStatus(message, isError = false) {
 
 async function finishLogin() {
     if (!isConfigReady()) {
-        setStatus("Supabase ist nicht konfiguriert (js/config.js fehlt).", true);
+        setStatus("Anmeldung ist gerade nicht verfügbar.", true);
         return;
     }
 
@@ -30,7 +30,7 @@ async function finishLogin() {
     const errorDescription = params.get("error_description");
 
     if (errorDescription) {
-        setStatus(`Login abgebrochen: ${errorDescription}`, true);
+        setStatus("Login abgebrochen. Bitte versuche es erneut.", true);
         return;
     }
 
@@ -39,7 +39,7 @@ async function finishLogin() {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (error) {
-            setStatus(`Login fehlgeschlagen: ${error.message}`, true);
+            setStatus("Login fehlgeschlagen. Bitte versuche es erneut.", true);
             return;
         }
     } else {

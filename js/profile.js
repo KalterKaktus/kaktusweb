@@ -79,7 +79,7 @@ export function validateUsername(username) {
 export async function saveUsername(userId, username) {
     const supabase = getSupabase();
     if (!supabase) {
-        return { error: new Error("Supabase-Client fehlt.") };
+        return { error: new Error("Profil ist gerade nicht verfügbar.") };
     }
 
     await ensureProfile(userId);
@@ -99,7 +99,7 @@ export async function saveUsername(userId, username) {
             return { error: new Error("Dieser Benutzername ist schon vergeben.") };
         }
 
-        return { error: new Error(error.message) };
+        return { error: new Error("Profil konnte nicht gespeichert werden.") };
     }
 
     await supabase

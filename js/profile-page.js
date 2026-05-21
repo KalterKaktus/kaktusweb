@@ -25,7 +25,7 @@ function redirectToLogin() {
 
 async function initProfilePage() {
     if (!isConfigReady()) {
-        setStatus("Supabase ist nicht konfiguriert.", true);
+        setStatus("Profil ist gerade nicht verfügbar.", true);
         return;
     }
 

@@ -15,7 +15,7 @@ Netlify deploys automatically from the GitHub repo after pushes to `main`.
 - Main page: `index.html`
 - Styles: `styles.css`
 - Main JavaScript: `script.js`
-- Free games page: `free-games.html`
+- Steam deals page: `steam-deals/index.html`
 - Games hub: `games/index.html`
 - KaktusClicker game: `games/KaktusClicker/`
 - Netlify Function: `netlify/functions/steamfree.js`
@@ -39,25 +39,28 @@ Netlify deploys automatically from the GitHub repo after pushes to `main`.
   - `KK`
   - `Home`
   - `About`
-  - `Deals`
+  - `Steam Deals`
   - `Games`
 - Added `scrollbar-gutter: stable;` so the `KK` logo does not shift between pages.
 - Added a Games hub at `/games/` with a first card for KaktusClicker. Future games should be added as sibling folders under `games/` and linked from `games/index.html`.
 - KaktusClicker has a small `Zurück zu Games` link and should keep visible German text with real umlauts.
+- KaktusClicker cloud loading must treat a missing local save as missing, so a fresh device cannot win over an existing Supabase save by timestamp.
+- KaktusClicker leaderboard scores are weekly. The period resets every Sunday at 23:00 in Europe/Berlin, is stored in the save payload, and the leaderboard tab shows a reset countdown.
+- Legal pages now exist at `/datenschutz`, `/nutzungsbedingungen`, and `/impressum`; the short paths rewrite to static HTML via `netlify.toml`.
 
-## Free Games
+## Steam Deals
 
-The free games/deals page is available at `/free-games.html`.
+The Steam deals page is available at `/steam-deals/`.
 
 The Function `netlify/functions/steamfree.js` uses Steam Store search for:
 
 - free games with `-100%`
-- strong discount deals from `-80%` to `-99%`
+- popular discount deals from `-70%` to `-99%` with at least 5,000 reviews and at least 80% positive reviews
 
 It returns JSON with:
 
 - `active`: free games
-- `discounted`: deals with at least 80% discount, excluding free games
+- `discounted`: quality-sorted popular deals with at least 70% discount, excluding free games
 
 ## Discord Announcements
 
@@ -67,8 +70,8 @@ There is a scheduled Netlify Function:
 Schedule in `netlify.toml`:
 `@hourly`
 
-It checks Steam free games and 80%+ deals, stores seen app IDs in Netlify Blobs, and posts only newly discovered offers to Discord.
-Discord posts are capped at 5 free games and 5 discount deals per message. The message links to `/free-games.html` at the top and bottom.
+It checks Steam free games and popular 70%+ deals, stores seen app IDs in Netlify Blobs, and posts only newly discovered offers to Discord.
+Discord posts are capped at 10 free games and 10 discount deals per message. The message links to `/steam-deals/` at the top and bottom with angle brackets to avoid Discord link previews.
 
 Required Netlify environment variable:
 `DISCORD_WEBHOOK_URL`
@@ -80,7 +83,7 @@ Opening the HTML file locally by double click will not run the Netlify Function.
 - Push to GitHub.
 - Wait for Netlify deploy.
 - Open online:
-  - `/free-games.html`
+  - `/steam-deals/`
   - `/.netlify/functions/steamfree`
 
 ## GitHub Desktop Workflow

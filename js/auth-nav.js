@@ -29,7 +29,7 @@ function renderLoggedOut(container) {
 }
 
 function renderConfigMissing(container) {
-    container.innerHTML = `<span class="auth-muted" title="js/config.js anlegen (siehe js/config.example.js)">Login</span>`;
+    container.innerHTML = `<span class="auth-muted">Login</span>`;
 }
 
 function renderLoggedIn(container, user, profile) {
@@ -48,12 +48,17 @@ function renderLoggedIn(container, user, profile) {
     signOutButton?.addEventListener("click", async () => {
         const supabase = getSupabase();
         if (!supabase) {
+            renderLoggedOut(container);
             return;
         }
 
         signOutButton.disabled = true;
-        await supabase.auth.signOut();
         renderLoggedOut(container);
+
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error("Logout fehlgeschlagen:", error.message);
+        }
     });
 }
 
@@ -79,14 +84,24 @@ async function initAuthNav() {
         return;
     }
 
-    const supabase = getSupabase();
-    const { data: { session } } = await supabase.auth.getSession();
+    try {
+        const supabase = getSupabase();
+        const { data: { session } } = await supabase.auth.getSession();
 
-    await renderSession(container, session);
+        await renderSession(container, session);
 
-    supabase.auth.onAuthStateChange(async (_event, nextSession) => {
-        await renderSession(container, nextSession);
-    });
+        supabase.auth.onAuthStateChange((_event, nextSession) => {
+            window.setTimeout(() => {
+                renderSession(container, nextSession).catch((error) => {
+                    console.error("Auth-Navigation aktualisieren fehlgeschlagen:", error.message);
+                    renderLoggedOut(container);
+                });
+            }, 0);
+        });
+    } catch (error) {
+        console.error("Auth-Navigation laden fehlgeschlagen:", error.message);
+        renderLoggedOut(container);
+    }
 }
 
 initAuthNav();

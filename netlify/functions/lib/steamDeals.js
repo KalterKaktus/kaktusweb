@@ -4,22 +4,33 @@ const FREE_GAMES_URL =
   "https://store.steampowered.com/search/results/?query&start=0&count=25&dynamic_data=&sort_by=_ASC&force_infinite=1&maxprice=free&specials=1&infinite=1";
 
 const DISCOUNT_DEALS_URL =
-  "https://store.steampowered.com/search/results/?query&start=0&count=75&dynamic_data=&sort_by=_ASC&force_infinite=1&specials=1&infinite=1";
+  "https://store.steampowered.com/search/results/?query&start=0&count=200&dynamic_data=&sort_by=_ASC&force_infinite=1&specials=1&infinite=1";
+
+const MIN_JUICY_DISCOUNT = 70;
+const MIN_JUICY_REVIEW_COUNT = 5000;
+const MIN_JUICY_REVIEW_PERCENT = 80;
 
 async function fetchSteamFreeGames() {
   const data = await fetchJson(FREE_GAMES_URL);
   return parseSteamResults(data.results_html || "", { exactDiscount: 100 });
 }
 
-async function fetchSteamDiscountDeals(minDiscount = 80) {
+async function fetchSteamDiscountDeals(minDiscount = MIN_JUICY_DISCOUNT) {
   const data = await fetchJson(DISCOUNT_DEALS_URL);
-  return parseSteamResults(data.results_html || "", { minDiscount, maxDiscount: 99 });
+  const deals = parseSteamResults(data.results_html || "", {
+    minDiscount,
+    maxDiscount: 99,
+    minReviewCount: MIN_JUICY_REVIEW_COUNT,
+    minReviewPercent: MIN_JUICY_REVIEW_PERCENT,
+  });
+
+  return keepBestDealPerSeries(deals).sort(compareDealQuality);
 }
 
 async function fetchSteamOffers() {
   const [freeGames, discountDeals] = await Promise.all([
     fetchSteamFreeGames(),
-    fetchSteamDiscountDeals(80),
+    fetchSteamDiscountDeals(MIN_JUICY_DISCOUNT),
   ]);
 
   return { freeGames, discountDeals };
@@ -79,9 +90,11 @@ function parseSteamResults(html, options = {}) {
       const finalPrice = decodeHtml(match(row, /<div class="discount_final_price">([\s\S]*?)<\/div>/));
       const discount = decodeHtml(match(row, /<div class="discount_pct">([\s\S]*?)<\/div>/));
       const releaseDate = decodeHtml(match(row, /<div class="search_released responsive_secondrow">\s*([\s\S]*?)\s*<\/div>/));
+      const reviewSummary = decodeHtml(match(row, /data-tooltip-html="([^"]+)"/));
       const discountPercent = parseDiscount(discount);
+      const reviewStats = parseReviewSummary(reviewSummary);
 
-      if (!appId || !title || !matchesDiscount(discountPercent, options)) {
+      if (!appId || !title || !matchesDealFilters(discountPercent, reviewStats, options)) {
         return null;
       }
 
@@ -93,6 +106,9 @@ function parseSteamResults(html, options = {}) {
         salePrice: finalPrice || "0,00 EUR",
         discount,
         discountPercent,
+        reviewPercent: reviewStats.percent,
+        reviewCount: reviewStats.count,
+        reviewSummary,
         releaseDate,
         image,
         url: `https://store.steampowered.com/app/${appId}/`,
@@ -102,7 +118,7 @@ function parseSteamResults(html, options = {}) {
     .filter(Boolean);
 }
 
-function matchesDiscount(discountPercent, options) {
+function matchesDealFilters(discountPercent, reviewStats, options) {
   if (!Number.isFinite(discountPercent)) {
     return false;
   }
@@ -113,12 +129,78 @@ function matchesDiscount(discountPercent, options) {
 
   const minDiscount = options.minDiscount ?? 0;
   const maxDiscount = options.maxDiscount ?? 100;
-  return discountPercent >= minDiscount && discountPercent <= maxDiscount;
+  const minReviewCount = options.minReviewCount ?? 0;
+  const minReviewPercent = options.minReviewPercent ?? 0;
+
+  return discountPercent >= minDiscount
+    && discountPercent <= maxDiscount
+    && reviewStats.count >= minReviewCount
+    && reviewStats.percent >= minReviewPercent;
 }
 
 function parseDiscount(discount) {
   const value = String(discount || "").match(/-(\d+)%/);
   return value ? Number(value[1]) : NaN;
+}
+
+function parseReviewSummary(summary) {
+  const percent = String(summary || "").match(/(\d+)\s*%/);
+  const count = String(summary || "").match(/([\d.,\s]+)\s+(?:Nutzerrezensionen|user reviews)/i);
+
+  return {
+    percent: percent ? Number(percent[1]) : 0,
+    count: count ? Number(count[1].replace(/[^\d]/g, "")) : 0,
+  };
+}
+
+function keepBestDealPerSeries(deals) {
+  const bestDeals = new Map();
+
+  for (const deal of deals) {
+    const key = getDealSeriesKey(deal.title);
+    const current = bestDeals.get(key);
+
+    if (!current || compareDealQuality(deal, current) < 0) {
+      bestDeals.set(key, deal);
+    }
+  }
+
+  return [...bestDeals.values()];
+}
+
+function getDealSeriesKey(title) {
+  const baseTitle = String(title || "")
+    .toLowerCase()
+    .replace(/[®™©]/g, "")
+    .split(/\s*[:|-]\s*/)[0]
+    .replace(/\b(?:deluxe|complete|definitive|ultimate|gold|special|standard|edition|bundle|upgrade|pack|hd|remaster(?:ed)?|collection)\b/g, "")
+    .replace(/\b(?:[ivxlcdm]+|\d+)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return baseTitle || String(title || "").toLowerCase();
+}
+
+function compareDealQuality(left, right) {
+  const leftScore = getDealQualityScore(left);
+  const rightScore = getDealQualityScore(right);
+
+  if (rightScore !== leftScore) {
+    return rightScore - leftScore;
+  }
+
+  if (right.reviewCount !== left.reviewCount) {
+    return right.reviewCount - left.reviewCount;
+  }
+
+  return right.discountPercent - left.discountPercent;
+}
+
+function getDealQualityScore(deal) {
+  const popularity = Math.log10(Math.max(deal.reviewCount || 0, 1)) * 28;
+  const reviewQuality = (deal.reviewPercent || 0) * 1.15;
+  const discountBonus = (deal.discountPercent || 0) * 0.6;
+  return popularity + reviewQuality + discountBonus;
 }
 
 function match(value, regex) {

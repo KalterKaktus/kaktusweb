@@ -1,7 +1,7 @@
 const { fetchSteamOffers } = require("./lib/steamDeals");
 
-const OFFERS_PAGE_URL = process.env.STEAM_OFFERS_PAGE_URL || "/free-games.html";
-const MAX_OFFERS_PER_CATEGORY = 5;
+const OFFERS_PAGE_URL = process.env.STEAM_OFFERS_PAGE_URL || "/steam-deals/";
+const MAX_OFFERS_PER_CATEGORY = 10;
 const STORE_NAME = "steam-free-games";
 const SEEN_KEY = "seen-offer-ids";
 
@@ -72,17 +72,17 @@ function legacyIds(state) {
 
 async function sendDiscordMessage(webhookUrl, { newFreeGames, newDiscountDeals }) {
   const pageUrl = getOffersPageUrl();
-  const parts = [`Steam-Angebote ansehen: ${pageUrl}`];
+  const parts = [`Steam-Angebote ansehen: <${pageUrl}>`];
 
   if (newFreeGames.length) {
     parts.push(formatSection("Neue kostenlose Steam-Spiele", newFreeGames));
   }
 
   if (newDiscountDeals.length) {
-    parts.push(formatSection("Neue Steam-Deals ab 80% Rabatt", newDiscountDeals));
+    parts.push(formatSection("Neue beliebte Steam-Deals ab 70% Rabatt", newDiscountDeals));
   }
 
-  parts.push(`Alle Angebote: ${pageUrl}`);
+  parts.push(`Alle Angebote: <${pageUrl}>`);
 
   const response = await fetch(webhookUrl, {
     method: "POST",
@@ -132,12 +132,18 @@ function formatSection(title, offers) {
 }
 
 function getOffersPageUrl() {
-  if (/^https?:\/\//.test(OFFERS_PAGE_URL)) {
-    return OFFERS_PAGE_URL;
+  const offersPageUrl = normalizeOffersPageUrl(OFFERS_PAGE_URL);
+  if (/^https?:\/\//.test(offersPageUrl)) {
+    return offersPageUrl;
   }
 
   const siteUrl = process.env.URL || process.env.DEPLOY_PRIME_URL || "";
-  return siteUrl ? `${siteUrl}${OFFERS_PAGE_URL}` : OFFERS_PAGE_URL;
+  return siteUrl ? `${siteUrl}${offersPageUrl}` : offersPageUrl;
+}
+
+function normalizeOffersPageUrl(url) {
+  return String(url || "/steam-deals/")
+    .replace(/\/free-games(?:\.html)?\/?$/, "/steam-deals/");
 }
 
 function json(body, statusCode) {

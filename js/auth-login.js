@@ -28,7 +28,7 @@ function setOAuthLoading(isLoading) {
 async function startOAuth(provider) {
     const supabase = getSupabase();
     if (!supabase) {
-        setStatus("Supabase-Client konnte nicht geladen werden.", true);
+        setStatus("Anmeldung ist gerade nicht verfügbar.", true);
         return;
     }
 
@@ -43,7 +43,7 @@ async function startOAuth(provider) {
     });
 
     if (error) {
-        setStatus(`Fehler: ${error.message}`, true);
+        setStatus("Google-Anmeldung fehlgeschlagen. Bitte versuche es erneut.", true);
         setOAuthLoading(false);
     }
 }
@@ -65,7 +65,7 @@ async function initLoginPage() {
     bindOAuthButtons();
 
     if (!isConfigReady()) {
-        setStatus("Supabase ist nicht konfiguriert. Lege js/config.js an (siehe js/config.example.js).", true);
+        setStatus("Anmeldung ist gerade nicht verfügbar.", true);
         form.querySelector("button")?.setAttribute("disabled", "disabled");
         setOAuthLoading(true);
         return;
@@ -85,7 +85,7 @@ async function initLoginPage() {
 
         const supabase = getSupabase();
         if (!supabase) {
-            setStatus("Supabase-Client konnte nicht geladen werden.", true);
+            setStatus("Anmeldung ist gerade nicht verfügbar.", true);
             return;
         }
 
@@ -106,7 +106,7 @@ async function initLoginPage() {
         setOAuthLoading(false);
 
         if (error) {
-            setStatus(`Fehler: ${error.message}`, true);
+            setStatus("Link konnte nicht gesendet werden. Bitte versuche es erneut.", true);
             submitButton.disabled = false;
             return;
         }
