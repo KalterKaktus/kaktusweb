@@ -20,8 +20,13 @@ function truncateLabel(value, maxLength = 18) {
 }
 
 function loginHref() {
-    const next = encodeURIComponent(window.location.pathname + window.location.search);
-    return `/login.html?next=${next}`;
+    const current = window.location.pathname;
+
+    const next = current.includes("login.html")
+        ? "/"
+        : window.location.pathname + window.location.search;
+
+    return `/login.html?next=${encodeURIComponent(next)}`;
 }
 
 function renderLoggedOut(container) {

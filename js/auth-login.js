@@ -11,9 +11,7 @@ function getReturnPath() {
 
 function setStatus(message, isError = false) {
     const status = document.getElementById("auth-status");
-    if (!status) {
-        return;
-    }
+    if (!status) return;
 
     status.textContent = message;
     status.classList.toggle("is-error", isError);
@@ -25,8 +23,9 @@ function setOAuthLoading(isLoading) {
     });
 }
 
-async function startOAuth(provider) {
+async function startGoogleLogin() {
     const supabase = getSupabase();
+
     if (!supabase) {
         setStatus("Anmeldung ist gerade nicht verfügbar.", true);
         return;
@@ -36,7 +35,7 @@ async function startOAuth(provider) {
     setStatus("Google-Login wird gestartet…");
 
     const { error } = await supabase.auth.signInWithOAuth({
-        provider,
+        provider: "google",
         options: {
             redirectTo: getAuthRedirectUrl(),
         },
@@ -48,73 +47,22 @@ async function startOAuth(provider) {
     }
 }
 
-function bindOAuthButtons() {
-    const googleButton = document.getElementById("oauth-google");
-    googleButton?.addEventListener("click", () => startOAuth("google"));
-}
-
-async function initLoginPage() {
-    const form = document.getElementById("magic-link-form");
-    if (!form) {
-        return;
-    }
-
+function initLoginPage() {
     const returnPath = getReturnPath();
     sessionStorage.setItem("auth_return_to", returnPath);
 
-    bindOAuthButtons();
+    const googleButton = document.getElementById("oauth-google");
 
-    if (!isConfigReady()) {
-        setStatus("Anmeldung ist gerade nicht verfügbar.", true);
-        form.querySelector("button")?.setAttribute("disabled", "disabled");
-        setOAuthLoading(true);
+    if (!googleButton) {
         return;
     }
 
-    form.addEventListener("submit", async (event) => {
-        event.preventDefault();
+    googleButton.addEventListener("click", startGoogleLogin);
 
-        const emailInput = document.getElementById("auth-email");
-        const submitButton = form.querySelector("button[type='submit']");
-        const email = String(emailInput?.value || "").trim();
-
-        if (!email) {
-            setStatus("Bitte eine E-Mail-Adresse eingeben.", true);
-            return;
-        }
-
-        const supabase = getSupabase();
-        if (!supabase) {
-            setStatus("Anmeldung ist gerade nicht verfügbar.", true);
-            return;
-        }
-
-        submitButton.disabled = true;
+    if (!isConfigReady()) {
+        setStatus("Anmeldung ist gerade nicht verfügbar.", true);
         setOAuthLoading(true);
-        setStatus("Magic Link wird gesendet…");
-
-        const redirectTo = getAuthRedirectUrl();
-
-        const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-                emailRedirectTo: redirectTo,
-                shouldCreateUser: true,
-            },
-        });
-
-        setOAuthLoading(false);
-
-        if (error) {
-            setStatus("Link konnte nicht gesendet werden. Bitte versuche es erneut.", true);
-            submitButton.disabled = false;
-            return;
-        }
-
-        setStatus("E-Mail gesendet. Öffne den Link in deinem Postfach, um dich anzumelden.");
-        form.reset();
-        submitButton.disabled = false;
-    });
+    }
 }
 
 initLoginPage();

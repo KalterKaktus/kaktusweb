@@ -20,7 +20,7 @@ export function getSupabase() {
         client = createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY, {
             auth: {
                 flowType: "pkce",
-                detectSessionInUrl: false,
+                detectSessionInUrl: true,
                 persistSession: true,
                 autoRefreshToken: true,
             },

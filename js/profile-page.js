@@ -19,8 +19,13 @@ function setStatus(message, isError = false) {
 }
 
 function redirectToLogin() {
-    const next = encodeURIComponent(window.location.pathname + window.location.search);
-    window.location.replace(`/login.html?next=${next}`);
+    const current = window.location.pathname;
+
+    const next = current.includes("login.html")
+        ? "/"
+        : window.location.pathname + window.location.search;
+
+    window.location.replace(`/login.html?next=${encodeURIComponent(next)}`);
 }
 
 async function initProfilePage() {
