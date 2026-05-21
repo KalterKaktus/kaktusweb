@@ -496,6 +496,14 @@ body::before {
     margin-top: 2rem;
 }
 
+.hero-purpose {
+    width: min(100%, 560px);
+    margin: 1rem auto 0;
+    color: var(--text-secondary);
+    font-size: 0.96rem;
+    line-height: 1.7;
+}
+
 .primary-link,
 .ghost-link {
     display: inline-flex;
