@@ -4,10 +4,8 @@ import {
   getGameProfile,
   getWeeklyLeaderboardPeriod,
   loadCloudSave,
-  markAdminMessageRead,
   pushCloudSave,
   signOutGameSession,
-  subscribeAdminMessages,
 } from "/js/game-cloud.js";
 
 const STORAGE_KEY = "kaktus-clicker-save-v1";
@@ -225,12 +223,9 @@ const initialState = {
 };
 
 let state = structuredClone(initialState);
-let lastTick = performance.now();
-let lastProductionRender = 0;
 let cloudSync = { enabled: false, user: null };
 let cloudSaveTimer = null;
 let leaderboardLoaded = false;
-let adminMessageChannel = null;
 
 const elements = {
   cactusCount: document.querySelector("#cactus-count"),
@@ -365,13 +360,6 @@ function showGameModal(title, message, buttonLabel = "Okay") {
 
   backdrop.querySelector("button")?.addEventListener("click", () => backdrop.remove());
   document.body.append(backdrop);
-}
-
-function startAdminMessageListener(user) {
-  adminMessageChannel = subscribeAdminMessages(user, async (message) => {
-    showGameModal("Nachricht", message.message || "Du hast eine neue Nachricht.");
-    await markAdminMessageRead(user, message.id);
-  });
 }
 
 async function renderLeaderboard(force = false) {
@@ -645,21 +633,14 @@ function render() {
   renderAchievements();
 }
 
-function tick(now) {
-  const deltaSeconds = (now - lastTick) / 1000;
-  lastTick = now;
-  const production = getCps() * deltaSeconds;
+function payProductionSecond() {
+  const production = getCps();
 
   if (production > 0) {
     addCactus(production);
     updateAchievements();
-    if (now - lastProductionRender > 250) {
-  lastProductionRender = now;
-  renderStatsOnly();
-    }
+    render();
   }
-
-  requestAnimationFrame(tick);
 }
 
 function bindEvents() {
@@ -706,7 +687,12 @@ function bindEvents() {
   });
 
   window.setInterval(() => saveState("Automatisch gespeichert"), 15000);
+  window.setInterval(payProductionSecond, 1000);
   window.setInterval(updateLeaderboardResetCountdown, 1000);
+  window.addEventListener("kk-admin-reload", () => {
+    window.clearTimeout(cloudSaveTimer);
+    cloudSync = { enabled: false, user: null };
+  });
   window.addEventListener("beforeunload", () => saveState("Gespeichert"));
 }
 
@@ -729,7 +715,6 @@ async function initGame() {
       ? normalizeLoadedState(cloud.state)
       : structuredClone(initialState);
     scheduleCloudSave();
-    startAdminMessageListener(session.user);
   } else {
     state = loadLocalState() || structuredClone(initialState);
   }
@@ -740,7 +725,6 @@ async function initGame() {
   render();
   updateLeaderboardResetCountdown();
   elements.saveStatus.textContent = getIdleSaveLabel();
-  requestAnimationFrame(tick);
 }
 
 function normalizeLoadedState(loaded) {

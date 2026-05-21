@@ -1,7 +1,7 @@
 const https = require("https");
 
 const FREE_GAMES_URL =
-  "https://store.steampowered.com/search/results/?query&start=0&count=25&dynamic_data=&sort_by=_ASC&force_infinite=1&maxprice=free&specials=1&infinite=1";
+  "https://store.steampowered.com/search/results/?query&start=0&count=25&dynamic_data=&sort_by=_ASC&force_infinite=1&maxprice=free&specials=1&infinite=1&cc=DE&l=german";
 
 const DISCOUNT_PAGE_SIZE = 200;
 const DISCOUNT_SEARCH_WINDOWS = [
@@ -12,8 +12,13 @@ const DISCOUNT_SEARCH_WINDOWS = [
 ];
 
 const MIN_JUICY_DISCOUNT = 70;
-const MIN_JUICY_REVIEW_COUNT = 5000;
+const MIN_JUICY_REVIEW_COUNT = 3000;
 const MIN_JUICY_REVIEW_PERCENT = 50;
+const EXCLUDED_DISCOUNT_DEAL_IDS = new Set([
+  "1424330", // Wobbledogs
+  "1093910", // Tales of the Black Forest
+  "2181930", // DR LIVESEY ROM AND DEATH EDITION
+]);
 
 async function fetchSteamFreeGames() {
   const data = await fetchJson(FREE_GAMES_URL);
@@ -87,7 +92,7 @@ function fetchJson(url) {
 }
 
 function getDiscountDealsUrl({ sortBy, start }) {
-  return `https://store.steampowered.com/search/results/?query&start=${start}&count=${DISCOUNT_PAGE_SIZE}&dynamic_data=&sort_by=${sortBy}&force_infinite=1&specials=1&infinite=1`;
+  return `https://store.steampowered.com/search/results/?query&start=${start}&count=${DISCOUNT_PAGE_SIZE}&dynamic_data=&sort_by=${sortBy}&force_infinite=1&specials=1&infinite=1&cc=DE&l=german`;
 }
 
 function parseSteamResults(html, options = {}) {
@@ -106,7 +111,12 @@ function parseSteamResults(html, options = {}) {
       const discountPercent = parseDiscount(discount);
       const reviewStats = parseReviewSummary(reviewSummary);
 
-      if (!appId || !title || !matchesDealFilters(discountPercent, reviewStats, options)) {
+      if (
+        !appId ||
+        !title ||
+        isExcludedDiscountDeal(appId, options) ||
+        !matchesDealFilters(discountPercent, reviewStats, options)
+      ) {
         return null;
       }
 
@@ -115,7 +125,9 @@ function parseSteamResults(html, options = {}) {
         title,
         description: "",
         normalPrice: originalPrice,
+        normalPriceAmount: parseEuroPrice(originalPrice),
         salePrice: finalPrice || "0,00 EUR",
+        salePriceAmount: parseEuroPrice(finalPrice || "0,00 EUR"),
         discount,
         discountPercent,
         reviewPercent: reviewStats.percent,
@@ -128,6 +140,10 @@ function parseSteamResults(html, options = {}) {
       };
     })
     .filter(Boolean);
+}
+
+function isExcludedDiscountDeal(appId, options) {
+  return typeof options.exactDiscount !== "number" && EXCLUDED_DISCOUNT_DEAL_IDS.has(appId);
 }
 
 function matchesDealFilters(discountPercent, reviewStats, options) {
@@ -153,6 +169,15 @@ function matchesDealFilters(discountPercent, reviewStats, options) {
 function parseDiscount(discount) {
   const value = String(discount || "").match(/-(\d+)%/);
   return value ? Number(value[1]) : NaN;
+}
+
+function parseEuroPrice(price) {
+  const value = String(price || "").match(/([\d.,]+)\s*(?:€|EUR)/i);
+  if (!value) {
+    return NaN;
+  }
+
+  return Number(value[1].replace(/\./g, "").replace(",", "."));
 }
 
 function parseReviewSummary(summary) {

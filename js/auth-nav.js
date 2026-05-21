@@ -1,6 +1,16 @@
 import { getSupabase, isConfigReady } from "./supabase-client.js";
 import { ensureProfile, fetchProfile, getDisplayName } from "./profile.js";
 
+const PRESENCE_HEARTBEAT_MS = 30000;
+const FORCE_RELOAD_MESSAGE = "Dein Spielstand wurde aktualisiert. Die Seite wird neu geladen.";
+const INSTALL_HINT_DISMISS_KEY = "kk-ios-install-hint-dismissed";
+const INSTALL_HINT_COOLDOWN_MS = 1000 * 60 * 60 * 24 * 14;
+
+let adminMessageChannel = null;
+let presenceTimer = null;
+let activeSessionUserId = "";
+const siteMessageQueue = [];
+
 function escapeHtml(value) {
     return String(value || "")
         .replace(/&/g, "&amp;")
@@ -27,6 +37,45 @@ function loginHref() {
         : window.location.pathname + window.location.search;
 
     return `/login.html?next=${encodeURIComponent(next)}`;
+}
+
+function isStandaloneApp() {
+    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+function isIPhoneSafari() {
+    const userAgent = window.navigator.userAgent || "";
+    const platform = window.navigator.platform || "";
+    const ios = /iPhone|iPad|iPod/i.test(userAgent) || (platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
+    const safari = /Safari/i.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(userAgent);
+    return ios && safari;
+}
+
+function isInstallHintDismissed() {
+    const dismissedAt = Number(window.localStorage.getItem(INSTALL_HINT_DISMISS_KEY));
+    return Number.isFinite(dismissedAt) && Date.now() - dismissedAt < INSTALL_HINT_COOLDOWN_MS;
+}
+
+function showIOSInstallHint() {
+    if (!isIPhoneSafari() || isStandaloneApp() || isInstallHintDismissed() || document.querySelector(".ios-install-hint")) {
+        return;
+    }
+
+    const hint = document.createElement("aside");
+    hint.className = "ios-install-hint";
+    hint.setAttribute("aria-label", "KalterKaktus zum Home-Bildschirm hinzufügen");
+    hint.innerHTML = `
+        <div>
+            <strong>KalterKaktus auf iPhone</strong>
+            <span>Teilen > Zum Home-Bildschirm</span>
+        </div>
+        <button type="button" aria-label="Hinweis schließen">X</button>
+    `;
+    hint.querySelector("button")?.addEventListener("click", () => {
+        window.localStorage.setItem(INSTALL_HINT_DISMISS_KEY, String(Date.now()));
+        hint.remove();
+    });
+    document.body.append(hint);
 }
 
 function setupSiteNav() {
@@ -98,6 +147,176 @@ function renderConfigMissing(container) {
     container.innerHTML = `<span class="auth-muted">Login</span>`;
 }
 
+function currentPagePath() {
+    return `${window.location.pathname}${window.location.hash || ""}`;
+}
+
+async function syncPresence(user) {
+    const supabase = getSupabase();
+    if (!supabase || !user?.id) {
+        return;
+    }
+
+    const { error } = await supabase
+        .from("user_presence")
+        .upsert({
+            user_id: user.id,
+            path: currentPagePath(),
+            last_seen: new Date().toISOString(),
+        }, { onConflict: "user_id" });
+
+    if (error) {
+        console.error("Online-Status konnte nicht aktualisiert werden:", error.message);
+    }
+}
+
+async function markSiteAdminMessageRead(user, messageId) {
+    const supabase = getSupabase();
+    if (!supabase || !user?.id || !messageId) {
+        return false;
+    }
+
+    const { data, error } = await supabase
+        .from("admin_messages")
+        .update({ read: true })
+        .eq("id", messageId)
+        .eq("user_id", user.id)
+        .eq("read", false)
+        .select("id");
+
+    if (error) {
+        console.error("Admin-Nachricht konnte nicht markiert werden:", error.message);
+        return false;
+    }
+
+    return Boolean(data?.length);
+}
+
+function openNextSiteMessage() {
+    if (document.querySelector(".site-message-backdrop") || !siteMessageQueue.length) {
+        return;
+    }
+
+    const message = siteMessageQueue.shift();
+    const backdrop = document.createElement("div");
+    backdrop.className = "site-message-backdrop";
+    backdrop.innerHTML = `
+        <section class="site-message" role="dialog" aria-modal="true" aria-labelledby="site-message-title">
+            <p class="page-kicker">KalterKaktus Nachricht</p>
+            <h2 id="site-message-title">Admin-Nachricht</h2>
+            <p>${escapeHtml(message)}</p>
+            <button class="auth-btn site-message-button" type="button">Okay</button>
+        </section>
+    `;
+    backdrop.querySelector("button")?.addEventListener("click", () => {
+        backdrop.remove();
+        openNextSiteMessage();
+    });
+    document.body.append(backdrop);
+}
+
+async function handleSiteAdminMessage(user, message) {
+    if (!message || message.read) {
+        return;
+    }
+
+    const claimed = await markSiteAdminMessageRead(user, message.id);
+    if (!claimed) {
+        return;
+    }
+
+    if (message.message === FORCE_RELOAD_MESSAGE) {
+        window.dispatchEvent(new CustomEvent("kk-admin-reload"));
+        window.location.reload();
+        return;
+    }
+
+    siteMessageQueue.push(message.message || "Du hast eine neue Nachricht.");
+    openNextSiteMessage();
+}
+
+async function loadUnreadSiteAdminMessages(user) {
+    const supabase = getSupabase();
+    if (!supabase || !user?.id) {
+        return;
+    }
+
+    const { data, error } = await supabase
+        .from("admin_messages")
+        .select("id,message,read")
+        .eq("user_id", user.id)
+        .eq("read", false)
+        .order("created_at", { ascending: true })
+        .limit(10);
+
+    if (error) {
+        console.error("Admin-Nachrichten konnten nicht geladen werden:", error.message);
+        return;
+    }
+
+    for (const message of data || []) {
+        await handleSiteAdminMessage(user, message);
+    }
+}
+
+function subscribeSiteAdminMessages(user) {
+    const supabase = getSupabase();
+    if (!supabase || !user?.id) {
+        return;
+    }
+
+    adminMessageChannel = supabase
+        .channel(`site-admin-messages-${user.id}`)
+        .on(
+            "postgres_changes",
+            {
+                event: "INSERT",
+                schema: "public",
+                table: "admin_messages",
+                filter: `user_id=eq.${user.id}`,
+            },
+            (payload) => {
+                handleSiteAdminMessage(user, payload.new).catch((error) => {
+                    console.error("Admin-Nachricht anzeigen fehlgeschlagen:", error.message);
+                });
+            }
+        )
+        .subscribe();
+}
+
+async function stopSessionFeatures() {
+    window.clearInterval(presenceTimer);
+    presenceTimer = null;
+    activeSessionUserId = "";
+
+    const supabase = getSupabase();
+    if (supabase && adminMessageChannel) {
+        await supabase.removeChannel(adminMessageChannel);
+    }
+    adminMessageChannel = null;
+}
+
+async function startSessionFeatures(user) {
+    if (!user?.id) {
+        await stopSessionFeatures();
+        return;
+    }
+
+    if (activeSessionUserId === user.id) {
+        await syncPresence(user);
+        return;
+    }
+
+    await stopSessionFeatures();
+    activeSessionUserId = user.id;
+    await syncPresence(user);
+    presenceTimer = window.setInterval(() => {
+        syncPresence(user);
+    }, PRESENCE_HEARTBEAT_MS);
+    subscribeSiteAdminMessages(user);
+    await loadUnreadSiteAdminMessages(user);
+}
+
 function renderLoggedIn(container, user, profile) {
     const displayName = getDisplayName(user, profile);
     const label = truncateLabel(displayName);
@@ -131,12 +350,14 @@ function renderLoggedIn(container, user, profile) {
 async function renderSession(container, session) {
     if (!session?.user) {
         renderLoggedOut(container);
+        await stopSessionFeatures();
         return;
     }
 
     await ensureProfile(session.user.id);
     const profile = await fetchProfile(session.user.id);
     renderLoggedIn(container, session.user, profile);
+    await startSessionFeatures(session.user);
 }
 
 async function initAuthNav() {
@@ -170,3 +391,4 @@ async function initAuthNav() {
 
 setupSiteNav();
 initAuthNav();
+window.setTimeout(showIOSInstallHint, 1200);

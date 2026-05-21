@@ -1,5 +1,6 @@
-const GAME_ID = "kaktus-clicker";
 const ADMIN_EMAILS_ENV = "ADMIN_EMAILS";
+const FORCE_RELOAD_MESSAGE = "Dein Spielstand wurde aktualisiert. Die Seite wird neu geladen.";
+const PRESENCE_ONLINE_WINDOW_MS = 90000;
 
 function env(name) {
     return globalThis.Netlify?.env?.get(name) || process.env[name];
@@ -12,8 +13,18 @@ function json(body, status = 200) {
     });
 }
 
+function httpError(message, status) {
+    const error = new Error(message);
+    error.status = status;
+    return error;
+}
+
 function restUrl(path, query = "") {
     return `${env("SUPABASE_URL")}/rest/v1/${path}${query}`;
+}
+
+function authUrl(path) {
+    return `${env("SUPABASE_URL")}/auth/v1/${path}`;
 }
 
 function supabaseHeaders(extra = {}) {
@@ -24,16 +35,6 @@ function supabaseHeaders(extra = {}) {
         "Content-Type": "application/json",
         ...extra,
     };
-}
-
-function authUrl(path) {
-    return `${env("SUPABASE_URL")}/auth/v1/${path}`;
-}
-
-function httpError(message, status) {
-    const error = new Error(message);
-    error.status = status;
-    return error;
 }
 
 function getBearerToken(req) {
@@ -100,58 +101,102 @@ async function supabase(path, options = {}, query = "") {
 }
 
 async function listUsers() {
-    const [profiles, saves] = await Promise.all([
+    const [profiles, saves, presenceRows] = await Promise.all([
         supabase("profiles", {}, "?select=id,username,is_banned,avatar_url,updated_at&order=updated_at.desc"),
-        supabase("game_saves", {}, `?select=user_id,display_name,total_earned,payload,updated_at&game_id=eq.${GAME_ID}`),
+        supabase("game_saves", {}, "?select=user_id,game_id,display_name,total_earned,payload,updated_at&order=updated_at.desc"),
+        listPresence(),
     ]);
-    const savesByUser = new Map((saves || []).map((save) => [save.user_id, save]));
+    const savesByUser = new Map();
+    const presenceByUser = new Map((presenceRows || []).map((presence) => [presence.user_id, presence]));
 
-    return (profiles || []).map((profile) => {
-        const save = savesByUser.get(profile.id);
-        return {
-            ...profile,
-            save: save ? {
-                display_name: save.display_name,
-                total_earned: save.total_earned,
-                cactus: Number(save.payload?.cactus) || 0,
-                updated_at: save.updated_at,
-            } : null,
-        };
-    });
-}
-
-async function deleteSave(userId) {
-    await supabase("game_saves", { method: "DELETE" }, `?user_id=eq.${encodeURIComponent(userId)}&game_id=eq.${GAME_ID}`);
-}
-
-async function setCurrency(userId, cactus) {
-    const saves = await supabase(
-        "game_saves",
-        {},
-        `?select=payload&user_id=eq.${encodeURIComponent(userId)}&game_id=eq.${GAME_ID}&limit=1`
-    );
-    const current = saves?.[0];
-    if (!current) {
-        throw new Error("Für diesen User gibt es noch keinen Spielstand.");
+    for (const save of saves || []) {
+        const userSaves = savesByUser.get(save.user_id) || [];
+        userSaves.push(save);
+        savesByUser.set(save.user_id, userSaves);
     }
 
-    const payload = { ...current.payload, cactus: Math.max(0, Number(cactus) || 0) };
+    return (profiles || []).map((profile) => ({
+        ...profile,
+        saves: savesByUser.get(profile.id) || [],
+        presence: formatPresence(presenceByUser.get(profile.id)),
+    }));
+}
+
+async function listPresence() {
+    try {
+        return await supabase("user_presence", {}, "?select=user_id,path,last_seen");
+    } catch (error) {
+        console.error("Presence konnte nicht geladen werden:", error.message);
+        return [];
+    }
+}
+
+function formatPresence(presence) {
+    const lastSeen = presence?.last_seen ? Date.parse(presence.last_seen) : 0;
+    return {
+        online: Boolean(lastSeen && Date.now() - lastSeen <= PRESENCE_ONLINE_WINDOW_MS),
+        path: presence?.path || "",
+        last_seen: presence?.last_seen || null,
+    };
+}
+
+function requireGameId(gameId) {
+    const value = String(gameId || "").trim();
+    if (!value || value.length > 120) {
+        throw httpError("Game fehlt.", 400);
+    }
+
+    return value;
+}
+
+function normalizePayload(payload) {
+    if (!payload || Array.isArray(payload) || typeof payload !== "object") {
+        throw httpError("Payload muss ein JSON-Objekt sein.", 400);
+    }
+
+    return payload;
+}
+
+async function deleteSave(userId, gameId) {
+    await supabase(
+        "game_saves",
+        { method: "DELETE" },
+        `?user_id=eq.${encodeURIComponent(userId)}&game_id=eq.${encodeURIComponent(requireGameId(gameId))}`
+    );
+}
+
+async function updateSave(userId, gameId, body) {
+    const totalEarned = Number(body.totalEarned);
+    if (!Number.isFinite(totalEarned)) {
+        throw httpError("total_earned muss eine Zahl sein.", 400);
+    }
+
     await supabase(
         "game_saves",
         {
             method: "PATCH",
             headers: { Prefer: "return=minimal" },
-            body: JSON.stringify({ payload, updated_at: new Date().toISOString() }),
+            body: JSON.stringify({
+                display_name: String(body.displayName || "Spieler").slice(0, 120),
+                payload: normalizePayload(body.payload),
+                total_earned: totalEarned,
+                updated_at: new Date().toISOString(),
+            }),
         },
-        `?user_id=eq.${encodeURIComponent(userId)}&game_id=eq.${GAME_ID}`
+        `?user_id=eq.${encodeURIComponent(userId)}&game_id=eq.${encodeURIComponent(requireGameId(gameId))}`
     );
 }
 
 async function sendMessage(userId, message) {
+    const value = String(message || "").trim().slice(0, 500);
+    if (!value) {
+        throw httpError("Nachricht fehlt.", 400);
+    }
+
     await supabase("admin_messages", {
         method: "POST",
         headers: { Prefer: "return=minimal" },
-        body: JSON.stringify({ user_id: userId, message: String(message).slice(0, 500) }),
+        body: JSON.stringify({ user_id: userId, message: value }),
     });
 }
 
@@ -189,11 +234,13 @@ export default async (req) => {
         }
 
         if (body.action === "delete-save") {
-            await deleteSave(body.userId);
-        } else if (body.action === "currency") {
-            await setCurrency(body.userId, body.cactus);
+            await deleteSave(body.userId, body.gameId);
+        } else if (body.action === "update-save") {
+            await updateSave(body.userId, body.gameId, body);
         } else if (body.action === "message") {
             await sendMessage(body.userId, body.message);
+        } else if (body.action === "reload") {
+            await sendMessage(body.userId, FORCE_RELOAD_MESSAGE);
         } else if (body.action === "ban") {
             await setBan(body.userId, body.isBanned);
         } else {

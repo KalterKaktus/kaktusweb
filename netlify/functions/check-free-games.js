@@ -2,6 +2,7 @@ const { fetchSteamOffers } = require("./lib/steamDeals");
 
 const OFFERS_PAGE_URL = process.env.STEAM_OFFERS_PAGE_URL || "/steam-deals/";
 const MAX_OFFERS_PER_CATEGORY = 10;
+const MIN_DISCORD_DISCOUNT_PRICE = 5;
 const STORE_NAME = "steam-free-games";
 const SEEN_KEY = "seen-offer-ids";
 
@@ -16,12 +17,13 @@ exports.handler = async function () {
   const store = await getBlobStore();
   const seen = await getSeenState(store);
 
+  const discordDiscountDeals = discountDeals.filter(matchesDiscordDiscountDeal);
   const newFreeGames = freeGames.filter((game) => !seen.freeIds.includes(game.id));
-  const newDiscountDeals = discountDeals.filter((deal) => !seen.discountIds.includes(deal.id));
+  const newDiscountDeals = discordDiscountDeals.filter((deal) => !seen.discountIds.includes(deal.id));
 
   await store.setJSON(SEEN_KEY, {
     freeIds: mergeSeenIds(seen.freeIds, freeGames),
-    discountIds: mergeSeenIds(seen.discountIds, discountDeals),
+    discountIds: mergeSeenIds(seen.discountIds, discordDiscountDeals),
     updatedAt: new Date().toISOString(),
   });
 
@@ -75,6 +77,10 @@ function mergeSeenIds(ids, offers) {
     ...(Array.isArray(ids) ? ids : []),
     ...offers.map((offer) => offer.id),
   ])];
+}
+
+function matchesDiscordDiscountDeal(deal) {
+  return Number(deal.salePriceAmount) >= MIN_DISCORD_DISCOUNT_PRICE;
 }
 
 async function sendDiscordMessage(webhookUrl, { newFreeGames, newDiscountDeals }) {

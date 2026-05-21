@@ -161,48 +161,6 @@ export async function pushCloudSave(user, state) {
     return { ok: true };
 }
 
-export function subscribeAdminMessages(user, onMessage) {
-    const supabase = getSupabase();
-    if (!supabase || !user?.id) {
-        return null;
-    }
-
-    return supabase
-        .channel(`admin-messages-${user.id}`)
-        .on(
-            "postgres_changes",
-            {
-                event: "INSERT",
-                schema: "public",
-                table: "admin_messages",
-                filter: `user_id=eq.${user.id}`,
-            },
-            (payload) => {
-                if (payload.new && !payload.new.read) {
-                    onMessage(payload.new);
-                }
-            }
-        )
-        .subscribe();
-}
-
-export async function markAdminMessageRead(user, messageId) {
-    const supabase = getSupabase();
-    if (!supabase || !user?.id || !messageId) {
-        return;
-    }
-
-    const { error } = await supabase
-        .from("admin_messages")
-        .update({ read: true })
-        .eq("id", messageId)
-        .eq("user_id", user.id);
-
-    if (error) {
-        console.error("Admin-Nachricht konnte nicht markiert werden:", error.message);
-    }
-}
-
 export async function fetchLeaderboard(limit = 25) {
     const supabase = getSupabase();
     if (!supabase) {
