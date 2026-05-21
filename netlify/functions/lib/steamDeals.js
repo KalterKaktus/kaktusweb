@@ -3,12 +3,17 @@ const https = require("https");
 const FREE_GAMES_URL =
   "https://store.steampowered.com/search/results/?query&start=0&count=25&dynamic_data=&sort_by=_ASC&force_infinite=1&maxprice=free&specials=1&infinite=1";
 
-const DISCOUNT_DEALS_URL =
-  "https://store.steampowered.com/search/results/?query&start=0&count=200&dynamic_data=&sort_by=_ASC&force_infinite=1&specials=1&infinite=1";
+const DISCOUNT_PAGE_SIZE = 200;
+const DISCOUNT_SEARCH_WINDOWS = [
+  { sortBy: "_ASC", start: 0 },
+  { sortBy: "Reviews_DESC", start: 0 },
+  { sortBy: "Reviews_DESC", start: DISCOUNT_PAGE_SIZE },
+  { sortBy: "Reviews_DESC", start: DISCOUNT_PAGE_SIZE * 2 },
+];
 
 const MIN_JUICY_DISCOUNT = 70;
 const MIN_JUICY_REVIEW_COUNT = 5000;
-const MIN_JUICY_REVIEW_PERCENT = 80;
+const MIN_JUICY_REVIEW_PERCENT = 50;
 
 async function fetchSteamFreeGames() {
   const data = await fetchJson(FREE_GAMES_URL);
@@ -16,13 +21,16 @@ async function fetchSteamFreeGames() {
 }
 
 async function fetchSteamDiscountDeals(minDiscount = MIN_JUICY_DISCOUNT) {
-  const data = await fetchJson(DISCOUNT_DEALS_URL);
-  const deals = parseSteamResults(data.results_html || "", {
+  const pages = await Promise.all(
+    DISCOUNT_SEARCH_WINDOWS.map((window) => fetchJson(getDiscountDealsUrl(window)))
+  );
+
+  const deals = pages.flatMap((data) => parseSteamResults(data.results_html || "", {
     minDiscount,
     maxDiscount: 99,
     minReviewCount: MIN_JUICY_REVIEW_COUNT,
     minReviewPercent: MIN_JUICY_REVIEW_PERCENT,
-  });
+  }));
 
   return keepBestDealPerSeries(deals).sort(compareDealQuality);
 }
@@ -76,6 +84,10 @@ function fetchJson(url) {
       )
       .on("error", reject);
   });
+}
+
+function getDiscountDealsUrl({ sortBy, start }) {
+  return `https://store.steampowered.com/search/results/?query&start=${start}&count=${DISCOUNT_PAGE_SIZE}&dynamic_data=&sort_by=${sortBy}&force_infinite=1&specials=1&infinite=1`;
 }
 
 function parseSteamResults(html, options = {}) {

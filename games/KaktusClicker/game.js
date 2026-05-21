@@ -1,10 +1,13 @@
 import {
   fetchLeaderboard,
   getGameSession,
+  getGameProfile,
   getWeeklyLeaderboardPeriod,
   loadCloudSave,
-  pickNewerSave,
+  markAdminMessageRead,
   pushCloudSave,
+  signOutGameSession,
+  subscribeAdminMessages,
 } from "/js/game-cloud.js";
 
 const STORAGE_KEY = "kaktus-clicker-save-v1";
@@ -227,6 +230,7 @@ let lastProductionRender = 0;
 let cloudSync = { enabled: false, user: null };
 let cloudSaveTimer = null;
 let leaderboardLoaded = false;
+let adminMessageChannel = null;
 
 const elements = {
   cactusCount: document.querySelector("#cactus-count"),
@@ -321,9 +325,14 @@ function scheduleCloudSave() {
 
 function saveState(label = "Gespeichert") {
   state.lastSavedAt = Date.now();
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   elements.saveStatus.textContent = label;
-  scheduleCloudSave();
+
+  if (cloudSync.enabled) {
+    scheduleCloudSave();
+  } else {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
   window.setTimeout(() => {
     if (elements.saveStatus.textContent === label) {
       elements.saveStatus.textContent = getIdleSaveLabel();
@@ -338,6 +347,31 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+function showGameModal(title, message, buttonLabel = "Okay") {
+  const existing = document.querySelector(".game-modal-backdrop");
+  existing?.remove();
+
+  const backdrop = document.createElement("div");
+  backdrop.className = "game-modal-backdrop";
+  backdrop.innerHTML = `
+    <section class="game-modal" role="dialog" aria-modal="true" aria-labelledby="game-modal-title">
+      <h2 id="game-modal-title">${escapeHtml(title)}</h2>
+      <p>${escapeHtml(message)}</p>
+      <button class="icon-button game-modal-button" type="button">${escapeHtml(buttonLabel)}</button>
+    </section>
+  `;
+
+  backdrop.querySelector("button")?.addEventListener("click", () => backdrop.remove());
+  document.body.append(backdrop);
+}
+
+function startAdminMessageListener(user) {
+  adminMessageChannel = subscribeAdminMessages(user, async (message) => {
+    showGameModal("Nachricht", message.message || "Du hast eine neue Nachricht.");
+    await markAdminMessageRead(user, message.id);
+  });
 }
 
 async function renderLeaderboard(force = false) {
@@ -677,25 +711,27 @@ function bindEvents() {
 }
 
 async function initGame() {
-  const localState = loadLocalState();
   const session = await getGameSession();
 
   if (session?.user) {
     cloudSync.enabled = true;
     cloudSync.user = session.user;
-    const cloud = await loadCloudSave(session.user);
-    const savedState = pickNewerSave(localState, cloud?.state);
-    state = savedState
-      ? normalizeLoadedState(savedState)
-      : structuredClone(initialState);
-
-    const localTime = Number(localState?.lastSavedAt) || 0;
-    const cloudTime = Number(cloud?.state?.lastSavedAt) || 0;
-    if (!cloud || localTime >= cloudTime) {
-      scheduleCloudSave();
+    const profile = await getGameProfile(session.user);
+    if (profile?.is_banned) {
+      await signOutGameSession();
+      showGameModal("Account gesperrt", "Dein Account wurde gesperrt.");
+      elements.saveStatus.textContent = "Account gesperrt";
+      return;
     }
+
+    const cloud = await loadCloudSave(session.user);
+    state = cloud?.state
+      ? normalizeLoadedState(cloud.state)
+      : structuredClone(initialState);
+    scheduleCloudSave();
+    startAdminMessageListener(session.user);
   } else {
-    state = localState || structuredClone(initialState);
+    state = loadLocalState() || structuredClone(initialState);
   }
 
   bindEvents();

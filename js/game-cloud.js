@@ -83,6 +83,21 @@ export async function getGameSession() {
     return session;
 }
 
+export async function getGameProfile(user) {
+    if (!user?.id) {
+        return null;
+    }
+
+    return fetchProfile(user.id);
+}
+
+export async function signOutGameSession() {
+    const supabase = getSupabase();
+    if (supabase) {
+        await supabase.auth.signOut();
+    }
+}
+
 export async function resolveDisplayName(user) {
     const profile = await fetchProfile(user.id);
     return getDisplayName(user, profile);
@@ -146,6 +161,48 @@ export async function pushCloudSave(user, state) {
     return { ok: true };
 }
 
+export function subscribeAdminMessages(user, onMessage) {
+    const supabase = getSupabase();
+    if (!supabase || !user?.id) {
+        return null;
+    }
+
+    return supabase
+        .channel(`admin-messages-${user.id}`)
+        .on(
+            "postgres_changes",
+            {
+                event: "INSERT",
+                schema: "public",
+                table: "admin_messages",
+                filter: `user_id=eq.${user.id}`,
+            },
+            (payload) => {
+                if (payload.new && !payload.new.read) {
+                    onMessage(payload.new);
+                }
+            }
+        )
+        .subscribe();
+}
+
+export async function markAdminMessageRead(user, messageId) {
+    const supabase = getSupabase();
+    if (!supabase || !user?.id || !messageId) {
+        return;
+    }
+
+    const { error } = await supabase
+        .from("admin_messages")
+        .update({ read: true })
+        .eq("id", messageId)
+        .eq("user_id", user.id);
+
+    if (error) {
+        console.error("Admin-Nachricht konnte nicht markiert werden:", error.message);
+    }
+}
+
 export async function fetchLeaderboard(limit = 25) {
     const supabase = getSupabase();
     if (!supabase) {
@@ -203,18 +260,4 @@ export async function fetchLeaderboard(limit = 25) {
             updatedAt: entry.updatedAt,
         })),
     };
-}
-
-export function pickNewerSave(localState, cloudState) {
-    if (!cloudState) {
-        return localState;
-    }
-
-    if (!localState) {
-        return cloudState;
-    }
-
-    const localTime = Number(localState.lastSavedAt) || 0;
-    const cloudTime = Number(cloudState.lastSavedAt) || 0;
-    return cloudTime > localTime ? cloudState : localState;
 }

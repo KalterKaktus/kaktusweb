@@ -39,8 +39,11 @@ async function finishLogin() {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
 
         if (error) {
-            setStatus("Login fehlgeschlagen. Bitte versuche es erneut.", true);
-            return;
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                setStatus("Login fehlgeschlagen. Bitte versuche es erneut.", true);
+                return;
+            }
         }
     } else {
         const { data: { session }, error } = await supabase.auth.getSession();

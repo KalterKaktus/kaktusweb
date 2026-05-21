@@ -10,7 +10,7 @@ export async function fetchProfile(userId) {
 
     const { data, error } = await supabase
         .from("profiles")
-        .select("id, username, updated_at")
+        .select("id, username, is_banned, avatar_url, updated_at")
         .eq("id", userId)
         .maybeSingle();
 
@@ -24,7 +24,7 @@ export async function fetchProfile(userId) {
 
 export async function ensureProfile(userId) {
     const existing = await fetchProfile(userId);
-    if (existing) {
+    if (existing?.username) {
         return existing;
     }
 
@@ -35,8 +35,12 @@ export async function ensureProfile(userId) {
 
     const { data, error } = await supabase
         .from("profiles")
-        .insert({ id: userId })
-        .select("id, username, updated_at")
+        .upsert({
+            id: userId,
+            username: existing?.username || createKaktusUsername(),
+            updated_at: new Date().toISOString(),
+        })
+        .select("id, username, is_banned, avatar_url, updated_at")
         .single();
 
     if (error) {
@@ -45,6 +49,11 @@ export async function ensureProfile(userId) {
     }
 
     return data;
+}
+
+function createKaktusUsername() {
+    const suffix = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
+    return `Kaktus_${suffix}`;
 }
 
 export function getDisplayName(user, profile) {

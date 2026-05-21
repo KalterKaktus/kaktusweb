@@ -20,8 +20,8 @@ exports.handler = async function () {
   const newDiscountDeals = discountDeals.filter((deal) => !seen.discountIds.includes(deal.id));
 
   await store.setJSON(SEEN_KEY, {
-    freeIds: freeGames.map((game) => game.id),
-    discountIds: discountDeals.map((deal) => deal.id),
+    freeIds: mergeSeenIds(seen.freeIds, freeGames),
+    discountIds: mergeSeenIds(seen.discountIds, discountDeals),
     updatedAt: new Date().toISOString(),
   });
 
@@ -68,6 +68,13 @@ async function getSeenState(store) {
 
 function legacyIds(state) {
   return Array.isArray(state?.ids) ? state.ids : [];
+}
+
+function mergeSeenIds(ids, offers) {
+  return [...new Set([
+    ...(Array.isArray(ids) ? ids : []),
+    ...offers.map((offer) => offer.id),
+  ])];
 }
 
 async function sendDiscordMessage(webhookUrl, { newFreeGames, newDiscountDeals }) {

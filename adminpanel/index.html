@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Adminpanel - KalterKaktus</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/adminpanel/panel.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a class="logo" href="/">KK</a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/games/" class="nav-link">Games</a>
+                <a href="/profile.html" class="nav-link">Profil</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="page-shell admin-shell">
+        <div class="page-container">
+            <header class="page-header">
+                <div>
+                    <p class="page-kicker">KalterKaktus</p>
+                    <h1 class="page-title">Adminpanel</h1>
+                </div>
+                <button class="primary-link admin-refresh" id="admin-refresh" type="button">Neu laden</button>
+            </header>
+
+            <p class="admin-status" id="admin-status" aria-live="polite">User werden geladen...</p>
+            <section class="admin-users" id="admin-users" aria-live="polite"></section>
+        </div>
+    </main>
+
+    <script src="/js/config.js"></script>
+    <script type="module" src="/adminpanel/panel.js"></script>
+</body>
+</html>

@@ -61,34 +61,11 @@ button,
   -webkit-tap-highlight-color: transparent;
 }
 
-.site-link {
-  position: fixed;
-  top: 18px;
-  left: 18px;
-  z-index: 20;
-  display: inline-flex;
-  align-items: center;
-  min-height: 38px;
-  padding: 0 14px;
-  border: 1px solid rgba(74, 255, 124, 0.38);
-  border-radius: 8px;
-  background: rgba(4, 22, 12, 0.82);
-  color: var(--green-hot);
-  font-size: 13px;
-  font-weight: 800;
-  text-decoration: none;
-  box-shadow: 0 0 22px rgba(55, 255, 117, 0.14);
-}
-
-.site-link:hover {
-  border-color: var(--green-hot);
-  background: rgba(6, 35, 18, 0.95);
-}
-
 .game-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(340px, 430px);
   min-height: 100vh;
+  padding-top: 76px;
 }
 
 .click-zone {
@@ -96,7 +73,7 @@ button,
   display: grid;
   grid-template-rows: auto auto 1fr auto;
   align-items: center;
-  min-height: 100vh;
+  min-height: calc(100vh - 76px);
   padding: clamp(34px, 4vw, 58px) clamp(20px, 4vw, 52px) clamp(20px, 4vw, 52px);
 }
 
@@ -561,6 +538,42 @@ h3 {
   font-size: 22px;
   font-weight: 950;
   animation: float-pop 850ms ease-out forwards;
+}
+
+.game-modal-backdrop {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 4, 2, 0.8);
+}
+
+.game-modal {
+  width: min(430px, 100%);
+  padding: 22px;
+  border: 1px solid var(--line-hot);
+  background: rgba(1, 16, 8, 0.96);
+  box-shadow: 0 0 34px rgba(55, 255, 117, 0.22);
+}
+
+.game-modal h2 {
+  margin-bottom: 10px;
+  color: var(--green-hot);
+  font-size: 24px;
+  text-transform: uppercase;
+}
+
+.game-modal p {
+  color: var(--green);
+  line-height: 1.6;
+}
+
+.game-modal-button {
+  width: auto;
+  min-width: 110px;
+  margin-top: 16px;
 }
 
 @keyframes float-pop {
