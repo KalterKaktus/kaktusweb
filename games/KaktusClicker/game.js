@@ -170,31 +170,12 @@ function startBackgroundMusic() {
   });
 }
 
-function unlockSoundEffects() {
-  if (audioSettings.soundMuted) {
-    return;
-  }
-
-  eventAppearSound.volume = 0;
-  eventAppearSound.play()
-    .then(() => {
-      eventAppearSound.pause();
-      eventAppearSound.currentTime = 0;
-      eventAppearSound.volume = audioSettings.soundVolume;
-    })
-    .catch(() => {
-      eventAppearSound.volume = audioSettings.soundVolume;
-    });
-}
-
 function playEventAppearSound() {
-  if (audioSettings.soundMuted) {
-    return;
-  }
+  if (audioSettings.soundMuted) return;
 
-  const sound = eventAppearSound.cloneNode();
-  sound.volume = audioSettings.soundVolume;
-  sound.play().catch(() => {});
+  eventAppearSound.currentTime = 0;
+  eventAppearSound.volume = audioSettings.soundVolume;
+  eventAppearSound.play().catch(() => {});
 }
 
 function initAudio() {
@@ -205,16 +186,8 @@ function initAudio() {
   eventAppearSound.src = "./audio/event-appear.mp3";
   renderAudioControls();
   startBackgroundMusic();
-  window.addEventListener("pointerdown", () => {
-  startBackgroundMusic();
-  unlockSoundEffects();
-}, { once: true });
-
-window.addEventListener("keydown", () => {
-  startBackgroundMusic();
-  unlockSoundEffects();
-}, { once: true });
-}
+  window.addEventListener("pointerdown", startBackgroundMusic, { once: true });
+  window.addEventListener("keydown", startBackgroundMusic, { once: true });
 
 function setClickerViewportHeight() {
   const height = Math.round(window.visualViewport?.height || window.innerHeight || 0);
