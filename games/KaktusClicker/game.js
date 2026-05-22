@@ -188,7 +188,7 @@ function initAudio() {
   startBackgroundMusic();
   window.addEventListener("pointerdown", startBackgroundMusic, { once: true });
   window.addEventListener("keydown", startBackgroundMusic, { once: true });
-
+}
 function setClickerViewportHeight() {
   const height = Math.round(window.visualViewport?.height || window.innerHeight || 0);
   if (height > 0) {
