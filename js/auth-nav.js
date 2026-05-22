@@ -43,6 +43,14 @@ function isStandaloneApp() {
     return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 }
 
+function blockTouchDoubleTapZoom() {
+    document.addEventListener("dblclick", (event) => {
+        if (window.matchMedia("(pointer: coarse)").matches) {
+            event.preventDefault();
+        }
+    }, { passive: false });
+}
+
 function isIPhoneSafari() {
     const userAgent = window.navigator.userAgent || "";
     const platform = window.navigator.platform || "";
@@ -390,5 +398,6 @@ async function initAuthNav() {
 }
 
 setupSiteNav();
+blockTouchDoubleTapZoom();
 initAuthNav();
 window.setTimeout(showIOSInstallHint, 1200);

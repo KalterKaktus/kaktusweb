@@ -2,6 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    touch-action: manipulation;
 }
 
 :root {
@@ -20,16 +21,6 @@
 html {
     scroll-behavior: smooth;
     scrollbar-gutter: stable;
-}
-
-html,
-body,
-a,
-button,
-input,
-select,
-textarea {
-    touch-action: manipulation;
 }
 
 body {

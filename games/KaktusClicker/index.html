@@ -46,7 +46,6 @@
           </div>
           <div class="brand-tools">
             <div class="brand-actions">
-              <button class="icon-button changelog-button" id="changelog-button" type="button" title="Changelog" aria-label="Changelog anzeigen">!</button>
               <button class="icon-button" id="save-button" type="button" title="Jetzt speichern" aria-label="Jetzt speichern">
                 <svg class="save-icon" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M5 4h12l2 2v14H5V4Zm3 1.8v5h8v-5H8Zm0 9.2v3h8v-3H8Z"/>
@@ -77,7 +76,6 @@
                 </label>
               </div>
             </div>
-            <p class="brand-save-status" id="save-status">Speicherstatus wird geladen</p>
           </div>
         </header>
 
@@ -181,7 +179,6 @@
             <div id="achievement-list" class="achievement-list"></div>
           </div>
 
-          <button class="danger-button" id="reset-button" type="button">Spielstand zurücksetzen</button>
         </section>
 
         <section class="tab-panel prestige-panel" id="prestige-panel">
@@ -234,6 +231,13 @@
           <div id="leaderboard-list" class="leaderboard-list" aria-live="polite"></div>
           <p id="leaderboard-hint" class="leaderboard-hint"></p>
         </section>
+
+        <details class="extra-menu">
+          <summary>Zusatzmenü</summary>
+          <p class="extra-save-status" id="save-status">Speicherstatus wird geladen</p>
+          <button class="extra-menu-button" id="changelog-button" type="button">Changelog</button>
+          <button class="danger-button extra-reset-button" id="reset-button" type="button">Spielstand zurücksetzen</button>
+        </details>
       </aside>
     </main>
 

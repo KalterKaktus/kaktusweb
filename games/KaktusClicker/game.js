@@ -9,7 +9,7 @@ import {
   signOutGameSession,
 } from "/js/game-cloud.js";
 import { getSupabase, isConfigReady } from "/js/supabase-client.js";
-import { achievements, buildings, changelogItems, upgrades } from "./data.js";
+import { achievements, buildings, changelogEntries, upgrades } from "./data.js";
 import {
   getAchievementMultiplier,
   getAutomaticProduction,
@@ -47,6 +47,7 @@ let cloudSync = { enabled: false, user: null };
 let cloudSaveTimer = null;
 let leaderboardLoaded = false;
 let frenzyMeterFrame = null;
+let viewportRecoveryTimer = null;
 const activeRandomEvents = new Map();
 const backgroundMusic = new Audio();
 const eventAppearSound = new Audio();
@@ -187,6 +188,32 @@ function initAudio() {
   window.addEventListener("keydown", startBackgroundMusic, { once: true });
 }
 
+function setClickerViewportHeight() {
+  const height = Math.round(window.visualViewport?.height || window.innerHeight || 0);
+  if (height > 0) {
+    document.documentElement.style.setProperty("--clicker-viewport-height", `${height}px`);
+  }
+}
+
+function recoverClickerViewport() {
+  window.clearTimeout(viewportRecoveryTimer);
+  setClickerViewportHeight();
+  viewportRecoveryTimer = window.setTimeout(() => {
+    setClickerViewportHeight();
+    elements.clickZone?.getBoundingClientRect();
+  }, 260);
+}
+
+function tryLockPortraitOrientation() {
+  if (!window.matchMedia("(display-mode: standalone)").matches || !screen.orientation?.lock) {
+    return;
+  }
+
+  screen.orientation.lock("portrait").catch(() => {
+    // Browsers may reject orientation locks for a web app.
+  });
+}
+
 function getIdleSaveLabel() {
   return cloudSync.enabled ? "Speicherstatus: Cloud aktiv" : "Speicherstatus: Lokal gespeichert";
 }
@@ -263,9 +290,17 @@ function showChangelog() {
   showGameModal({
     title: "Changelog",
     bodyHtml: `
-      <ul class="changelog-list">
-        ${changelogItems.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
-      </ul>
+      <div class="changelog-entries">
+        ${changelogEntries.map((entry) => `
+          <section class="changelog-entry">
+            <p class="changelog-date">${escapeHtml(entry.date)}</p>
+            <h3>${escapeHtml(entry.title)}</h3>
+            <ul class="changelog-list">
+              ${entry.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+            </ul>
+          </section>
+        `).join("")}
+      </div>
     `,
   });
 }
@@ -919,7 +954,13 @@ function bindEvents() {
     }
 
     restartRandomEventSchedules();
+    recoverClickerViewport();
   });
+  window.addEventListener("orientationchange", recoverClickerViewport);
+  window.addEventListener("resize", recoverClickerViewport);
+  window.visualViewport?.addEventListener("resize", recoverClickerViewport);
+  window.addEventListener("pointerdown", tryLockPortraitOrientation, { once: true });
+  window.addEventListener("keydown", tryLockPortraitOrientation, { once: true });
   window.addEventListener("pagehide", () => pauseRandomEvents());
   window.addEventListener("beforeunload", () => saveState("Gespeichert"));
 }
@@ -949,6 +990,8 @@ async function initGame() {
 
   restartRandomEventSchedules();
   bindEvents();
+  recoverClickerViewport();
+  tryLockPortraitOrientation();
   subscribeAdminGameEvents();
   initAudio();
   updateAchievements();

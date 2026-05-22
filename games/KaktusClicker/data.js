@@ -84,11 +84,27 @@ export const achievements = [
   { id: "red-hit", name: "Rubinkaktus", goal: "Fange einen Rubinkaktus.", test: (state) => state.events.redHits >= 1 },
 ];
 
-export const changelogItems = [
-  "Nopal-Prestige beschleunigt neue Runs innerhalb der laufenden Saison.",
-  "Goldlauf, Goldkakteen und seltene Rubinkakteen belohnen aktives Spielen.",
-  "Offline-Fortschritt sammelt ab 5 Minuten bis zu 12 Stunden halbe automatische Produktion ein.",
-  "Neue Gebäude, neue Upgrades und 20 Abzeichen erweitern den Grind nach oben.",
-  "Die Rangliste läuft jetzt monatlich und zeigt den letzten Monatsabschluss.",
-  "Große Zahlen werden im deutschen Format mit lesbaren Abkürzungen angezeigt.",
+export const changelogEntries = [
+  {
+    date: "22.05.2026",
+    title: "Audio & Feinschliff",
+    items: [
+      "Minor bug fixes and UI improvements.",
+      "Added SFX and music.",
+      "Gold- und Rubinkakteen reagieren nur auf aktive Spielzeit.",
+      "Mobile Webapp-Layout und Touch-Verhalten verbessert.",
+    ],
+  },
+  {
+    date: "22.05.2026",
+    title: "Prestige-Update",
+    items: [
+      "Nopal-Prestige beschleunigt neue Runs innerhalb der laufenden Saison.",
+      "Goldlauf, Goldkakteen und seltene Rubinkakteen belohnen aktives Spielen.",
+      "Offline-Fortschritt sammelt ab 5 Minuten bis zu 12 Stunden halbe automatische Produktion ein.",
+      "Neue Gebäude, neue Upgrades und 20 Abzeichen erweitern den Grind nach oben.",
+      "Die Rangliste läuft jetzt monatlich und zeigt den letzten Monatsabschluss.",
+      "Große Zahlen werden im deutschen Format mit lesbaren Abkürzungen angezeigt.",
+    ],
+  },
 ];

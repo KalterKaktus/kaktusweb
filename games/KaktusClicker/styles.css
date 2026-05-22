@@ -28,6 +28,7 @@
 * {
   box-sizing: border-box;
   max-width: 100%;
+  touch-action: manipulation;
 }
 
 img, pre, canvas {
@@ -61,11 +62,6 @@ button {
   font: inherit;
 }
 
-html,
-body {
-  touch-action: manipulation;
-}
-
 button,
 .shop-item,
 .tab,
@@ -77,7 +73,7 @@ button,
 .game-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(340px, 430px);
-  height: 100svh;
+  height: var(--clicker-viewport-height, 100svh);
   min-height: 0;
   padding-top: calc(76px + env(safe-area-inset-top));
   overflow: hidden;
@@ -405,7 +401,7 @@ dt {
 .panel {
   position: relative;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   min-height: 0;
   height: 100%;
   padding: 22px;
@@ -871,22 +867,6 @@ h3 {
   accent-color: var(--green-hot);
 }
 
-.brand-save-status {
-  max-width: 24ch;
-  text-align: right;
-  color: rgba(184, 255, 200, 0.72);
-  font-size: 12px;
-  font-weight: 800;
-  line-height: 1.45;
-  text-transform: uppercase;
-}
-
-.changelog-button {
-  color: var(--gold);
-  font-size: 22px;
-  font-weight: 950;
-}
-
 .tabs {
   grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
 }
@@ -1074,13 +1054,93 @@ h3 {
   box-shadow: 0 0 18px rgba(125, 211, 255, 0.26);
 }
 
+.changelog-entries {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+  max-height: min(58svh, 560px);
+  padding-right: 4px;
+  overflow-y: auto;
+}
+
+.changelog-entry {
+  padding: 13px;
+  border: 1px solid rgba(55, 255, 117, 0.24);
+  background: rgba(55, 255, 117, 0.07);
+}
+
+.changelog-entry h3 {
+  margin-top: 3px;
+  color: var(--green-hot);
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.changelog-date {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
 .changelog-list {
   display: grid;
-  gap: 8px;
-  margin: 14px 0 0;
+  gap: 7px;
+  margin: 10px 0 0;
   padding-left: 18px;
   color: var(--green);
   line-height: 1.5;
+}
+
+.extra-menu {
+  margin-top: 12px;
+  border: 1px solid rgba(55, 255, 117, 0.22);
+  background: rgba(0, 0, 0, 0.26);
+}
+
+.extra-menu summary {
+  padding: 11px 12px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.extra-menu[open] summary {
+  border-bottom: 1px solid rgba(55, 255, 117, 0.18);
+}
+
+.extra-save-status {
+  margin: 10px;
+  padding: 10px 11px;
+  color: rgba(184, 255, 200, 0.72);
+  background: rgba(55, 255, 117, 0.07);
+  border: 1px solid rgba(55, 255, 117, 0.18);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
+.extra-menu-button {
+  width: calc(100% - 20px);
+  min-height: 40px;
+  margin: 10px;
+  color: var(--green-hot);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 950;
+  text-transform: uppercase;
+  box-shadow: var(--shadow);
+}
+
+.extra-reset-button {
+  width: calc(100% - 20px);
+  margin: 0 10px 10px;
 }
 
 .offline-reward {
@@ -1240,10 +1300,6 @@ h3 {
     justify-items: start;
   }
 
-  .brand-save-status {
-    text-align: left;
-  }
-
   .score-card {
     display: grid;
     align-self: center;
@@ -1290,7 +1346,7 @@ h3 {
     gap: 12px;
     width: min(760px, 100%);
     height: auto;
-    min-height: 100svh;
+    min-height: var(--clicker-viewport-height, 100svh);
     margin: 0 auto;
     padding: calc(82px + env(safe-area-inset-top)) 10px calc(16px + env(safe-area-inset-bottom));
     overflow: visible;
@@ -1298,7 +1354,7 @@ h3 {
 
   .click-zone {
     height: auto;
-    min-height: calc(100svh - 112px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    min-height: calc(var(--clicker-viewport-height, 100svh) - 112px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     overflow: hidden;
     border: 1px solid rgba(55, 255, 117, 0.22);
     background: rgba(2, 10, 6, 0.34);
@@ -1310,7 +1366,7 @@ h3 {
   }
 
   .panel {
-    grid-template-rows: auto auto auto;
+    grid-template-rows: auto auto auto auto;
     height: auto;
     min-height: auto;
     border: 1px solid var(--line);
