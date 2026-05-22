@@ -91,7 +91,9 @@ export const changelogEntries = [
     items: [
       "Minor bug fixes and UI improvements.",
       "Added SFX and music.",
+      "SFX bleiben auch bei stummgeschalteter Musik aktiv.",
       "Gold- und Rubinkakteen reagieren nur auf aktive Spielzeit.",
+      "Gold- und Rubinkakteen verschwinden zuverlässig nach kurzer Zeit.",
       "Mobile Webapp-Layout und Touch-Verhalten verbessert.",
     ],
   },

@@ -56,6 +56,8 @@ const seenAdminGameEventIds = new Set();
 const backgroundMusic = new Audio();
 const eventAppearSound = new Audio();
 let audioSettings = loadAudioSettings();
+let soundEffectsUnlocked = false;
+let soundEffectUnlockPending = false;
 
 const elements = {
   cactusCount: document.querySelector("#cactus-count"),
@@ -170,12 +172,38 @@ function startBackgroundMusic() {
   });
 }
 
-function playEventAppearSound() {
-  if (audioSettings.soundMuted) return;
+function unlockSoundEffects() {
+  if (soundEffectsUnlocked || soundEffectUnlockPending) {
+    return;
+  }
 
-  eventAppearSound.currentTime = 0;
-  eventAppearSound.volume = audioSettings.soundVolume;
-  eventAppearSound.play().catch(() => {});
+  // Prime SFX from a real user gesture without leaking the event sound as a test tone.
+  const silentUnlock = eventAppearSound.cloneNode();
+  silentUnlock.muted = true;
+  silentUnlock.volume = 0;
+  soundEffectUnlockPending = true;
+  silentUnlock.play()
+    .then(() => {
+      soundEffectsUnlocked = true;
+      silentUnlock.pause();
+      silentUnlock.currentTime = 0;
+    })
+    .catch(() => {
+      // A later user gesture can retry if the browser blocks this first attempt.
+    })
+    .finally(() => {
+      soundEffectUnlockPending = false;
+    });
+}
+
+function playEventAppearSound() {
+  if (audioSettings.soundMuted) {
+    return;
+  }
+
+  const sound = eventAppearSound.cloneNode();
+  sound.volume = audioSettings.soundVolume;
+  sound.play().catch(() => {});
 }
 
 function initAudio() {
@@ -188,7 +216,10 @@ function initAudio() {
   startBackgroundMusic();
   window.addEventListener("pointerdown", startBackgroundMusic, { once: true });
   window.addEventListener("keydown", startBackgroundMusic, { once: true });
+  window.addEventListener("pointerdown", unlockSoundEffects);
+  window.addEventListener("keydown", unlockSoundEffects);
 }
+
 function setClickerViewportHeight() {
   const height = Math.round(window.visualViewport?.height || window.innerHeight || 0);
   if (height > 0) {
@@ -1020,16 +1051,16 @@ function bindEvents() {
     cloudSync = { enabled: false, user: null };
   });
   document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    pauseRandomEvents();
-    return;
-  }
+    if (document.hidden) {
+      pauseRandomEvents();
+      return;
+    }
 
-  ensureRandomEventSchedules();
-  checkRandomEvents();
-  restartAdminGameEventCursor();
-  recoverClickerViewport();
-});
+    ensureRandomEventSchedules();
+    checkRandomEvents();
+    restartAdminGameEventCursor();
+    recoverClickerViewport();
+  });
 
   window.addEventListener("orientationchange", recoverClickerViewport);
   window.addEventListener("resize", recoverClickerViewport);
