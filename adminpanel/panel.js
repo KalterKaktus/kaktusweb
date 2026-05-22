@@ -11,6 +11,12 @@ function setStatus(message, isError = false) {
     status.classList.toggle("is-error", isError);
 }
 
+function setAdminContentVisible(visible) {
+    adminAbuseRoot.hidden = !visible;
+    usersRoot.hidden = !visible;
+    refreshButton.hidden = !visible;
+}
+
 function escapeHtml(value) {
     return String(value ?? "")
         .replace(/&/g, "&amp;")
@@ -73,7 +79,12 @@ async function getAccessToken() {
     }
 
     const supabase = getSupabase();
-    const { data: { session }, error } = await supabase.auth.getSession();
+    let { data: { session }, error } = await supabase.auth.getSession();
+    if (!error && !session?.access_token) {
+        await new Promise((resolve) => window.setTimeout(resolve, 350));
+        ({ data: { session }, error } = await supabase.auth.getSession());
+    }
+
     if (error || !session?.access_token) {
         throw new Error("Bitte zuerst mit deinem Admin-Account einloggen.");
     }
@@ -365,11 +376,15 @@ function readSaveRequest(panel, payload) {
 
 async function loadUsers() {
     try {
-        setStatus("User werden geladen...");
+        setStatus("Adminzugriff wird geprüft...");
+        setAdminContentVisible(false);
         const { users } = await api("list");
         renderUsers(users || []);
+        setAdminContentVisible(true);
         setStatus(`${users?.length || 0} User geladen.`);
     } catch (error) {
+        usersRoot.innerHTML = "";
+        setAdminContentVisible(false);
         setStatus(error.message, true);
     }
 }
@@ -465,4 +480,24 @@ adminAbuseRoot.addEventListener("click", async (event) => {
         button.disabled = false;
     }
 });
-loadUsers();
+
+async function initAdminPanel() {
+    await loadUsers();
+
+    if (!isConfigReady()) {
+        return;
+    }
+
+    getSupabase()?.auth.onAuthStateChange((_event, session) => {
+        if (session?.access_token) {
+            loadUsers();
+            return;
+        }
+
+        usersRoot.innerHTML = "";
+        setAdminContentVisible(false);
+        setStatus("Bitte zuerst mit deinem Admin-Account einloggen.", true);
+    });
+}
+
+initAdminPanel();

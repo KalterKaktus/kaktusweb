@@ -24,6 +24,7 @@
                 <a href="/#about" class="nav-link">About</a>
                 <a href="/steam-deals/" class="nav-link">Steam Deals</a>
                 <a href="/games/" class="nav-link">Games</a>
+                <a href="/adminpanel/" class="nav-link admin-return-link" hidden>Adminpanel</a>
                 <div id="auth-nav" class="auth-nav" aria-live="polite">
                     <a class="nav-link auth-link" href="/login.html">Login</a>
                 </div>
@@ -94,6 +95,11 @@
     </footer>
 
     <script src="/js/config.js"></script>
+    <script>
+        if (new URLSearchParams(window.location.search).get("from") === "adminpanel") {
+            document.querySelector(".admin-return-link")?.removeAttribute("hidden");
+        }
+    </script>
     <script type="module" src="/js/auth-nav.js"></script>
     <script type="module" src="/js/profile-page.js"></script>
 </body>

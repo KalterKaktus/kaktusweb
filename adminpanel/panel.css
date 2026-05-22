@@ -7,6 +7,12 @@
     cursor: pointer;
 }
 
+.admin-refresh[hidden],
+.admin-abuse[hidden],
+.admin-users[hidden] {
+    display: none;
+}
+
 .admin-status {
     margin-bottom: 1rem;
     color: var(--text-secondary);

@@ -22,7 +22,7 @@
             <div class="nav-links">
                 <a href="/" class="nav-link">Home</a>
                 <a href="/games/" class="nav-link">Games</a>
-                <a href="/profile.html" class="nav-link">Profil</a>
+                <a href="/profile.html?from=adminpanel" class="nav-link">Profil</a>
             </div>
         </div>
     </nav>
@@ -34,11 +34,11 @@
                     <p class="page-kicker">KalterKaktus</p>
                     <h1 class="page-title">Adminpanel</h1>
                 </div>
-                <button class="primary-link admin-refresh" id="admin-refresh" type="button">Neu laden</button>
+                <button class="primary-link admin-refresh" id="admin-refresh" type="button" hidden>Neu laden</button>
             </header>
 
-            <p class="admin-status" id="admin-status" aria-live="polite">User werden geladen...</p>
-            <details class="admin-abuse" id="admin-abuse">
+            <p class="admin-status" id="admin-status" aria-live="polite">Adminzugriff wird geprüft...</p>
+            <details class="admin-abuse" id="admin-abuse" hidden>
                 <summary>Adminabuse</summary>
                 <div class="admin-abuse-body">
                     <label class="admin-field admin-abuse-game">
@@ -56,7 +56,7 @@
                     </section>
                 </div>
             </details>
-            <section class="admin-users" id="admin-users" aria-live="polite"></section>
+            <section class="admin-users" id="admin-users" aria-live="polite" hidden></section>
         </div>
     </main>
 
