@@ -170,6 +170,23 @@ function startBackgroundMusic() {
   });
 }
 
+function unlockSoundEffects() {
+  if (audioSettings.soundMuted) {
+    return;
+  }
+
+  eventAppearSound.volume = 0;
+  eventAppearSound.play()
+    .then(() => {
+      eventAppearSound.pause();
+      eventAppearSound.currentTime = 0;
+      eventAppearSound.volume = audioSettings.soundVolume;
+    })
+    .catch(() => {
+      eventAppearSound.volume = audioSettings.soundVolume;
+    });
+}
+
 function playEventAppearSound() {
   if (audioSettings.soundMuted) {
     return;
@@ -188,8 +205,15 @@ function initAudio() {
   eventAppearSound.src = "./audio/event-appear.mp3";
   renderAudioControls();
   startBackgroundMusic();
-  window.addEventListener("pointerdown", startBackgroundMusic, { once: true });
-  window.addEventListener("keydown", startBackgroundMusic, { once: true });
+  window.addEventListener("pointerdown", () => {
+  startBackgroundMusic();
+  unlockSoundEffects();
+}, { once: true });
+
+window.addEventListener("keydown", () => {
+  startBackgroundMusic();
+  unlockSoundEffects();
+}, { once: true });
 }
 
 function setClickerViewportHeight() {
