@@ -5,10 +5,12 @@ const status = document.getElementById("admin-status");
 const refreshButton = document.getElementById("admin-refresh");
 const adminAbuseRoot = document.getElementById("admin-abuse");
 const adminAbuseGame = document.getElementById("admin-abuse-game");
+const loginGate = document.getElementById("admin-login-gate");
 
-function setStatus(message, isError = false) {
+function setStatus(message, isError = false, showLogin = false) {
     status.textContent = message;
     status.classList.toggle("is-error", isError);
+    loginGate.hidden = !showLogin;
 }
 
 function setAdminContentVisible(visible) {
@@ -385,7 +387,7 @@ async function loadUsers() {
     } catch (error) {
         usersRoot.innerHTML = "";
         setAdminContentVisible(false);
-        setStatus(error.message, true);
+        setStatus(error.message, true, /einlogg/i.test(error.message));
     }
 }
 
@@ -496,7 +498,7 @@ async function initAdminPanel() {
 
         usersRoot.innerHTML = "";
         setAdminContentVisible(false);
-        setStatus("Bitte zuerst mit deinem Admin-Account einloggen.", true);
+        setStatus("Bitte zuerst mit deinem Admin-Account einloggen.", true, true);
     });
 }
 

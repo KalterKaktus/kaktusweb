@@ -39,6 +39,12 @@ function loginHref() {
     return `/login.html?next=${encodeURIComponent(next)}`;
 }
 
+function profileHref() {
+    return window.location.pathname.startsWith("/adminpanel")
+        ? "/profile.html?from=adminpanel"
+        : "/profile.html";
+}
+
 function isStandaloneApp() {
     return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 }
@@ -333,7 +339,7 @@ function renderLoggedIn(container, user, profile) {
         : `E-Mail: ${user.email || displayName}`;
 
     container.innerHTML = `
-        <a class="nav-link auth-profile-link" href="/profile.html" title="${escapeAttr(title)}">${escapeHtml(label)}</a>
+        <a class="nav-link auth-profile-link" href="${profileHref()}" title="${escapeAttr(title)}">${escapeHtml(label)}</a>
         <button type="button" class="auth-btn" id="auth-sign-out-btn">Logout</button>
     `;
 

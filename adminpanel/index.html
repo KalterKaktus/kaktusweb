@@ -22,7 +22,9 @@
             <div class="nav-links">
                 <a href="/" class="nav-link">Home</a>
                 <a href="/games/" class="nav-link">Games</a>
-                <a href="/profile.html?from=adminpanel" class="nav-link">Profil</a>
+                <div id="auth-nav" class="auth-nav" aria-live="polite">
+                    <a class="nav-link auth-link" href="/login.html?next=%2Fadminpanel%2F">Login</a>
+                </div>
             </div>
         </div>
     </nav>
@@ -38,6 +40,9 @@
             </header>
 
             <p class="admin-status" id="admin-status" aria-live="polite">Adminzugriff wird geprüft...</p>
+            <p class="admin-login-gate" id="admin-login-gate" hidden>
+                <a class="primary-link" href="/login.html?next=%2Fadminpanel%2F">Mit Admin-Account einloggen</a>
+            </p>
             <details class="admin-abuse" id="admin-abuse" hidden>
                 <summary>Adminabuse</summary>
                 <div class="admin-abuse-body">
@@ -61,6 +66,7 @@
     </main>
 
     <script src="/js/config.js"></script>
+    <script type="module" src="/js/auth-nav.js"></script>
     <script type="module" src="/adminpanel/panel.js"></script>
 </body>
 </html>

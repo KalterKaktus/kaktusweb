@@ -18,6 +18,10 @@
     color: var(--text-secondary);
 }
 
+.admin-login-gate {
+    margin: -0.35rem 0 1rem;
+}
+
 .admin-users {
     display: grid;
     gap: 1rem;
