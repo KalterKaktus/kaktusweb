@@ -208,6 +208,7 @@
 }
 
 .admin-json summary,
+.admin-games summary,
 .admin-account-tools summary {
     padding: 0.75rem;
     color: var(--text-primary);
@@ -216,8 +217,34 @@
 }
 
 .admin-json[open] summary,
+.admin-games[open] summary,
 .admin-account-tools[open] summary {
     border-bottom: 1px solid var(--border);
+}
+
+.admin-games {
+    margin-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.admin-games[open] {
+    padding-bottom: 0.15rem;
+}
+
+.admin-games .admin-game-tabs {
+    margin-top: 1rem;
+}
+
+.admin-meta-note {
+    min-height: 42px;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.22);
+}
+
+.admin-meta-note strong {
+    color: var(--accent-light);
 }
 
 .admin-user h2 {

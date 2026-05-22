@@ -1,45 +1,44 @@
 import { fetchLeaderboard } from "./game-cloud.js";
+import { formatNumber } from "/games/KaktusClicker/format.js";
 
-const weeklyPlayer = document.getElementById("home-weekly-player");
-const lastWeekPlayer = document.getElementById("home-last-week-player");
-
-function formatNumber(value) {
-    return Intl.NumberFormat("de-DE", {
-        maximumFractionDigits: Number(value) >= 10 ? 0 : 1,
-    }).format(Number(value) || 0);
-}
-
-function setText(element, value) {
-    if (element) {
-        element.textContent = value;
-    }
-}
+const monthlyPlayers = document.getElementById("home-monthly-players");
+const lastMonthPlayers = document.getElementById("home-last-month-players");
 
 async function renderHomeLeaderboard() {
-    if (!weeklyPlayer || !lastWeekPlayer) {
+    if (!monthlyPlayers || !lastMonthPlayers) {
         return;
     }
 
-    const { entries, previousWinner, error } = await fetchLeaderboard(1);
+    const { entries, previousTopThree, error } = await fetchLeaderboard(3);
     if (error) {
-        setText(weeklyPlayer, "Rangliste offline");
-        setText(lastWeekPlayer, "Kommt wieder");
+        renderPlayers(monthlyPlayers, [], "Rangliste offline");
+        renderPlayers(lastMonthPlayers, [], "Kommt wieder");
         return;
     }
 
-    const weeklyWinner = entries[0];
-    setText(
-        weeklyPlayer,
-        weeklyWinner
-            ? `${weeklyWinner.name} · ${formatNumber(weeklyWinner.totalEarned)}`
-            : "Platz 1 ist offen"
-    );
-    setText(
-        lastWeekPlayer,
-        previousWinner
-            ? `${previousWinner.name} · ${formatNumber(previousWinner.score)}`
-            : "Noch kein Sieger"
-    );
+    renderPlayers(monthlyPlayers, entries, "Platz 1 ist offen");
+    renderPlayers(lastMonthPlayers, previousTopThree || [], "Noch kein Abschluss");
+}
+
+function renderPlayers(root, entries, emptyText) {
+    root.innerHTML = entries.length
+        ? entries.map((entry) => `
+            <li>
+                <b>#${entry.rank}</b>
+                <span>${escapeHtml(entry.name)}</span>
+                <em>${escapeHtml(formatNumber(entry.totalEarned ?? entry.score))}</em>
+            </li>
+        `).join("")
+        : `<li>${escapeHtml(emptyText)}</li>`;
+}
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 renderHomeLeaderboard();

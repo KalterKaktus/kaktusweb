@@ -765,6 +765,45 @@ body::before {
     white-space: nowrap;
 }
 
+.home-leaderboard-players {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.home-leaderboard-players li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.15rem 0.45rem;
+    align-items: baseline;
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    line-height: 1.35;
+}
+
+.home-leaderboard-players b {
+    color: var(--accent-hot);
+    font-size: 0.78rem;
+}
+
+.home-leaderboard-players span {
+    overflow: hidden;
+    color: var(--accent-light);
+    font-weight: 850;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.home-leaderboard-players em {
+    grid-column: 2;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-style: normal;
+    font-weight: 750;
+}
+
 .home-leaderboard-cta {
     display: inline-flex;
     align-items: center;

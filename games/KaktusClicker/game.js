@@ -1,237 +1,59 @@
 import {
+  ensureKaktusSeason,
   fetchLeaderboard,
-  getGameSession,
   getGameProfile,
-  getWeeklyLeaderboardPeriod,
+  getGameSession,
+  getMonthlyLeaderboardPeriod,
   loadCloudSave,
   pushCloudSave,
   signOutGameSession,
 } from "/js/game-cloud.js";
+import { achievements, buildings, changelogItems, upgrades } from "./data.js";
+import {
+  getAchievementMultiplier,
+  getAutomaticProduction,
+  getBuildingCost,
+  getBuildingProduction,
+  getClickYield,
+  getNewNopal,
+  getNopalGap,
+  getPrestigeMultiplier,
+  getUpgradeMultipliers,
+  isClickFrenzyActive,
+  totalBuildings,
+} from "./economy.js";
+import { formatDuration, formatNumber } from "./format.js";
+import { createInitialState, normalizeLoadedState, resetRunForPrestige } from "./state.js";
 
 const STORAGE_KEY = "kaktus-clicker-save-v1";
-
-const buildings = [
-  {
-    id: "seedling",
-    name: "Mini-Kaktus",
-    icon: "K",
-    baseCost: 15,
-    cps: 0.1,
-    description: "Kleine Produktion für den Anfang."
-  },
-  {
-    id: "greenhouse",
-    name: "Gewächshaus",
-    icon: "G",
-    baseCost: 100,
-    cps: 1,
-    description: "Mehr Kakteen aus kontrolliertem Anbau."
-  },
-  {
-    id: "ranch",
-    name: "Kaktus-Ranch",
-    icon: "R",
-    baseCost: 1100,
-    cps: 8,
-    description: "Reihenweise Kakteen für den nächsten Schub."
-  },
-  {
-    id: "oasis",
-    name: "Oasenpumpe",
-    icon: "O",
-    baseCost: 12000,
-    cps: 47,
-    description: "Stabile Ernte auch im trockenen Boden."
-  },
-  {
-    id: "factory",
-    name: "Stachelwerk",
-    icon: "F",
-    baseCost: 130000,
-    cps: 260,
-    description: "Industrielle Produktion für große Zahlen."
-  },
-  {
-    id: "harvest-drone",
-    name: "Erntedrohne",
-    icon: "D",
-    baseCost: 1400000,
-    cps: 1400,
-    description: "Automatisiert die schnelle Ernte."
-  },
-  {
-    id: "lab",
-    name: "Kaktuslabor",
-    icon: "L",
-    baseCost: 20000000,
-    cps: 7800,
-    description: "Züchtet stärkere Produktionslinien."
-  },
-  {
-    id: "server-farm",
-    name: "Wüstenserver",
-    icon: "S",
-    baseCost: 330000000,
-    cps: 44000,
-    description: "Optimiert jeden Produktionszyklus."
-  },
-  {
-    id: "orbital-greenhouse",
-    name: "Orbit-Gewächshaus",
-    icon: "O",
-    baseCost: 5100000000,
-    cps: 260000,
-    description: "Kakteenproduktion ohne Tageslimit."
-  }
-];
-
-const upgrades = [
-  {
-    id: "gloves",
-    name: "Dicke Handschuhe",
-    icon: "H",
-    cost: 100,
-    description: "Klick-Ertrag x2.",
-    clickMultiplier: 2
-  },
-  {
-    id: "soft-gloves",
-    name: "Weiche Handschuhe",
-    icon: "W",
-    cost: 500,
-    description: "Klick-Ertrag x2.",
-    clickMultiplier: 2
-  },
-  {
-    id: "sun-map",
-    name: "Doppelte Zange",
-    icon: "Z",
-    cost: 10000,
-    description: "Klick-Ertrag x2.",
-    clickMultiplier: 2
-  },
-  {
-    id: "seedling-pots",
-    name: "Stabile Töpfe",
-    icon: "K",
-    cost: 100,
-    description: "Mini-Kaktus Produktion x2.",
-    buildingId: "seedling",
-    buildingMultiplier: 2
-  },
-  {
-    id: "greenhouse-glass",
-    name: "Klares Glas",
-    icon: "G",
-    cost: 1000,
-    description: "Gewächshaus Produktion x2.",
-    buildingId: "greenhouse",
-    buildingMultiplier: 2
-  },
-  {
-    id: "ranch-irrigation",
-    name: "Ranch-Bewässerung",
-    icon: "R",
-    cost: 11000,
-    description: "Kaktus-Ranch Produktion x2.",
-    buildingId: "ranch",
-    buildingMultiplier: 2
-  },
-  {
-    id: "oasis-pressure",
-    name: "Hochdruckpumpe",
-    icon: "O",
-    cost: 120000,
-    description: "Oasenpumpe Produktion x2.",
-    buildingId: "oasis",
-    buildingMultiplier: 2
-  },
-  {
-    id: "factory-lines",
-    name: "Doppelschicht",
-    icon: "F",
-    cost: 1300000,
-    description: "Stachelwerk Produktion x2.",
-    buildingId: "factory",
-    buildingMultiplier: 2
-  },
-  {
-    id: "drone-bay",
-    name: "Drohnenhangar",
-    icon: "D",
-    cost: 14000000,
-    description: "Erntedrohne Produktion x2.",
-    buildingId: "harvest-drone",
-    buildingMultiplier: 2
-  },
-  {
-    id: "lab-culture",
-    name: "Schnellkultur",
-    icon: "L",
-    cost: 200000000,
-    description: "Kaktuslabor Produktion x2.",
-    buildingId: "lab",
-    buildingMultiplier: 2
-  },
-  {
-    id: "server-cluster",
-    name: "Servercluster",
-    icon: "S",
-    cost: 3300000000,
-    description: "Wüstenserver Produktion x2.",
-    buildingId: "server-farm",
-    buildingMultiplier: 2
-  },
-  {
-    id: "orbital-cycle",
-    name: "Orbit-Zyklus",
-    icon: "O",
-    cost: 51000000000,
-    description: "Orbit-Gewächshaus Produktion x2.",
-    buildingId: "orbital-greenhouse",
-    buildingMultiplier: 2
-  }
-];
-
-const achievements = [
-  { id: "first-click", name: "Erster Stich", goal: "Ernte deinen ersten Kaktus.", test: (state) => state.totalClicks >= 1 },
-  { id: "hundred-clicks", name: "Klickroutine", goal: "Klicke 100 Mal auf den Kaktus.", test: (state) => state.totalClicks >= 100 },
-  { id: "thousand-clicks", name: "Hornhaut", goal: "Klicke 1.000 Mal auf den Kaktus.", test: (state) => state.totalClicks >= 1000 },
-  { id: "hundred", name: "Kleiner Garten", goal: "Sammle insgesamt 100 Kakteen.", test: (state) => state.totalEarned >= 100 },
-  { id: "thousand", name: "Grüne Welle", goal: "Sammle insgesamt 1.000 Kakteen.", test: (state) => state.totalEarned >= 1000 },
-  { id: "ten-thousand", name: "Stachelvorrat", goal: "Sammle insgesamt 10.000 Kakteen.", test: (state) => state.totalEarned >= 10000 },
-  { id: "builder", name: "Wüstenbau", goal: "Kaufe 10 Gebäude.", test: (state) => totalBuildings(state) >= 10 },
-  { id: "production-crew", name: "Produktionscrew", goal: "Kaufe 50 Gebäude.", test: (state) => totalBuildings(state) >= 50 },
-  { id: "first-upgrade", name: "Besser ernten", goal: "Kaufe dein erstes Upgrade.", test: (state) => state.upgrades.length >= 1 },
-  { id: "upgrade-stack", name: "Upgrade-Stapel", goal: "Kaufe 5 Upgrades.", test: (state) => state.upgrades.length >= 5 },
-  { id: "collector", name: "Stachelbaron", goal: "Sammle insgesamt 100.000 Kakteen.", test: (state) => state.totalEarned >= 100000 },
-  { id: "million", name: "Millionenernte", goal: "Sammle insgesamt 1 Mio. Kakteen.", test: (state) => state.totalEarned >= 1000000 },
-  { id: "ten-million", name: "Wüstenmaschine", goal: "Sammle insgesamt 10 Mio. Kakteen.", test: (state) => state.totalEarned >= 10000000 },
-  { id: "hundred-million", name: "Kaktusmogul", goal: "Sammle insgesamt 100 Mio. Kakteen.", test: (state) => state.totalEarned >= 100000000 },
-  { id: "billion", name: "Orbit-Ernte", goal: "Sammle insgesamt 1 Mrd. Kakteen.", test: (state) => state.totalEarned >= 1000000000 }
-];
-
-const initialState = {
-  cactus: 0,
-  totalEarned: 0,
-  totalClicks: 0,
-  buildings: Object.fromEntries(buildings.map((building) => [building.id, 0])),
-  upgrades: [],
-  achievements: [],
-  weeklyLeaderboard: createWeeklyLeaderboard(),
-  lastSavedAt: Date.now()
+const CLICK_FRENZY_TARGET = 1000;
+const CLICK_FRENZY_MS = 30000;
+const OFFLINE_LIMIT_SECONDS = 12 * 60 * 60;
+const OFFLINE_RATE = 0.5;
+const GOLDEN_REWARD_SECONDS = 300;
+const RED_REWARD_SECONDS = 1800;
+const GOLDEN_EVENT_DELAY = [3 * 60 * 1000, 7 * 60 * 1000];
+const RED_EVENT_DELAY = [20 * 60 * 1000, 40 * 60 * 1000];
+const RANDOM_EVENT_CONFIG = {
+  golden: { duration: 5000, rewardSeconds: GOLDEN_REWARD_SECONDS, label: "Gold" },
+  red: { duration: 10000, rewardSeconds: RED_REWARD_SECONDS, label: "Rot" },
 };
 
-let state = structuredClone(initialState);
+let state = createInitialState(getMonthlyLeaderboardPeriod().id);
 let cloudSync = { enabled: false, user: null };
 let cloudSaveTimer = null;
 let leaderboardLoaded = false;
+const activeRandomEvents = new Map();
 
 const elements = {
   cactusCount: document.querySelector("#cactus-count"),
   cactusRate: document.querySelector("#cactus-rate"),
   clickPower: document.querySelector("#click-power"),
+  achievementMultiplier: document.querySelector("#achievement-multiplier"),
+  scorePrestigeMultiplier: document.querySelector("#score-prestige-multiplier"),
+  scoreFrenzyMultiplier: document.querySelector("#score-frenzy-multiplier"),
   cactusButton: document.querySelector("#cactus-button"),
+  clickZone: document.querySelector(".click-zone"),
   buildingList: document.querySelector("#building-list"),
   upgradeList: document.querySelector("#upgrade-list"),
   totalEarned: document.querySelector("#total-earned"),
@@ -241,44 +63,28 @@ const elements = {
   achievementList: document.querySelector("#achievement-list"),
   saveStatus: document.querySelector("#save-status"),
   saveButton: document.querySelector("#save-button"),
+  changelogButton: document.querySelector("#changelog-button"),
   resetButton: document.querySelector("#reset-button"),
   tabs: document.querySelectorAll(".tab"),
   panels: document.querySelectorAll(".tab-panel"),
+  scoreCard: document.querySelector(".score-card"),
+  frenzyBadge: document.querySelector("#frenzy-badge"),
+  eventMeter: document.querySelector("#event-meter"),
+  eventMeterLabel: document.querySelector("#event-meter-label"),
+  eventMeterValue: document.querySelector("#event-meter-value"),
+  eventMeterFill: document.querySelector("#event-meter-fill"),
+  prestigeNopal: document.querySelector("#prestige-nopal"),
+  prestigeBonus: document.querySelector("#prestige-bonus"),
+  prestigeNewNopal: document.querySelector("#prestige-new-nopal"),
+  prestigeNextBonus: document.querySelector("#prestige-next-bonus"),
+  prestigeGap: document.querySelector("#prestige-gap"),
+  prestigeCount: document.querySelector("#prestige-count"),
+  prestigeButton: document.querySelector("#prestige-button"),
   leaderboardList: document.querySelector("#leaderboard-list"),
   leaderboardHint: document.querySelector("#leaderboard-hint"),
   leaderboardReset: document.querySelector("#leaderboard-reset"),
-  leaderboardLastWinner: document.querySelector("#leaderboard-last-winner")
+  leaderboardLastMonthList: document.querySelector("#leaderboard-last-month-list"),
 };
-
-function createWeeklyLeaderboard() {
-  return {
-    periodId: getWeeklyLeaderboardPeriod().id,
-    score: 0
-  };
-}
-
-function ensureWeeklyLeaderboard(currentState = state) {
-  const period = getWeeklyLeaderboardPeriod();
-  const weekly = currentState.weeklyLeaderboard;
-
-  if (weekly?.periodId !== period.id) {
-    if (weekly?.periodId && weekly.score > 0) {
-      currentState.previousWeeklyLeaderboard = {
-        periodId: weekly.periodId,
-        score: Number(weekly.score) || 0
-      };
-    }
-
-    currentState.weeklyLeaderboard = {
-      periodId: period.id,
-      score: 0
-    };
-    leaderboardLoaded = false;
-  }
-
-  currentState.weeklyLeaderboard.score = Math.max(0, Number(currentState.weeklyLeaderboard.score) || 0);
-  return period;
-}
 
 function loadLocalState() {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -287,8 +93,7 @@ function loadLocalState() {
   }
 
   try {
-    const parsed = JSON.parse(saved);
-    return normalizeLoadedState(parsed);
+    return JSON.parse(saved);
   } catch {
     return null;
   }
@@ -308,6 +113,7 @@ function scheduleCloudSave() {
     const result = await pushCloudSave(cloudSync.user, state);
     if (result?.error) {
       elements.saveStatus.textContent = "Cloud-Fehler";
+      console.error(result.error.message);
       return;
     }
 
@@ -319,7 +125,9 @@ function scheduleCloudSave() {
 }
 
 function saveState(label = "Gespeichert") {
-  state.lastSavedAt = Date.now();
+  const now = Date.now();
+  state.lastSavedAt = now;
+  state.lastOnlineTimestamp = now;
   elements.saveStatus.textContent = label;
 
   if (cloudSync.enabled) {
@@ -336,7 +144,7 @@ function saveState(label = "Gespeichert") {
 }
 
 function escapeHtml(value) {
-  return String(value || "")
+  return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -344,176 +152,84 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
-function showGameModal(title, message, buttonLabel = "Okay") {
-  const existing = document.querySelector(".game-modal-backdrop");
-  existing?.remove();
-
+function showGameModal({ title, message = "", bodyHtml = "", buttonLabel = "Okay", onConfirm, tone = "" }) {
+  document.querySelector(".game-modal-backdrop")?.remove();
   const backdrop = document.createElement("div");
-  backdrop.className = "game-modal-backdrop";
+  backdrop.className = `game-modal-backdrop ${tone}`.trim();
   backdrop.innerHTML = `
     <section class="game-modal" role="dialog" aria-modal="true" aria-labelledby="game-modal-title">
       <h2 id="game-modal-title">${escapeHtml(title)}</h2>
-      <p>${escapeHtml(message)}</p>
+      ${message ? `<p>${escapeHtml(message)}</p>` : ""}
+      ${bodyHtml}
       <button class="icon-button game-modal-button" type="button">${escapeHtml(buttonLabel)}</button>
     </section>
   `;
-
-  backdrop.querySelector("button")?.addEventListener("click", () => backdrop.remove());
+  backdrop.querySelector("button")?.addEventListener("click", () => {
+    onConfirm?.();
+    backdrop.remove();
+  });
   document.body.append(backdrop);
 }
 
-async function renderLeaderboard(force = false) {
-  if (!elements.leaderboardList) {
-    return;
-  }
-
-  if (leaderboardLoaded && !force) {
-    return;
-  }
-
-  elements.leaderboardList.innerHTML = `<p class="item-description">Rangliste wird geladen…</p>`;
-
-  if (elements.leaderboardLastWinner) {
-    elements.leaderboardLastWinner.textContent = "Top-Spieler der letzten Woche wird geladen...";
-  }
-
-  const { entries, previousWinner, error } = await fetchLeaderboard(30);
-
-  if (error) {
-    elements.leaderboardList.innerHTML = `<p class="item-description">${escapeHtml(error.message)}</p>`;
-    if (elements.leaderboardLastWinner) {
-      elements.leaderboardLastWinner.textContent = "Top-Spieler der letzten Woche gerade nicht verfügbar.";
-    }
-    return;
-  }
-
-  leaderboardLoaded = true;
-  renderPreviousWinner(previousWinner);
-
-  if (!entries.length) {
-    elements.leaderboardList.innerHTML = `<p class="item-description">Noch keine Einträge. Sei der Erste.</p>`;
-    if (elements.leaderboardHint) {
-      elements.leaderboardHint.textContent = cloudSync.enabled
-        ? "Tipp: Lege unter Profil einen Benutzernamen fest — der erscheint in der Rangliste."
-        : "Melde dich an, um deinen Score zu speichern und in der Rangliste zu erscheinen.";
-    }
-    return;
-  }
-
-  elements.leaderboardList.innerHTML = entries.map((entry) => `
-    <div class="leaderboard-row ${entry.rank <= 3 ? "is-top" : ""}">
-      <span class="leaderboard-rank">#${entry.rank}</span>
-      <span class="leaderboard-name">${escapeHtml(entry.name)}</span>
-      <span class="leaderboard-score">${escapeHtml(formatNumber(entry.totalEarned))}</span>
-    </div>
-  `).join("");
-
-  if (elements.leaderboardHint) {
-    elements.leaderboardHint.textContent = "Sortiert nach Kakteen, die in der laufenden Woche geerntet wurden.";
-  }
-}
-
-function renderPreviousWinner(previousWinner) {
-  if (!elements.leaderboardLastWinner) {
-    return;
-  }
-
-  elements.leaderboardLastWinner.innerHTML = previousWinner
-    ? `Letzte Woche ganz oben: <strong>${escapeHtml(previousWinner.name)}</strong> mit ${escapeHtml(formatNumber(previousWinner.score))} Kakteen.`
-    : "Top-Spieler der letzten Woche: Noch kein Ergebnis gespeichert.";
-}
-
-function formatNumber(value) {
-  if (value >= 1000000) {
-    return Intl.NumberFormat("de-DE", { maximumFractionDigits: 2, notation: "compact" }).format(value);
-  }
-
-  if (value >= 1000) {
-    return Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 }).format(Math.floor(value));
-  }
-
-  return Intl.NumberFormat("de-DE", { maximumFractionDigits: value >= 10 ? 0 : 1 }).format(value);
-}
-
-function getBuildingCost(building) {
-  return Math.ceil(building.baseCost * Math.pow(1.15, state.buildings[building.id]));
-}
-
-function getClickPower() {
-  return getUpgradeMultipliers().clickMultiplier;
-}
-
-function getCps() {
-  const { productionMultiplier, buildingMultipliers } = getUpgradeMultipliers();
-  return buildings.reduce((sum, building) => {
-    const buildingMultiplier = buildingMultipliers[building.id] || 1;
-    return sum + state.buildings[building.id] * building.cps * buildingMultiplier * productionMultiplier;
-  }, 0);
-}
-
-function getUpgradeMultipliers() {
-  return state.upgrades.reduce((multipliers, upgradeId) => {
-    const upgrade = upgrades.find((item) => item.id === upgradeId);
-    if (!upgrade) {
-      return multipliers;
-    }
-
-    if (upgrade.buildingId) {
-      multipliers.buildingMultipliers[upgrade.buildingId] =
-        (multipliers.buildingMultipliers[upgrade.buildingId] || 1) * (upgrade.buildingMultiplier || 1);
-    }
-
-    multipliers.clickMultiplier *= upgrade.clickMultiplier || 1;
-    multipliers.productionMultiplier *= upgrade.productionMultiplier || 1;
-    return multipliers;
-  }, { clickMultiplier: 1, productionMultiplier: 1, buildingMultipliers: {} });
-}
-
-function totalBuildings(currentState) {
-  return Object.values(currentState.buildings).reduce((sum, amount) => sum + amount, 0);
+function showChangelog() {
+  showGameModal({
+    title: "Changelog",
+    bodyHtml: `
+      <ul class="changelog-list">
+        ${changelogItems.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+      </ul>
+    `,
+  });
 }
 
 function addCactus(amount) {
-  ensureWeeklyLeaderboard();
-  state.cactus += amount;
-  state.totalEarned += amount;
-  state.weeklyLeaderboard.score += amount;
+  const value = Math.max(0, Number(amount) || 0);
+  state.cactus += value;
+  state.totalEarned += value;
 }
 
-function formatLeaderboardCountdown(ms) {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  return `${days}T ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
-}
-
-function updateLeaderboardResetCountdown() {
-  if (!elements.leaderboardReset) {
-    return;
-  }
-
-  const previousPeriodId = state.weeklyLeaderboard?.periodId;
-  const period = ensureWeeklyLeaderboard();
-  elements.leaderboardReset.textContent =
-    `Reset Sonntag 23:00 · noch ${formatLeaderboardCountdown(period.nextResetAt.getTime() - Date.now())}`;
-
-  if (previousPeriodId && previousPeriodId !== period.id) {
-    saveState("Wochenrangliste resettet");
-    if (document.querySelector("#leaderboard-panel")?.classList.contains("is-active")) {
-      renderLeaderboard(true);
+function updateAchievements() {
+  const unlocked = [];
+  for (const achievement of achievements) {
+    if (!state.achievements.includes(achievement.id) && achievement.test(state)) {
+      state.achievements.push(achievement.id);
+      unlocked.push(achievement.name);
     }
   }
+
+  if (unlocked.length) {
+    elements.saveStatus.textContent = `Abzeichen: ${unlocked.at(-1)}`;
+  }
+}
+
+function getUpgrade(id) {
+  return upgrades.find((upgrade) => upgrade.id === id);
 }
 
 function clickCactus(event) {
-  const earned = getClickPower();
+  const earned = getClickYield(state);
   addCactus(earned);
   state.totalClicks += 1;
+  chargeClickFrenzy();
   spawnFloat(event.clientX, event.clientY, `+${formatNumber(earned)}`);
   updateAchievements();
   render();
+}
+
+function chargeClickFrenzy() {
+  if (isClickFrenzyActive(state)) {
+    return;
+  }
+
+  state.events.clickCharge = Math.min(CLICK_FRENZY_TARGET, state.events.clickCharge + 1);
+  if (state.events.clickCharge < CLICK_FRENZY_TARGET) {
+    return;
+  }
+
+  state.events.clickCharge = 0;
+  state.events.frenzyUntil = Date.now() + CLICK_FRENZY_MS;
+  state.events.frenzies += 1;
+  elements.saveStatus.textContent = "Goldlauf aktiv";
 }
 
 function spawnFloat(x, y, text) {
@@ -528,7 +244,11 @@ function spawnFloat(x, y, text) {
 
 function buyBuilding(id) {
   const building = buildings.find((item) => item.id === id);
-  const cost = getBuildingCost(building);
+  if (!building) {
+    return;
+  }
+
+  const cost = getBuildingCost(state, building);
   if (state.cactus < cost) {
     return;
   }
@@ -540,7 +260,7 @@ function buyBuilding(id) {
 }
 
 function buyUpgrade(id) {
-  const upgrade = upgrades.find((item) => item.id === id);
+  const upgrade = getUpgrade(id);
   if (!upgrade || state.upgrades.includes(id) || state.cactus < upgrade.cost) {
     return;
   }
@@ -551,29 +271,41 @@ function buyUpgrade(id) {
   render();
 }
 
-function updateAchievements() {
-  for (const achievement of achievements) {
-    if (!state.achievements.includes(achievement.id) && achievement.test(state)) {
-      state.achievements.push(achievement.id);
-      elements.saveStatus.textContent = `Abzeichen: ${achievement.name}`;
-    }
+function performPrestige() {
+  const newNopal = getNewNopal(state);
+  if (newNopal <= 0) {
+    return;
   }
+
+  const confirmed = window.confirm(
+    `Prestige setzt deinen aktuellen Run zurück und gibt dir ${formatNumber(newNopal)} Nopal. Fortfahren?`
+  );
+  if (!confirmed) {
+    return;
+  }
+
+  state.prestige.nopal += newNopal;
+  state.prestige.totalNopalEarned += newNopal;
+  state.prestige.prestiges += 1;
+  resetRunForPrestige(state);
+  ensureRandomEventSchedules();
+  updateAchievements();
+  saveState("Prestige gespeichert");
+  render();
 }
 
 function renderShop() {
-  const { productionMultiplier, buildingMultipliers } = getUpgradeMultipliers();
   elements.buildingList.innerHTML = buildings.map((building) => {
-    const cost = getBuildingCost(building);
+    const cost = getBuildingCost(state, building);
     const owned = state.buildings[building.id];
-    const buildingCps = building.cps * (buildingMultipliers[building.id] || 1) * productionMultiplier;
     const disabled = state.cactus < cost ? "disabled" : "";
     return `
       <button class="shop-item" type="button" data-building="${building.id}" ${disabled}>
-        <span class="item-icon" aria-hidden="true">${building.icon}</span>
+        <span class="item-icon" aria-hidden="true">${escapeHtml(building.icon)}</span>
         <span>
-          <span class="item-name">${building.name}</span>
-          <span class="item-description">${building.description}</span>
-          <span class="item-meta">${formatNumber(buildingCps)}/Sek. - Besitz: ${owned}</span>
+          <span class="item-name">${escapeHtml(building.name)}</span>
+          <span class="item-description">${escapeHtml(building.description)}</span>
+          <span class="item-meta">${formatNumber(getBuildingProduction(state, building))}/Sek. - Besitz: ${formatNumber(owned)}</span>
         </span>
         <span class="item-price">${formatNumber(cost)}</span>
       </button>
@@ -583,16 +315,15 @@ function renderShop() {
 
 function renderUpgrades() {
   const visibleUpgrades = upgrades.filter((upgrade) => !state.upgrades.includes(upgrade.id));
-
   elements.upgradeList.innerHTML = visibleUpgrades.length
     ? visibleUpgrades.map((upgrade) => {
       const disabled = state.cactus < upgrade.cost ? "disabled" : "";
       return `
         <button class="shop-item" type="button" data-upgrade="${upgrade.id}" ${disabled}>
-          <span class="item-icon" aria-hidden="true">${upgrade.icon}</span>
+          <span class="item-icon" aria-hidden="true">${escapeHtml(upgrade.icon)}</span>
           <span>
-            <span class="item-name">${upgrade.name}</span>
-            <span class="item-description">${upgrade.description}</span>
+            <span class="item-name">${escapeHtml(upgrade.name)}</span>
+            <span class="item-description">${escapeHtml(upgrade.description)}</span>
           </span>
           <span class="item-price">${formatNumber(upgrade.cost)}</span>
         </button>
@@ -607,10 +338,10 @@ function renderAchievements() {
     return `
       <div class="achievement ${unlocked ? "is-unlocked" : ""}">
         <span class="achievement-copy">
-          <strong>${achievement.name}</strong>
-          <small>${achievement.goal}</small>
+          <strong>${escapeHtml(achievement.name)}</strong>
+          <small>${escapeHtml(achievement.goal)}</small>
         </span>
-        <span>${unlocked ? "Freigeschaltet" : "Offen"}</span>
+        <span>${unlocked ? "+0,1x" : "Offen"}</span>
       </div>
     `;
   }).join("");
@@ -618,12 +349,51 @@ function renderAchievements() {
 
 function renderStatsOnly() {
   elements.cactusCount.textContent = formatNumber(state.cactus);
-  elements.cactusRate.textContent = formatNumber(getCps());
-  elements.clickPower.textContent = formatNumber(getClickPower());
+  elements.cactusRate.textContent = formatNumber(getAutomaticProduction(state));
+  elements.clickPower.textContent = formatNumber(getClickYield(state));
+  elements.achievementMultiplier.textContent = `x${formatNumber(getAchievementMultiplier(state))}`;
+  elements.scorePrestigeMultiplier.textContent = `x${formatNumber(getPrestigeMultiplier(state))}`;
   elements.totalEarned.textContent = formatNumber(state.totalEarned);
   elements.totalClicks.textContent = formatNumber(state.totalClicks);
   elements.totalBuildings.textContent = formatNumber(totalBuildings(state));
   elements.totalUpgrades.textContent = formatNumber(state.upgrades.length);
+}
+
+function renderPrestige() {
+  const newNopal = getNewNopal(state);
+  const nextPrestigeMultiplier = getPrestigeMultiplier({
+    ...state,
+    prestige: {
+      ...state.prestige,
+      nopal: state.prestige.nopal + newNopal,
+    },
+  });
+  elements.prestigeNopal.textContent = formatNumber(state.prestige.nopal);
+  elements.prestigeBonus.textContent = `x${formatNumber(getPrestigeMultiplier(state))}`;
+  elements.prestigeNewNopal.textContent = formatNumber(newNopal);
+  elements.prestigeNextBonus.textContent = `x${formatNumber(nextPrestigeMultiplier)}`;
+  elements.prestigeGap.textContent = formatNumber(getNopalGap(state));
+  elements.prestigeCount.textContent = formatNumber(state.prestige.prestiges);
+  elements.prestigeButton.disabled = newNopal <= 0;
+}
+
+function renderEventMeter(now = Date.now()) {
+  const active = isClickFrenzyActive(state, now);
+  const remainingMs = Math.max(0, state.events.frenzyUntil - now);
+  const fill = active
+    ? (remainingMs / CLICK_FRENZY_MS) * 100
+    : (state.events.clickCharge / CLICK_FRENZY_TARGET) * 100;
+
+  elements.eventMeterFill.style.width = `${Math.min(100, Math.max(0, fill))}%`;
+  elements.eventMeterLabel.textContent = active ? "Goldlauf aktiv" : "Goldlauf lädt";
+  elements.eventMeterValue.textContent = active
+    ? `${formatDuration(remainingMs / 1000)} x2`
+    : `${formatNumber(state.events.clickCharge)} / ${formatNumber(CLICK_FRENZY_TARGET)} Klicks`;
+  elements.frenzyBadge.hidden = !active;
+  elements.scoreFrenzyMultiplier.hidden = !active;
+  elements.scoreCard.classList.toggle("is-frenzy", active);
+  elements.cactusButton.classList.toggle("is-frenzy", active);
+  elements.eventMeter.classList.toggle("is-frenzy", active);
 }
 
 function render() {
@@ -631,21 +401,211 @@ function render() {
   renderShop();
   renderUpgrades();
   renderAchievements();
+  renderPrestige();
+  renderEventMeter();
 }
 
 function payProductionSecond() {
-  const production = getCps();
-
+  const production = getAutomaticProduction(state);
   if (production > 0) {
     addCactus(production);
     updateAchievements();
     render();
+  } else {
+    renderEventMeter();
   }
+}
+
+function formatLeaderboardCountdown(ms) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${days}T ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
+}
+
+function updateLeaderboardResetCountdown() {
+  const period = getMonthlyLeaderboardPeriod();
+  if (state.season.id !== period.id) {
+    if (cloudSync.enabled) {
+      window.location.reload();
+      return;
+    }
+
+    state = createInitialState(period.id);
+    leaderboardLoaded = false;
+    saveState("Monatssaison resettet");
+    render();
+  }
+
+  elements.leaderboardReset.textContent =
+    `Reset am 01. des nächsten Monats · noch ${formatLeaderboardCountdown(period.nextResetAt.getTime() - Date.now())}`;
+}
+
+async function renderLeaderboard(force = false) {
+  if (!elements.leaderboardList || (leaderboardLoaded && !force)) {
+    return;
+  }
+
+  elements.leaderboardList.innerHTML = `<p class="item-description">Rangliste wird geladen...</p>`;
+  elements.leaderboardLastMonthList.innerHTML = `<p class="item-description">Letzter Monat wird geladen...</p>`;
+
+  const { entries, previousTopThree, error } = await fetchLeaderboard();
+  if (error) {
+    elements.leaderboardList.innerHTML = `<p class="item-description">${escapeHtml(error.message)}</p>`;
+    elements.leaderboardLastMonthList.innerHTML = `<p class="item-description">Monatsabschluss gerade nicht verfügbar.</p>`;
+    return;
+  }
+
+  leaderboardLoaded = true;
+  renderLeaderboardRows(elements.leaderboardLastMonthList, previousTopThree || [], "Noch kein Monatsabschluss gespeichert.");
+  renderLeaderboardRows(elements.leaderboardList, entries || [], "Noch keine Einträge. Sei der Erste.");
+  elements.leaderboardHint.textContent = cloudSync.enabled
+    ? "Sortiert nach Kakteen, die in der laufenden Monatssaison geerntet wurden."
+    : "Melde dich an, um deinen Saison-Score in der Rangliste zu speichern.";
+}
+
+function renderLeaderboardRows(root, rows, emptyText) {
+  root.innerHTML = rows.length
+    ? rows.map((entry) => `
+      <div class="leaderboard-row ${entry.rank <= 3 ? "is-top" : ""}">
+        <span class="leaderboard-rank">#${entry.rank}</span>
+        <span class="leaderboard-name">${escapeHtml(entry.name)}</span>
+        <span class="leaderboard-score">${formatNumber(entry.totalEarned ?? entry.score)}</span>
+      </div>
+    `).join("")
+    : `<p class="item-description">${escapeHtml(emptyText)}</p>`;
+}
+
+function computeOfflineReward(now = Date.now()) {
+  const seconds = Math.min(
+    OFFLINE_LIMIT_SECONDS,
+    Math.max(0, (now - Number(state.lastOnlineTimestamp || now)) / 1000)
+  );
+  const production = getAutomaticProduction(state, { includeEvent: false, now });
+  const reward = production * OFFLINE_RATE * seconds;
+  state.lastOnlineTimestamp = now;
+
+  if (seconds < 5 || reward <= 0) {
+    return null;
+  }
+
+  return { seconds, reward };
+}
+
+function showOfflineReward(reward) {
+  showGameModal({
+    title: "Offline Fortschritt",
+    tone: "is-offline",
+    bodyHtml: `
+      <dl class="offline-reward">
+        <div>
+          <dt>Offline Zeit</dt>
+          <dd>${escapeHtml(formatDuration(reward.seconds))}</dd>
+        </div>
+        <div>
+          <dt>Verdiente Kakteen</dt>
+          <dd>${escapeHtml(formatNumber(reward.reward))}</dd>
+        </div>
+      </dl>
+    `,
+    buttonLabel: "Einsammeln",
+    onConfirm: () => {
+      addCactus(reward.reward);
+      updateAchievements();
+      render();
+      saveState("Offline Fortschritt eingesammelt");
+    },
+  });
+}
+
+function randomDelay([min, max]) {
+  return Math.floor(min + Math.random() * (max - min));
+}
+
+function scheduleNextRandomEvent(kind, now = Date.now()) {
+  if (kind === "golden") {
+    state.events.nextGoldenAt = now + randomDelay(GOLDEN_EVENT_DELAY);
+  } else {
+    state.events.nextRedAt = now + randomDelay(RED_EVENT_DELAY);
+  }
+}
+
+function ensureRandomEventSchedules() {
+  if (!state.events.nextGoldenAt) {
+    scheduleNextRandomEvent("golden");
+  }
+  if (!state.events.nextRedAt) {
+    scheduleNextRandomEvent("red");
+  }
+}
+
+function checkRandomEvents(now = Date.now()) {
+  if (!activeRandomEvents.has("golden") && state.events.nextGoldenAt && now >= state.events.nextGoldenAt) {
+    spawnConfiguredRandomEvent("golden");
+  }
+  if (!activeRandomEvents.has("red") && state.events.nextRedAt && now >= state.events.nextRedAt) {
+    spawnConfiguredRandomEvent("red");
+  }
+}
+
+function spawnConfiguredRandomEvent(kind) {
+  const config = RANDOM_EVENT_CONFIG[kind];
+  if (!config || activeRandomEvents.has(kind)) {
+    return;
+  }
+
+  spawnRandomEvent(kind, config.duration, config.rewardSeconds);
+}
+
+function spawnRandomEvent(kind, duration, rewardSeconds) {
+  const button = document.createElement("button");
+  const shrinkSeconds = duration / 1000;
+  button.className = `random-event-cactus is-${kind}`;
+  button.type = "button";
+  button.style.left = `${12 + Math.random() * 70}%`;
+  button.style.top = `${24 + Math.random() * 54}%`;
+  button.style.setProperty("--event-life", `${shrinkSeconds}s`);
+  button.setAttribute("aria-label", kind === "golden" ? "Goldenen Event-Kaktus fangen" : "Roten Event-Kaktus fangen");
+  button.innerHTML = `<img class="random-event-icon" src="/favicon-32x32.png" alt="" aria-hidden="true">`;
+  elements.clickZone.append(button);
+
+  const removeEvent = (caught) => {
+    const entry = activeRandomEvents.get(kind);
+    window.clearTimeout(entry?.timeout);
+    activeRandomEvents.delete(kind);
+    button.remove();
+    scheduleNextRandomEvent(kind);
+
+    if (!caught) {
+      return;
+    }
+
+    const reward = getAutomaticProduction(state, { includeEvent: false }) * rewardSeconds;
+    addCactus(reward);
+    if (kind === "golden") {
+      state.events.goldenHits += 1;
+    } else {
+      state.events.redHits += 1;
+    }
+    elements.saveStatus.textContent = `${kind === "golden" ? "Goldkaktus" : "Rotkaktus"}: +${formatNumber(reward)}`;
+    updateAchievements();
+    render();
+  };
+
+  button.addEventListener("click", () => removeEvent(true), { once: true });
+  activeRandomEvents.set(kind, {
+    button,
+    timeout: window.setTimeout(() => removeEvent(false), duration),
+  });
 }
 
 function bindEvents() {
   elements.cactusButton.addEventListener("click", clickCactus);
   elements.saveButton.addEventListener("click", () => saveState("Manuell gespeichert"));
+  elements.changelogButton.addEventListener("click", showChangelog);
+  elements.prestigeButton.addEventListener("click", performPrestige);
 
   elements.buildingList.addEventListener("click", (event) => {
     const button = event.target.closest("[data-building]");
@@ -666,6 +626,9 @@ function bindEvents() {
       elements.tabs.forEach((item) => item.classList.toggle("is-active", item === tab));
       elements.panels.forEach((panel) => {
         panel.classList.toggle("is-active", panel.id === `${tab.dataset.tab}-panel`);
+        if (panel.id === `${tab.dataset.tab}-panel`) {
+          panel.scrollTop = 0;
+        }
       });
 
       if (tab.dataset.tab === "leaderboard") {
@@ -675,20 +638,24 @@ function bindEvents() {
   });
 
   elements.resetButton.addEventListener("click", () => {
-    const confirmed = window.confirm("Willst du deinen KaktusClicker-Spielstand wirklich löschen?");
+    const confirmed = window.confirm("Willst du deinen kompletten KaktusClicker-Spielstand inklusive Prestige wirklich löschen?");
     if (!confirmed) {
       return;
     }
 
-    state = structuredClone(initialState);
+    state = createInitialState(getMonthlyLeaderboardPeriod().id);
+    ensureRandomEventSchedules();
+    leaderboardLoaded = false;
     saveState("Zurückgesetzt");
     render();
-    leaderboardLoaded = false;
   });
 
   window.setInterval(() => saveState("Automatisch gespeichert"), 15000);
-  window.setInterval(payProductionSecond, 1000);
-  window.setInterval(updateLeaderboardResetCountdown, 1000);
+  window.setInterval(() => {
+    payProductionSecond();
+    checkRandomEvents();
+    updateLeaderboardResetCountdown();
+  }, 1000);
   window.addEventListener("kk-admin-reload", () => {
     window.clearTimeout(cloudSaveTimer);
     cloudSync = { enabled: false, user: null };
@@ -697,68 +664,40 @@ function bindEvents() {
 }
 
 async function initGame() {
+  const period = getMonthlyLeaderboardPeriod();
   const session = await getGameSession();
 
   if (session?.user) {
     cloudSync.enabled = true;
     cloudSync.user = session.user;
+    await ensureKaktusSeason();
     const profile = await getGameProfile(session.user);
     if (profile?.is_banned) {
       await signOutGameSession();
-      showGameModal("Account gesperrt", "Dein Account wurde gesperrt.");
+      showGameModal({ title: "Account gesperrt", message: "Dein Account wurde gesperrt." });
       elements.saveStatus.textContent = "Account gesperrt";
       return;
     }
 
     const cloud = await loadCloudSave(session.user);
-    state = cloud?.state
-      ? normalizeLoadedState(cloud.state)
-      : structuredClone(initialState);
+    state = normalizeLoadedState(cloud?.state, period.id);
     scheduleCloudSave();
   } else {
-    state = loadLocalState() || structuredClone(initialState);
+    state = normalizeLoadedState(loadLocalState(), period.id);
   }
 
+  ensureRandomEventSchedules();
   bindEvents();
-  ensureWeeklyLeaderboard();
   updateAchievements();
   render();
   updateLeaderboardResetCountdown();
   elements.saveStatus.textContent = getIdleSaveLabel();
-}
 
-function normalizeLoadedState(loaded) {
-  const parsed = {
-    ...structuredClone(initialState),
-    ...loaded,
-    buildings: { ...initialState.buildings, ...loaded.buildings },
-    upgrades: Array.isArray(loaded.upgrades) ? loaded.upgrades : [],
-    achievements: Array.isArray(loaded.achievements) ? loaded.achievements : [],
-    weeklyLeaderboard: {
-      ...createWeeklyLeaderboard(),
-      ...loaded.weeklyLeaderboard
-    },
-    previousWeeklyLeaderboard: loaded.previousWeeklyLeaderboard
-  };
-
-  parsed.cactus = Number(parsed.cactus) || 0;
-  parsed.totalEarned = Number(parsed.totalEarned) || 0;
-  parsed.totalClicks = Number(parsed.totalClicks) || 0;
-  parsed.lastSavedAt = Number(parsed.lastSavedAt) || Date.now();
-  ensureWeeklyLeaderboard(parsed);
-
-  for (const building of buildings) {
-    parsed.buildings[building.id] = Math.max(0, Math.floor(Number(parsed.buildings[building.id]) || 0));
+  const offlineReward = computeOfflineReward();
+  saveState("Online-Zeit aktualisiert");
+  if (offlineReward) {
+    showOfflineReward(offlineReward);
   }
-
-  parsed.upgrades = parsed.upgrades.filter((id, index, list) => {
-    return upgrades.some((upgrade) => upgrade.id === id) && list.indexOf(id) === index;
-  });
-  parsed.achievements = parsed.achievements.filter((id, index, list) => {
-    return achievements.some((achievement) => achievement.id === id) && list.indexOf(id) === index;
-  });
-
-  return parsed;
 }
 
 initGame();

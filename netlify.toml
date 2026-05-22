@@ -1,6 +1,10 @@
 [functions]
   directory = "netlify/functions"
 
+[build.environment]
+  # These values are intentionally public in static pages/config and can match Netlify env values.
+  SECRETS_SCAN_OMIT_KEYS = "ADMIN_EMAILS,SUPABASE_URL"
+
 [functions."check-free-games"]
   schedule = "@hourly"
 

@@ -3,7 +3,6 @@ import { fetchProfile, getDisplayName } from "./profile.js";
 
 export const KAKTUS_GAME_ID = "kaktus-clicker";
 const LEADERBOARD_TIME_ZONE = "Europe/Berlin";
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 const berlinDateParts = new Intl.DateTimeFormat("en-GB", {
     timeZone: LEADERBOARD_TIME_ZONE,
@@ -48,23 +47,22 @@ function formatPeriodId(wallEpoch) {
     const date = new Date(wallEpoch);
     const year = date.getUTCFullYear();
     const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(date.getUTCDate()).padStart(2, "0");
-    return `${year}-${month}-${day}-23`;
+    return `${year}-${month}`;
 }
 
-export function getWeeklyLeaderboardPeriod(now = new Date()) {
+export function getMonthlyLeaderboardPeriod(now = new Date()) {
     const berlinWallNow = getBerlinWallEpoch(now);
     const berlinWallDate = new Date(berlinWallNow);
-    const currentSundayResetWall = Date.UTC(
+    const resetWall = Date.UTC(
         berlinWallDate.getUTCFullYear(),
         berlinWallDate.getUTCMonth(),
-        berlinWallDate.getUTCDate() - berlinWallDate.getUTCDay(),
-        23
+        1
     );
-    const resetWall = berlinWallNow < currentSundayResetWall
-        ? currentSundayResetWall - (7 * DAY_MS)
-        : currentSundayResetWall;
-    const nextResetWall = resetWall + (7 * DAY_MS);
+    const nextResetWall = Date.UTC(
+        berlinWallDate.getUTCFullYear(),
+        berlinWallDate.getUTCMonth() + 1,
+        1
+    );
 
     return {
         id: formatPeriodId(resetWall),
@@ -111,7 +109,7 @@ export async function loadCloudSave(user) {
 
     const { data, error } = await supabase
         .from("game_saves")
-        .select("payload, total_earned, display_name, updated_at")
+        .select("payload, total_earned, display_name, season_id, updated_at")
         .eq("user_id", user.id)
         .eq("game_id", KAKTUS_GAME_ID)
         .maybeSingle();
@@ -129,6 +127,7 @@ export async function loadCloudSave(user) {
         state: data.payload,
         totalEarned: Number(data.total_earned) || 0,
         displayName: data.display_name,
+        seasonId: data.season_id,
         updatedAt: data.updated_at ? Date.parse(data.updated_at) : 0,
     };
 }
@@ -139,6 +138,11 @@ export async function pushCloudSave(user, state) {
         return { error: new Error("Nicht eingeloggt.") };
     }
 
+    const period = getMonthlyLeaderboardPeriod();
+    if (state.season?.id !== period.id) {
+        return { error: new Error("Dieser Save gehört zu einer alten Saison. Bitte neu laden.") };
+    }
+
     const displayName = await resolveDisplayName(user);
     const totalEarned = Number(state.totalEarned) || 0;
 
@@ -147,6 +151,7 @@ export async function pushCloudSave(user, state) {
         .upsert({
             user_id: user.id,
             game_id: KAKTUS_GAME_ID,
+            season_id: period.id,
             payload: state,
             total_earned: totalEarned,
             display_name: displayName,
@@ -161,61 +166,81 @@ export async function pushCloudSave(user, state) {
     return { ok: true };
 }
 
-export async function fetchLeaderboard(limit = 25) {
+export async function ensureKaktusSeason() {
+    try {
+        const response = await fetch("/api/kaktus-clicker-season", {
+            headers: { Accept: "application/json" },
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+    } catch (error) {
+        console.error("Monatssaison konnte nicht geprüft werden:", error.message);
+        return null;
+    }
+}
+
+export async function fetchLeaderboard(limit = 1000) {
     const supabase = getSupabase();
     if (!supabase) {
         return { error: new Error("Rangliste ist gerade nicht verfügbar.") };
     }
 
-    const period = getWeeklyLeaderboardPeriod();
-    const { data, error } = await supabase
-        .from("game_saves")
-        .select("payload, display_name, updated_at")
-        .eq("game_id", KAKTUS_GAME_ID)
-        .limit(250);
+    await ensureKaktusSeason();
+    const period = getMonthlyLeaderboardPeriod();
+    const previousPeriod = getMonthlyLeaderboardPeriod(new Date(period.resetAt.getTime() - 1000));
+    const [{ data, error }, { data: archive, error: archiveError }] = await Promise.all([
+        supabase
+            .from("game_saves")
+            .select("total_earned, display_name, season_id, updated_at")
+            .eq("game_id", KAKTUS_GAME_ID)
+            .eq("season_id", period.id)
+            .order("total_earned", { ascending: false })
+            .limit(limit),
+        supabase
+            .from("game_season_archives")
+            .select("top_entries")
+            .eq("game_id", KAKTUS_GAME_ID)
+            .eq("season_id", previousPeriod.id)
+            .maybeSingle(),
+    ]);
 
     if (error) {
         return { error: new Error("Rangliste konnte nicht geladen werden.") };
     }
 
-    const rows = data || [];
-    const previousPeriod = getWeeklyLeaderboardPeriod(new Date(period.resetAt.getTime() - 1000));
-    const toEntry = (row, leaderboard) => ({
-        name: row.display_name || "Spieler",
-        score: Number(leaderboard?.score) || 0,
-        periodId: leaderboard?.periodId,
-        updatedAt: row.updated_at,
-    });
-    const sortByScore = (left, right) => right.score - left.score;
-    const currentEntries = rows
-        .map((row) => toEntry(row, row.payload?.weeklyLeaderboard))
-        .filter((entry) => entry.periodId === period.id && entry.score > 0)
-        .sort(sortByScore);
-    const previousEntries = rows
-        .flatMap((row) => [
-            toEntry(row, row.payload?.weeklyLeaderboard),
-            toEntry(row, row.payload?.previousWeeklyLeaderboard),
-        ])
-        .filter((entry) => entry.periodId === previousPeriod.id && entry.score > 0)
-        .sort(sortByScore);
+    if (archiveError) {
+        console.error("Letzter Monatsabschluss konnte nicht geladen werden:", archiveError.message);
+    }
+
+    const previousTopThree = Array.isArray(archive?.top_entries)
+        ? archive.top_entries.map((entry, index) => ({
+            rank: index + 1,
+            name: entry.name || "Spieler",
+            score: Number(entry.score) || 0,
+            updatedAt: entry.updatedAt || null,
+        }))
+        : [];
 
     return {
         period,
         previousPeriod,
-        previousWinner: previousEntries[0]
+        previousTopThree,
+        previousWinner: previousTopThree[0]
             ? {
-                name: previousEntries[0].name,
-                score: previousEntries[0].score,
-                updatedAt: previousEntries[0].updatedAt,
+                name: previousTopThree[0].name,
+                score: previousTopThree[0].score,
+                updatedAt: previousTopThree[0].updatedAt,
             }
             : null,
-        entries: currentEntries
-            .slice(0, limit)
+        entries: (data || [])
+            .filter((entry) => Number(entry.total_earned) > 0)
             .map((entry, index) => ({
             rank: index + 1,
-            name: entry.name,
-            totalEarned: entry.score,
-            updatedAt: entry.updatedAt,
+            name: entry.display_name || "Spieler",
+            totalEarned: Number(entry.total_earned) || 0,
+            updatedAt: entry.updated_at,
         })),
     };
 }

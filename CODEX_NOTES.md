@@ -45,7 +45,8 @@ Netlify deploys automatically from the GitHub repo after pushes to `main`.
 - Added a Games hub at `/games/` with a first card for KaktusClicker. Future games should be added as sibling folders under `games/` and linked from `games/index.html`.
 - KaktusClicker has a small `Zurück zu Games` link and should keep visible German text with real umlauts.
 - KaktusClicker cloud loading must treat a missing local save as missing, so a fresh device cannot win over an existing Supabase save by timestamp.
-- KaktusClicker leaderboard scores are weekly. The period resets every Sunday at 23:00 in Europe/Berlin, is stored in the save payload, and the leaderboard tab shows a reset countdown.
+- KaktusClicker leaderboard scores are monthly. The server-side season reset runs on Netlify, resets on the first day of the next month in Europe/Berlin, stores the season in the save payload and `game_saves.season_id`, archives the previous Top 3, and the leaderboard tab shows a reset countdown.
+- KaktusClicker V2 uses modular game data/economy/state/format files for Nopal prestige, German compact number formatting, offline progress, random event Kakteen, a 1,000-click Goldlauf, expanded buildings/upgrades, and 20 multiplier achievements.
 - Legal pages now exist at `/datenschutz`, `/nutzungsbedingungen`, and `/impressum`; the short paths rewrite to static HTML via `netlify.toml`.
 
 ## Steam Deals

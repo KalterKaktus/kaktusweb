@@ -190,6 +190,10 @@ function renderGamePanel(save, index) {
                     <span>DB total_earned</span>
                     <input class="admin-input" data-save-total-earned type="number" step="any" value="${escapeAttr(save.total_earned || 0)}">
                 </label>
+                <div class="admin-field admin-meta-note">
+                    <span>Season</span>
+                    <strong>${escapeHtml(save.season_id || "-")}</strong>
+                </div>
             </div>
 
             <div class="admin-payload-root">
@@ -235,18 +239,21 @@ function renderUsers(users) {
                     </div>
                 </div>
 
-                <div class="admin-game-tabs">
-                    ${saves.map((save, index) => `
-                        <button class="admin-game-tab ${index ? "" : "is-active"}" data-action="toggle-game" data-game-id="${escapeAttr(save.game_id)}" type="button" aria-expanded="${index ? "false" : "true"}">
-                            ${escapeHtml(formatGameName(save.game_id))}
-                            <small>${escapeHtml(formatNumber(save.total_earned))}</small>
-                        </button>
-                    `).join("")}
-                </div>
+                <details class="admin-games">
+                    <summary>Games ${saves.length ? `(${saves.length})` : ""}</summary>
+                    <div class="admin-game-tabs">
+                        ${saves.map((save, index) => `
+                            <button class="admin-game-tab ${index ? "" : "is-active"}" data-action="toggle-game" data-game-id="${escapeAttr(save.game_id)}" type="button" aria-expanded="${index ? "false" : "true"}">
+                                ${escapeHtml(formatGameName(save.game_id))}
+                                <small>${escapeHtml(formatNumber(save.total_earned))}</small>
+                            </button>
+                        `).join("")}
+                    </div>
 
-                ${saves.length
-                    ? saves.map(renderGamePanel).join("")
-                    : `<p class="admin-empty">Dieser User hat noch keinen Cloud-Spielstand.</p>`}
+                    ${saves.length
+                        ? saves.map(renderGamePanel).join("")
+                        : `<p class="admin-empty">Dieser User hat noch keinen Cloud-Spielstand.</p>`}
+                </details>
 
                 <details class="admin-account-tools">
                     <summary>Account-Werkzeuge</summary>

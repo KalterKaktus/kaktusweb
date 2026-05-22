@@ -103,7 +103,7 @@ async function supabase(path, options = {}, query = "") {
 async function listUsers() {
     const [profiles, saves, presenceRows] = await Promise.all([
         supabase("profiles", {}, "?select=id,username,is_banned,avatar_url,updated_at&order=updated_at.desc"),
-        supabase("game_saves", {}, "?select=user_id,game_id,display_name,total_earned,payload,updated_at&order=updated_at.desc"),
+        supabase("game_saves", {}, "?select=user_id,game_id,display_name,total_earned,season_id,payload,updated_at&order=updated_at.desc"),
         listPresence(),
     ]);
     const savesByUser = new Map();
