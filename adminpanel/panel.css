@@ -17,6 +17,41 @@
     gap: 1rem;
 }
 
+.admin-abuse {
+    margin-bottom: 1rem;
+    border: 1px solid rgba(240, 181, 105, 0.34);
+    border-radius: 8px;
+    background: rgba(51, 25, 3, 0.3);
+}
+
+.admin-abuse summary {
+    padding: 0.85rem 1rem;
+    color: #ffd69b;
+    cursor: pointer;
+    font-weight: 950;
+}
+
+.admin-abuse[open] summary {
+    border-bottom: 1px solid rgba(240, 181, 105, 0.24);
+}
+
+.admin-abuse-body {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1rem;
+}
+
+.admin-abuse-game {
+    max-width: 360px;
+}
+
+.admin-abuse-options {
+    padding: 0.85rem;
+    border: 1px solid rgba(240, 181, 105, 0.2);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
 .admin-user {
     padding: 1rem;
     border: 1px solid var(--border);
@@ -327,6 +362,11 @@
 .admin-button.is-danger {
     border-color: rgba(255, 91, 125, 0.45);
     background: rgba(255, 91, 125, 0.12);
+}
+
+.admin-button.is-ruby {
+    border-color: rgba(255, 91, 125, 0.45);
+    background: rgba(255, 91, 125, 0.16);
 }
 
 .admin-ban {

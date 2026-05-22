@@ -79,15 +79,15 @@ export const achievements = [
   { id: "ten-nopal", name: "Nopal-Puffer", goal: "Sammle 10 Nopal in dieser Saison.", test: (state) => state.prestige.totalNopalEarned >= 10 },
   { id: "ten-prestiges", name: "Saisonschleife", goal: "Führe 10 Prestiges durch.", test: (state) => state.prestige.prestiges >= 10 },
   { id: "first-frenzy", name: "Goldener Lauf", goal: "Fülle den Klick-Balken einmal.", test: (state) => state.events.frenzies >= 1 },
-  { id: "golden-hit", name: "Goldkaktus", goal: "Fange einen goldenen Event-Kaktus.", test: (state) => state.events.goldenHits >= 1 },
-  { id: "golden-hunter", name: "Goldjäger", goal: "Fange 10 goldene Event-Kakteen.", test: (state) => state.events.goldenHits >= 10 },
-  { id: "red-hit", name: "Rotlichtfund", goal: "Fange einen roten Event-Kaktus.", test: (state) => state.events.redHits >= 1 },
+  { id: "golden-hit", name: "Goldkaktus", goal: "Fange einen Goldkaktus.", test: (state) => state.events.goldenHits >= 1 },
+  { id: "golden-hunter", name: "Goldjäger", goal: "Fange 10 Goldkakteen.", test: (state) => state.events.goldenHits >= 10 },
+  { id: "red-hit", name: "Rubinkaktus", goal: "Fange einen Rubinkaktus.", test: (state) => state.events.redHits >= 1 },
 ];
 
 export const changelogItems = [
   "Nopal-Prestige beschleunigt neue Runs innerhalb der laufenden Saison.",
-  "Goldene Klickphase, goldene Event-Kakteen und seltene rote Event-Kakteen belohnen aktives Spielen.",
-  "Offline-Fortschritt sammelt bis zu 12 Stunden automatische Produktion ein.",
+  "Goldlauf, Goldkakteen und seltene Rubinkakteen belohnen aktives Spielen.",
+  "Offline-Fortschritt sammelt ab 5 Minuten bis zu 12 Stunden halbe automatische Produktion ein.",
   "Neue Gebäude, neue Upgrades und 20 Abzeichen erweitern den Grind nach oben.",
   "Die Rangliste läuft jetzt monatlich und zeigt den letzten Monatsabschluss.",
   "Große Zahlen werden im deutschen Format mit lesbaren Abkürzungen angezeigt.",

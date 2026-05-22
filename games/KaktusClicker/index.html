@@ -44,13 +44,40 @@
               <span>Rangliste jagen.</span>
             </p>
           </div>
-          <div class="brand-actions">
-            <button class="icon-button changelog-button" id="changelog-button" type="button" title="Changelog" aria-label="Changelog anzeigen">!</button>
-            <button class="icon-button" id="save-button" type="button" title="Jetzt speichern" aria-label="Jetzt speichern">
-              <svg class="save-icon" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 4h12l2 2v14H5V4Zm3 1.8v5h8v-5H8Zm0 9.2v3h8v-3H8Z"/>
-              </svg>
-            </button>
+          <div class="brand-tools">
+            <div class="brand-actions">
+              <button class="icon-button changelog-button" id="changelog-button" type="button" title="Changelog" aria-label="Changelog anzeigen">!</button>
+              <button class="icon-button" id="save-button" type="button" title="Jetzt speichern" aria-label="Jetzt speichern">
+                <svg class="save-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 4h12l2 2v14H5V4Zm3 1.8v5h8v-5H8Zm0 9.2v3h8v-3H8Z"/>
+                </svg>
+              </button>
+            </div>
+            <div class="audio-tools" aria-label="Audio">
+              <div class="audio-control">
+                <button class="icon-button audio-button" id="music-toggle" type="button" title="Musik stummschalten" aria-label="Musik stummschalten">
+                  <svg class="audio-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M19 3v13.2a3.6 3.6 0 1 1-2-3.2V7.2l-7 1.5v9.5a3.6 3.6 0 1 1-2-3.2V7.1L19 4.7V3Z"/>
+                  </svg>
+                </button>
+                <label class="audio-slider" for="music-volume">
+                  <span>Musik</span>
+                  <input id="music-volume" type="range" min="0" max="100" step="1" value="24" />
+                </label>
+              </div>
+              <div class="audio-control">
+                <button class="icon-button audio-button" id="sound-toggle" type="button" title="Sound stummschalten" aria-label="Sound stummschalten">
+                  <svg class="audio-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M5 9h3l4-4v14l-4-4H5V9Zm10.4-.6a1 1 0 0 1 1.4 0 5 5 0 0 1 0 7.2 1 1 0 1 1-1.4-1.4 3 3 0 0 0 0-4.4 1 1 0 0 1 0-1.4Zm3-3a1 1 0 0 1 1.4 0 9.1 9.1 0 0 1 0 13.2 1 1 0 1 1-1.4-1.4 7.1 7.1 0 0 0 0-10.4 1 1 0 0 1 0-1.4Z"/>
+                  </svg>
+                </button>
+                <label class="audio-slider" for="sound-volume">
+                  <span>Sound</span>
+                  <input id="sound-volume" type="range" min="0" max="100" step="1" value="62" />
+                </label>
+              </div>
+            </div>
+            <p class="brand-save-status" id="save-status">Speicherstatus wird geladen</p>
           </div>
         </header>
 
@@ -58,6 +85,7 @@
           <p class="score-label">Kakteen</p>
           <p class="score" id="cactus-count">0</p>
           <p class="rate"><span id="cactus-rate">0</span> pro Sekunde</p>
+          <p class="click-rate">+<strong id="click-power">1</strong> pro Klick</p>
           <div class="score-multipliers" aria-label="Aktive Multiplikatoren">
             <span class="score-multiplier is-achievement">Abzeichen <strong id="achievement-multiplier">x1</strong></span>
             <span class="score-multiplier is-prestige">Prestige <strong id="score-prestige-multiplier">x1</strong></span>
@@ -96,10 +124,7 @@
 ⠀⠀⠒⠒⠂⠒⠚⠛⠛⠛⠛⠛⠛⠛⠒⠒⠒⠒⠒⠀⠀</pre>
         </button>
 
-        <div class="click-info">
-          <span>+<strong id="click-power">1</strong> pro Klick</span>
-          <span id="save-status">Speicherstatus wird geladen</span>
-        </div>
+        <p class="offline-hint">Offline-Ertrag: ab 5 Minuten 50% deiner normalen Auto-Produktion, bis zu 12 Stunden.</p>
       </section>
 
       <aside class="panel" aria-label="Gebäude und Fortschritt">

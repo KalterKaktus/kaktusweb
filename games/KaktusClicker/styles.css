@@ -115,8 +115,7 @@ button,
 
 .brand-row,
 .score-card,
-.cactus-button,
-.click-info {
+.cactus-button {
   position: relative;
   z-index: 1;
 }
@@ -235,6 +234,7 @@ h1 {
 
 .score-label,
 .rate,
+.click-rate,
 .section-title p,
 .item-meta,
 .item-owned,
@@ -263,6 +263,16 @@ dt {
   flex-wrap: wrap;
   gap: 7px;
   margin-top: 11px;
+}
+
+.click-rate {
+  margin-top: 5px;
+  color: rgba(184, 255, 200, 0.82);
+  font-variant-numeric: tabular-nums;
+}
+
+.click-rate strong {
+  color: var(--green-hot);
 }
 
 .score-multiplier {
@@ -381,24 +391,15 @@ dt {
     inset 0 0 22px rgba(255, 143, 69, 0.08);
 }
 
-.click-info {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  flex: none;
-  margin-top: 5px;
-}
-
-.click-info span {
-  padding: 9px 12px;
-  color: var(--green-hot);
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 2px;
-  font-size: 13px;
-  font-weight: 800;
-  box-shadow: var(--shadow);
+.offline-hint {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 92vw);
+  margin: 9px auto 0;
+  color: rgba(184, 255, 200, 0.68);
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: center;
 }
 
 .panel {
@@ -675,6 +676,25 @@ h3 {
   animation: float-pop 850ms ease-out forwards;
 }
 
+.float-pop.is-event-reward {
+  z-index: 5;
+  max-width: min(330px, 82vw);
+  color: #fff3ac;
+  text-align: center;
+  text-shadow:
+    0 0 10px rgba(255, 243, 172, 0.98),
+    0 0 28px rgba(255, 217, 90, 0.82);
+  font-size: clamp(22px, 3vw, 34px);
+  animation-duration: 1250ms;
+}
+
+.float-pop.is-event-reward.is-red {
+  color: #ffc8d0;
+  text-shadow:
+    0 0 10px rgba(255, 200, 208, 0.98),
+    0 0 30px rgba(255, 83, 109, 0.84);
+}
+
 .game-modal-backdrop {
   position: fixed;
   z-index: 30;
@@ -788,6 +808,79 @@ h3 {
   gap: 10px;
 }
 
+.brand-tools {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.audio-tools {
+  display: grid;
+  width: min(218px, 100%);
+  gap: 6px;
+}
+
+.audio-control {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.audio-button {
+  position: relative;
+  width: 36px;
+  min-height: 36px;
+}
+
+.audio-button.is-muted {
+  color: var(--red-event);
+  border-color: rgba(255, 83, 109, 0.62);
+}
+
+.audio-button.is-muted::after {
+  position: absolute;
+  width: 23px;
+  height: 2px;
+  background: currentColor;
+  content: "";
+  rotate: -42deg;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.audio-icon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+
+.audio-slider {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  color: rgba(184, 255, 200, 0.72);
+  font-size: 10px;
+  font-weight: 950;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.audio-slider input {
+  width: 100%;
+  min-width: 0;
+  accent-color: var(--green-hot);
+}
+
+.brand-save-status {
+  max-width: 24ch;
+  text-align: right;
+  color: rgba(184, 255, 200, 0.72);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
 .changelog-button {
   color: var(--gold);
   font-size: 22px;
@@ -880,6 +973,10 @@ h3 {
   background: linear-gradient(90deg, #9e7f05, var(--gold), #fff3ac);
   box-shadow: 0 0 20px rgba(255, 217, 90, 0.55);
   transition: width 180ms ease;
+}
+
+.event-meter.is-frenzy .event-meter-track span {
+  transition: none;
 }
 
 .cactus-button {
@@ -992,6 +1089,15 @@ h3 {
   margin: 14px 0 0;
 }
 
+.offline-note {
+  margin-top: 8px;
+  padding: 10px 11px;
+  color: rgba(184, 255, 200, 0.86);
+  border: 1px solid rgba(55, 255, 117, 0.22);
+  background: rgba(55, 255, 117, 0.08);
+  font-size: 13px;
+}
+
 .offline-reward div {
   padding: 12px;
   border: 1px solid rgba(55, 255, 117, 0.24);
@@ -1091,7 +1197,7 @@ h3 {
   }
 }
 
-@media (min-width: 901px) {
+@media (min-width: 901px) and (hover: hover) and (pointer: fine) {
   .click-zone {
     justify-content: flex-start;
     padding-top: clamp(18px, 2svh, 30px);
@@ -1099,8 +1205,7 @@ h3 {
 
   .brand-row,
   .score-card,
-  .event-meter,
-  .click-info {
+  .event-meter {
     flex: none;
   }
 
@@ -1129,6 +1234,14 @@ h3 {
 
   .brand-actions {
     margin-top: 12px;
+  }
+
+  .brand-tools {
+    justify-items: start;
+  }
+
+  .brand-save-status {
+    text-align: left;
   }
 
   .score-card {
@@ -1166,17 +1279,12 @@ h3 {
     transform: translateX(clamp(70px, 7vw, 126px)) translateZ(0);
   }
 
-  .click-info {
-    align-self: center;
-    transform: translateX(clamp(70px, 7vw, 126px));
-  }
-
   .cactus-art {
     font-size: clamp(10px, min(1.55vw, 1.42svh), 21px);
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 900px), (hover: none) and (pointer: coarse) {
   .game-shell {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -1195,6 +1303,10 @@ h3 {
     border: 1px solid rgba(55, 255, 117, 0.22);
     background: rgba(2, 10, 6, 0.34);
     box-shadow: inset 0 0 42px rgba(55, 255, 117, 0.05);
+  }
+
+  .offline-hint {
+    width: 100%;
   }
 
   .panel {
@@ -1230,18 +1342,6 @@ h3 {
   .brand-actions {
     gap: 7px;
   }
-
-  .click-info {
-  width: 100%;
-  padding: 0 4px;
-}
-
-.click-info span {
-  flex: 1;
-  text-align: center;
-  font-size: 11px;
-  padding: 8px 6px;
-}
 
   h1 {
     font-size: 40px;

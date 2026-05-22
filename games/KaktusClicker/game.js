@@ -8,6 +8,7 @@ import {
   pushCloudSave,
   signOutGameSession,
 } from "/js/game-cloud.js";
+import { getSupabase, isConfigReady } from "/js/supabase-client.js";
 import { achievements, buildings, changelogItems, upgrades } from "./data.js";
 import {
   getAchievementMultiplier,
@@ -26,24 +27,30 @@ import { formatDuration, formatNumber } from "./format.js";
 import { createInitialState, normalizeLoadedState, resetRunForPrestige } from "./state.js";
 
 const STORAGE_KEY = "kaktus-clicker-save-v1";
+const AUDIO_STORAGE_KEY = "kaktus-clicker-audio-v1";
 const CLICK_FRENZY_TARGET = 1000;
 const CLICK_FRENZY_MS = 30000;
 const OFFLINE_LIMIT_SECONDS = 12 * 60 * 60;
+const OFFLINE_MIN_SECONDS = 5 * 60;
 const OFFLINE_RATE = 0.5;
 const GOLDEN_REWARD_SECONDS = 300;
 const RED_REWARD_SECONDS = 1800;
 const GOLDEN_EVENT_DELAY = [3 * 60 * 1000, 7 * 60 * 1000];
 const RED_EVENT_DELAY = [20 * 60 * 1000, 40 * 60 * 1000];
 const RANDOM_EVENT_CONFIG = {
-  golden: { duration: 5000, rewardSeconds: GOLDEN_REWARD_SECONDS, label: "Gold" },
-  red: { duration: 10000, rewardSeconds: RED_REWARD_SECONDS, label: "Rot" },
+  golden: { duration: 5000, rewardSeconds: GOLDEN_REWARD_SECONDS, label: "Goldkaktus" },
+  red: { duration: 5000, rewardSeconds: RED_REWARD_SECONDS, label: "Rubinkaktus" },
 };
 
 let state = createInitialState(getMonthlyLeaderboardPeriod().id);
 let cloudSync = { enabled: false, user: null };
 let cloudSaveTimer = null;
 let leaderboardLoaded = false;
+let frenzyMeterFrame = null;
 const activeRandomEvents = new Map();
+const backgroundMusic = new Audio();
+const eventAppearSound = new Audio();
+let audioSettings = loadAudioSettings();
 
 const elements = {
   cactusCount: document.querySelector("#cactus-count"),
@@ -63,6 +70,10 @@ const elements = {
   achievementList: document.querySelector("#achievement-list"),
   saveStatus: document.querySelector("#save-status"),
   saveButton: document.querySelector("#save-button"),
+  musicToggle: document.querySelector("#music-toggle"),
+  musicVolume: document.querySelector("#music-volume"),
+  soundToggle: document.querySelector("#sound-toggle"),
+  soundVolume: document.querySelector("#sound-volume"),
   changelogButton: document.querySelector("#changelog-button"),
   resetButton: document.querySelector("#reset-button"),
   tabs: document.querySelectorAll(".tab"),
@@ -97,6 +108,83 @@ function loadLocalState() {
   } catch {
     return null;
   }
+}
+
+function loadAudioSettings() {
+  try {
+    return {
+      musicMuted: false,
+      soundMuted: false,
+      musicVolume: 0.24,
+      soundVolume: 0.62,
+      ...(JSON.parse(localStorage.getItem(AUDIO_STORAGE_KEY)) || {}),
+    };
+  } catch {
+    return {
+      musicMuted: false,
+      soundMuted: false,
+      musicVolume: 0.24,
+      soundVolume: 0.62,
+    };
+  }
+}
+
+function clampAudioVolume(value) {
+  return Math.min(1, Math.max(0, Number(value) || 0));
+}
+
+function saveAudioSettings() {
+  localStorage.setItem(AUDIO_STORAGE_KEY, JSON.stringify(audioSettings));
+}
+
+function setAudioButtonState(button, muted, activeLabel, mutedLabel) {
+  button.classList.toggle("is-muted", muted);
+  button.title = muted ? mutedLabel : activeLabel;
+  button.setAttribute("aria-label", button.title);
+  button.setAttribute("aria-pressed", String(muted));
+}
+
+function renderAudioControls() {
+  audioSettings.musicVolume = clampAudioVolume(audioSettings.musicVolume);
+  audioSettings.soundVolume = clampAudioVolume(audioSettings.soundVolume);
+  backgroundMusic.volume = audioSettings.musicVolume;
+  eventAppearSound.volume = audioSettings.soundVolume;
+  elements.musicVolume.value = String(Math.round(audioSettings.musicVolume * 100));
+  elements.soundVolume.value = String(Math.round(audioSettings.soundVolume * 100));
+  setAudioButtonState(elements.musicToggle, audioSettings.musicMuted, "Musik stummschalten", "Musik einschalten");
+  setAudioButtonState(elements.soundToggle, audioSettings.soundMuted, "Sound stummschalten", "Sound einschalten");
+}
+
+function startBackgroundMusic() {
+  if (audioSettings.musicMuted) {
+    return;
+  }
+
+  backgroundMusic.play().catch(() => {
+    // Browser may wait for the first real tap before starting music.
+  });
+}
+
+function playEventAppearSound() {
+  if (audioSettings.soundMuted) {
+    return;
+  }
+
+  const sound = eventAppearSound.cloneNode();
+  sound.volume = audioSettings.soundVolume;
+  sound.play().catch(() => {});
+}
+
+function initAudio() {
+  backgroundMusic.loop = true;
+  backgroundMusic.preload = "metadata";
+  backgroundMusic.src = "./audio/ambient-glitch.mp3";
+  eventAppearSound.preload = "auto";
+  eventAppearSound.src = "./audio/event-appear.mp3";
+  renderAudioControls();
+  startBackgroundMusic();
+  window.addEventListener("pointerdown", startBackgroundMusic, { once: true });
+  window.addEventListener("keydown", startBackgroundMusic, { once: true });
 }
 
 function getIdleSaveLabel() {
@@ -200,6 +288,8 @@ function updateAchievements() {
   if (unlocked.length) {
     elements.saveStatus.textContent = `Abzeichen: ${unlocked.at(-1)}`;
   }
+
+  return unlocked.length > 0;
 }
 
 function getUpgrade(id) {
@@ -212,8 +302,8 @@ function clickCactus(event) {
   state.totalClicks += 1;
   chargeClickFrenzy();
   spawnFloat(event.clientX, event.clientY, `+${formatNumber(earned)}`);
-  updateAchievements();
-  render();
+  const achievementChanged = updateAchievements();
+  renderGameplayHud({ achievementChanged });
 }
 
 function chargeClickFrenzy() {
@@ -230,11 +320,12 @@ function chargeClickFrenzy() {
   state.events.frenzyUntil = Date.now() + CLICK_FRENZY_MS;
   state.events.frenzies += 1;
   elements.saveStatus.textContent = "Goldlauf aktiv";
+  startFrenzyMeterLoop();
 }
 
-function spawnFloat(x, y, text) {
+function spawnFloat(x, y, text, className = "") {
   const pop = document.createElement("span");
-  pop.className = "float-pop";
+  pop.className = `float-pop ${className}`.trim();
   pop.textContent = text;
   pop.style.left = `${x}px`;
   pop.style.top = `${y}px`;
@@ -332,6 +423,22 @@ function renderUpgrades() {
     : `<p class="item-description">Alle Upgrades gekauft. Deine Produktion läuft auf Anschlag.</p>`;
 }
 
+function syncPurchaseAffordability() {
+  elements.buildingList.querySelectorAll("[data-building]").forEach((button) => {
+    const building = buildings.find((item) => item.id === button.dataset.building);
+    if (building) {
+      button.disabled = state.cactus < getBuildingCost(state, building);
+    }
+  });
+
+  elements.upgradeList.querySelectorAll("[data-upgrade]").forEach((button) => {
+    const upgrade = getUpgrade(button.dataset.upgrade);
+    if (upgrade) {
+      button.disabled = state.cactus < upgrade.cost;
+    }
+  });
+}
+
 function renderAchievements() {
   elements.achievementList.innerHTML = achievements.map((achievement) => {
     const unlocked = state.achievements.includes(achievement.id);
@@ -396,6 +503,36 @@ function renderEventMeter(now = Date.now()) {
   elements.eventMeter.classList.toggle("is-frenzy", active);
 }
 
+function startFrenzyMeterLoop() {
+  if (frenzyMeterFrame) {
+    return;
+  }
+
+  const tick = () => {
+    renderEventMeter();
+    if (isClickFrenzyActive(state)) {
+      frenzyMeterFrame = window.requestAnimationFrame(tick);
+      return;
+    }
+
+    frenzyMeterFrame = null;
+    renderStatsOnly();
+  };
+
+  frenzyMeterFrame = window.requestAnimationFrame(tick);
+}
+
+function renderGameplayHud({ achievementChanged = false } = {}) {
+  renderStatsOnly();
+  syncPurchaseAffordability();
+  renderPrestige();
+  renderEventMeter();
+
+  if (achievementChanged) {
+    renderAchievements();
+  }
+}
+
 function render() {
   renderStatsOnly();
   renderShop();
@@ -409,8 +546,8 @@ function payProductionSecond() {
   const production = getAutomaticProduction(state);
   if (production > 0) {
     addCactus(production);
-    updateAchievements();
-    render();
+    const achievementChanged = updateAchievements();
+    renderGameplayHud({ achievementChanged });
   } else {
     renderEventMeter();
   }
@@ -485,13 +622,14 @@ function computeOfflineReward(now = Date.now()) {
   );
   const production = getAutomaticProduction(state, { includeEvent: false, now });
   const reward = production * OFFLINE_RATE * seconds;
+  const fullOnlineReward = production * seconds;
   state.lastOnlineTimestamp = now;
 
-  if (seconds < 5 || reward <= 0) {
+  if (seconds < OFFLINE_MIN_SECONDS || reward <= 0) {
     return null;
   }
 
-  return { seconds, reward };
+  return { seconds, reward, fullOnlineReward };
 }
 
 function showOfflineReward(reward) {
@@ -499,14 +637,19 @@ function showOfflineReward(reward) {
     title: "Offline Fortschritt",
     tone: "is-offline",
     bodyHtml: `
+      <p class="offline-note">Offline-Ertrag zahlt 50% deiner normalen Auto-Produktion.</p>
       <dl class="offline-reward">
         <div>
           <dt>Offline Zeit</dt>
           <dd>${escapeHtml(formatDuration(reward.seconds))}</dd>
         </div>
         <div>
-          <dt>Verdiente Kakteen</dt>
+          <dt>Verdiente Kakteen mit 50%</dt>
           <dd>${escapeHtml(formatNumber(reward.reward))}</dd>
+        </div>
+        <div>
+          <dt>Bei aktivem Spiel</dt>
+          <dd>${escapeHtml(formatNumber(reward.fullOnlineReward))}</dd>
         </div>
       </dl>
     `,
@@ -532,16 +675,25 @@ function scheduleNextRandomEvent(kind, now = Date.now()) {
   }
 }
 
-function ensureRandomEventSchedules() {
-  if (!state.events.nextGoldenAt) {
-    scheduleNextRandomEvent("golden");
+function ensureRandomEventSchedules(now = Date.now()) {
+  if (!state.events.nextGoldenAt || state.events.nextGoldenAt <= now) {
+    scheduleNextRandomEvent("golden", now);
   }
-  if (!state.events.nextRedAt) {
-    scheduleNextRandomEvent("red");
+  if (!state.events.nextRedAt || state.events.nextRedAt <= now) {
+    scheduleNextRandomEvent("red", now);
   }
 }
 
+function restartRandomEventSchedules(now = Date.now()) {
+  scheduleNextRandomEvent("golden", now);
+  scheduleNextRandomEvent("red", now);
+}
+
 function checkRandomEvents(now = Date.now()) {
+  if (document.hidden) {
+    return;
+  }
+
   if (!activeRandomEvents.has("golden") && state.events.nextGoldenAt && now >= state.events.nextGoldenAt) {
     spawnConfiguredRandomEvent("golden");
   }
@@ -550,29 +702,94 @@ function checkRandomEvents(now = Date.now()) {
   }
 }
 
+function pauseRandomEvents() {
+  for (const [kind, entry] of activeRandomEvents.entries()) {
+    window.clearTimeout(entry.timeout);
+    entry.button.remove();
+    activeRandomEvents.delete(kind);
+  }
+
+  state.events.nextGoldenAt = 0;
+  state.events.nextRedAt = 0;
+}
+
 function spawnConfiguredRandomEvent(kind) {
   const config = RANDOM_EVENT_CONFIG[kind];
   if (!config || activeRandomEvents.has(kind)) {
     return;
   }
 
-  spawnRandomEvent(kind, config.duration, config.rewardSeconds);
+  spawnRandomEvent(kind, config.duration, config.rewardSeconds, config.label);
 }
 
-function spawnRandomEvent(kind, duration, rewardSeconds) {
+function handleAdminGameEvent(row) {
+  const expired = row?.expires_at && Date.parse(row.expires_at) <= Date.now();
+  if (document.hidden || !row || expired || row.game_id !== "kaktus-clicker") {
+    return;
+  }
+
+  if (row.event_type === "spawn-goldkaktus") {
+    spawnConfiguredRandomEvent("golden");
+  }
+
+  if (row.event_type === "spawn-rubinkaktus") {
+    spawnConfiguredRandomEvent("red");
+  }
+}
+
+function subscribeAdminGameEvents() {
+  if (!isConfigReady()) {
+    return;
+  }
+
+  const supabase = getSupabase();
+  if (!supabase) {
+    return;
+  }
+
+  supabase
+    .channel("kaktus-clicker-admin-events")
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "admin_game_events",
+        filter: "game_id=eq.kaktus-clicker",
+      },
+      ({ new: row }) => handleAdminGameEvent(row)
+    )
+    .subscribe();
+}
+
+function positionRandomEventOverCactus(button) {
+  const zone = elements.clickZone.getBoundingClientRect();
+  const cactus = elements.cactusButton.getBoundingClientRect();
+  const cactusX = cactus.left - zone.left;
+  const cactusY = cactus.top - zone.top;
+  const x = cactusX + cactus.width * (0.26 + Math.random() * 0.48);
+  const y = cactusY + cactus.height * (0.18 + Math.random() * 0.56);
+  const edge = 48;
+
+  button.style.left = `${Math.min(Math.max(edge, x), Math.max(edge, zone.width - edge))}px`;
+  button.style.top = `${Math.min(Math.max(edge, y), Math.max(edge, zone.height - edge))}px`;
+}
+
+function spawnRandomEvent(kind, duration, rewardSeconds, label) {
   const button = document.createElement("button");
   const shrinkSeconds = duration / 1000;
   button.className = `random-event-cactus is-${kind}`;
   button.type = "button";
-  button.style.left = `${12 + Math.random() * 70}%`;
-  button.style.top = `${24 + Math.random() * 54}%`;
   button.style.setProperty("--event-life", `${shrinkSeconds}s`);
-  button.setAttribute("aria-label", kind === "golden" ? "Goldenen Event-Kaktus fangen" : "Roten Event-Kaktus fangen");
+  button.setAttribute("aria-label", `${label} fangen`);
   button.innerHTML = `<img class="random-event-icon" src="/favicon-32x32.png" alt="" aria-hidden="true">`;
   elements.clickZone.append(button);
+  positionRandomEventOverCactus(button);
+  playEventAppearSound();
 
   const removeEvent = (caught) => {
     const entry = activeRandomEvents.get(kind);
+    const buttonRect = button.getBoundingClientRect();
     window.clearTimeout(entry?.timeout);
     activeRandomEvents.delete(kind);
     button.remove();
@@ -589,12 +806,21 @@ function spawnRandomEvent(kind, duration, rewardSeconds) {
     } else {
       state.events.redHits += 1;
     }
-    elements.saveStatus.textContent = `${kind === "golden" ? "Goldkaktus" : "Rotkaktus"}: +${formatNumber(reward)}`;
+    spawnFloat(
+      buttonRect.left + buttonRect.width / 2,
+      buttonRect.top + buttonRect.height / 2,
+      `${label} +${formatNumber(reward)}`,
+      `is-event-reward is-${kind}`
+    );
+    elements.saveStatus.textContent = `${label}: +${formatNumber(reward)}`;
     updateAchievements();
     render();
   };
 
-  button.addEventListener("click", () => removeEvent(true), { once: true });
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    removeEvent(true);
+  }, { once: true });
   activeRandomEvents.set(kind, {
     button,
     timeout: window.setTimeout(() => removeEvent(false), duration),
@@ -604,6 +830,32 @@ function spawnRandomEvent(kind, duration, rewardSeconds) {
 function bindEvents() {
   elements.cactusButton.addEventListener("click", clickCactus);
   elements.saveButton.addEventListener("click", () => saveState("Manuell gespeichert"));
+  elements.musicToggle.addEventListener("click", () => {
+    audioSettings.musicMuted = !audioSettings.musicMuted;
+    if (audioSettings.musicMuted) {
+      backgroundMusic.pause();
+    } else {
+      startBackgroundMusic();
+    }
+    saveAudioSettings();
+    renderAudioControls();
+  });
+  elements.musicVolume.addEventListener("input", () => {
+    audioSettings.musicVolume = clampAudioVolume(Number(elements.musicVolume.value) / 100);
+    saveAudioSettings();
+    renderAudioControls();
+    startBackgroundMusic();
+  });
+  elements.soundToggle.addEventListener("click", () => {
+    audioSettings.soundMuted = !audioSettings.soundMuted;
+    saveAudioSettings();
+    renderAudioControls();
+  });
+  elements.soundVolume.addEventListener("input", () => {
+    audioSettings.soundVolume = clampAudioVolume(Number(elements.soundVolume.value) / 100);
+    saveAudioSettings();
+    renderAudioControls();
+  });
   elements.changelogButton.addEventListener("click", showChangelog);
   elements.prestigeButton.addEventListener("click", performPrestige);
 
@@ -660,6 +912,15 @@ function bindEvents() {
     window.clearTimeout(cloudSaveTimer);
     cloudSync = { enabled: false, user: null };
   });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      pauseRandomEvents();
+      return;
+    }
+
+    restartRandomEventSchedules();
+  });
+  window.addEventListener("pagehide", () => pauseRandomEvents());
   window.addEventListener("beforeunload", () => saveState("Gespeichert"));
 }
 
@@ -686,10 +947,15 @@ async function initGame() {
     state = normalizeLoadedState(loadLocalState(), period.id);
   }
 
-  ensureRandomEventSchedules();
+  restartRandomEventSchedules();
   bindEvents();
+  subscribeAdminGameEvents();
+  initAudio();
   updateAchievements();
   render();
+  if (isClickFrenzyActive(state)) {
+    startFrenzyMeterLoop();
+  }
   updateLeaderboardResetCountdown();
   elements.saveStatus.textContent = getIdleSaveLabel();
 

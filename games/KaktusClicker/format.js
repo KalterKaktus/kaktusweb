@@ -22,12 +22,12 @@ const NUMBER_TIERS = [
 ];
 
 const compactFormatter = new Intl.NumberFormat("de-DE", {
-  minimumFractionDigits: 3,
-  maximumFractionDigits: 3,
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
 });
 
 const normalFormatter = new Intl.NumberFormat("de-DE", {
-  maximumFractionDigits: 3,
+  maximumFractionDigits: 2,
 });
 
 export function formatNumber(value) {
@@ -43,7 +43,7 @@ export function formatNumber(value) {
   if (absolute >= 1e63) {
     return number.toLocaleString("de-DE", {
       notation: "scientific",
-      maximumFractionDigits: 3,
+      maximumFractionDigits: 2,
     });
   }
 

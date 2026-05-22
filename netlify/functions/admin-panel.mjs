@@ -1,6 +1,9 @@
 const ADMIN_EMAILS_ENV = "ADMIN_EMAILS";
 const FORCE_RELOAD_MESSAGE = "Dein Spielstand wurde aktualisiert. Die Seite wird neu geladen.";
 const PRESENCE_ONLINE_WINDOW_MS = 90000;
+const ADMIN_GAME_EVENT_TYPES = {
+    "kaktus-clicker": new Set(["spawn-goldkaktus", "spawn-rubinkaktus"]),
+};
 
 function env(name) {
     return globalThis.Netlify?.env?.get(name) || process.env[name];
@@ -212,6 +215,29 @@ async function setBan(userId, isBanned) {
     );
 }
 
+function requireGameEventType(gameId, eventType) {
+    const safeGameId = requireGameId(gameId);
+    const safeEventType = String(eventType || "").trim();
+    if (!ADMIN_GAME_EVENT_TYPES[safeGameId]?.has(safeEventType)) {
+        throw httpError("Adminabuse-Event ist für dieses Game nicht freigegeben.", 400);
+    }
+
+    return { gameId: safeGameId, eventType: safeEventType };
+}
+
+async function triggerGameEvent(gameId, eventType) {
+    const safeEvent = requireGameEventType(gameId, eventType);
+    await supabase("admin_game_events", {
+        method: "POST",
+        headers: { Prefer: "return=minimal" },
+        body: JSON.stringify({
+            game_id: safeEvent.gameId,
+            event_type: safeEvent.eventType,
+            expires_at: new Date(Date.now() + 60000).toISOString(),
+        }),
+    });
+}
+
 export default async (req) => {
     if (!env("SUPABASE_URL") || !env("SUPABASE_SERVICE_ROLE_KEY")) {
         return json({ error: "Admin-API ist nicht konfiguriert." }, 503);
@@ -229,6 +255,11 @@ export default async (req) => {
         }
 
         const body = await req.json();
+        if (body.action === "trigger-game-event") {
+            await triggerGameEvent(body.gameId, body.eventType);
+            return json({ ok: true });
+        }
+
         if (!body.userId) {
             return json({ error: "User fehlt." }, 400);
         }

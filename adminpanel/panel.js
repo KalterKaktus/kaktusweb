@@ -3,6 +3,8 @@ import { getSupabase, isConfigReady } from "/js/supabase-client.js";
 const usersRoot = document.getElementById("admin-users");
 const status = document.getElementById("admin-status");
 const refreshButton = document.getElementById("admin-refresh");
+const adminAbuseRoot = document.getElementById("admin-abuse");
+const adminAbuseGame = document.getElementById("admin-abuse-game");
 
 function setStatus(message, isError = false) {
     status.textContent = message;
@@ -444,4 +446,23 @@ usersRoot.addEventListener("click", async (event) => {
 });
 
 refreshButton.addEventListener("click", loadUsers);
+adminAbuseRoot.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-admin-event]");
+    if (!button) {
+        return;
+    }
+
+    button.disabled = true;
+    try {
+        await api("trigger-game-event", {
+            gameId: adminAbuseGame.value,
+            eventType: button.dataset.adminEvent,
+        });
+        setStatus("Globales Game-Event ausgelöst.");
+    } catch (error) {
+        setStatus(error.message, true);
+    } finally {
+        button.disabled = false;
+    }
+});
 loadUsers();

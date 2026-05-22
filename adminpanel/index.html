@@ -38,6 +38,24 @@
             </header>
 
             <p class="admin-status" id="admin-status" aria-live="polite">User werden geladen...</p>
+            <details class="admin-abuse" id="admin-abuse">
+                <summary>Adminabuse</summary>
+                <div class="admin-abuse-body">
+                    <label class="admin-field admin-abuse-game">
+                        <span>Game</span>
+                        <select class="admin-input" id="admin-abuse-game">
+                            <option value="kaktus-clicker">KaktusClicker</option>
+                        </select>
+                    </label>
+                    <section class="admin-abuse-options" data-admin-abuse-game="kaktus-clicker">
+                        <p class="admin-empty">Globale Events für Spieler, die gerade im Game online sind.</p>
+                        <div class="admin-inline">
+                            <button class="admin-button" data-admin-event="spawn-goldkaktus" type="button">Goldkaktus spawnen</button>
+                            <button class="admin-button is-ruby" data-admin-event="spawn-rubinkaktus" type="button">Rubinkaktus spawnen</button>
+                        </div>
+                    </section>
+                </div>
+            </details>
             <section class="admin-users" id="admin-users" aria-live="polite"></section>
         </div>
     </main>
