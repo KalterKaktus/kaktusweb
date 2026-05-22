@@ -9,6 +9,12 @@
   schedule = "@hourly"
 
 [[redirects]]
+  from = "https://wiki.kalterkaktus.de/*"
+  to = "/wiki/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/datenschutz"
   to = "/datenschutz.html"
   status = 200
