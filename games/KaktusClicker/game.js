@@ -744,12 +744,16 @@ function checkRandomEvents(now = Date.now()) {
 function pauseRandomEvents() {
   for (const [kind, entry] of activeRandomEvents.entries()) {
     window.clearTimeout(entry.timeout);
-    entry.button.remove();
+
+    if (entry.button) {
+      entry.button.remove();
+    }
+
     activeRandomEvents.delete(kind);
+    scheduleNextRandomEvent(kind);
   }
 
-  state.events.nextGoldenAt = 0;
-  state.events.nextRedAt = 0;
+  saveState("Random Events pausiert");
 }
 
 function spawnConfiguredRandomEvent(kind) {
@@ -1019,15 +1023,17 @@ function bindEvents() {
     cloudSync = { enabled: false, user: null };
   });
   document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      pauseRandomEvents();
-      return;
-    }
+  if (document.hidden) {
+    pauseRandomEvents();
+    return;
+  }
 
-    restartRandomEventSchedules();
-    restartAdminGameEventCursor();
-    recoverClickerViewport();
-  });
+  ensureRandomEventSchedules();
+  checkRandomEvents();
+  restartAdminGameEventCursor();
+  recoverClickerViewport();
+});
+
   window.addEventListener("orientationchange", recoverClickerViewport);
   window.addEventListener("resize", recoverClickerViewport);
   window.visualViewport?.addEventListener("resize", recoverClickerViewport);
