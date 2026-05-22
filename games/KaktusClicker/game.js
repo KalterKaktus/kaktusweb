@@ -37,6 +37,7 @@ const GOLDEN_REWARD_SECONDS = 300;
 const RED_REWARD_SECONDS = 1800;
 const GOLDEN_EVENT_DELAY = [3 * 60 * 1000, 7 * 60 * 1000];
 const RED_EVENT_DELAY = [20 * 60 * 1000, 40 * 60 * 1000];
+const ADMIN_GAME_EVENT_POLL_MS = 2500;
 const RANDOM_EVENT_CONFIG = {
   golden: { duration: 5000, rewardSeconds: GOLDEN_REWARD_SECONDS, label: "Goldkaktus" },
   red: { duration: 5000, rewardSeconds: RED_REWARD_SECONDS, label: "Rubinkaktus" },
@@ -48,7 +49,10 @@ let cloudSaveTimer = null;
 let leaderboardLoaded = false;
 let frenzyMeterFrame = null;
 let viewportRecoveryTimer = null;
+let adminEventPollTimer = null;
+let adminGameEventsPrimed = false;
 const activeRandomEvents = new Map();
+const seenAdminGameEventIds = new Set();
 const backgroundMusic = new Audio();
 const eventAppearSound = new Audio();
 let audioSettings = loadAudioSettings();
@@ -759,6 +763,14 @@ function spawnConfiguredRandomEvent(kind) {
 
 function handleAdminGameEvent(row) {
   const expired = row?.expires_at && Date.parse(row.expires_at) <= Date.now();
+  if (row?.id && seenAdminGameEventIds.has(row.id)) {
+    return;
+  }
+
+  if (row?.id) {
+    seenAdminGameEventIds.add(row.id);
+  }
+
   if (document.hidden || !row || expired || row.game_id !== "kaktus-clicker") {
     return;
   }
@@ -770,6 +782,61 @@ function handleAdminGameEvent(row) {
   if (row.event_type === "spawn-rubinkaktus") {
     spawnConfiguredRandomEvent("red");
   }
+}
+
+async function fetchLiveAdminGameEvents() {
+  if (!isConfigReady()) {
+    return [];
+  }
+
+  const supabase = getSupabase();
+  if (!supabase) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from("admin_game_events")
+    .select("id,game_id,event_type,expires_at,created_at")
+    .eq("game_id", "kaktus-clicker")
+    .gt("expires_at", new Date().toISOString())
+    .order("created_at", { ascending: true })
+    .limit(20);
+
+  if (error) {
+    console.error("Admin-Events konnten nicht geladen werden:", error.message);
+    return [];
+  }
+
+  return data || [];
+}
+
+async function primeAdminGameEvents() {
+  const rows = await fetchLiveAdminGameEvents();
+  rows.forEach((row) => {
+    if (row.id) {
+      seenAdminGameEventIds.add(row.id);
+    }
+  });
+  adminGameEventsPrimed = true;
+}
+
+async function pollAdminGameEvents() {
+  if (document.hidden) {
+    return;
+  }
+
+  if (!adminGameEventsPrimed) {
+    await primeAdminGameEvents();
+    return;
+  }
+
+  const rows = await fetchLiveAdminGameEvents();
+  rows.forEach(handleAdminGameEvent);
+}
+
+function restartAdminGameEventCursor() {
+  adminGameEventsPrimed = false;
+  primeAdminGameEvents();
 }
 
 function subscribeAdminGameEvents() {
@@ -795,6 +862,10 @@ function subscribeAdminGameEvents() {
       ({ new: row }) => handleAdminGameEvent(row)
     )
     .subscribe();
+
+  restartAdminGameEventCursor();
+  window.clearInterval(adminEventPollTimer);
+  adminEventPollTimer = window.setInterval(pollAdminGameEvents, ADMIN_GAME_EVENT_POLL_MS);
 }
 
 function positionRandomEventOverCactus(button) {
@@ -954,6 +1025,7 @@ function bindEvents() {
     }
 
     restartRandomEventSchedules();
+    restartAdminGameEventCursor();
     recoverClickerViewport();
   });
   window.addEventListener("orientationchange", recoverClickerViewport);
