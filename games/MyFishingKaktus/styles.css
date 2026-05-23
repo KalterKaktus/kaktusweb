@@ -1,0 +1,1818 @@
+:root {
+  --fish-ink: #082237;
+  --fish-text: #eaf8ff;
+  --fish-muted: #a9d1e7;
+  --fish-border: rgba(172, 229, 255, 0.24);
+  --fish-glass: rgba(7, 31, 53, 0.74);
+  --fish-glass-strong: rgba(5, 24, 44, 0.94);
+  --fish-water: #0874c7;
+  --fish-water-deep: #053967;
+  --fish-sky: #63d8ff;
+  --fish-mint: #66efb4;
+  --fish-sun: #ffd166;
+  --fish-coral: #ff8b85;
+}
+
+body.fishing-page {
+  --accent-light: var(--fish-sky);
+  min-height: 100svh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 13%, rgba(102, 239, 180, 0.16), transparent 23rem),
+    radial-gradient(circle at 84% 16%, rgba(255, 209, 102, 0.17), transparent 22rem),
+    linear-gradient(155deg, #03121e, #062844 52%, #062133);
+  color: var(--fish-text);
+  touch-action: manipulation;
+}
+
+.fishing-page::before {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.024) 50%, transparent 50%),
+    radial-gradient(circle at center, transparent 20%, rgba(0, 0, 0, 0.34) 100%);
+  background-size: 100% 5px, auto;
+}
+
+.fishing-site-nav {
+  background: rgba(2, 18, 31, 0.68);
+  border-bottom-color: rgba(171, 229, 255, 0.17);
+}
+
+.fishing-site-nav .nav-container {
+  padding-block: 0.86rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.fishing-shell {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  width: min(1400px, calc(100% - 1.5rem));
+  height: 100svh;
+  margin: 0 auto;
+  padding: clamp(5rem, 8vh, 6rem) 0 max(0.75rem, env(safe-area-inset-bottom));
+  isolation: isolate;
+}
+
+.fishing-hud {
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(13rem, 1fr) auto auto;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 4.9rem;
+  padding: 0.72rem 0.9rem;
+  border: 1px solid var(--fish-border);
+  border-radius: 1.5rem;
+  background: linear-gradient(135deg, rgba(9, 49, 78, 0.82), rgba(6, 27, 49, 0.68));
+  box-shadow: 0 1.3rem 3.5rem rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(16px);
+}
+
+.fishing-title p,
+.game-window header p,
+.fishing-overlay header p {
+  color: var(--fish-mint);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.fishing-title h1 {
+  font-size: clamp(1.18rem, 2.4vw, 2rem);
+  letter-spacing: 0;
+  line-height: 1.04;
+}
+
+.hud-values {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(5.2rem, auto));
+  gap: 0.48rem;
+}
+
+.hud-values div {
+  min-height: 3.35rem;
+  padding: 0.42rem 0.7rem;
+  border: 1px solid rgba(186, 235, 255, 0.14);
+  border-radius: 1rem;
+  background: rgba(4, 25, 45, 0.58);
+  line-height: 1.1;
+}
+
+.hud-values span,
+.window-toolbar,
+.leaderboard-card p,
+.area-card p,
+.upgrade-card p,
+.save-status {
+  color: var(--fish-muted);
+}
+
+.hud-values span {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hud-values strong {
+  display: block;
+  max-width: 9.5rem;
+  overflow: hidden;
+  color: #fff8db;
+  font-size: clamp(0.98rem, 1.4vw, 1.34rem);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-actions {
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  padding: 0.7rem 0;
+}
+
+.game-actions button,
+.game-menu button,
+.game-window button,
+.fishing-overlay button {
+  border: 1px solid rgba(179, 234, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(8, 50, 78, 0.74);
+  color: var(--fish-text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  padding: 0.62rem 0.92rem;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.game-actions button:hover,
+.game-menu button:hover,
+.game-window button:hover,
+.fishing-overlay button:hover {
+  border-color: var(--fish-sky);
+  background: rgba(14, 91, 135, 0.9);
+  transform: translateY(-1px);
+}
+
+.game-menu-toggle {
+  display: none;
+  position: relative;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--fish-border);
+  border-radius: 1rem;
+  background: rgba(4, 29, 51, 0.76);
+  cursor: pointer;
+}
+
+.game-menu-toggle span:not(.sr-only) {
+  position: absolute;
+  left: 0.82rem;
+  width: 1.32rem;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--fish-text);
+}
+
+.game-menu-toggle span:nth-child(1) {
+  top: 0.93rem;
+}
+
+.game-menu-toggle span:nth-child(2) {
+  top: 1.42rem;
+}
+
+.game-menu-toggle span:nth-child(3) {
+  top: 1.91rem;
+}
+
+.game-menu {
+  position: fixed;
+  inset: max(4.7rem, env(safe-area-inset-top)) 0 0 auto;
+  z-index: 1100;
+  display: grid;
+  align-content: start;
+  gap: 0.62rem;
+  width: min(85vw, 22rem);
+  padding: 1rem;
+  border-left: 1px solid var(--fish-border);
+  background: rgba(3, 22, 39, 0.96);
+  box-shadow: -1.4rem 0 4rem rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(18px);
+}
+
+.game-menu[hidden],
+.game-window[hidden],
+.fishing-overlay[hidden] {
+  display: none;
+}
+
+.game-menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.6rem;
+}
+
+.game-menu-head button,
+.game-window header button {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+}
+
+.water-stage {
+  /* --- Area-Farben --- */
+  --w-top: #54bce9;
+  --w-mid: #2089ca;
+  --w-deep: #0c5fa0;
+  --w-floor: #053967;
+  --w-tint: rgba(64, 224, 208, 0.18);
+  --w-surface: rgba(212, 251, 255, 0.55);
+  --wave-tile: 17rem;
+
+  /* --- Modulare Knobs (vom WaterSystem / Presets überschreibbar) --- */
+  --w-wave-intensity: 1;
+  --w-ripple-strength: 1;
+  --w-storm-multiplier: 1;
+  --w-water-speed: 1;
+  --w-wave-size: 1;
+  --w-glow-intensity: 1;
+  --w-particle-density: 1;
+  --w-light-ray-intensity: 1;
+  --w-shimmer-strength: 1;
+  --w-water-distortion: 0.18;
+
+  /* --- Pointer-Tracking (vom WaterSystem gesetzt) --- */
+  --w-pointer-x: 50%;
+  --w-pointer-y: 65%;
+  --w-pointer-active: 0;
+
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(192, 238, 255, 0.24);
+  border-radius: clamp(1.4rem, 3vw, 2.5rem);
+  /* Fallback-Hintergrund — der Canvas-Renderer malt darüber. */
+  background:
+    radial-gradient(ellipse 100% 60% at 50% 110%, rgba(0, 8, 22, 0.55), transparent 70%),
+    linear-gradient(180deg, var(--w-top) 0%, var(--w-mid) 24%, var(--w-deep) 58%, var(--w-floor) 100%);
+  box-shadow:
+    inset 0 2px rgba(255, 255, 255, 0.32),
+    inset 0 -5rem 10rem rgba(0, 16, 40, 0.5),
+    0 1.5rem 5rem rgba(0, 0, 0, 0.34);
+}
+
+.water-stage[data-area="lake"] {
+  --w-top: #45c6ad;
+  --w-mid: #1c93a0;
+  --w-deep: #0a5f6c;
+  --w-floor: #053f49;
+  --w-tint: rgba(118, 240, 178, 0.2);
+  --w-surface: rgba(216, 255, 245, 0.52);
+  --wave-tile: 13rem;
+  --w-glow-intensity: 1.1;
+  --w-wave-size: 0.72;
+  --w-wave-intensity: 0.88;
+}
+
+.water-stage[data-area="ocean"] {
+  --w-top: #2f72ad;
+  --w-mid: #154f8a;
+  --w-deep: #0a2d5c;
+  --w-floor: #04183a;
+  --w-tint: rgba(74, 116, 206, 0.22);
+  --w-surface: rgba(188, 222, 255, 0.4);
+  --wave-tile: 10rem;
+  --w-water-speed: 0.92;
+  --w-light-ray-intensity: 0.75;
+  --w-wave-size: 0.5;
+  --w-wave-intensity: 0.78;
+}
+
+/* --- Night-Veil — wird beim Night-Event über das Wasser gelegt --- */
+
+.water-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(0, 6, 20, 0.22) 0%, rgba(0, 4, 14, 0.7) 100%),
+    linear-gradient(180deg, rgba(0, 6, 24, 0.38), rgba(0, 4, 18, 0.55));
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 1.8s ease;
+}
+
+.water-stage[data-water-state="deepsea"]::before {
+  opacity: 1;
+}
+
+/* --- FX-Wrapper (vom WaterSystem injiziert) --- */
+
+.water-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.water-fx-ocean {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+/* --- Weather: Fog-Overlay (vom WeatherSystem injiziert) --- */
+
+.weather-fog {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  mix-blend-mode: screen;
+}
+
+.weather-fog-layer {
+  position: absolute;
+  inset: -25%;
+  width: 150%;
+  height: 150%;
+  display: block;
+  will-change: transform;
+}
+
+.weather-fog-layer--back {
+  opacity: 0.7;
+  animation: weather-fog-drift-back 95s linear infinite,
+             weather-fog-pulse-back 14s ease-in-out infinite;
+}
+
+.weather-fog-layer--front {
+  opacity: 0.5;
+  animation: weather-fog-drift-front 62s linear infinite reverse,
+             weather-fog-pulse-front 11s ease-in-out infinite -3.5s;
+}
+
+@keyframes weather-fog-drift-back {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(-12%, 6%, 0) scale(1.05); }
+}
+
+@keyframes weather-fog-drift-front {
+  from { transform: translate3d(0, 0, 0) scale(1.02); }
+  to   { transform: translate3d(10%, -4%, 0) scale(1.08); }
+}
+
+@keyframes weather-fog-pulse-back {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 0.92; }
+}
+
+@keyframes weather-fog-pulse-front {
+  0%, 100% { opacity: 0.65; }
+  50%      { opacity: 0.28; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weather-fog-layer { animation: none; }
+}
+
+body.reduce-fishing-motion .weather-fog-layer { animation: none; }
+
+/* --- Weather-Event Banner --- */
+
+.weather-banner {
+  position: absolute;
+  bottom: clamp(0.8rem, 2vw, 1.4rem);
+  left: 50%;
+  z-index: 4;
+  display: inline-grid;
+  grid-auto-flow: column;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.95rem 0.42rem 0.7rem;
+  border: 1px solid var(--event-accent, rgba(255, 209, 102, 0.4));
+  border-radius: 999px;
+  background: rgba(4, 28, 49, 0.7);
+  color: var(--fish-text);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  transform: translateX(-50%) translateY(0.4rem);
+  opacity: 0;
+  transition: opacity 0.55s ease, transform 0.55s ease;
+  pointer-events: none;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0.5rem 1.4rem rgba(0, 0, 0, 0.32), 0 0 1.5rem -0.4rem var(--event-accent, transparent);
+}
+
+.weather-banner.is-visible {
+  opacity: 0.96;
+  transform: translateX(-50%) translateY(0);
+}
+
+.weather-banner[hidden] {
+  display: none;
+}
+
+.weather-banner-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.weather-banner-name {
+  color: var(--event-accent, var(--fish-sun));
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+}
+
+.weather-banner-sep {
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.weather-banner-buff {
+  color: var(--fish-text);
+}
+
+.weather-banner-time {
+  color: var(--fish-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Fisch-Galerie (Testmenü) --- */
+
+.fish-gallery-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2400;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(2, 12, 24, 0.86);
+  backdrop-filter: blur(14px);
+}
+
+.fish-gallery-overlay[hidden] {
+  display: none;
+}
+
+.fish-gallery-card {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(1180px, 100%);
+  height: min(800px, 100%);
+  overflow: hidden;
+  border: 1px solid rgba(190, 239, 255, 0.26);
+  border-radius: 1.4rem;
+  background: linear-gradient(180deg, rgba(7, 38, 64, 0.96), rgba(3, 18, 36, 0.98));
+  box-shadow: 0 2rem 7rem rgba(0, 0, 0, 0.62);
+}
+
+.fish-gallery-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid rgba(188, 238, 255, 0.14);
+}
+
+.fish-gallery-card header p {
+  color: var(--fish-mint);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.fish-gallery-card header h2 {
+  font-size: 1.5rem;
+}
+
+.fish-gallery-card header button {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid rgba(179, 234, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(8, 50, 78, 0.74);
+  color: var(--fish-text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 850;
+}
+
+.fish-gallery-body {
+  overflow: auto;
+  padding: 0.85rem 1.1rem 1.2rem;
+}
+
+.fish-gallery-row {
+  display: grid;
+  grid-template-columns: 9rem repeat(5, minmax(0, 1fr));
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  padding: 0.4rem 0.2rem;
+  border-bottom: 1px dashed rgba(190, 239, 255, 0.08);
+}
+
+.fish-gallery-row.is-head {
+  border-bottom: 1px solid rgba(190, 239, 255, 0.2);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fish-muted);
+}
+
+.fish-gallery-shape {
+  font-weight: 900;
+}
+
+.fish-gallery-shape small {
+  display: block;
+  color: var(--fish-muted);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.fish-gallery-cell {
+  padding: 0.4rem;
+  border: 1px solid rgba(190, 239, 255, 0.12);
+  border-radius: 0.9rem;
+  background: rgba(6, 32, 56, 0.5);
+  text-align: center;
+}
+
+.fish-gallery-cell .fish-art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.stage-hint {
+  position: absolute;
+  top: clamp(1rem, 2vw, 1.5rem);
+  left: 50%;
+  z-index: 3;
+  width: min(30rem, calc(100% - 2rem));
+  padding: 0.65rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(4, 41, 69, 0.38);
+  color: rgba(241, 252, 255, 0.92);
+  font-size: 0.84rem;
+  font-weight: 750;
+  line-height: 1.25;
+  text-align: center;
+  transform: translateX(-50%);
+  backdrop-filter: blur(10px);
+}
+
+.broadcast-feed {
+  position: absolute;
+  top: clamp(3.7rem, 7.5vw, 4.7rem);
+  left: 50%;
+  z-index: 3;
+  max-width: min(32rem, calc(100% - 2rem));
+  margin: 0;
+  padding: 0.32rem 0.9rem;
+  border: 1px solid rgba(255, 209, 102, 0.28);
+  border-radius: 999px;
+  background: rgba(4, 28, 49, 0.62);
+  color: var(--fish-sun);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.3;
+  text-align: center;
+  transform: translateX(-50%) translateY(-0.45rem);
+  opacity: 0;
+  transition: opacity 0.55s ease, transform 0.55s ease;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+
+.broadcast-feed.is-visible {
+  opacity: 0.94;
+  transform: translateX(-50%) translateY(0);
+}
+
+.broadcast-feed[hidden] {
+  display: none;
+}
+
+.fish-spot {
+  --size: clamp(3.6rem, 7vw, 6rem);
+  position: absolute;
+  top: var(--spot-y);
+  left: var(--spot-x);
+  z-index: 2;
+  width: var(--size);
+  height: var(--size);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  animation: fish-spot-expire 13s linear forwards;
+}
+
+.fish-spot::before {
+  content: "";
+  position: absolute;
+  inset: 20%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196, 244, 255, 0.24), rgba(196, 244, 255, 0.06) 55%, transparent 72%);
+  transition: inset 200ms ease;
+}
+
+.fish-spot:hover::before {
+  inset: 11%;
+}
+
+.fish-spot-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(216, 247, 255, 0.7);
+  opacity: 0;
+  animation: fish-spot-ripple 3s ease-out infinite;
+}
+
+.fish-spot-ring:nth-child(2) {
+  animation-delay: 1s;
+}
+
+.fish-spot-ring:nth-child(3) {
+  animation-delay: 2s;
+}
+
+.fish-spot-swimmer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34%;
+  height: 15%;
+  border-radius: 60% 46% 50% 50% / 50%;
+  background: rgba(5, 28, 48, 0.62);
+  filter: blur(0.5px);
+  animation: fish-spot-swim 4.6s ease-in-out infinite;
+}
+
+.fish-spot-swimmer::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -0.34rem;
+  width: 0;
+  height: 0;
+  border-block: 0.34rem solid transparent;
+  border-left: 0.5rem solid rgba(5, 28, 48, 0.62);
+  transform: translateY(-50%);
+}
+
+.fish-spot.is-popped {
+  animation: fish-spot-pop 320ms ease-out forwards;
+}
+
+.coin-fish {
+  position: absolute;
+  top: var(--top);
+  left: -28%;
+  z-index: 2;
+  width: var(--size);
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  animation: coin-fish-cross var(--swim, 14s) linear forwards,
+    coin-fish-bob 2.9s ease-in-out infinite;
+}
+
+.coin-fish-shape {
+  display: block;
+  opacity: 0.5;
+  filter: blur(2.5px) drop-shadow(0 0.35rem 0.5rem rgba(0, 0, 0, 0.32));
+  transition: opacity 160ms ease;
+}
+
+.coin-fish-shape svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.coin-fish:hover .coin-fish-shape {
+  opacity: 0.74;
+}
+
+.coin-fish.is-collected {
+  animation: coin-fish-caught 0.36s ease-out forwards;
+}
+
+.coin-gain {
+  position: absolute;
+  z-index: 4;
+  color: var(--fish-sun);
+  font-size: clamp(1rem, 2.4vw, 1.35rem);
+  font-weight: 900;
+  text-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  animation: coin-gain-float 1.4s ease-out forwards;
+}
+
+@keyframes coin-fish-cross {
+  from { left: -28%; }
+  to { left: 128%; }
+}
+
+@keyframes coin-fish-bob {
+  0%, 100% { transform: translateY(-0.5rem) rotate(2.5deg); }
+  50% { transform: translateY(0.5rem) rotate(-2.5deg); }
+}
+
+@keyframes coin-fish-caught {
+  to { opacity: 0; transform: scale(1.4); }
+}
+
+@keyframes coin-gain-float {
+  0% { opacity: 0; transform: translate(-50%, -30%) scale(0.6); }
+  22% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+  68% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -150%) scale(1); }
+}
+
+.catch-popups {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.catch-popup {
+  position: absolute;
+  top: 47%;
+  left: 50%;
+  display: grid;
+  grid-template-columns: 5.7rem minmax(0, 1fr);
+  align-items: center;
+  width: min(22rem, calc(100% - 1.2rem));
+  padding: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 1.35rem;
+  background: rgba(3, 31, 55, 0.78);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.24);
+  transform: translate(-50%, -50%);
+  animation: catch-float 2.7s ease-out forwards;
+  backdrop-filter: blur(14px);
+}
+
+.catch-popup .fish-art {
+  width: 5.5rem;
+}
+
+.catch-popup strong,
+.inventory-row strong,
+.index-fish strong {
+  display: block;
+  line-height: 1.1;
+}
+
+.catch-popup-info {
+  display: grid;
+  gap: 0.12rem;
+  align-content: center;
+}
+
+.catch-popup span {
+  color: var(--fish-sun);
+  font-weight: 850;
+}
+
+.catch-popup.is-new {
+  grid-template-columns: 8.6rem minmax(0, 1fr);
+  width: min(30rem, calc(100% - 1.2rem));
+  padding: 1rem 1.05rem;
+  border-color: var(--rarity, rgba(255, 255, 255, 0.4));
+  background: rgba(4, 26, 47, 0.9);
+  box-shadow: 0 1.4rem 4rem rgba(0, 0, 0, 0.45), 0 0 2.6rem -0.3rem var(--rarity, transparent);
+  animation: catch-reveal-card 4.4s ease-out forwards;
+}
+
+.catch-popup.is-new .fish-art {
+  width: 8.4rem;
+  animation: fish-emerge 4.4s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+.catch-popup.is-new strong {
+  font-size: 1.15rem;
+}
+
+.catch-popup-kicker {
+  display: block;
+  margin-bottom: 0.1rem;
+  color: var(--rarity, var(--fish-mint));
+  font-size: 0.66rem;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.catch-new-badge {
+  position: absolute;
+  top: -0.75rem;
+  left: 50%;
+  padding: 0.26rem 0.95rem;
+  border-radius: 999px;
+  background: var(--rarity, var(--fish-sun));
+  color: #051726;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+  box-shadow: 0 0.35rem 1.1rem rgba(0, 0, 0, 0.45);
+  transform: translateX(-50%);
+  animation: badge-pop 4.4s ease-out forwards;
+}
+
+@keyframes catch-reveal-card {
+  0% { opacity: 0; transform: translate(-50%, -42%) scale(0.82); }
+  9% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  86% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -58%) scale(1); }
+}
+
+@keyframes fish-emerge {
+  0% { filter: brightness(0) contrast(0.4); transform: scale(0.5); opacity: 0; }
+  16% { filter: brightness(0) contrast(0.4); transform: scale(0.9); opacity: 1; }
+  42% { filter: brightness(0.08) contrast(0.7); transform: scale(1.02); }
+  60% { filter: brightness(1.25) contrast(1); transform: scale(1.16); }
+  72% { filter: brightness(1) contrast(1); transform: scale(1); }
+  100% { filter: brightness(1) contrast(1); transform: scale(1); }
+}
+
+@keyframes badge-pop {
+  0%, 55% { opacity: 0; transform: translateX(-50%) scale(0.3); }
+  66% { opacity: 1; transform: translateX(-50%) scale(1.25); }
+  74% { transform: translateX(-50%) scale(1); }
+  90% { opacity: 1; transform: translateX(-50%) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) scale(1); }
+}
+
+.game-window {
+  position: fixed;
+  inset: clamp(5.3rem, 9vh, 6.4rem) max(0.75rem, calc((100vw - 1200px) / 2)) max(0.75rem, env(safe-area-inset-bottom));
+  z-index: 1050;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  width: min(58rem, calc(100vw - 1.5rem));
+  max-height: min(48rem, calc(100svh - 6rem));
+  margin: auto;
+  overflow: hidden;
+  border: 1px solid var(--fish-border);
+  border-radius: 1.6rem;
+  background:
+    radial-gradient(circle at 12% 0, rgba(102, 239, 180, 0.1), transparent 19rem),
+    var(--fish-glass-strong);
+  box-shadow: 0 2rem 7rem rgba(0, 0, 0, 0.58);
+  backdrop-filter: blur(22px);
+}
+
+.game-window header,
+.fishing-overlay header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(188, 238, 255, 0.14);
+}
+
+.game-window h2 {
+  font-size: clamp(1.25rem, 2.5vw, 1.9rem);
+  letter-spacing: 0;
+  line-height: 1;
+}
+
+.window-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.window-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid rgba(188, 238, 255, 0.12);
+}
+
+.sell-button,
+.prestige-card button {
+  color: #062030 !important;
+  background: var(--fish-sun) !important;
+  border-color: transparent !important;
+}
+
+.fishing-changelog {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.fishing-changelog .changelog-entry {
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(188, 238, 255, 0.16);
+  border-radius: 10px;
+  background: rgba(4, 28, 49, 0.55);
+}
+
+.fishing-changelog .changelog-date {
+  margin: 0 0 0.2rem;
+  color: var(--fish-sun);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.fishing-changelog .changelog-entry h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: rgba(241, 252, 255, 0.96);
+}
+
+.fishing-changelog .changelog-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.32rem;
+  color: rgba(220, 240, 250, 0.86);
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+
+.fishing-changelog .changelog-list li::marker {
+  color: var(--fish-sun);
+}
+
+.upgrade-grid {
+  display: grid;
+  gap: 0.72rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(15rem, 100%), 1fr));
+}
+
+.upgrade-card,
+.area-card,
+.prestige-card,
+.leaderboard-card {
+  padding: 0.9rem;
+  border: 1px solid rgba(190, 239, 255, 0.16);
+  border-radius: 1.15rem;
+  background: rgba(8, 48, 76, 0.58);
+}
+
+.upgrade-card {
+  display: grid;
+  gap: 0.62rem;
+}
+
+.upgrade-card-head,
+.area-card-head,
+.leaderboard-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+}
+
+.upgrade-card h3,
+.area-card h3,
+.leaderboard-card h3 {
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.upgrade-card em,
+.rarity-pill,
+.area-lock {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: var(--fish-sun);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 900;
+  padding: 0.24rem 0.5rem;
+  white-space: nowrap;
+}
+
+.upgrade-card button:disabled,
+.area-card button:disabled,
+.prestige-card button:disabled,
+.sell-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.44;
+  transform: none;
+}
+
+.inventory-list {
+  display: grid;
+  align-content: start;
+  gap: 0.58rem;
+}
+
+.inventory-row {
+  display: grid;
+  grid-template-columns: 4.8rem minmax(0, 1fr) auto;
+  grid-template-areas: "art info value";
+  align-items: center;
+  gap: 0.55rem 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid rgba(190, 239, 255, 0.14);
+  border-radius: 1.1rem;
+  background: rgba(6, 41, 67, 0.54);
+}
+
+.inventory-row .fish-art {
+  grid-area: art;
+}
+
+.inventory-info {
+  grid-area: info;
+  display: grid;
+  gap: 0.16rem;
+  min-width: 0;
+}
+
+.inventory-info strong {
+  font-size: 1rem;
+}
+
+.inventory-value {
+  grid-area: value;
+  display: grid;
+  justify-items: end;
+  align-content: center;
+  gap: 0.04rem;
+  padding: 0.42rem 0.78rem;
+  border: 1px solid rgba(255, 209, 102, 0.34);
+  border-radius: 0.85rem;
+  background: rgba(255, 209, 102, 0.1);
+}
+
+.inventory-value b {
+  color: var(--fish-sun);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.inventory-value span {
+  color: rgba(255, 222, 156, 0.74);
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+#inventory-value {
+  display: grid;
+  gap: 0.08rem;
+  line-height: 1.18;
+}
+
+.inv-total-coins {
+  color: var(--fish-sun);
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.inv-total-meta {
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.fish-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.inventory-row small,
+.index-fish small,
+.fishing-leaderboard small {
+  color: var(--fish-muted);
+  line-height: 1.2;
+}
+
+
+.fish-index {
+  display: grid;
+  gap: 1rem;
+}
+
+.index-area {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.index-area.is-locked {
+  opacity: 0.6;
+}
+
+.index-area-head,
+.index-rarity-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.index-area h3 {
+  font-size: clamp(1.05rem, 2vw, 1.4rem);
+}
+
+.index-rarity {
+  display: grid;
+  gap: 0.48rem;
+}
+
+.rarity-pill {
+  color: var(--rarity, var(--fish-text));
+}
+
+.rarity-head-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.55rem;
+}
+
+.rarity-chance {
+  color: var(--rarity, var(--fish-sun));
+  font-size: 0.72rem;
+  font-weight: 850;
+  opacity: 0.88;
+}
+
+.index-grid {
+  display: grid;
+  gap: 0.52rem;
+  grid-template-columns: repeat(auto-fill, minmax(9.6rem, 1fr));
+}
+
+.index-fish {
+  min-height: 10.8rem;
+  padding: 0.52rem;
+  border: 1px solid rgba(190, 239, 255, 0.13);
+  border-radius: 1.1rem;
+  background: rgba(6, 41, 67, 0.48);
+}
+
+.index-fish .fish-art {
+  aspect-ratio: 3 / 2;
+  margin-bottom: 0.22rem;
+}
+
+.index-fish.is-shadow strong {
+  color: var(--fish-muted);
+}
+
+.area-grid {
+  display: grid;
+  gap: 0.68rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+  margin-bottom: 0.8rem;
+}
+
+.area-card {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.area-card.is-active {
+  border-color: rgba(102, 239, 180, 0.58);
+  box-shadow: inset 0 0 1.4rem rgba(102, 239, 180, 0.12);
+}
+
+.prestige-card {
+  display: grid;
+  gap: 0.72rem;
+  border-color: rgba(213, 140, 255, 0.36);
+  background: linear-gradient(135deg, rgba(84, 39, 126, 0.44), rgba(7, 45, 72, 0.58));
+}
+
+.prestige-card ul {
+  display: grid;
+  gap: 0.26rem;
+  color: var(--fish-muted);
+  list-style: none;
+}
+
+.prestige-card li.is-ready {
+  color: var(--fish-mint);
+}
+
+.prestige-card li.is-open {
+  color: #e2b6ff;
+}
+
+.stats-body {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.58rem;
+}
+
+.stats-grid div {
+  min-height: 4.6rem;
+  padding: 0.72rem;
+  border: 1px solid rgba(190, 239, 255, 0.14);
+  border-radius: 1rem;
+  background: rgba(7, 42, 68, 0.52);
+}
+
+.stats-grid dt {
+  color: var(--fish-muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stats-grid dd {
+  color: #fff8db;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  font-weight: 900;
+}
+
+.leaderboard-card {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.leaderboard-head button {
+  padding: 0.42rem 0.72rem;
+}
+
+.fishing-leaderboard {
+  display: grid;
+  gap: 0.42rem;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 2.8rem;
+  padding: 0.42rem 0.58rem;
+  border: 1px solid rgba(190, 239, 255, 0.12);
+  border-radius: 0.9rem;
+  background: rgba(3, 30, 52, 0.52);
+}
+
+.leaderboard-row.is-top {
+  border-color: rgba(255, 209, 102, 0.36);
+}
+
+.leaderboard-row b {
+  color: var(--fish-sun);
+}
+
+.settings-list {
+  display: grid;
+  justify-items: start;
+  gap: 0.72rem;
+}
+
+.settings-list label {
+  display: flex;
+  align-items: center;
+  gap: 0.62rem;
+  min-height: 2.8rem;
+  font-weight: 800;
+}
+
+.settings-list input[type="checkbox"] {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.settings-list label.settings-slider {
+  display: grid;
+  align-items: start;
+  gap: 0.34rem;
+  width: min(20rem, 100%);
+  min-height: 0;
+}
+
+.settings-slider span {
+  color: var(--fish-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.settings-list input[type="range"] {
+  width: 100%;
+  accent-color: var(--fish-mint);
+  cursor: pointer;
+}
+
+.game-window .danger-button {
+  border-color: rgba(255, 139, 133, 0.38);
+  background: rgba(130, 38, 50, 0.56);
+}
+
+.fishing-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1800;
+  display: grid;
+  place-items: center;
+  padding: max(0.85rem, env(safe-area-inset-top)) 0.85rem max(0.85rem, env(safe-area-inset-bottom));
+  background: rgba(1, 13, 24, 0.8);
+  backdrop-filter: blur(18px);
+}
+
+.fishing-overlay-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(54rem, 100%);
+  height: min(33rem, 100%);
+  overflow: hidden;
+  border: 1px solid rgba(190, 239, 255, 0.3);
+  border-radius: clamp(1.4rem, 3vw, 2.2rem);
+  background:
+    radial-gradient(ellipse 82% 42% at 50% 0%, rgba(118, 232, 255, 0.16), transparent 70%),
+    linear-gradient(180deg, #0b5283 0%, #073c66 46%, #04203e 100%);
+  box-shadow: 0 2rem 7rem rgba(0, 0, 0, 0.62), inset 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.fishing-overlay-glow {
+  position: absolute;
+  inset: -34% -12% auto -12%;
+  height: 62%;
+  background: radial-gradient(ellipse at 50% 0%, var(--rarity, var(--fish-sky)), transparent 68%);
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+.fishing-overlay header {
+  position: relative;
+  z-index: 1;
+}
+
+.fishing-overlay header strong {
+  display: block;
+  color: var(--rarity, var(--fish-sky));
+  font-size: clamp(1.35rem, 3.4vw, 2.1rem);
+  line-height: 1.05;
+  text-shadow: 0 0 1.5rem rgba(120, 220, 255, 0.45);
+}
+
+.fishing-abort {
+  align-self: start;
+  font-size: 0.78rem !important;
+  padding: 0.5rem 0.85rem !important;
+  opacity: 0.85;
+}
+
+.fishing-arena {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  gap: clamp(0.85rem, 3vh, 1.6rem);
+  padding: clamp(1rem, 4vh, 2.1rem) clamp(1.1rem, 5vw, 2.6rem);
+}
+
+.fishing-tip {
+  color: rgba(228, 248, 255, 0.84);
+  font-size: clamp(0.82rem, 1.7vw, 1rem);
+  font-weight: 750;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.fishing-track {
+  position: relative;
+  height: clamp(5rem, 22vh, 7.5rem);
+  overflow: hidden;
+  border: 1px solid rgba(222, 248, 255, 0.28);
+  border-radius: clamp(1rem, 2vw, 1.5rem);
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.28), transparent 13% 87%, rgba(0, 0, 0, 0.28)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.045) 0 1px, transparent 1px 8%),
+    linear-gradient(180deg, rgba(7, 49, 86, 0.92), rgba(2, 23, 45, 0.96));
+  box-shadow: inset 0 0 2.2rem rgba(0, 0, 0, 0.44);
+  touch-action: none;
+  user-select: none;
+}
+
+.catch-zone {
+  position: absolute;
+  top: 0.9rem;
+  bottom: 0.9rem;
+  left: 0;
+  min-width: 3rem;
+  border: 2px solid rgba(102, 239, 180, 0.92);
+  border-radius: 1.25rem;
+  background: rgba(102, 239, 180, 0.2);
+  box-shadow: inset 0 0 1rem rgba(102, 239, 180, 0.24), 0 0 1.5rem rgba(102, 239, 180, 0.18);
+  pointer-events: none;
+}
+
+.fish-marker {
+  position: absolute;
+  top: 0.9rem;
+  bottom: 0.9rem;
+  left: 50%;
+  width: 2px;
+  background: linear-gradient(180deg, transparent, var(--fish-sun) 22% 78%, transparent);
+  box-shadow: 0 0 0.7rem rgba(255, 209, 102, 0.32);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.fish-marker::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: var(--fish-sun);
+  box-shadow: 0 0 1.4rem rgba(255, 209, 102, 0.72);
+  transform: translate(-50%, -50%);
+}
+
+.fishing-progress {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 0.5rem;
+  padding: clamp(0.9rem, 3vh, 1.4rem) clamp(1.1rem, 5vw, 2.6rem) clamp(1.15rem, 4vh, 1.7rem);
+  border-top: 1px solid rgba(188, 238, 255, 0.14);
+}
+
+.fishing-progress-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--fish-muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.catch-progress {
+  height: 1.15rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(1, 14, 27, 0.82);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.catch-progress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--fish-mint), var(--fish-sky), var(--fish-sun));
+  box-shadow: 0 0 1.2rem rgba(102, 239, 180, 0.42);
+}
+
+.empty-copy {
+  color: var(--fish-muted);
+  font-weight: 800;
+}
+
+.area-transition {
+  position: fixed;
+  inset: 0;
+  z-index: 2200;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.area-transition[hidden] {
+  display: none;
+}
+
+.area-clouds {
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: 0;
+  width: 200%;
+  transform: translateX(-106%);
+}
+
+.area-clouds--back {
+  background:
+    radial-gradient(ellipse 13% 34% at 18% 34%, #eef4fb 0 56%, transparent 80%),
+    radial-gradient(ellipse 15% 38% at 34% 64%, #e3ecf6 0 54%, transparent 80%),
+    radial-gradient(ellipse 14% 34% at 50% 30%, #eef4fb 0 56%, transparent 80%),
+    radial-gradient(ellipse 16% 38% at 66% 62%, #e3ecf6 0 54%, transparent 80%),
+    radial-gradient(ellipse 13% 34% at 82% 34%, #eef4fb 0 56%, transparent 80%),
+    linear-gradient(90deg, transparent 0%, #d6e4f1 13%, #d6e4f1 87%, transparent 100%);
+  filter: blur(8px);
+}
+
+.area-clouds--front {
+  background:
+    radial-gradient(ellipse 12% 30% at 10% 60%, #ffffff 0 58%, transparent 78%),
+    radial-gradient(ellipse 14% 34% at 26% 32%, #ffffff 0 56%, transparent 78%),
+    radial-gradient(ellipse 13% 30% at 42% 66%, #f7fbff 0 56%, transparent 78%),
+    radial-gradient(ellipse 15% 34% at 58% 32%, #ffffff 0 56%, transparent 78%),
+    radial-gradient(ellipse 13% 30% at 74% 64%, #f7fbff 0 56%, transparent 78%),
+    radial-gradient(ellipse 13% 32% at 90% 34%, #ffffff 0 56%, transparent 78%),
+    linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.92) 13%, rgba(255, 255, 255, 0.92) 87%, transparent 100%);
+  filter: blur(4px);
+}
+
+.area-transition-text {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  gap: 0.5rem;
+  text-align: center;
+  opacity: 0;
+}
+
+.area-transition-text p {
+  color: #2f6ba0;
+  font-size: clamp(0.72rem, 2vw, 1.05rem);
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.area-transition-text strong {
+  color: #0c3c63;
+  font-size: clamp(2.2rem, 8vw, 4.4rem);
+  line-height: 1;
+  text-shadow: 0 0.3rem 1.2rem rgba(255, 255, 255, 0.8);
+}
+
+.area-transition.is-running .area-clouds {
+  animation: area-clouds-sweep 3.4s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+}
+
+.area-transition.is-running .area-clouds--front {
+  animation-duration: 3.1s;
+  animation-delay: 0.16s;
+}
+
+.area-transition.is-running .area-transition-text {
+  animation: area-text-show 3.4s ease-out forwards;
+}
+
+@keyframes area-clouds-sweep {
+  0% { transform: translateX(-106%); }
+  32% { transform: translateX(-14%); }
+  62% { transform: translateX(-14%); }
+  100% { transform: translateX(56%); }
+}
+
+@keyframes area-text-show {
+  0%, 26% { opacity: 0; transform: translateY(0.7rem) scale(0.9); }
+  40%, 58% { opacity: 1; transform: translateY(0) scale(1); }
+  74%, 100% { opacity: 0; transform: translateY(-0.5rem) scale(1); }
+}
+
+
+@keyframes fish-spot-ripple {
+  0% { transform: scale(0.2); opacity: 0; }
+  10% { opacity: 0.8; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+@keyframes fish-spot-swim {
+  0% { transform: translate(-120%, -150%) rotate(-16deg); }
+  22% { transform: translate(-46%, -110%) rotate(9deg); }
+  44% { transform: translate(6%, -56%) rotate(20deg); }
+  60% { transform: translate(-30%, -10%) rotate(6deg); }
+  78% { transform: translate(-104%, -38%) rotate(-19deg); }
+  100% { transform: translate(-120%, -150%) rotate(-16deg); }
+}
+
+@keyframes fish-spot-expire {
+  0%, 85% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes fish-spot-pop {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  60% { opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+}
+
+@keyframes catch-float {
+  0% { opacity: 0; transform: translate(-50%, -40%) scale(0.86); }
+  12%, 74% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -88%) scale(1.04); }
+}
+
+@media (max-width: 760px) {
+  .fishing-shell {
+    width: calc(100% - 0.7rem);
+    grid-template-rows: auto minmax(0, 1fr);
+    padding-top: clamp(4.5rem, 12vh, 5.3rem);
+  }
+
+  .fishing-hud {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.55rem;
+    min-height: 0;
+    padding: 0.58rem;
+    border-radius: 1.2rem;
+  }
+
+  .fishing-title h1 {
+    font-size: 1.08rem;
+  }
+
+  .fishing-title p {
+    font-size: 0.58rem;
+  }
+
+  .hud-values {
+    grid-column: 1 / -1;
+    order: 3;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .hud-values div {
+    min-height: 2.7rem;
+    padding: 0.34rem 0.38rem;
+    border-radius: 0.8rem;
+  }
+
+  .hud-values strong {
+    font-size: 0.92rem;
+  }
+
+  .game-actions {
+    display: none;
+  }
+
+  .game-menu-toggle {
+    display: block;
+  }
+
+  .water-stage {
+    margin-top: 0.42rem;
+    border-radius: 1.25rem;
+  }
+
+  .stage-hint {
+    top: 0.55rem;
+    width: calc(100% - 0.8rem);
+    padding: 0.48rem 0.62rem;
+    font-size: 0.73rem;
+  }
+
+  .game-window {
+    inset: auto 0.35rem max(0.35rem, env(safe-area-inset-bottom));
+    width: auto;
+    height: min(78svh, 44rem);
+    max-height: none;
+    border-radius: 1.35rem;
+  }
+
+  .index-grid {
+    grid-template-columns: repeat(auto-fill, minmax(8.2rem, 1fr));
+  }
+
+  .index-fish {
+    min-height: 9.5rem;
+  }
+
+  .inventory-row {
+    grid-template-columns: 4rem minmax(0, 1fr);
+    grid-template-areas:
+      "art info"
+      "value value";
+    gap: 0.45rem 0.6rem;
+  }
+
+  .inventory-value {
+    grid-auto-flow: column;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .fishing-overlay-card {
+    width: 100%;
+    height: 100%;
+    border-radius: 1.4rem;
+  }
+
+  .leaderboard-row {
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+  }
+
+  .leaderboard-row small {
+    grid-column: 2;
+  }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .fishing-shell {
+    width: calc(100% - 0.7rem);
+    grid-template-columns: minmax(12rem, 22rem) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.5rem;
+    padding-top: 4.3rem;
+  }
+
+  .fishing-hud {
+    grid-row: 1 / -1;
+    grid-template-columns: 1fr;
+    align-content: start;
+  }
+
+  .hud-values {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .game-actions {
+    justify-content: flex-start;
+    padding: 0;
+  }
+
+  .water-stage {
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .water-stage::before,
+  .water-stage::after {
+    animation: none;
+  }
+
+  .fish-spot-ring,
+  .fish-spot-swimmer {
+    animation-duration: 0.001ms;
+    animation-iteration-count: 1;
+  }
+}
+
+body.reduce-fishing-motion .water-stage::before,
+body.reduce-fishing-motion .water-stage::after,
+body.reduce-fishing-motion .fish-spot-ring,
+body.reduce-fishing-motion .fish-spot-swimmer {
+  animation: none;
+}

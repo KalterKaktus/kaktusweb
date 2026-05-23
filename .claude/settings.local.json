@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(where npx *)",
+      "Bash(where node *)",
+      "Bash(where python *)",
+      "Bash(where py *)",
+      "PowerShell($zip = \"C:\\\\Users\\\\maxwi\\\\Downloads\\\\My Fishing Kaktus \\(1\\).zip\"; $out = \"C:\\\\Users\\\\maxwi\\\\Documents\\\\Codex\\\\2026-05-20\\\\KaktusWebsite\\\\deploy\\\\.design-zip2\"; if \\(Test-Path $out\\) { Remove-Item $out -Recurse -Force }; Expand-Archive -Path $zip -DestinationPath $out -Force; Get-ChildItem $out -Recurse -File | ForEach-Object { $lines = \\(Get-Content $_.FullName | Measure-Object -Line\\).Lines; \"{0,5}  {1}\" -f $lines, \\($_.FullName.Replace\\($out, ''\\)\\) })",
+      "PowerShell(Copy-Item \"C:\\\\Users\\\\maxwi\\\\Downloads\\\\fishArtSystem.js\" \"games\\\\MyFishingKaktus\\\\js\\\\systems\\\\fishArtSystem.js\" -Force; \\(Get-Content \"games\\\\MyFishingKaktus\\\\js\\\\systems\\\\fishArtSystem.js\" | Measure-Object -Line\\).Lines)",
+      "mcp__2bbf63e8-3bc9-4fac-8a0c-31f2829fdea4__describe_a_sound"
+    ]
+  }
+}

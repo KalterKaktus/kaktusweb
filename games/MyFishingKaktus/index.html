@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b5ca8" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="My Fishing Kaktus" />
+    <title>My Fishing Kaktus</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="fishing-page">
+    <nav class="nav fishing-site-nav">
+      <div class="nav-container">
+        <a class="logo" href="/">KK</a>
+        <div class="nav-links">
+          <a href="/" class="nav-link">Home</a>
+          <a href="/#about" class="nav-link">About</a>
+          <a href="/steam-deals/" class="nav-link">Steam Deals</a>
+          <a href="/games/" class="nav-link">Games</a>
+          <a href="/wiki/" class="nav-link">Wiki</a>
+          <div id="auth-nav" class="auth-nav" aria-live="polite">
+            <a class="nav-link auth-link" href="/login.html">Login</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="fishing-shell" aria-label="My Fishing Kaktus Spiel">
+      <header class="fishing-hud">
+        <div class="fishing-title">
+          <p>Der Ozean zahlt immer.</p>
+          <h1>My Fishing Kaktus</h1>
+        </div>
+        <div class="hud-values">
+          <div>
+            <span>Coins</span>
+            <strong id="coin-count">0</strong>
+          </div>
+          <div>
+            <span>Area</span>
+            <strong id="area-name">Pond</strong>
+          </div>
+          <div>
+            <span>Prestige</span>
+            <strong id="prestige-count">0</strong>
+          </div>
+          <div>
+            <span>Fänge</span>
+            <strong id="catch-count">0</strong>
+          </div>
+        </div>
+        <button class="game-menu-toggle" id="game-menu-toggle" type="button" aria-expanded="false" aria-controls="game-menu">
+          <span></span><span></span><span></span>
+          <span class="sr-only">Game-Menü öffnen</span>
+        </button>
+      </header>
+
+      <nav class="game-actions" aria-label="Spielbereiche">
+        <button type="button" data-open-window="shop">Shop</button>
+        <button type="button" data-open-window="index">Fish Index</button>
+        <button type="button" data-open-window="inventory">Inventar</button>
+        <button type="button" data-open-window="areas">Areas</button>
+        <button type="button" data-open-window="stats">Stats</button>
+        <button type="button" data-open-window="settings">Settings</button>
+        <button type="button" data-open-window="changelog">Changelog</button>
+        <button type="button" data-open-window="test" data-test-only hidden>Test</button>
+      </nav>
+
+      <aside class="game-menu" id="game-menu" hidden>
+        <div class="game-menu-head">
+          <strong>My Fishing Kaktus</strong>
+          <button type="button" data-close-menu aria-label="Menü schließen">x</button>
+        </div>
+        <button type="button" data-open-window="shop">Shop</button>
+        <button type="button" data-open-window="index">Fish Index</button>
+        <button type="button" data-open-window="inventory">Inventar</button>
+        <button type="button" data-open-window="areas">Areas</button>
+        <button type="button" data-open-window="stats">Stats</button>
+        <button type="button" data-open-window="settings">Settings</button>
+        <button type="button" data-open-window="changelog">Changelog</button>
+        <button type="button" data-open-window="test" data-test-only hidden>Test</button>
+      </aside>
+
+      <section class="water-stage" id="water-stage" aria-label="Wasserfläche mit Fischstellen">
+        <p class="stage-hint" id="stage-hint">Tippe eine Fischstelle an und halte im Fangfenster die Zone am Punkt.</p>
+        <div class="weather-banner" id="weather-banner" aria-live="polite" hidden></div>
+        <p class="broadcast-feed" id="broadcast-feed" aria-live="polite" hidden></p>
+        <div class="catch-popups" id="catch-popups" aria-live="polite"></div>
+      </section>
+
+      <section class="game-window" data-window="shop" hidden aria-labelledby="shop-title">
+        <header>
+          <div>
+            <p>Shop</p>
+            <h2 id="shop-title">Upgrades</h2>
+          </div>
+          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+        </header>
+        <div class="window-body upgrade-grid" id="upgrade-list"></div>
+      </section>
+
+      <section class="game-window index-window" data-window="index" hidden aria-labelledby="index-title">
+        <header>
+          <div>
+            <p>Sammlung</p>
+            <h2 id="index-title">Fish Index</h2>
+          </div>
+          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+        </header>
+        <div class="window-body fish-index" id="fish-index"></div>
+      </section>
+
+      <section class="game-window" data-window="inventory" hidden aria-labelledby="inventory-title">
+        <header>
+          <div>
+            <p>Fänge</p>
+            <h2 id="inventory-title">Inventar</h2>
+          </div>
+          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+        </header>
+        <div class="window-toolbar">
+          <span id="inventory-value">0 Coins</span>
+          <button class="sell-button" id="sell-all" type="button">Alles verkaufen</button>
+        </div>
+        <div class="window-body inventory-list" id="inventory-list"></div>
+      </section>
+
+      <section class="game-window" data-window="areas" hidden aria-labelledby="areas-title">
+        <header>
+          <div>
+            <p>Fortschritt</p>
+            <h2 id="areas-title">Areas & Prestige</h2>
+          </div>
+          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+        </header>
+        <div class="window-body">
+          <div class="area-grid" id="area-list"></div>
+          <section class="prestige-card" id="prestige-card"></section>
+        </div>
+      </section>
+
+      <section class="game-window" data-window="stats" hidden aria-labelledby="stats-title">
+        <header>
+          <div>
+            <p>Grind</p>
+            <h2 id="stats-title">Stats & Rangliste</h2>
+          </div>
+          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+        </header>
+        <div class="window-body stats-body">
+          <dl class="stats-grid" id="stats-grid"></dl>
+          <section class="leaderboard-card">
+            <div class="leaderboard-head">
+              <h3>Rangliste</h3>
+              <button id="reload-leaderboard" type="button">Aktualisieren</button>
+            </div>
+            <p>Sortiert nach Prestige, danach nach gefangenen Fischen.</p>
+            <div class="fishing-leaderboard" id="leaderboard-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="game-window" data-window="settings" hidden aria-labelledby="settings-title">
+        <header>
+          <div>
+            <p>Optionen</p>
+            <h2 id="settings-title">Settings</h2>
+          </div>
+          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+        </header>
+        <div class="window-body settings-list">
+          <p class="save-status" id="save-status">Spielstand wird geladen.</p>
+          <label>
+            <input id="reduced-motion" type="checkbox" />
+            Weniger Bewegung
+          </label>
+          <label>
+            <input id="music-toggle" type="checkbox" />
+            Musik
+          </label>
+          <label class="settings-slider">
+            <span>Musik-Lautstärke</span>
+            <input id="music-volume" type="range" min="0" max="100" step="1" />
+          </label>
+          <label>
+            <input id="sfx-toggle" type="checkbox" />
+            Soundeffekte
+          </label>
+          <label class="settings-slider">
+            <span>SFX-Lautstärke</span>
+            <input id="sfx-volume" type="range" min="0" max="100" step="1" />
+          </label>
+          <button id="save-now" type="button">Jetzt speichern</button>
+          <button class="danger-button" id="reset-save" type="button">Spielstand zurücksetzen</button>
+        </div>
+      </section>
+
+      <section class="game-window" data-window="changelog" hidden aria-labelledby="changelog-title">
+        <header>
+          <div>
+            <p>News</p>
+            <h2 id="changelog-title">Changelog</h2>
+          </div>
+          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+        </header>
+        <div class="window-body fishing-changelog" id="fishing-changelog"></div>
+      </section>
+
+      <section class="game-window" data-window="test" hidden aria-labelledby="test-title">
+        <header>
+          <div>
+            <p>Debug</p>
+            <h2 id="test-title">Testmenü</h2>
+          </div>
+          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+        </header>
+        <div class="window-body settings-list" id="test-panel">
+          <p class="save-status">Nur sichtbar mit <strong>?test</strong> in der URL.</p>
+          <button type="button" data-test-action="coins">+100.000 Coins</button>
+          <button type="button" data-test-action="fish-small">Timer-Fisch: Kleiner Fisch</button>
+          <button type="button" data-test-action="fish-big">Timer-Fisch: Großer Fisch</button>
+          <button type="button" data-test-action="fish-sword">Timer-Fisch: Schwertfisch</button>
+          <button type="button" data-test-action="fish-shark">Timer-Fisch: Hai</button>
+          <button type="button" data-test-action="weather-sunny">Wetter: Sonnig (Glück 2×)</button>
+          <button type="button" data-test-action="weather-rain">Wetter: Regen (Spawn 2×)</button>
+          <button type="button" data-test-action="weather-storm">Wetter: Sturm (Haken 2×)</button>
+          <button type="button" data-test-action="weather-fog">Wetter: Nebel (Rute 2×)</button>
+          <button type="button" data-test-action="weather-night">Wetter: Nacht (Schnur 2×)</button>
+          <button type="button" data-test-action="weather-clear">Wetter: zurücksetzen</button>
+          <button type="button" data-test-action="preview-fish">Fisch-Galerie öffnen</button>
+        </div>
+      </section>
+
+      <div class="fish-gallery-overlay" id="fish-gallery-overlay" hidden aria-hidden="true">
+        <div class="fish-gallery-card">
+          <header>
+            <div>
+              <p>Test</p>
+              <h2>Fisch-Galerie</h2>
+            </div>
+            <button type="button" id="fish-gallery-close" aria-label="Galerie schließen">x</button>
+          </header>
+          <div class="fish-gallery-body" id="fish-gallery-body"></div>
+        </div>
+      </div>
+    </main>
+
+    <section class="fishing-overlay" id="fishing-overlay" hidden aria-label="Fang-Minispiel">
+      <div class="fishing-overlay-card">
+        <div class="fishing-overlay-glow" aria-hidden="true"></div>
+        <header>
+          <div>
+            <p>Fang läuft</p>
+            <strong data-fishing-rarity>Common</strong>
+          </div>
+          <button type="button" class="fishing-abort" data-fishing-cancel>Abbrechen</button>
+        </header>
+        <div class="fishing-arena">
+          <p class="fishing-tip">Halte gedrückt — die grüne Zone wandert zum leuchtenden Punkt. Beim Loslassen gleitet sie zurück.</p>
+          <div class="fishing-track" data-fishing-hold>
+            <span class="catch-zone" data-fishing-zone></span>
+            <span class="fish-marker" data-fishing-fish></span>
+          </div>
+        </div>
+        <div class="fishing-progress">
+          <div class="fishing-progress-top">
+            <span>Fangfortschritt</span>
+          </div>
+          <div class="catch-progress" aria-label="Fangfortschritt">
+            <span data-fishing-progress></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="area-transition" id="area-transition" hidden aria-hidden="true">
+      <div class="area-clouds area-clouds--back"></div>
+      <div class="area-clouds area-clouds--front"></div>
+      <div class="area-transition-text">
+        <p id="area-transition-kicker">Neue Area freigeschaltet</p>
+        <strong id="area-transition-name">Lake</strong>
+      </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script type="module" src="/js/auth-nav.js"></script>
+    <script type="module" src="js/game.js"></script>
+  </body>
+</html>

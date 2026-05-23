@@ -47,10 +47,17 @@
             <details class="admin-abuse" id="admin-abuse" hidden>
                 <summary>Adminabuse</summary>
                 <div class="admin-abuse-body">
+                    <section class="admin-abuse-cross">
+                        <p class="admin-empty">Cross-Game-Aktionen für alle gerade angemeldeten Spieler in allen Spielen.</p>
+                        <div class="admin-inline">
+                            <button class="admin-button is-danger" data-admin-cross-event="force-reload" type="button">Alle Spieler neu laden</button>
+                        </div>
+                    </section>
                     <label class="admin-field admin-abuse-game">
                         <span>Game</span>
                         <select class="admin-input" id="admin-abuse-game">
                             <option value="kaktus-clicker">KaktusClicker</option>
+                            <option value="my-fishing-kaktus">My Fishing Kaktus</option>
                         </select>
                     </label>
                     <section class="admin-abuse-options" data-admin-abuse-game="kaktus-clicker">
@@ -58,6 +65,30 @@
                         <div class="admin-inline">
                             <button class="admin-button" data-admin-event="spawn-goldkaktus" type="button">Goldkaktus spawnen</button>
                             <button class="admin-button is-ruby" data-admin-event="spawn-rubinkaktus" type="button">Rubinkaktus spawnen</button>
+                        </div>
+                    </section>
+                    <section class="admin-abuse-options" data-admin-abuse-game="my-fishing-kaktus" hidden>
+                        <p class="admin-empty">Live-Events für gerade angemeldete Fischer.</p>
+                        <div class="admin-inline">
+                            <button class="admin-button" data-admin-event="weather-sunny" type="button">Wetter: Sonnig</button>
+                            <button class="admin-button" data-admin-event="weather-rain" type="button">Wetter: Regen</button>
+                            <button class="admin-button" data-admin-event="weather-storm" type="button">Wetter: Sturm</button>
+                            <button class="admin-button" data-admin-event="weather-fog" type="button">Wetter: Nebel</button>
+                            <button class="admin-button" data-admin-event="weather-night" type="button">Wetter: Nacht</button>
+                            <button class="admin-button" data-admin-event="weather-clear" type="button">Wetter: Reset</button>
+                        </div>
+                        <div class="admin-inline">
+                            <button class="admin-button" data-admin-event="spawn-fish-small" type="button">Timer: Kleiner Fisch</button>
+                            <button class="admin-button" data-admin-event="spawn-fish-big" type="button">Timer: Großer Fisch</button>
+                            <button class="admin-button" data-admin-event="spawn-fish-sword" type="button">Timer: Schwertfisch</button>
+                            <button class="admin-button is-ruby" data-admin-event="spawn-fish-shark" type="button">Timer: Hai</button>
+                        </div>
+                        <label class="admin-field">
+                            <span>Broadcast-Text (max. 200 Zeichen)</span>
+                            <input class="admin-input" id="admin-fishing-broadcast" type="text" maxlength="200" placeholder="z.B. Sturm zieht auf — alle Fischer aufgepasst!">
+                        </label>
+                        <div class="admin-inline">
+                            <button class="admin-button" data-admin-event="broadcast" type="button">Broadcast senden</button>
                         </div>
                     </section>
                 </div>

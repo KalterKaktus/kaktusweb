@@ -2,8 +2,25 @@ const ADMIN_EMAILS_ENV = "ADMIN_EMAILS";
 const FORCE_RELOAD_MESSAGE = "Dein Spielstand wurde aktualisiert. Die Seite wird neu geladen.";
 const PRESENCE_ONLINE_WINDOW_MS = 90000;
 const ADMIN_GAME_EVENT_TYPES = {
-    "kaktus-clicker": new Set(["spawn-goldkaktus", "spawn-rubinkaktus"]),
+    "kaktus-clicker": new Set(["spawn-goldkaktus", "spawn-rubinkaktus", "force-reload"]),
+    "my-fishing-kaktus": new Set([
+        "weather-sunny",
+        "weather-rain",
+        "weather-storm",
+        "weather-fog",
+        "weather-night",
+        "weather-clear",
+        "broadcast",
+        "spawn-fish-small",
+        "spawn-fish-big",
+        "spawn-fish-sword",
+        "spawn-fish-shark",
+        "force-reload",
+    ]),
 };
+
+// Cross-Game-Events werden an alle Spiele dieser Liste gefannt.
+const CROSS_GAME_EVENT_TYPES = new Set(["force-reload"]);
 
 function env(name) {
     return globalThis.Netlify?.env?.get(name) || process.env[name];
@@ -225,16 +242,58 @@ function requireGameEventType(gameId, eventType) {
     return { gameId: safeGameId, eventType: safeEventType };
 }
 
-async function triggerGameEvent(gameId, eventType) {
+function sanitizeEventPayload(eventType, raw) {
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+        return {};
+    }
+    if (eventType === "broadcast") {
+        const message = String(raw.message || "").trim().slice(0, 200);
+        if (!message) {
+            throw httpError("Broadcast-Text fehlt.", 400);
+        }
+        return { message };
+    }
+    return {};
+}
+
+async function triggerGameEvent(gameId, eventType, rawPayload) {
     const safeEvent = requireGameEventType(gameId, eventType);
+    const payload = sanitizeEventPayload(safeEvent.eventType, rawPayload);
     await supabase("admin_game_events", {
         method: "POST",
         headers: { Prefer: "return=minimal" },
         body: JSON.stringify({
             game_id: safeEvent.gameId,
             event_type: safeEvent.eventType,
+            payload,
             expires_at: new Date(Date.now() + 60000).toISOString(),
         }),
+    });
+}
+
+async function triggerCrossGameEvent(eventType, rawPayload) {
+    const safeEventType = String(eventType || "").trim();
+    if (!CROSS_GAME_EVENT_TYPES.has(safeEventType)) {
+        throw httpError("Cross-Game-Event ist nicht freigegeben.", 400);
+    }
+    const payload = sanitizeEventPayload(safeEventType, rawPayload);
+    const expiresAt = new Date(Date.now() + 60000).toISOString();
+    // Pro Spiel einzeln einfügen, damit die game-spezifischen Subscriber treffen.
+    const rows = Object.keys(ADMIN_GAME_EVENT_TYPES)
+        .filter((gameId) => ADMIN_GAME_EVENT_TYPES[gameId].has(safeEventType))
+        .map((gameId) => ({
+            game_id: gameId,
+            event_type: safeEventType,
+            payload,
+            expires_at: expiresAt,
+        }));
+    if (!rows.length) {
+        throw httpError("Kein Spiel akzeptiert dieses Event.", 400);
+    }
+    await supabase("admin_game_events", {
+        method: "POST",
+        headers: { Prefer: "return=minimal" },
+        body: JSON.stringify(rows),
     });
 }
 
@@ -256,7 +315,12 @@ export default async (req) => {
 
         const body = await req.json();
         if (body.action === "trigger-game-event") {
-            await triggerGameEvent(body.gameId, body.eventType);
+            await triggerGameEvent(body.gameId, body.eventType, body.payload);
+            return json({ ok: true });
+        }
+
+        if (body.action === "trigger-cross-game-event") {
+            await triggerCrossGameEvent(body.eventType, body.payload);
             return json({ ok: true });
         }
 

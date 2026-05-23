@@ -13,6 +13,19 @@ function setStatus(message, isError = false, showLogin = false) {
     loginGate.hidden = !showLogin;
 }
 
+function flashButton(button, successLabel, ms = 1800) {
+    if (!button) return;
+    const originalLabel = button.textContent;
+    button.classList.add("is-flash-success");
+    button.textContent = successLabel;
+    button.disabled = true;
+    window.setTimeout(() => {
+        button.classList.remove("is-flash-success");
+        button.textContent = originalLabel;
+        button.disabled = false;
+    }, ms);
+}
+
 function setAdminContentVisible(visible) {
     adminAbuseRoot.hidden = !visible;
     usersRoot.hidden = !visible;
@@ -50,6 +63,10 @@ function formatDate(value) {
 function formatGameName(gameId) {
     if (gameId === "kaktus-clicker") {
         return "KaktusClicker";
+    }
+
+    if (gameId === "my-fishing-kaktus") {
+        return "My Fishing Kaktus";
     }
 
     return String(gameId || "Game")
@@ -443,9 +460,12 @@ usersRoot.addEventListener("click", async (event) => {
         }
 
         if (action === "message") {
-            const message = card.querySelector("[data-message-input]")?.value.trim();
+            const messageInput = card.querySelector("[data-message-input]");
+            const message = messageInput?.value.trim();
             await api("message", { userId, message });
-            setStatus("Nachricht geschickt.");
+            setStatus(`Nachricht an ${card.querySelector("h2")?.textContent || "User"} verschickt.`);
+            if (messageInput) messageInput.value = "";
+            flashButton(button, "Verschickt ✓");
             return;
         }
 
@@ -463,22 +483,75 @@ usersRoot.addEventListener("click", async (event) => {
 });
 
 refreshButton.addEventListener("click", loadUsers);
+function showAbuseSection() {
+    const selected = adminAbuseGame.value;
+    adminAbuseRoot.querySelectorAll("[data-admin-abuse-game]").forEach((section) => {
+        section.hidden = section.dataset.adminAbuseGame !== selected;
+    });
+}
+
+adminAbuseGame.addEventListener("change", showAbuseSection);
+showAbuseSection();
+
 adminAbuseRoot.addEventListener("click", async (event) => {
+    const crossButton = event.target.closest("[data-admin-cross-event]");
+    if (crossButton) {
+        const crossEventType = crossButton.dataset.adminCrossEvent;
+        const confirmTexts = {
+            "force-reload": "Alle gerade online Spieler in beiden Games sofort neu laden?",
+        };
+        const confirmText = confirmTexts[crossEventType] || "Cross-Game-Event auslösen?";
+        if (!window.confirm(confirmText)) {
+            return;
+        }
+        crossButton.disabled = true;
+        try {
+            await api("trigger-cross-game-event", { eventType: crossEventType });
+            setStatus(`Cross-Game-Event „${crossEventType}" an alle Spiele gepusht.`);
+            flashButton(crossButton, "Alle reloaded ✓", 2400);
+        } catch (error) {
+            setStatus(error.message, true);
+            crossButton.disabled = false;
+        }
+        return;
+    }
+
     const button = event.target.closest("[data-admin-event]");
     if (!button) {
         return;
+    }
+
+    const eventType = button.dataset.adminEvent;
+    const payload = {};
+    if (eventType === "broadcast") {
+        const input = document.getElementById("admin-fishing-broadcast");
+        const text = (input?.value || "").trim();
+        if (!text) {
+            setStatus("Broadcast-Text fehlt.", true);
+            return;
+        }
+        payload.message = text.slice(0, 200);
     }
 
     button.disabled = true;
     try {
         await api("trigger-game-event", {
             gameId: adminAbuseGame.value,
-            eventType: button.dataset.adminEvent,
+            eventType,
+            payload,
         });
-        setStatus("Globales Game-Event ausgelöst.");
+        const label = button.textContent;
+        const successLabel = eventType === "broadcast"
+            ? "Broadcast gesendet ✓"
+            : `${label} ✓ live`;
+        setStatus(`${label} an alle Online-Spieler gepusht.`);
+        if (eventType === "broadcast") {
+            const input = document.getElementById("admin-fishing-broadcast");
+            if (input) input.value = "";
+        }
+        flashButton(button, successLabel, 2000);
     } catch (error) {
         setStatus(error.message, true);
-    } finally {
         button.disabled = false;
     }
 });

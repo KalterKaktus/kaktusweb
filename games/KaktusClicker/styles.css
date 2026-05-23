@@ -674,21 +674,49 @@ h3 {
 
 .float-pop.is-event-reward {
   z-index: 5;
-  max-width: min(330px, 82vw);
+  max-width: min(420px, 88vw);
   color: #fff3ac;
   text-align: center;
   text-shadow:
-    0 0 10px rgba(255, 243, 172, 0.98),
-    0 0 28px rgba(255, 217, 90, 0.82);
-  font-size: clamp(22px, 3vw, 34px);
-  animation-duration: 1250ms;
+    0 0 12px rgba(255, 243, 172, 1),
+    0 0 32px rgba(255, 217, 90, 0.92),
+    0 0 64px rgba(255, 195, 60, 0.6);
+  font-size: clamp(30px, 4.8vw, 56px);
+  font-weight: 950;
+  letter-spacing: 0.02em;
+  animation: float-pop-event 3200ms cubic-bezier(0.18, 0.78, 0.22, 1) forwards;
 }
 
 .float-pop.is-event-reward.is-red {
   color: #ffc8d0;
   text-shadow:
-    0 0 10px rgba(255, 200, 208, 0.98),
-    0 0 30px rgba(255, 83, 109, 0.84);
+    0 0 12px rgba(255, 200, 208, 1),
+    0 0 34px rgba(255, 83, 109, 0.94),
+    0 0 68px rgba(255, 60, 96, 0.55);
+}
+
+@keyframes float-pop-event {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 20px) scale(0.4);
+    filter: blur(3px);
+  }
+  14% {
+    opacity: 1;
+    transform: translate(-50%, -8px) scale(1.35);
+    filter: blur(0);
+  }
+  22% {
+    transform: translate(-50%, -12px) scale(1);
+  }
+  72% {
+    opacity: 1;
+    transform: translate(-50%, -52px) scale(1.04);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -120px) scale(1.12);
+  }
 }
 
 .game-modal-backdrop {
@@ -736,6 +764,44 @@ h3 {
   to {
     opacity: 0;
     transform: translate(-50%, -86px) scale(1.08);
+  }
+}
+
+.admin-toast {
+  position: fixed;
+  top: clamp(64px, 9vh, 110px);
+  left: 50%;
+  z-index: 40;
+  max-width: min(420px, 88vw);
+  padding: 12px 18px;
+  border: 1px solid rgba(255, 217, 90, 0.7);
+  border-radius: 999px;
+  background: rgba(20, 12, 0, 0.86);
+  color: #fff3ac;
+  text-align: center;
+  font-size: clamp(14px, 1.6vw, 17px);
+  font-weight: 850;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 10px rgba(255, 217, 90, 0.5);
+  box-shadow: 0 0 28px rgba(255, 200, 60, 0.28);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+  transform: translate(-50%, -14px);
+  opacity: 0;
+  animation: admin-toast-in 380ms ease-out forwards, admin-toast-out 600ms ease-in 4400ms forwards;
+}
+
+@keyframes admin-toast-in {
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes admin-toast-out {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -14px);
   }
 }
 

@@ -793,6 +793,14 @@ function spawnConfiguredRandomEvent(kind) {
   spawnRandomEvent(kind, config.duration, config.rewardSeconds, config.label);
 }
 
+function showAdminToast(message) {
+  const toast = document.createElement("div");
+  toast.className = "admin-toast";
+  toast.textContent = message;
+  document.body.append(toast);
+  window.setTimeout(() => toast.remove(), 5200);
+}
+
 function handleAdminGameEvent(row) {
   const expired = row?.expires_at && Date.parse(row.expires_at) <= Date.now();
   if (row?.id && seenAdminGameEventIds.has(row.id)) {
@@ -809,10 +817,17 @@ function handleAdminGameEvent(row) {
 
   if (row.event_type === "spawn-goldkaktus") {
     spawnConfiguredRandomEvent("golden");
+    showAdminToast("⚙ Admin spawnt einen Goldkaktus");
   }
 
   if (row.event_type === "spawn-rubinkaktus") {
     spawnConfiguredRandomEvent("red");
+    showAdminToast("⚙ Admin spawnt einen Rubinkaktus");
+  }
+
+  if (row.event_type === "force-reload") {
+    showAdminToast("⚙ Neue Version verfügbar — Spiel wird neu geladen…");
+    window.setTimeout(() => location.reload(), 1500);
   }
 }
 

@@ -927,6 +927,32 @@ body::before {
     box-shadow: 0 18px 44px rgba(105, 240, 174, 0.12);
 }
 
+.hub-card-disabled,
+.hub-card-disabled:hover {
+    cursor: default;
+    pointer-events: none;
+    border-color: rgba(255, 255, 255, 0.08);
+    background:
+        linear-gradient(145deg, rgba(80, 80, 80, 0.08), transparent 44%),
+        rgba(20, 24, 28, 0.5);
+    color: rgba(220, 230, 235, 0.42);
+    transform: none;
+    box-shadow: none;
+    filter: grayscale(0.6);
+}
+
+.hub-card-disabled .hub-card-tag {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(220, 230, 235, 0.5);
+}
+
+.hub-card-disabled .hub-card-title,
+.hub-card-disabled .hub-card-text,
+.hub-card-disabled .hub-card-action {
+    color: rgba(220, 230, 235, 0.42);
+}
+
 .hub-card-content {
     position: relative;
     z-index: 1;

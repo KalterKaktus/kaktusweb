@@ -86,6 +86,14 @@ export const achievements = [
 
 export const changelogEntries = [
   {
+    date: "23.05.2026",
+    title: "Belohnungen mit mehr WOW",
+    items: [
+      "Gold- und Rubinkaktus-Belohnungen werden jetzt viel größer und länger eingeblendet — du siehst genau wie viel du eingesammelt hast.",
+      "Live-Hinweis im Spiel, wenn ein Admin einen Gold- oder Rubinkaktus auslöst.",
+    ],
+  },
+  {
     date: "22.05.2026",
     title: "Audio & Feinschliff",
     items: [
