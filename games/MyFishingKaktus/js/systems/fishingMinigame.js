@@ -4,6 +4,17 @@ function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
 }
 
+// Per-Rarity Drain pro Sekunde wenn der Fisch ausserhalb der Catch-Zone ist.
+// Anker: Common = 10 s bis Ausriss ohne Upgrades, Legendary = 3 s.
+// Line-Upgrade reduziert das um 11 % pro Level (kumulativ, also Lvl 5 = 45 %).
+const TENSION_DRAIN_BY_RARITY = {
+    Common: 0.100,
+    Uncommon: 0.125,
+    Rare: 0.167,
+    Epic: 0.222,
+    Legendary: 0.333,
+};
+
 export class FishingMinigame {
     constructor(root, options) {
         this.root = root;
@@ -12,6 +23,9 @@ export class FishingMinigame {
         this.fishMarker = root.querySelector("[data-fishing-fish]");
         this.zone = root.querySelector("[data-fishing-zone]");
         this.progress = root.querySelector("[data-fishing-progress]");
+        this.tension = root.querySelector("[data-fishing-tension]");
+        this.tensionBar = this.tension ? this.tension.parentElement : null;
+        this.tensionHint = root.querySelector("[data-fishing-tension-hint]");
         this.rarityLabel = root.querySelector("[data-fishing-rarity]");
         this.cancelButton = root.querySelector("[data-fishing-cancel]");
         this.animationFrame = 0;
@@ -39,6 +53,13 @@ export class FishingMinigame {
             }
         });
         this.cancelButton.addEventListener("click", () => this.finish(false));
+
+        // Verhindert dass beim Press-Hold im Minispiel Text/Elemente selektiert
+        // oder das Browser-Kontextmenü („Kopieren") aufpoppen.
+        const blockSelection = (event) => event.preventDefault();
+        this.holdSurface.addEventListener("selectstart", blockSelection);
+        this.holdSurface.addEventListener("contextmenu", blockSelection);
+        this.holdSurface.addEventListener("dragstart", blockSelection);
     }
 
     start(candidate, bonuses) {
@@ -63,6 +84,16 @@ export class FishingMinigame {
             zoneWidth: Math.min(0.44, 0.19 + rod * 0.035),
             catchSpeed: (0.3 + hook * 0.045) / rarity.difficulty,
             lossSpeed: Math.max(0.035, 0.13 * rarity.difficulty * (1 - line * 0.11)),
+            // Schnur-Spannung (1.0 = voll, 0 = Fisch reisst aus).
+            // Drain ist pro Rarity fest verankert (Common 10s → Legendary 3s ohne Upgrades).
+            // Line-Upgrade reduziert linear 11 % pro Level (Lvl 5 = 45 % Drain übrig).
+            tension: 1,
+            tensionDrain: Math.max(
+                0.04,
+                (TENSION_DRAIN_BY_RARITY[candidate.fish.rarity] || 0.125) * (1 - line * 0.11)
+            ),
+            // Refill skaliert mit Hook-Upgrade (Basis + 35 % pro Level → bei Lvl 5 quasi 2.75x).
+            tensionRefill: 0.36 * (1 + hook * 0.35),
         };
 
         this.root.hidden = false;
@@ -105,9 +136,21 @@ export class FishingMinigame {
 
         const overlap = Math.abs(game.fishPosition - game.zonePosition) <= game.zoneWidth / 2;
         game.progress = clamp(game.progress + (overlap ? game.catchSpeed : -game.lossSpeed) * delta, 0, 1);
+
+        // Tension: ausserhalb Zone → drainen, drin → refillen. Bei 0 reisst der Fisch aus.
+        game.tension = clamp(
+            game.tension + (overlap ? game.tensionRefill : -game.tensionDrain) * delta,
+            0,
+            1
+        );
+
         this.render();
         if (game.progress >= 1) {
             this.finish(true);
+            return;
+        }
+        if (game.tension <= 0) {
+            this.finish(false);
             return;
         }
 
@@ -124,6 +167,21 @@ export class FishingMinigame {
         this.zone.style.left = `${(game.zonePosition - game.zoneWidth / 2) * 100}%`;
         this.zone.style.width = `${game.zoneWidth * 100}%`;
         this.progress.style.width = `${game.progress * 100}%`;
+        if (this.tension) {
+            this.tension.style.width = `${game.tension * 100}%`;
+        }
+        if (this.tensionBar) {
+            this.tensionBar.classList.toggle("is-low", game.tension < 0.3);
+        }
+        if (this.tensionHint) {
+            if (game.tension < 0.3) {
+                this.tensionHint.textContent = "GLEICH REISST ER AUS!";
+            } else if (game.tension < 0.6) {
+                this.tensionHint.textContent = "Zurück in die Zone!";
+            } else {
+                this.tensionHint.textContent = "Halt ihn in der Zone!";
+            }
+        }
     }
 
     finish(caught) {

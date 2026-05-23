@@ -44,7 +44,7 @@ deploy/
 ### My Fishing Kaktus
 - **Pfad:** `games/MyFishingKaktus/`
 - **Game-ID (Saves):** `my-fishing-kaktus`
-- **Inhalt:** Active Collection Fishing mit Pond/Lake/Ocean Areas, Prestige-Cap 2, WebGL-Wasser, 5 Wetter-Events (sunny/rain/storm/fog/night, global synchron, 30 Min Slot, 5 Min aktiv), Fish-Index, Inventar, Coin-Fish Timer-Spawns, Live-Leaderboard (Prestige > Fänge).
+- **Inhalt:** Active Collection Fishing mit Pond/Lake/Ocean Areas, Prestige-Cap 2, WebGL-Wasser, 5 Wetter-Events (sunny/rain/storm/fog/night, global synchron, 30 Min Slot, 5 Min aktiv), Fish-Index, Inventar, Coin-Fish Timer-Spawns, Live-Leaderboard (Prestige > Fänge). Fang-Minispiel mit Fang-Fortschritt UND Schnur-Spannung (drainet ausserhalb Catch-Zone, gameover bei 0). Upgrades: Rod (breitere Zone), Line (langsamerer Drain), Hook (schnellerer Refill + Catch), Luck (Rarity-Bonus), Köder (Spawn-Speed schneller + Verweildauer verdoppelt pro Level [3 s → 96 s] + +1 paralleler Spot pro Level [1 → 6] — interne ID bleibt `sonar`).
 - **Module:** `js/game.js` + `js/systems/` (water, weather, weatherEvent, audio, bubble, coinFish, broadcast, fishingMinigame, fishArt, save, inventory, upgrade, rarity, area, index)
 - **Daten:** `js/data/` (areas, fish, rarities, upgrades, changelog)
 - **Changelog:** Im Spiel über Game-Menü → Changelog. Neue Einträge in `js/data/changelog.js` → `FISHING_CHANGELOG`.
@@ -100,6 +100,7 @@ Globale Events an alle gerade Online-Spieler eines Spiels.
 - Wetter forcen (sunny / rain / storm / fog / night / clear)
 - Timer-Fisch spawnen (klein / groß / Schwertfisch / Hai)
 - Broadcast-Nachricht (eigener Text, max. 200 Zeichen, erscheint im Epic-Catch-Feed)
+- Force-Spawn Epic / Legendary — erzeugt einen visuell hervorgehobenen Spot der beim Antippen garantiert die forced Rarity gibt. Cross-area Fallback: Pond-Spieler kriegen Lake/Ocean-Legendary wenn Pond keinen hat. Upgrade-sicher per Prefix `force-spawn-<rarity>` — neue Rarities (z.B. Mythic) brauchen Eintrag in `FORCEABLE_RARITIES` + `RARITIES` + Server-Whitelist + CSS-Variante.
 
 **Cross-Game (oben im Adminabuse):**
 - „Alle Spieler neu laden" — `force-reload`-Event wird in alle Spiele gefannt. Online-Spieler kriegen Toast + nach 1.5s automatisches `location.reload()`. Ideal nach Deploy.

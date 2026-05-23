@@ -15,6 +15,10 @@ const ADMIN_GAME_EVENT_TYPES = {
         "spawn-fish-big",
         "spawn-fish-sword",
         "spawn-fish-shark",
+        "force-spawn-epic",
+        "force-spawn-legendary",
+        // Upgrade-sicher: bei neuer Rarity (z.B. "force-spawn-mythic") einfach hier
+        // ergänzen + Client-Handler matched per Prefix automatisch.
         "force-reload",
     ]),
 };

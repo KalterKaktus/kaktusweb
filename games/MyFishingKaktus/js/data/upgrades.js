@@ -10,7 +10,7 @@ export const UPGRADES = {
     line: {
         id: "line",
         name: "Better Line",
-        copy: "Verpasste Fische verlieren weniger Fortschritt.",
+        copy: "Verpasste Fische verlieren weniger Fortschritt und die Schnur reisst langsamer aus.",
         maxLevel: 5,
         baseCost: 110,
         costGrowth: 1.64,
@@ -18,7 +18,7 @@ export const UPGRADES = {
     hook: {
         id: "hook",
         name: "Better Hook",
-        copy: "Treffer füllen den Fangbalken schneller.",
+        copy: "Treffer füllen den Fangbalken schneller und reparieren die Schnur-Spannung deutlich schneller.",
         maxLevel: 5,
         baseCost: 150,
         costGrowth: 1.66,
@@ -33,8 +33,8 @@ export const UPGRADES = {
     },
     sonar: {
         id: "sonar",
-        name: "Sonar",
-        copy: "Bubble-Spots tauchen früher wieder auf.",
+        name: "Köder",
+        copy: "Pro Level: +1 Fischstelle gleichzeitig (1 → 6) und +1.5 s Verweildauer (4 s → 11.5 s). Spawn-Rate skaliert so mit, dass die Cap immer ausgeschöpft ist.",
         maxLevel: 5,
         baseCost: 180,
         costGrowth: 1.65,

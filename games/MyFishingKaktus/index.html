@@ -233,6 +233,8 @@
           <button type="button" data-test-action="weather-fog">Wetter: Nebel (Rute 2×)</button>
           <button type="button" data-test-action="weather-night">Wetter: Nacht (Schnur 2×)</button>
           <button type="button" data-test-action="weather-clear">Wetter: zurücksetzen</button>
+          <button type="button" data-test-action="force-spawn-epic">Force-Spawn: Epic-Spot</button>
+          <button type="button" data-test-action="force-spawn-legendary">Force-Spawn: Legendary-Spot</button>
           <button type="button" data-test-action="preview-fish">Fisch-Galerie öffnen</button>
         </div>
       </section>
@@ -274,6 +276,13 @@
           </div>
           <div class="catch-progress" aria-label="Fangfortschritt">
             <span data-fishing-progress></span>
+          </div>
+          <div class="fishing-progress-top fishing-progress-tension">
+            <span>Schnur-Spannung</span>
+            <small data-fishing-tension-hint>Halt ihn in der Zone!</small>
+          </div>
+          <div class="tension-bar" aria-label="Schnur-Spannung">
+            <span data-fishing-tension></span>
           </div>
         </div>
       </div>

@@ -643,12 +643,12 @@ const minigame = new FishingMinigame(elements.fishingOverlay, {
     },
 });
 
-function startFishing() {
+function startFishing(forcedRarity = null) {
     audio.unlock();
     audio.playCast();
     const luckLevel = weatherEventSystem ? weatherEventSystem.applyLuck(state.upgrades.luck) : state.upgrades.luck;
     const bonuses = weatherEventSystem ? weatherEventSystem.applyBonuses(getMinigameBonuses(state)) : getMinigameBonuses(state);
-    const candidate = rollCatch(state.currentArea, luckLevel);
+    const candidate = rollCatch(state.currentArea, luckLevel, forcedRarity);
     minigame.start(candidate, bonuses);
 }
 
@@ -829,6 +829,14 @@ function bindUi() {
             closeWindows();
             return;
         }
+        if (action.startsWith("force-spawn-")) {
+            const rarity = action.slice(12);
+            const niceRarity = rarity.charAt(0).toUpperCase() + rarity.slice(1).toLowerCase();
+            // WICHTIG: closeWindows() vor spawnForced(), sonst blockt canSpawn() weil activeWindow gesetzt ist.
+            closeWindows();
+            bubbleSystem?.spawnForced(niceRarity);
+            return;
+        }
         if (action === "preview-fish") {
             closeWindows();
             showFishGallery();
@@ -923,6 +931,16 @@ function handleAdminEvent(row) {
     if (type === "force-reload") {
         showBroadcast("⚙ Admin: Neue Version verfügbar — Spiel wird neu geladen…");
         window.setTimeout(() => location.reload(), 1500);
+        return;
+    }
+
+    if (type.startsWith("force-spawn-")) {
+        const rarity = type.slice(12);
+        // Erste Buchstabe groß, Rest klein, damit z.B. "epic" → "Epic" wird (matched RARITIES keys).
+        const niceRarity = rarity.charAt(0).toUpperCase() + rarity.slice(1).toLowerCase();
+        bubbleSystem?.spawnForced(niceRarity);
+        showBroadcast(`⚙ Admin: ${niceRarity}-Fischstelle aufgetaucht!`);
+        audio.playCatch?.();
     }
 }
 

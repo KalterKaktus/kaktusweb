@@ -5,7 +5,7 @@ export const AREAS = {
         prestige: 0,
         valueMultiplier: 1.05,
         upgradeMultiplier: 1,
-        bubbleSeconds: [16, 28],
+        bubbleSeconds: [30, 52],
         prestigeCoins: 24000,
         rarityWeights: {
             Common: 80,
@@ -26,7 +26,7 @@ export const AREAS = {
         prestige: 1,
         valueMultiplier: 0.46,
         upgradeMultiplier: 6,
-        bubbleSeconds: [14, 25],
+        bubbleSeconds: [26, 46],
         prestigeCoins: 750000,
         rarityWeights: {
             Common: 68,
@@ -49,7 +49,7 @@ export const AREAS = {
         prestige: 2,
         valueMultiplier: 0.6,
         upgradeMultiplier: 10,
-        bubbleSeconds: [13, 23],
+        bubbleSeconds: [22, 40],
         prestigeCoins: null,
         rarityWeights: {
             Common: 55,

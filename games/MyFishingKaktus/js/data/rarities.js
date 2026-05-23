@@ -1,5 +1,9 @@
 export const RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
 
+// Welche Rarities per Force-Spawn ausgelöst werden können (Admin-Live-Event + Test-Menü).
+// Upgrade-sicher: neue Rarities wie "Mythic" einfach hier ergänzen + in RARITIES + in admin-panel.mjs Whitelist.
+export const FORCEABLE_RARITIES = ["Epic", "Legendary"];
+
 export const RARITIES = {
     Common: {
         label: "Common",

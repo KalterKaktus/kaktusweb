@@ -647,7 +647,7 @@ body.reduce-fishing-motion .weather-fog-layer { animation: none; }
   background: transparent;
   cursor: pointer;
   transform: translate(-50%, -50%);
-  animation: fish-spot-expire 13s linear forwards;
+  animation: fish-spot-expire 7s linear forwards;
 }
 
 .fish-spot::before {
@@ -706,6 +706,50 @@ body.reduce-fishing-motion .weather-fog-layer { animation: none; }
 
 .fish-spot.is-popped {
   animation: fish-spot-pop 320ms ease-out forwards;
+}
+
+/* --- Force-Spawn Varianten (Admin/Test) --- */
+
+.fish-spot.is-forced {
+  --size: clamp(4.6rem, 9vw, 7.4rem);
+  animation: fish-spot-expire 12s linear forwards;
+  z-index: 3;
+}
+
+.fish-spot.is-forced::before {
+  inset: 8%;
+  background: radial-gradient(circle, var(--forced-glow, rgba(255, 209, 102, 0.55)), var(--forced-glow-edge, rgba(255, 195, 100, 0.18)) 55%, transparent 75%);
+  filter: drop-shadow(0 0 1.5rem var(--forced-glow, rgba(255, 209, 102, 0.6)));
+}
+
+.fish-spot.is-forced .fish-spot-ring {
+  border-color: var(--forced-ring, rgba(255, 219, 130, 0.92));
+  border-width: 2.5px;
+  animation-duration: 2.2s;
+}
+
+.fish-spot.is-forced .fish-spot-swimmer {
+  background: var(--forced-fish, rgba(40, 8, 0, 0.78));
+  width: 42%;
+  height: 18%;
+}
+
+.fish-spot.is-forced .fish-spot-swimmer::before {
+  border-left-color: var(--forced-fish, rgba(40, 8, 0, 0.78));
+}
+
+.fish-spot.is-rarity-epic {
+  --forced-glow: rgba(213, 140, 255, 0.62);
+  --forced-glow-edge: rgba(180, 100, 240, 0.22);
+  --forced-ring: rgba(225, 168, 255, 0.95);
+  --forced-fish: rgba(50, 8, 80, 0.82);
+}
+
+.fish-spot.is-rarity-legendary {
+  --forced-glow: rgba(255, 209, 108, 0.7);
+  --forced-glow-edge: rgba(255, 170, 60, 0.28);
+  --forced-ring: rgba(255, 230, 140, 1);
+  --forced-fish: rgba(60, 30, 0, 0.85);
 }
 
 .coin-fish {
@@ -1390,6 +1434,19 @@ body.reduce-fishing-motion .weather-fog-layer { animation: none; }
     radial-gradient(ellipse 82% 42% at 50% 0%, rgba(118, 232, 255, 0.16), transparent 70%),
     linear-gradient(180deg, #0b5283 0%, #073c66 46%, #04203e 100%);
   box-shadow: 0 2rem 7rem rgba(0, 0, 0, 0.62), inset 0 1px rgba(255, 255, 255, 0.18);
+  /* Verhindert dass beim Press-Hold im Minispiel Text/Elemente selektiert oder
+     das iOS-Kontextmenü („Kopieren") aufpoppen. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.fishing-overlay-card *,
+.fishing-overlay-card *::before,
+.fishing-overlay-card *::after {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .fishing-overlay-glow {
@@ -1451,6 +1508,9 @@ body.reduce-fishing-motion .weather-fog-layer { animation: none; }
   box-shadow: inset 0 0 2.2rem rgba(0, 0, 0, 0.44);
   touch-action: none;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  cursor: pointer;
 }
 
 .catch-zone {
@@ -1527,6 +1587,49 @@ body.reduce-fishing-motion .weather-fog-layer { animation: none; }
   border-radius: inherit;
   background: linear-gradient(90deg, var(--fish-mint), var(--fish-sky), var(--fish-sun));
   box-shadow: 0 0 1.2rem rgba(102, 239, 180, 0.42);
+}
+
+.fishing-progress-tension {
+  margin-top: 0.2rem;
+  color: rgba(255, 173, 173, 0.86);
+}
+
+.fishing-progress-tension small {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: none;
+  color: rgba(255, 200, 200, 0.7);
+  font-weight: 700;
+}
+
+.tension-bar {
+  position: relative;
+  height: 0.85rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 90, 90, 0.45);
+  border-radius: 999px;
+  background: rgba(40, 0, 0, 0.7);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.tension-bar span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff3b54 0%, #ff7a4a 50%, #ffb05a 100%);
+  box-shadow: 0 0 1rem rgba(255, 70, 90, 0.5);
+  transition: width 70ms linear;
+}
+
+.tension-bar.is-low span {
+  background: linear-gradient(90deg, #ff1234, #ff5050);
+  animation: tension-pulse 0.55s ease-in-out infinite alternate;
+}
+
+@keyframes tension-pulse {
+  from { box-shadow: 0 0 0.6rem rgba(255, 30, 60, 0.55); }
+  to   { box-shadow: 0 0 1.6rem rgba(255, 40, 70, 0.95); }
 }
 
 .empty-copy {
@@ -1647,8 +1750,9 @@ body.reduce-fishing-motion .weather-fog-layer { animation: none; }
 }
 
 @keyframes fish-spot-expire {
-  0%, 85% { opacity: 1; }
-  100% { opacity: 0; }
+  0%, 70% { opacity: 1; }
+  85% { opacity: 0.6; transform: scale(0.96); }
+  100% { opacity: 0; transform: scale(0.85); }
 }
 
 @keyframes fish-spot-pop {
