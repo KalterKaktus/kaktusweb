@@ -1,11 +1,16 @@
 import { getSupabase, isConfigReady } from "/js/supabase-client.js";
-import { fetchProfile, getDisplayName } from "/js/profile.js";
+import { fetchProfile, getDisplayName, normalizeUsername, saveUsername, validateUsername } from "/js/profile.js";
 import { BADGE_ORDER, BADGES, xpProgress } from "/js/progression.js";
 
 const els = {
     status: document.getElementById("profile-status"),
     loginGate: document.getElementById("profile-login-gate"),
     header: document.getElementById("profile-header"),
+    usernameCard: document.getElementById("profile-username-card"),
+    usernameForm: document.getElementById("profile-username-form"),
+    usernameInput: document.getElementById("profile-username-input"),
+    usernameSubmit: document.getElementById("profile-username-submit"),
+    usernameStatus: document.getElementById("profile-username-status"),
     badgesCard: document.getElementById("profile-badges-card"),
     vipCard: document.getElementById("profile-vip-card"),
     referralCard: document.getElementById("profile-referral-card"),
@@ -217,6 +222,7 @@ async function loadEverything() {
 
     setStatus("");
     renderHeader(myProfile, session.user);
+    renderUsernameSection();
     renderBadges();
     renderStats();
     renderReferral();
@@ -329,6 +335,46 @@ els.colorTrigger?.addEventListener("click", () => {
     } else {
         showVipLockedDialog();
     }
+});
+
+function setUsernameStatus(msg, kind = "") {
+    if (!els.usernameStatus) return;
+    els.usernameStatus.textContent = msg || "";
+    els.usernameStatus.classList.toggle("is-error", kind === "error");
+    els.usernameStatus.classList.toggle("is-ok", kind === "ok");
+}
+
+function renderUsernameSection() {
+    if (!els.usernameCard) return;
+    els.usernameCard.hidden = false;
+    if (els.usernameInput) els.usernameInput.value = myProfile?.username || "";
+}
+
+els.usernameForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!myUserId) return;
+    const value = normalizeUsername(els.usernameInput.value);
+    const validationError = validateUsername(value);
+    if (validationError) {
+        setUsernameStatus(validationError, "error");
+        return;
+    }
+    if (value === myProfile?.username) {
+        setUsernameStatus("Das ist schon dein aktueller Name.", "error");
+        return;
+    }
+    els.usernameSubmit.disabled = true;
+    setUsernameStatus("Speichern…");
+    const { data, error } = await saveUsername(myUserId, value);
+    if (error) {
+        setUsernameStatus(error.message, "error");
+        els.usernameSubmit.disabled = false;
+        return;
+    }
+    myProfile.username = data?.username || value;
+    setUsernameStatus("✓ Username gespeichert. Wird in der Nav + auf Leaderboards verwendet.", "ok");
+    renderHeader(myProfile, session.user);
+    els.usernameSubmit.disabled = false;
 });
 
 // Copy-Button für Referral-Link

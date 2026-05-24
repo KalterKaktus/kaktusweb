@@ -1,6 +1,7 @@
 import { fetchLeaderboard } from "./game-cloud.js";
 import { fetchLeaderboard as fetchFishingLeaderboard } from "/games/MyFishingKaktus/js/systems/saveSystem.js";
 import { formatNumber } from "/games/KaktusClicker/format.js";
+import { renderLevelTag, renderPlayerName } from "./progression.js";
 
 const monthlyPlayers = document.getElementById("home-monthly-players");
 const lastMonthPlayers = document.getElementById("home-last-month-players");
@@ -41,7 +42,7 @@ function renderPlayers(root, entries, emptyText) {
         ? entries.map((entry) => `
             <li>
                 <b>#${entry.rank}</b>
-                <span>${escapeHtml(entry.name)}</span>
+                <span>${renderLevelTag(entry.level || 0, entry.equippedBadge || null)}${renderPlayerName(escapeHtml(entry.name), { vip: entry.vip, vipColor: entry.vipColor })}</span>
                 <em>${escapeHtml(formatNumber(entry.totalEarned ?? entry.score))}</em>
             </li>
         `).join("")
@@ -53,7 +54,7 @@ function renderFishingPlayers(root, entries, emptyText) {
         ? entries.map((entry, index) => `
             <li>
                 <b>#${entry.rank || index + 1}</b>
-                <span>${escapeHtml(entry.name)}</span>
+                <span>${renderLevelTag(entry.level || 0, entry.equippedBadge || null)}${renderPlayerName(escapeHtml(entry.name), { vip: entry.vip, vipColor: entry.vipColor })}</span>
                 <em>Prestige ${escapeHtml(entry.prestige)} · ${escapeHtml(formatNumber(entry.totalCaught))} Fänge</em>
             </li>
         `).join("")

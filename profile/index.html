@@ -67,6 +67,33 @@
                 </div>
             </section>
 
+            <section class="profile-card" id="profile-username-card" hidden>
+                <div class="profile-card-head">
+                    <div>
+                        <p class="profile-card-kicker">Benutzername</p>
+                        <h2>Wie sollen wir dich nennen?</h2>
+                    </div>
+                </div>
+                <p class="profile-card-lead">
+                    Wird in der Navigation, auf Leaderboards und in Broadcasts angezeigt.
+                    3–24 Zeichen, nur Buchstaben, Zahlen und Unterstriche.
+                </p>
+                <form id="profile-username-form" class="profile-username-row">
+                    <input
+                        type="text"
+                        id="profile-username-input"
+                        name="username"
+                        autocomplete="username"
+                        minlength="3"
+                        maxlength="24"
+                        pattern="[a-zA-Z0-9_]+"
+                        required
+                        placeholder="z. B. KalterKaktus">
+                    <button class="profile-button" type="submit" id="profile-username-submit">Speichern</button>
+                </form>
+                <p class="profile-username-status" id="profile-username-status" aria-live="polite"></p>
+            </section>
+
             <section class="profile-card" id="profile-badges-card" hidden>
                 <div class="profile-card-head">
                     <div>
@@ -90,7 +117,7 @@
                 </div>
                 <p class="profile-card-lead">
                     Teile diesen Link. Sobald ein geworbener Freund <strong>Level 5</strong> erreicht, zählt er als
-                    qualifiziert und du bekommst das <strong>🤝 Werber-Badge</strong>.
+                    qualifiziert und du bekommst das <strong>❤️ Werber-Badge</strong>.
                 </p>
                 <div class="referral-link-row">
                     <input type="text" id="profile-referral-link" readonly>
@@ -106,15 +133,13 @@
                 <div class="profile-card-head">
                     <div>
                         <p class="profile-card-kicker">VIP & Unterstützer</p>
-                        <h2>Bei Interesse melde dich</h2>
+                        <h2>Auf Anfrage per Discord</h2>
                     </div>
                 </div>
                 <p class="profile-card-lead">
-                    Wenn du die Seite unterstützen willst (für den <strong>🌹 Unterstützer-Badge</strong> oder
-                    den <strong>👑 VIP-Status</strong> mit +20 % XP-Boost und Namensfarbe), schreib mich einfach
-                    auf <strong>Discord</strong> an — ich kläre das dann privat mit dir.
+                    <strong>🌹 Unterstützer</strong> — sichtbares Badge, freischaltbar im Profil.<br>
+                    <strong>👑 VIP</strong> — eigene Namensfarbe und <strong>+20 % XP-Boost</strong> auf alles.
                 </p>
-                <p class="profile-card-soon">Kein automatisches Kaufsystem — alles per Direktkontakt</p>
             </section>
 
             <section class="profile-card" id="profile-stats-card" hidden>

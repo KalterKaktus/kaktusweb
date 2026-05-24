@@ -426,6 +426,37 @@
     line-height: 1.35;
 }
 
+/* === Username-Form === */
+.profile-username-row {
+    display: flex;
+    gap: 0.5rem;
+    margin: 0.4rem 0 0.4rem;
+    flex-wrap: wrap;
+}
+.profile-username-row input {
+    flex: 1;
+    min-width: 12rem;
+    padding: 0.55rem 0.75rem;
+    background: rgba(2, 5, 11, 0.65);
+    border: 1px solid rgba(95, 184, 255, 0.3);
+    border-radius: 0.5rem;
+    color: #fff;
+    font: 0.95rem ui-sans-serif, system-ui;
+}
+.profile-username-row input:focus {
+    outline: none;
+    border-color: #65e2a2;
+    box-shadow: 0 0 0 2px rgba(101, 226, 162, 0.18);
+}
+.profile-username-status {
+    margin: 0.4rem 0 0;
+    font-size: 0.85rem;
+    min-height: 1.2em;
+    color: rgba(230, 244, 255, 0.7);
+}
+.profile-username-status.is-error { color: #ff6b6b; }
+.profile-username-status.is-ok { color: #65e2a2; }
+
 /* === Referral === */
 .profile-referral-card {
     border-color: rgba(213, 140, 255, 0.35);
