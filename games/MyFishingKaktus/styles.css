@@ -1849,7 +1849,7 @@ body.fishing-page {
 @media (max-width: 760px) {
   .fishing-shell {
     width: calc(100% - 0.7rem);
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
     padding-top: clamp(4.5rem, 12vh, 5.3rem);
   }
 
