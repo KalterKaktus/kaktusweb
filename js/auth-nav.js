@@ -1,5 +1,7 @@
 import { getSupabase, isConfigReady } from "./supabase-client.js";
 import { ensureProfile, fetchProfile, getDisplayName } from "./profile.js";
+import { setXpUser } from "./xp-service.js";
+import { levelFromXp, renderLevelTag, renderPlayerName } from "./progression.js";
 
 const PRESENCE_HEARTBEAT_MS = 30000;
 const FORCE_RELOAD_MESSAGE = "Dein Spielstand wurde aktualisiert. Die Seite wird neu geladen.";
@@ -41,8 +43,8 @@ function loginHref() {
 
 function profileHref() {
     return window.location.pathname.startsWith("/adminpanel")
-        ? "/profile.html?from=adminpanel"
-        : "/profile.html";
+        ? "/profile/?from=adminpanel"
+        : "/profile/";
 }
 
 function isStandaloneApp() {
@@ -310,6 +312,24 @@ async function stopSessionFeatures() {
     adminMessageChannel = null;
 }
 
+async function maybeClaimPendingReferral() {
+    const code = localStorage.getItem("kk_referral_code");
+    if (!code) return;
+    const supabase = getSupabase();
+    if (!supabase) return;
+    try {
+        const { data, error } = await supabase.rpc("claim_referral", { referrer_code: code });
+        if (!error) {
+            localStorage.removeItem("kk_referral_code");
+            if (data === true) {
+                console.info("[referral] Werbung registriert für Code", code);
+            }
+        }
+    } catch (e) {
+        console.debug("[referral] claim failed:", e?.message || e);
+    }
+}
+
 async function startSessionFeatures(user) {
     if (!user?.id) {
         await stopSessionFeatures();
@@ -324,6 +344,8 @@ async function startSessionFeatures(user) {
     await stopSessionFeatures();
     activeSessionUserId = user.id;
     await syncPresence(user);
+    // Wenn der User mit ?ref= reingekommen ist (gespeichert in localStorage) → jetzt einlösen.
+    await maybeClaimPendingReferral();
     presenceTimer = window.setInterval(() => {
         syncPresence(user);
     }, PRESENCE_HEARTBEAT_MS);
@@ -338,8 +360,16 @@ function renderLoggedIn(container, user, profile) {
         ? `Benutzername: ${displayName}`
         : `E-Mail: ${user.email || displayName}`;
 
+    // Level + equipped Badge — wie auf Leaderboards. VIP-Farbe wird auch hier angewandt.
+    const level = levelFromXp(profile?.total_xp);
+    const levelTag = renderLevelTag(level, profile?.equipped_badge || null);
+    const styledName = renderPlayerName(escapeHtml(label), {
+        vip: Boolean(profile?.vip),
+        vipColor: profile?.vip_color || null,
+    });
+
     container.innerHTML = `
-        <a class="nav-link auth-profile-link" href="${profileHref()}" title="${escapeAttr(title)}">${escapeHtml(label)}</a>
+        <a class="nav-link auth-profile-link" href="${profileHref()}" title="${escapeAttr(title)}">${levelTag}${styledName}</a>
         <button type="button" class="auth-btn" id="auth-sign-out-btn">Logout</button>
     `;
 

@@ -1061,6 +1061,182 @@ body.fishing-page {
   box-shadow: 0 0 0.45rem -0.05rem var(--mut, transparent);
 }
 
+.inv-base {
+  color: var(--fish-mint, #8ad0ff) !important;
+  font-weight: 700 !important;
+  opacity: 0.85;
+}
+
+/* === Index: Claim-Overlay (für freigeschaltete, noch nicht abgeholte Fische) === */
+.index-fish { position: relative; }
+
+.index-fish.is-collectible { cursor: pointer; transition: transform 0.15s; }
+.index-fish.is-collectible:hover { transform: translateY(-2px); }
+
+.index-claim-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  gap: 0.2rem;
+  background: rgba(2, 8, 18, 0.85);
+  backdrop-filter: blur(2px);
+  border: 0;
+  border-radius: inherit;
+  cursor: pointer;
+  z-index: 2;
+  animation: index-claim-pulse 2.4s ease-in-out infinite;
+}
+.index-claim-coin {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #ffd166;
+  text-shadow: 0 0 14px rgba(255, 209, 102, 0.75), 0 0 28px rgba(255, 209, 102, 0.4);
+  letter-spacing: 0.02em;
+}
+.index-claim-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: rgba(255, 209, 102, 0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+@keyframes index-claim-pulse {
+  0%, 100% { background: rgba(2, 8, 18, 0.85); }
+  50%      { background: rgba(40, 30, 8, 0.85); }
+}
+
+/* === Mutation-Detail-Overlay (Full-UI über Index) === */
+.mutation-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(2, 8, 18, 0.85);
+  backdrop-filter: blur(8px);
+  animation: mut-overlay-in 0.18s ease-out;
+}
+@keyframes mut-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.mutation-detail-panel {
+  position: relative;
+  width: min(48rem, 100%);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  padding: 1.5rem 1.4rem 1.2rem;
+  background: linear-gradient(160deg, rgba(8, 18, 32, 0.97), rgba(4, 12, 24, 0.97));
+  border: 1px solid var(--rarity, rgba(255, 255, 255, 0.2));
+  border-radius: 1.2rem;
+  box-shadow:
+    0 0 0 1px var(--rarity, rgba(255, 255, 255, 0.05)),
+    0 1.4rem 4rem rgba(0, 0, 0, 0.5),
+    0 0 3rem -0.5rem var(--rarity, transparent);
+  color: #e6f4ff;
+}
+.mutation-detail-close {
+  position: absolute;
+  top: 0.7rem; right: 0.85rem;
+  width: 2.2rem; height: 2.2rem;
+  display: grid; place-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  z-index: 2;
+}
+.mutation-detail-close:hover { background: rgba(255, 255, 255, 0.18); }
+.mutation-detail-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.2rem;
+  padding-right: 2.5rem;
+}
+.mutation-detail-art { width: 6rem; }
+.mutation-detail-head h2 {
+  margin: 0.1rem 0 0.2rem;
+  font-size: 1.4rem;
+  color: var(--rarity, #fff);
+}
+.mutation-detail-kicker {
+  margin: 0;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(230, 244, 255, 0.6);
+}
+.mutation-detail-head small { color: rgba(230, 244, 255, 0.6); font-size: 0.85rem; }
+
+.mutation-detail-body { display: grid; gap: 1rem; }
+.mutation-detail-group h3 {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(230, 244, 255, 0.65);
+  font-weight: 800;
+}
+.mutation-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: 0.5rem;
+}
+.mutation-detail-card {
+  padding: 0.55rem 0.6rem;
+  border-radius: 0.65rem;
+  background: linear-gradient(140deg, color-mix(in srgb, var(--mut, #fff) 18%, rgba(8, 16, 30, 0.6)), rgba(8, 16, 30, 0.6));
+  border: 1px solid color-mix(in srgb, var(--mut, #fff) 40%, transparent);
+  display: grid;
+  gap: 0.12rem;
+  transition: transform 0.15s;
+}
+.mutation-detail-card.is-owned {
+  box-shadow: 0 0 8px color-mix(in srgb, var(--mut, transparent) 35%, transparent);
+}
+.mutation-detail-card.is-owned strong { color: var(--mut, #fff); text-shadow: 0 0 8px color-mix(in srgb, var(--mut, transparent) 45%, transparent); }
+.mutation-detail-card.is-locked {
+  background: rgba(8, 16, 30, 0.55);
+  border-color: rgba(255, 255, 255, 0.08);
+  filter: grayscale(0.85);
+  opacity: 0.55;
+}
+.mutation-detail-card strong {
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+.mutation-detail-mult {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--mut, #fff);
+  letter-spacing: 0.04em;
+}
+.mutation-detail-card.is-locked .mutation-detail-mult { color: rgba(230, 244, 255, 0.4); }
+.mutation-detail-card small {
+  font-size: 0.66rem;
+  color: rgba(230, 244, 255, 0.65);
+}
+
+.mutation-detail-foot {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.1rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.78rem;
+  color: rgba(230, 244, 255, 0.7);
+  font-weight: 600;
+}
+
 .catch-new-badge {
   position: absolute;
   top: -0.75rem;

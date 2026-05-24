@@ -1,5 +1,5 @@
 import { AREAS, PRESTIGE_CAP } from "./data/areas.js";
-import { RARITIES } from "./data/rarities.js";
+import { INDEX_REWARDS, RARITIES } from "./data/rarities.js";
 import { UPGRADES, UPGRADE_ORDER } from "./data/upgrades.js";
 import { getAvailableAreas, getPrestigeState, prestigeToNextArea } from "./systems/areaSystem.js";
 import { AudioSystem } from "./systems/audioSystem.js?v=2";
@@ -11,8 +11,11 @@ import { FishingMinigame } from "./systems/fishingMinigame.js";
 import { getAreaIndexProgress, getGroupedFishIndex } from "./systems/indexSystem.js";
 import { addCatch, getInventoryEntries, sellAll } from "./systems/inventorySystem.js";
 import { getFishValue, getRarestFishInArea, getRarityChances, rollCatch } from "./systems/raritySystem.js";
-import { applyMutationsToCandidate, MUTATIONS_BY_ID, rollMutations } from "./data/mutations.js";
+import { applyMutationsToCandidate, EVENT_MUTATIONS, MUTATIONS_BY_ID, rollMutations, STANDARD_MUTATIONS } from "./data/mutations.js";
+import { FISH_BY_ID } from "./data/fish.js";
 import { logCatch, setTelemetryUser } from "./systems/telemetry.js";
+import { addPendingXp, setXpUser, xpForCatch } from "/js/xp-service.js";
+import { renderLevelTag, renderPlayerName } from "/js/progression.js";
 import { createInitialState, fetchLeaderboard, loadState, normalizeState, saveState } from "./systems/saveSystem.js";
 import { buyUpgrade, getMinigameBonuses, getUpgradeCost } from "./systems/upgradeSystem.js";
 import { WaterSystem } from "./systems/waterSystem.js";
@@ -294,13 +297,21 @@ function renderInventory() {
     `;
     elements.sellAll.disabled = entries.length === 0;
     elements.inventory.innerHTML = entries.length
-        ? entries.map((entry) => `
+        ? entries.map((entry) => {
+            const rarity = RARITIES[entry.fish.rarity];
+            const area = AREAS[entry.fish.area];
+            // Basewert pro Fisch = avgKg * rarity.valuePerKg * fish.valueMultiplier * area.valueMultiplier.
+            // Wir nehmen mittleren kg-Wert (zwischen min+max), nur als Indikator.
+            const avgKg = (Number(entry.fish.minKg) + Number(entry.fish.maxKg)) / 2;
+            const baseValue = Math.max(1, Math.round(avgKg * rarity.valuePerKg * entry.fish.valueMultiplier * area.valueMultiplier));
+            return `
             <article class="inventory-row">
                 ${renderFishArt(entry.fish)}
                 <div class="inventory-info">
                     <strong>${entry.fish.name}</strong>
                     <small>${entry.fish.rarity} &middot; ${entry.count}x gefangen</small>
                     <small>Gesamt ${kg(entry.totalKg)} &middot; Bestes ${kg(entry.bestKg)}</small>
+                    <small class="inv-base">~${coins(baseValue)} Coins/Fisch (Ø)</small>
                     ${renderMutationChips(entry.mutations)}
                 </div>
                 <div class="inventory-value">
@@ -308,7 +319,7 @@ function renderInventory() {
                     <span>Coins</span>
                 </div>
             </article>
-        `).join("")
+        `}).join("")
         : `<p class="empty-copy">Dein Inventar ist leer. Tippe eine Fischstelle an, um zu angeln.</p>`;
 }
 
@@ -369,11 +380,24 @@ function renderIndex() {
                         <div class="index-grid">
                             ${group.fish.map((fish) => {
                                 const entry = state.index[fish.id];
+                                const owned = !!entry && entry.count > 0;
+                                const unclaimed = owned && !entry.claimed;
+                                const reward = INDEX_REWARDS[fish.rarity] || 0;
+                                const classes = ["index-fish"];
+                                if (!owned) classes.push("is-shadow");
+                                if (unclaimed) classes.push("is-unclaimed");
+                                if (owned && !unclaimed) classes.push("is-collectible");
                                 return `
-                                    <article class="index-fish ${entry ? "" : "is-shadow"}">
-                                        ${renderFishArt(fish, { silhouette: !entry })}
-                                        <strong>${entry ? fish.name : "Unbekannter Fisch"}</strong>
-                                        <small>${entry ? `${entry.count}x gefangen - Bestes Gewicht ${kg(entry.bestKg)}` : "Noch nicht gefangen"}</small>
+                                    <article class="${classes.join(" ")}" data-fish-id="${fish.id}" ${owned ? `data-action="open-mutations"` : ""}>
+                                        ${renderFishArt(fish, { silhouette: !owned })}
+                                        <strong>${owned ? fish.name : "Unbekannter Fisch"}</strong>
+                                        <small>${owned ? `${entry.count}x gefangen - Bestes Gewicht ${kg(entry.bestKg)}` : "Noch nicht gefangen"}</small>
+                                        ${unclaimed ? `
+                                            <button class="index-claim-overlay" type="button" data-action="claim-index" data-fish-id="${fish.id}">
+                                                <span class="index-claim-coin">+${coins(reward)}</span>
+                                                <span class="index-claim-label">Coins sammeln</span>
+                                            </button>
+                                        ` : ""}
                                     </article>
                                 `;
                             }).join("")}
@@ -614,7 +638,7 @@ async function loadLeaderboard() {
         ? entries.slice(0, 100).map((entry) => `
             <article class="leaderboard-row ${entry.rank <= 3 ? "is-top" : ""}">
                 <b>#${entry.rank}</b>
-                <strong>${escapeHtml(entry.name)}</strong>
+                <strong>${renderLevelTag(entry.level, entry.equippedBadge)}${renderPlayerName(escapeHtml(entry.name), { vip: entry.vip, vipColor: entry.vipColor })}</strong>
                 <small>Prestige ${entry.prestige} - ${coins(entry.totalCaught)} Fische</small>
             </article>
         `).join("")
@@ -643,6 +667,8 @@ const minigame = new FishingMinigame(elements.fishingOverlay, {
         audio.playCatch();
         // Telemetrie: anonymes Event-Log für Balance-Analyse (nur eingeloggte User).
         logCatch(candidate, weatherEventSystem?.getEvent?.() || null);
+        // XP für diesen Catch (Rarity + Mutations-Bonus). Wird im Hintergrund batched.
+        addPendingXp(xpForCatch(candidate), "fishing-catch");
         // Broadcast-Trigger: Epic/Legendary IMMER, plus jeder Fang mit einer Mutation
         // ab Multiplier ×3 — also SHINY (×3), AURORA (×3), ABYSSAL (×4), EMBER (×5),
         // CRIMSON (×7), HAUNTED (×10). Die ×2-Mutationen (BIG/HUGE, alle Standard-Wetter)
@@ -706,6 +732,93 @@ function startFishing(forcedRarity = null) {
     if (devMuts) mutations = devMuts;
     const candidate = applyMutationsToCandidate(baseCandidate, mutations);
     minigame.start(candidate, bonuses);
+}
+
+function claimIndexReward(fishId) {
+    const fish = FISH_BY_ID[fishId];
+    const entry = state.index[fishId];
+    if (!fish || !entry || entry.count <= 0 || entry.claimed) return;
+    const reward = INDEX_REWARDS[fish.rarity] || 0;
+    if (reward <= 0) return;
+    entry.claimed = true;
+    state.coins += reward;
+    state.stats.totalCoinsEarned += reward;
+    audio.playSell?.();
+    showBroadcast(`📖 Fish-Index: +${coins(reward)} Coins für ${fish.name} eingesammelt!`);
+    renderIndex();
+    renderHud();
+    scheduleSave();
+}
+
+let mutationDetailOpen = false;
+function openMutationDetail(fishId) {
+    const fish = FISH_BY_ID[fishId];
+    const entry = state.index[fishId];
+    if (!fish || !entry) return;
+    if (mutationDetailOpen) return;
+    mutationDetailOpen = true;
+    const ownedMuts = entry.mutations || {};
+    const overlay = document.createElement("div");
+    overlay.className = "mutation-detail-overlay";
+    overlay.innerHTML = `
+        <div class="mutation-detail-panel" style="--rarity:${RARITIES[fish.rarity].color}">
+            <button class="mutation-detail-close" type="button" aria-label="Schliessen">×</button>
+            <header class="mutation-detail-head">
+                <div class="mutation-detail-art">${renderFishArt(fish)}</div>
+                <div>
+                    <p class="mutation-detail-kicker">Mutations-Sammlung</p>
+                    <h2>${fish.name}</h2>
+                    <small>${fish.rarity} &middot; ${entry.count}× gefangen</small>
+                </div>
+            </header>
+            <div class="mutation-detail-body">
+                ${renderMutationDetailGroup("Standard-Mutationen", STANDARD_MUTATIONS, ownedMuts)}
+                ${renderMutationDetailGroup("Wetter-Mutationen (Standard)", ["sunny","wet","stormy","misty","nocturnal"].map(id => EVENT_MUTATIONS[id]), ownedMuts)}
+                ${renderMutationDetailGroup("Rare-Wetter-Mutationen", ["abyssal","aurora","ember","crimson","haunted"].map(id => EVENT_MUTATIONS[id]), ownedMuts)}
+            </div>
+            <footer class="mutation-detail-foot">
+                <span>${Object.values(ownedMuts).reduce((s, v) => s + v, 0)} Mutations-Catches total</span>
+                <span>${Object.keys(ownedMuts).length} / 13 verschiedene gefunden</span>
+            </footer>
+        </div>
+    `;
+    overlay.addEventListener("click", (event) => {
+        if (event.target === overlay || event.target.closest(".mutation-detail-close")) {
+            overlay.remove();
+            mutationDetailOpen = false;
+        }
+    });
+    document.addEventListener("keydown", function escHandler(e) {
+        if (e.key === "Escape") {
+            overlay.remove();
+            mutationDetailOpen = false;
+            document.removeEventListener("keydown", escHandler);
+        }
+    });
+    document.body.append(overlay);
+}
+
+function renderMutationDetailGroup(title, mutations, ownedMuts) {
+    return `
+        <section class="mutation-detail-group">
+            <h3>${title}</h3>
+            <div class="mutation-detail-grid">
+                ${mutations.map((m) => {
+                    if (!m) return "";
+                    const count = ownedMuts[m.id] || 0;
+                    const owned = count > 0;
+                    const mult = m.mult % 1 === 0 ? m.mult : m.mult.toFixed(1);
+                    return `
+                        <div class="mutation-detail-card ${owned ? "is-owned" : "is-locked"}" style="--mut:${m.color}">
+                            <span class="mutation-detail-mult">×${mult}</span>
+                            <strong>${m.name}</strong>
+                            <small>${owned ? `${count}× gefangen` : "Noch nicht gefangen"}</small>
+                        </div>
+                    `;
+                }).join("")}
+            </div>
+        </section>
+    `;
 }
 
 function bindUi() {
@@ -776,6 +889,21 @@ function bindUi() {
         setHint(`${sold.count} Fische verkauft für ${coins(sold.value)} Coins.`);
         renderAll();
         scheduleSave();
+    });
+
+    elements.index.addEventListener("click", (event) => {
+        // Claim-Button hat höhere Prio als Mutation-Detail-Open — sonst klappt das Overlay
+        // gleichzeitig auf wenn man auf den Coin-Button tippt.
+        const claimBtn = event.target.closest("[data-action='claim-index']");
+        if (claimBtn) {
+            event.stopPropagation();
+            claimIndexReward(claimBtn.dataset.fishId);
+            return;
+        }
+        const fishCard = event.target.closest("[data-action='open-mutations']");
+        if (fishCard) {
+            openMutationDetail(fishCard.dataset.fishId);
+        }
     });
 
     elements.areas.addEventListener("click", (event) => {
@@ -1019,6 +1147,7 @@ async function init() {
     state = normalizeState(loaded.state);
     user = loaded.user;
     setTelemetryUser(user);
+    setXpUser(user);
     cloudSaveBlocked = loaded.mode === "cloud-error";
     setSaveStatus(
         loaded.mode === "cloud"

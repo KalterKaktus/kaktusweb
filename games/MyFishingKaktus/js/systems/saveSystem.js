@@ -118,6 +118,10 @@ export function normalizeState(raw) {
             count: Math.max(0, Math.floor(number(entry.count))),
             bestKg: Math.max(0, number(entry.bestKg)),
             mutations: cleanMutations(entry.mutations),
+            // claimed: hat Spieler den Index-Reward (5/25/100/500/2500 Coins) abgeholt?
+            // Default false → bestehende Spieler können retroaktiv alle entdeckten Fische
+            // einsammeln. Neuspawn nach addCatch ist auch erstmal false bis Click.
+            claimed: Boolean(entry.claimed),
         })),
         stats: {
             totalCaught: Math.max(0, Math.floor(number(raw.stats?.totalCaught))),
@@ -242,7 +246,7 @@ export async function fetchLeaderboard(limit = 1000) {
 
     const { data, error } = await supabase
         .from("game_saves")
-        .select("display_name,total_earned,payload,updated_at")
+        .select("user_id,display_name,total_earned,payload,updated_at")
         .eq("game_id", FISHING_GAME_ID)
         .limit(limit);
 
@@ -250,13 +254,32 @@ export async function fetchLeaderboard(limit = 1000) {
         return { entries: [], error: new Error("Fishing-Rangliste braucht noch die Supabase-Freigabe.") };
     }
 
+    // Profile-Infos (level + equipped_badge) für alle User in einem Batch-Request laden.
+    // profiles_public ist eine SQL-View die Level direkt mitberechnet.
+    const userIds = (data || []).map((entry) => entry.user_id).filter(Boolean);
+    let profilesById = new Map();
+    if (userIds.length) {
+        const { data: profiles } = await supabase
+            .from("profiles_public")
+            .select("id, level, equipped_badge, total_xp, vip, vip_color")
+            .in("id", userIds);
+        profilesById = new Map((profiles || []).map((p) => [p.id, p]));
+    }
+
     const entries = (data || [])
-        .map((entry) => ({
-            name: entry.display_name || "Spieler",
-            prestige: Math.max(0, Math.floor(number(entry.payload?.prestige))),
-            totalCaught: Math.max(0, Math.floor(number(entry.total_earned || entry.payload?.stats?.totalCaught))),
-            updatedAt: entry.updated_at,
-        }))
+        .map((entry) => {
+            const profile = profilesById.get(entry.user_id) || {};
+            return {
+                name: entry.display_name || "Spieler",
+                prestige: Math.max(0, Math.floor(number(entry.payload?.prestige))),
+                totalCaught: Math.max(0, Math.floor(number(entry.total_earned || entry.payload?.stats?.totalCaught))),
+                updatedAt: entry.updated_at,
+                level: Number(profile.level) || 0,
+                equippedBadge: profile.equipped_badge || null,
+                vip: Boolean(profile.vip),
+                vipColor: profile.vip_color || null,
+            };
+        })
         .filter((entry) => entry.prestige > 0 || entry.totalCaught > 0)
         .sort((left, right) => right.prestige - left.prestige || right.totalCaught - left.totalCaught)
         .map((entry, index) => ({ ...entry, rank: index + 1 }));

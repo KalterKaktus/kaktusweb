@@ -33,8 +33,9 @@ export function xpProgress(xp) {
 
 // Badges — id ist die Datenbank-Referenz (siehe user_badges.badge_id).
 // Locked-Beschreibung steht beim Spieler im Profil wenn er das Badge noch nicht hat.
+// Emojis sind bewusst alle unique — keine Dopplungen mit Mutationen / Wetter.
 export const BADGES = {
-    // === Auto-Award durch DB-Trigger ===
+    // === Auto-Award durch DB-Trigger (check_level_badges) ===
     lvl_25: {
         id: "lvl_25", name: "Level 25", icon: "⚡", color: "#65e2a2",
         desc: "Erreiche Level 25", auto: true,
@@ -46,33 +47,30 @@ export const BADGES = {
         check: ({ level }) => level >= 50,
     },
     lvl_75: {
-        id: "lvl_75", name: "Level 75", icon: "🌟", color: "#ff9966",
+        id: "lvl_75", name: "Level 75", icon: "🏆", color: "#ff9966",
         desc: "Erreiche Level 75", auto: true,
         check: ({ level }) => level >= 75,
     },
     lvl_100: {
-        id: "lvl_100", name: "Level 100", icon: "👑", color: "#ffd166",
+        id: "lvl_100", name: "Level 100", icon: "🎖", color: "#ffd166",
         desc: "Erreiche Level 100 — das Maximum", auto: true,
         check: ({ level }) => level >= 100,
     },
-    // === Manuell vergeben / besondere Trigger ===
+    // === Manuell / besondere Trigger ===
     tester: {
         id: "tester", name: "Tester", icon: "🧪", color: "#ff6b6b",
         desc: "Pre-Release Spieler — vom Admin verliehen",
         manual: true,
     },
     vip: {
-        id: "vip", name: "VIP", icon: "✨", color: "#ffd166",
-        desc: "Unterstützer der Seite (+20 % XP-Boost, eigene Namensfarbe)",
+        id: "vip", name: "VIP", icon: "👑", color: "#ffd166",
+        desc: "VIP-Status mit +20 % XP-Boost und eigener Namensfarbe — auf Discord-Anfrage vergeben",
         manual: true, vipExclusive: true,
     },
-    first_catch: {
-        id: "first_catch", name: "Erster Fang", icon: "🎣", color: "#7ec0ff",
-        desc: "Fange deinen ersten Fisch in My Fishing Kaktus",
-    },
-    first_prestige: {
-        id: "first_prestige", name: "Erstes Prestige", icon: "✨", color: "#a3ff8c",
-        desc: "Erreiche dein erstes Prestige in einem der Spiele",
+    supporter: {
+        id: "supporter", name: "Unterstützer", icon: "🌹", color: "#ff86c2",
+        desc: "Hat die Seite unterstützt — auf Discord-Anfrage vergeben",
+        manual: true,
     },
     haunted_catch: {
         id: "haunted_catch", name: "Geisterjäger", icon: "👻", color: "#c8f5ff",
@@ -82,16 +80,16 @@ export const BADGES = {
         id: "daily_streak_7", name: "Wochen-Pilger", icon: "📅", color: "#ffd166",
         desc: "Sammle 7 Tage Daily-Login-Streak",
     },
-    referrer_3: {
-        id: "referrer_3", name: "Werber", icon: "👥", color: "#d58cff",
-        desc: "Wirb 3 verifizierte Freunde",
+    referrer: {
+        id: "referrer", name: "Werber", icon: "❤️", color: "#ff6b9d",
+        desc: "Wirb 1 Freund der Level 5 erreicht",
     },
 };
 
 export const BADGE_ORDER = [
-    "tester", "vip",
+    "vip", "supporter", "tester",
     "lvl_25", "lvl_50", "lvl_75", "lvl_100",
-    "first_catch", "first_prestige", "haunted_catch", "daily_streak_7", "referrer_3",
+    "referrer", "haunted_catch", "daily_streak_7",
 ];
 
 export function getBadge(id) {
@@ -116,4 +114,18 @@ export function renderLevelTag(level, equippedBadgeId = null) {
     const l = Math.max(0, Math.floor(Number(level) || 0));
     const badge = equippedBadgeId ? renderBadgePill(equippedBadgeId) : "";
     return `<span class="level-tag">Lvl ${l}</span>${badge}`;
+}
+
+/**
+ * Wickelt einen Spielernamen in einen Span mit VIP-Farbe wenn vorhanden.
+ * Wird auf Leaderboards genutzt damit VIPs sich farblich abheben.
+ * `name` muss bereits HTML-escaped sein!
+ */
+export function renderPlayerName(escapedName, { vip = false, vipColor = null } = {}) {
+    if (vip && vipColor) {
+        // Style direkt setzen — sicher weil vipColor nur Hex-Color sein darf (DB-seitig validierbar)
+        const safeColor = String(vipColor).match(/^#[0-9a-fA-F]{3,8}$/) ? vipColor : "#ffd166";
+        return `<span class="player-name is-vip" style="color:${safeColor}">${escapedName}</span>`;
+    }
+    return escapedName;
 }

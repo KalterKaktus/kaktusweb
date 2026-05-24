@@ -357,6 +357,70 @@ body::before {
     padding: 1.35rem;
 }
 
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 1.1rem 0;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+.auth-divider::before,
+.auth-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.auth-email-form { display: grid; gap: 0.7rem; }
+.auth-field {
+    display: grid;
+    gap: 0.3rem;
+}
+.auth-field span {
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+.auth-field input {
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.55rem 0.7rem;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: border-color 0.15s;
+}
+.auth-field input:focus {
+    outline: none;
+    border-color: #69f0ae;
+    box-shadow: 0 0 0 2px rgba(105, 240, 174, 0.2);
+}
+.auth-form-actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 0.3rem;
+}
+.auth-form-actions .auth-btn { flex: 1; min-width: 9rem; }
+.auth-btn.is-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+}
+.auth-status {
+    margin-top: 0.8rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    min-height: 1.2em;
+}
+.auth-status.is-error { color: #ff6b6b; }
+
 .auth-card-title {
     margin-bottom: 1rem;
     color: var(--text-primary);
@@ -1645,4 +1709,40 @@ body::before {
 .social-btn svg {
   width: 28px;
   height: 28px;
+}
+
+/* === Progression: Level-Tag + Badge-Pill + Player-Name (überall sichtbar) === */
+/* Wird auf Leaderboards (Home, Games), Nav-Bar (alle Seiten) verwendet. Diese
+   Styles müssen in styles.css liegen damit sie ohne profile.css-Import greifen. */
+.level-tag {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(95, 184, 255, 0.25), rgba(213, 140, 255, 0.18));
+    border: 1px solid rgba(95, 184, 255, 0.45);
+    color: #cdeaff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 6px rgba(95, 184, 255, 0.4);
+    margin-right: 0.3rem;
+    vertical-align: middle;
+}
+.badge-pill {
+    display: inline-block;
+    padding: 0.05rem 0.36rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--badge-c, #5fb8ff) 22%, rgba(8, 16, 30, 0.5));
+    border: 1px solid var(--badge-c, #5fb8ff);
+    color: var(--badge-c, #fff);
+    font-size: 0.85rem;
+    line-height: 1.2;
+    text-shadow: 0 0 6px color-mix(in srgb, var(--badge-c, transparent) 50%, transparent);
+    box-shadow: 0 0 6px color-mix(in srgb, var(--badge-c, transparent) 30%, transparent);
+    margin-right: 0.2rem;
+    vertical-align: middle;
+}
+.player-name.is-vip {
+    font-weight: 800;
+    text-shadow: 0 0 8px currentColor;
 }

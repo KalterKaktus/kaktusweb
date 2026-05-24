@@ -411,6 +411,116 @@
     color: var(--text-secondary);
 }
 
+/* === User-Header Erweiterungen === */
+.admin-user-level {
+    display: inline-block;
+    padding: 0.08rem 0.45rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(95, 184, 255, 0.25), rgba(213, 140, 255, 0.18));
+    border: 1px solid rgba(95, 184, 255, 0.45);
+    color: #cdeaff;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    margin-left: 0.4rem;
+    vertical-align: middle;
+}
+.admin-user-vip {
+    display: inline-block;
+    padding: 0.08rem 0.45rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(255, 209, 102, 0.3), rgba(255, 165, 0, 0.2));
+    border: 1px solid #ffd166;
+    color: #ffd166;
+    font-size: 0.62rem;
+    font-weight: 900;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+    text-shadow: 0 0 6px rgba(255, 209, 102, 0.5);
+}
+.admin-user-meta {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-top: 0.2rem !important;
+}
+.admin-user-meta code {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+/* === Badge-Verwaltung === */
+.admin-badges {
+    background: rgba(0, 0, 0, 0.18);
+    border-radius: 8px;
+    padding: 0.55rem 0.85rem;
+    margin-top: 0.5rem;
+}
+.admin-badges > summary {
+    cursor: pointer;
+    font-weight: 700;
+    padding: 0.2rem 0;
+}
+.admin-badges[open] > summary { margin-bottom: 0.7rem; }
+
+.admin-badge-toolbar {
+    margin-bottom: 0.7rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.admin-badge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+    gap: 0.5rem;
+}
+
+.admin-badge-card {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.6rem 0.7rem;
+    border-radius: 0.6rem;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    transition: transform 0.12s, box-shadow 0.18s, border-color 0.12s;
+    position: relative;
+}
+.admin-badge-card:hover {
+    transform: translateY(-1px);
+    border-color: var(--mut, #69f0ae);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--mut, transparent) 30%, transparent);
+}
+.admin-badge-card.is-owned {
+    border-color: var(--mut, #69f0ae);
+    background: linear-gradient(140deg, color-mix(in srgb, var(--mut, #69f0ae) 18%, rgba(0, 0, 0, 0.3)), rgba(0, 0, 0, 0.25));
+    box-shadow: 0 0 0 1px var(--mut, #69f0ae), 0 0 12px -4px color-mix(in srgb, var(--mut, transparent) 50%, transparent);
+}
+.admin-badge-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--mut, transparent) 50%, transparent));
+}
+.admin-badge-name {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--mut, var(--text-primary));
+}
+.admin-badge-state {
+    font-size: 0.62rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.admin-badge-card.is-owned .admin-badge-state {
+    color: var(--mut, #69f0ae);
+    font-weight: 700;
+}
+
 @media (max-width: 640px) {
     .admin-game-head {
         align-items: flex-start;

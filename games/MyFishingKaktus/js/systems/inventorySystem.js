@@ -26,9 +26,10 @@ export function addCatch(state, candidate) {
     }
     state.inventory[fish.id] = inventoryEntry;
 
-    const indexEntry = state.index[fish.id] || { count: 0, bestKg: 0, mutations: {} };
+    const indexEntry = state.index[fish.id] || { count: 0, bestKg: 0, mutations: {}, claimed: false };
     indexEntry.count += 1;
     indexEntry.bestKg = Math.max(indexEntry.bestKg, candidate.kg);
+    if (indexEntry.claimed === undefined) indexEntry.claimed = false;
     // Index: Lifetime-Tracking aller jemals gesehenen Mutationen pro Fisch — bleibt
     // auch nach Sell-All / Prestige erhalten (Sammler-Stat).
     if (!indexEntry.mutations) indexEntry.mutations = {};

@@ -131,13 +131,20 @@ async function supabase(path, options = {}, query = "") {
 }
 
 async function listUsers() {
-    const [profiles, saves, presenceRows] = await Promise.all([
-        supabase("profiles", {}, "?select=id,username,is_banned,avatar_url,updated_at&order=updated_at.desc"),
+    const [profiles, saves, presenceRows, badges] = await Promise.all([
+        supabase("profiles", {}, "?select=id,username,is_banned,avatar_url,updated_at,total_xp,equipped_badge,vip,vip_color,referral_code,donation_total_cents,donation_count&order=updated_at.desc"),
         supabase("game_saves", {}, "?select=user_id,game_id,display_name,total_earned,season_id,payload,updated_at&order=updated_at.desc"),
         listPresence(),
+        supabase("user_badges", {}, "?select=user_id,badge_id,awarded_at"),
     ]);
     const savesByUser = new Map();
     const presenceByUser = new Map((presenceRows || []).map((presence) => [presence.user_id, presence]));
+    const badgesByUser = new Map();
+    for (const badge of badges || []) {
+        const userBadges = badgesByUser.get(badge.user_id) || [];
+        userBadges.push(badge.badge_id);
+        badgesByUser.set(badge.user_id, userBadges);
+    }
 
     for (const save of saves || []) {
         const userSaves = savesByUser.get(save.user_id) || [];
@@ -149,6 +156,7 @@ async function listUsers() {
         ...profile,
         saves: savesByUser.get(profile.id) || [],
         presence: formatPresence(presenceByUser.get(profile.id)),
+        badges: badgesByUser.get(profile.id) || [],
     }));
 }
 
@@ -240,6 +248,69 @@ async function setBan(userId, isBanned) {
         },
         `?id=eq.${encodeURIComponent(userId)}`
     );
+}
+
+// Bekannte Badge-IDs — hier hardcoded statt Import aus dem Frontend wegen ESM/Bundle-Trennung.
+// Muss in Sync mit /js/progression.js BADGES gehalten werden.
+const KNOWN_BADGE_IDS = new Set([
+    "lvl_25", "lvl_50", "lvl_75", "lvl_100",
+    "tester", "vip", "supporter",
+    "haunted_catch", "daily_streak_7", "referrer",
+]);
+
+function requireBadgeId(badgeId) {
+    const safe = String(badgeId || "").trim();
+    if (!KNOWN_BADGE_IDS.has(safe)) {
+        throw httpError(`Badge "${safe}" ist nicht freigegeben.`, 400);
+    }
+    return safe;
+}
+
+async function awardBadge(userId, badgeId) {
+    const safe = requireBadgeId(badgeId);
+    await supabase("user_badges", {
+        method: "POST",
+        headers: { Prefer: "return=minimal,resolution=ignore-duplicates" },
+        body: JSON.stringify({ user_id: userId, badge_id: safe }),
+    });
+}
+
+async function revokeBadge(userId, badgeId) {
+    const safe = requireBadgeId(badgeId);
+    await supabase(
+        "user_badges",
+        { method: "DELETE" },
+        `?user_id=eq.${encodeURIComponent(userId)}&badge_id=eq.${encodeURIComponent(safe)}`
+    );
+    // Falls dieses Badge gerade als equipped_badge gesetzt ist → unsetzen damit
+    // auf Leaderboards/Profil kein „Geist-Badge" mehr angezeigt wird.
+    await supabase(
+        "profiles",
+        {
+            method: "PATCH",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({ equipped_badge: null, updated_at: new Date().toISOString() }),
+        },
+        `?id=eq.${encodeURIComponent(userId)}&equipped_badge=eq.${encodeURIComponent(safe)}`
+    );
+}
+
+async function setVipStatus(userId, isVip) {
+    await supabase(
+        "profiles",
+        {
+            method: "PATCH",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({ vip: Boolean(isVip), updated_at: new Date().toISOString() }),
+        },
+        `?id=eq.${encodeURIComponent(userId)}`
+    );
+    // Konvenienz: VIP-Status setzt/entfernt auch den 'vip' Badge automatisch.
+    if (isVip) {
+        await awardBadge(userId, "vip");
+    } else {
+        await revokeBadge(userId, "vip");
+    }
 }
 
 function requireGameEventType(gameId, eventType) {
@@ -348,6 +419,12 @@ export default async (req) => {
             await sendMessage(body.userId, FORCE_RELOAD_MESSAGE);
         } else if (body.action === "ban") {
             await setBan(body.userId, body.isBanned);
+        } else if (body.action === "award-badge") {
+            await awardBadge(body.userId, body.badgeId);
+        } else if (body.action === "revoke-badge") {
+            await revokeBadge(body.userId, body.badgeId);
+        } else if (body.action === "set-vip") {
+            await setVipStatus(body.userId, body.vip);
         } else {
             return json({ error: "Aktion unbekannt." }, 400);
         }

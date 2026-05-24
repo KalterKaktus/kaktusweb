@@ -1,5 +1,15 @@
 export const RARITY_ORDER = ["Common", "Uncommon", "Rare", "Epic", "Legendary"];
 
+// Coins für das erstmalige Eintragen eines Fisches im Index. Einmalig pro Fisch.
+// Skaliert sanft mit Rarity — Hauptanreiz ist „neue Fische sammeln statt nur farmen".
+export const INDEX_REWARDS = {
+    Common: 5,
+    Uncommon: 25,
+    Rare: 100,
+    Epic: 500,
+    Legendary: 2500,
+};
+
 // Welche Rarities per Force-Spawn ausgelöst werden können (Admin-Live-Event + Test-Menü).
 // Upgrade-sicher: neue Rarities wie "Mythic" einfach hier ergänzen + in RARITIES + in admin-panel.mjs Whitelist.
 export const FORCEABLE_RARITIES = ["Epic", "Legendary"];

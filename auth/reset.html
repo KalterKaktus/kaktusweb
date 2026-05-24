@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#69f0ae">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Passwort zurücksetzen - KalterKaktus</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a class="logo" href="/">KK</a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/games/" class="nav-link">Games</a>
+                <a href="/wiki/" class="nav-link">Wiki</a>
+                <div id="auth-nav" class="auth-nav" aria-live="polite">
+                    <a class="nav-link auth-link" href="/login.html">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+
+    <main class="page-shell">
+        <div class="page-container auth-page">
+            <header class="page-header">
+                <div>
+                    <p class="page-kicker">KalterKaktus Account</p>
+                    <h1 class="page-title">Passwort zurücksetzen</h1>
+                </div>
+            </header>
+
+            <section class="auth-card">
+                <p class="auth-status" id="reset-intro">Recovery-Link wird verarbeitet…</p>
+
+                <form id="reset-form" class="auth-email-form" hidden autocomplete="on">
+                    <label class="auth-field">
+                        <span>Neues Passwort</span>
+                        <input type="password" id="reset-password" autocomplete="new-password" required minlength="6">
+                    </label>
+                    <label class="auth-field">
+                        <span>Passwort wiederholen</span>
+                        <input type="password" id="reset-password-confirm" autocomplete="new-password" required minlength="6">
+                    </label>
+                    <div class="auth-form-actions">
+                        <button class="auth-btn" type="submit" id="reset-submit">Passwort speichern</button>
+                    </div>
+                </form>
+
+                <p class="auth-status" id="reset-status" aria-live="polite"></p>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="/impressum.html">Impressum</a>
+                <a href="/datenschutz.html">Datenschutz</a>
+                <a href="/nutzungsbedingungen.html">Nutzungsbedingungen</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/config.js"></script>
+    <script type="module" src="/js/auth-nav.js"></script>
+    <script type="module" src="/js/auth-reset.js"></script>
+</body>
+</html>

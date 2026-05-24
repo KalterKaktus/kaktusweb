@@ -48,12 +48,32 @@
             </header>
 
             <section class="auth-card" aria-labelledby="oauth-title">
-           
                 <div class="auth-oauth-buttons">
                     <button class="auth-oauth-btn is-google" id="oauth-google" type="button">
                         Mit Google anmelden
                     </button>
                 </div>
+
+                <div class="auth-divider" aria-hidden="true">
+                    <span>oder</span>
+                </div>
+
+                <form id="auth-email-form" class="auth-email-form" autocomplete="on">
+                    <label class="auth-field">
+                        <span>E-Mail</span>
+                        <input type="email" id="auth-email" name="email" autocomplete="email" required>
+                    </label>
+                    <label class="auth-field">
+                        <span>Passwort</span>
+                        <input type="password" id="auth-password" name="password" autocomplete="current-password" required minlength="6">
+                    </label>
+                    <div class="auth-form-actions">
+                        <button class="auth-btn" type="submit" id="auth-email-signin">Anmelden</button>
+                        <button class="auth-btn is-ghost" type="button" id="auth-email-signup">Account erstellen</button>
+                    </div>
+                </form>
+
+                <p class="auth-status" id="auth-status" aria-live="polite"></p>
             </section>
 
         

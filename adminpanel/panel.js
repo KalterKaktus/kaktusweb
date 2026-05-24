@@ -1,4 +1,5 @@
 import { getSupabase, isConfigReady } from "/js/supabase-client.js";
+import { BADGES, BADGE_ORDER, levelFromXp } from "/js/progression.js";
 
 const usersRoot = document.getElementById("admin-users");
 const status = document.getElementById("admin-status");
@@ -256,12 +257,15 @@ function renderUsers(users) {
     usersRoot.innerHTML = users.map((user) => {
         const saves = Array.isArray(user.saves) ? user.saves : [];
         const presence = user.presence || {};
+        const userLevel = levelFromXp(user.total_xp);
+        const userBadges = new Set(Array.isArray(user.badges) ? user.badges : []);
         return `
             <article class="admin-user" data-user-id="${escapeAttr(user.id)}">
                 <div class="admin-user-head">
                     <div>
-                        <h2>${escapeHtml(user.username || "Ohne Name")}</h2>
+                        <h2>${escapeHtml(user.username || "Ohne Name")} <span class="admin-user-level">Lvl ${userLevel}</span>${user.vip ? `<span class="admin-user-vip" title="VIP-Status">👑 VIP</span>` : ""}</h2>
                         <p>${escapeHtml(user.id)}</p>
+                        <p class="admin-user-meta">${formatNumber(user.total_xp || 0)} XP &middot; ${userBadges.size} Badges${user.referral_code ? ` &middot; Ref-Code <code>${escapeHtml(user.referral_code)}</code>` : ""}</p>
                     </div>
                     <div class="admin-user-flags">
                         <button class="admin-presence ${presence.online ? "is-online" : "is-offline"}" type="button" title="${escapeAttr(formatPresenceTitle(presence))}">
@@ -285,6 +289,34 @@ function renderUsers(users) {
                     ${saves.length
                         ? saves.map(renderGamePanel).join("")
                         : `<p class="admin-empty">Dieser User hat noch keinen Cloud-Spielstand.</p>`}
+                </details>
+
+                <details class="admin-badges">
+                    <summary>Badges & VIP verwalten ${userBadges.size ? `(${userBadges.size})` : ""}</summary>
+                    <div class="admin-badge-toolbar">
+                        <button class="admin-button ${user.vip ? "is-danger" : ""}" data-action="set-vip" data-vip="${user.vip ? "false" : "true"}" type="button">
+                            ${user.vip ? "👑 VIP entfernen" : "👑 VIP setzen (inkl. XP-Boost +20 %)"}
+                        </button>
+                    </div>
+                    <div class="admin-badge-grid">
+                        ${BADGE_ORDER.map((badgeId) => {
+                            const b = BADGES[badgeId];
+                            if (!b) return "";
+                            const owned = userBadges.has(badgeId);
+                            return `
+                                <button type="button"
+                                    class="admin-badge-card ${owned ? "is-owned" : ""}"
+                                    data-action="${owned ? "revoke-badge" : "award-badge"}"
+                                    data-badge-id="${escapeAttr(badgeId)}"
+                                    style="--mut:${escapeAttr(b.color)}"
+                                    title="${escapeAttr(b.desc)}">
+                                    <span class="admin-badge-icon">${escapeHtml(b.icon)}</span>
+                                    <span class="admin-badge-name">${escapeHtml(b.name)}</span>
+                                    <span class="admin-badge-state">${owned ? "✓ Aktiv — klick zum Entfernen" : "Klick zum Vergeben"}</span>
+                                </button>
+                            `;
+                        }).join("")}
+                    </div>
                 </details>
 
                 <details class="admin-account-tools">
@@ -472,6 +504,20 @@ usersRoot.addEventListener("click", async (event) => {
         if (action === "ban") {
             await api("ban", { userId, isBanned: button.textContent.includes("Sperren") });
             setStatus("Account-Status aktualisiert.");
+        }
+
+        if (action === "award-badge" || action === "revoke-badge") {
+            const badgeId = button.dataset.badgeId;
+            await api(action, { userId, badgeId });
+            setStatus(action === "award-badge"
+                ? `Badge "${BADGES[badgeId]?.name || badgeId}" vergeben.`
+                : `Badge "${BADGES[badgeId]?.name || badgeId}" entfernt.`);
+        }
+
+        if (action === "set-vip") {
+            const vip = button.dataset.vip === "true";
+            await api("set-vip", { userId, vip });
+            setStatus(vip ? "VIP-Status gesetzt." : "VIP-Status entfernt.");
         }
 
         await loadUsers();

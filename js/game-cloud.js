@@ -193,7 +193,7 @@ export async function fetchLeaderboard(limit = 1000) {
     const [{ data, error }, { data: archive, error: archiveError }] = await Promise.all([
         supabase
             .from("game_saves")
-            .select("total_earned, display_name, season_id, updated_at")
+            .select("user_id, total_earned, display_name, season_id, updated_at")
             .eq("game_id", KAKTUS_GAME_ID)
             .eq("season_id", period.id)
             .order("total_earned", { ascending: false })
@@ -223,6 +223,17 @@ export async function fetchLeaderboard(limit = 1000) {
         }))
         : [];
 
+    // Profile-Infos (level + equipped_badge) für alle User in einem Batch-Request.
+    const userIds = (data || []).map((e) => e.user_id).filter(Boolean);
+    let profilesById = new Map();
+    if (userIds.length) {
+        const { data: profiles } = await supabase
+            .from("profiles_public")
+            .select("id, level, equipped_badge, vip, vip_color")
+            .in("id", userIds);
+        profilesById = new Map((profiles || []).map((p) => [p.id, p]));
+    }
+
     return {
         period,
         previousPeriod,
@@ -236,11 +247,18 @@ export async function fetchLeaderboard(limit = 1000) {
             : null,
         entries: (data || [])
             .filter((entry) => Number(entry.total_earned) > 0)
-            .map((entry, index) => ({
-            rank: index + 1,
-            name: entry.display_name || "Spieler",
-            totalEarned: Number(entry.total_earned) || 0,
-            updatedAt: entry.updated_at,
-        })),
+            .map((entry, index) => {
+                const profile = profilesById.get(entry.user_id) || {};
+                return {
+                    rank: index + 1,
+                    name: entry.display_name || "Spieler",
+                    totalEarned: Number(entry.total_earned) || 0,
+                    updatedAt: entry.updated_at,
+                    level: Number(profile.level) || 0,
+                    equippedBadge: profile.equipped_badge || null,
+                    vip: Boolean(profile.vip),
+                    vipColor: profile.vip_color || null,
+                };
+            }),
     };
 }

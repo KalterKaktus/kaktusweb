@@ -9,6 +9,8 @@ import {
   signOutGameSession,
 } from "/js/game-cloud.js";
 import { getSupabase, isConfigReady } from "/js/supabase-client.js";
+import { addPendingXp, setXpUser } from "/js/xp-service.js";
+import { renderLevelTag, renderPlayerName } from "/js/progression.js";
 import { achievements, buildings, changelogEntries, upgrades } from "./data.js";
 import {
   getAchievementMultiplier,
@@ -383,6 +385,9 @@ function clickCactus(event) {
   const earned = getClickYield(state);
   addCactus(earned);
   state.totalClicks += 1;
+  // XP: alle 100 Clicks = 1 XP (sehr gemächlich, dafür konstant beim Spielen).
+  // Spike-XP gibt's beim Prestige.
+  if (state.totalClicks % 100 === 0) addPendingXp(1, "clicker-click");
   chargeClickFrenzy();
   spawnFloat(event.clientX, event.clientY, `+${formatNumber(earned)}`);
   const achievementChanged = updateAchievements();
@@ -464,6 +469,8 @@ function performPrestige() {
   resetRunForPrestige(state);
   ensureRandomEventSchedules();
   updateAchievements();
+  // XP für Prestige (skaliert mit erworbenen Nopals — größere Prestiges geben mehr XP).
+  addPendingXp(100 + Math.min(900, Math.floor(newNopal * 5)), "clicker-prestige");
   saveState("Prestige gespeichert");
   render();
 }
@@ -691,7 +698,7 @@ function renderLeaderboardRows(root, rows, emptyText) {
     ? rows.map((entry) => `
       <div class="leaderboard-row ${entry.rank <= 3 ? "is-top" : ""}">
         <span class="leaderboard-rank">#${entry.rank}</span>
-        <span class="leaderboard-name">${escapeHtml(entry.name)}</span>
+        <span class="leaderboard-name">${renderLevelTag(entry.level || 0, entry.equippedBadge || null)}${renderPlayerName(escapeHtml(entry.name), { vip: entry.vip, vipColor: entry.vipColor })}</span>
         <span class="leaderboard-score">${formatNumber(entry.totalEarned ?? entry.score)}</span>
       </div>
     `).join("")
@@ -1112,6 +1119,7 @@ async function initGame() {
   if (session?.user) {
     cloudSync.enabled = true;
     cloudSync.user = session.user;
+    setXpUser(session.user);
     await ensureKaktusSeason();
     const profile = await getGameProfile(session.user);
     if (profile?.is_banned) {
