@@ -2,16 +2,164 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=/profile/">
-    <link rel="canonical" href="/profile/">
-    <title>Profil — KalterKaktus</title>
-    <script>
-        // Erhalte ?from=adminpanel etc. Parameter beim Redirect
-        const query = window.location.search || "";
-        window.location.replace("/profile/" + query);
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0f1c">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Profil - KalterKaktus</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/profile/profile.css">
 </head>
 <body>
-    <p>Weiterleitung zu <a href="/profile/">/profile/</a>…</p>
+    <nav class="nav">
+        <div class="nav-container">
+            <a class="logo" href="/">KK</a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/games/" class="nav-link">Games</a>
+                <a href="/wiki/" class="nav-link">Wiki</a>
+                <div id="auth-nav" class="auth-nav" aria-live="polite">
+                    <a class="nav-link auth-link" href="/login.html?next=%2Fprofile%2F">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="profile-shell">
+        <div class="neon-bg" aria-hidden="true">
+            <div class="neon-blob neon-blob--a"></div>
+            <div class="neon-blob neon-blob--b"></div>
+            <div class="neon-blob neon-blob--c"></div>
+            <div class="neon-grid"></div>
+        </div>
+
+        <div class="profile-container">
+            <p class="profile-status" id="profile-status">Profil wird geladen…</p>
+
+            <section class="profile-card profile-header" id="profile-header" hidden>
+                <div class="profile-identity">
+                    <div class="profile-avatar" id="profile-avatar" aria-hidden="true">?</div>
+                    <div class="profile-identity-text">
+                        <p class="profile-kicker">Kalterkaktus-Account</p>
+                        <h1 class="profile-name" id="profile-name">—</h1>
+                        <button class="profile-color-trigger" id="profile-color-trigger" type="button" hidden>
+                            <span class="profile-color-dot" id="profile-color-dot"></span>
+                            Namensfarbe ändern
+                        </button>
+                        <p class="profile-email" id="profile-email"></p>
+                    </div>
+                    <div class="profile-level-block">
+                        <span class="profile-level-label">Level</span>
+                        <span class="profile-level-value" id="profile-level">0</span>
+                    </div>
+                </div>
+
+                <div class="profile-xp">
+                    <div class="profile-xp-meta">
+                        <span id="profile-xp-current">0 XP</span>
+                        <span id="profile-xp-next">0 / 0</span>
+                    </div>
+                    <div class="profile-xp-bar">
+                        <div class="profile-xp-fill" id="profile-xp-fill"></div>
+                    </div>
+                    <small class="profile-xp-hint" id="profile-xp-hint">Nächstes Level in — XP</small>
+                </div>
+            </section>
+
+            <section class="profile-card" id="profile-username-card" hidden>
+                <div class="profile-card-head">
+                    <div>
+                        <p class="profile-card-kicker">Benutzername</p>
+                        <h2>Wie sollen wir dich nennen?</h2>
+                    </div>
+                </div>
+                <p class="profile-card-lead">
+                    Wird in der Navigation, auf Leaderboards und in Broadcasts angezeigt.
+                    3–24 Zeichen, nur Buchstaben, Zahlen und Unterstriche.
+                </p>
+                <form id="profile-username-form" class="profile-username-row">
+                    <input
+                        type="text"
+                        id="profile-username-input"
+                        name="username"
+                        autocomplete="username"
+                        minlength="3"
+                        maxlength="24"
+                        pattern="[a-zA-Z0-9_]+"
+                        required
+                        placeholder="z. B. KalterKaktus">
+                    <button class="profile-button" type="submit" id="profile-username-submit">Speichern</button>
+                </form>
+                <p class="profile-username-status" id="profile-username-status" aria-live="polite"></p>
+            </section>
+
+            <section class="profile-card" id="profile-badges-card" hidden>
+                <div class="profile-card-head">
+                    <div>
+                        <p class="profile-card-kicker">Badge</p>
+                        <h2>Wähle dein angezeigtes Badge</h2>
+                    </div>
+                    <button class="profile-button is-ghost" id="profile-badge-clear" type="button">Kein Badge</button>
+                </div>
+                <p class="profile-card-lead">
+                    Nur ein Badge gleichzeitig sichtbar — wird auf Leaderboards neben deinem Level gezeigt.
+                </p>
+                <div class="badge-grid" id="profile-badge-grid"></div>
+            </section>
+
+            <section class="profile-card profile-referral-card" id="profile-referral-card" hidden>
+                <div class="profile-card-head">
+                    <div>
+                        <p class="profile-card-kicker">Freunde werben</p>
+                        <h2>Dein Werbe-Link</h2>
+                    </div>
+                </div>
+                <p class="profile-card-lead">
+                    Teile diesen Link. Sobald ein geworbener Freund <strong>Level 5</strong> erreicht, zählt er als
+                    qualifiziert und du bekommst das <strong>❤️ Werber-Badge</strong>.
+                </p>
+                <div class="referral-link-row">
+                    <input type="text" id="profile-referral-link" readonly>
+                    <button class="profile-button" id="profile-referral-copy" type="button">Kopieren</button>
+                </div>
+                <p class="profile-referral-stats">
+                    <span><strong id="profile-referral-pending">0</strong> noch nicht qualifiziert</span>
+                    <span><strong id="profile-referral-qualified">0</strong> qualifiziert</span>
+                </p>
+            </section>
+
+            <section class="profile-card profile-vip-card" id="profile-vip-card" hidden>
+                <div class="profile-card-head">
+                    <div>
+                        <p class="profile-card-kicker">VIP & Unterstützer</p>
+                        <h2>Auf Anfrage per Discord</h2>
+                    </div>
+                </div>
+                <p class="profile-card-lead">
+                    <strong>🌹 Unterstützer</strong> — sichtbares Badge, freischaltbar im Profil.<br>
+                    <strong>👑 VIP</strong> — eigene Namensfarbe und <strong>+20 % XP-Boost</strong> auf alles.
+                </p>
+            </section>
+
+            <section class="profile-card" id="profile-stats-card" hidden>
+                <div class="profile-card-head">
+                    <div>
+                        <p class="profile-card-kicker">Stats</p>
+                        <h2>Quick-Info</h2>
+                    </div>
+                </div>
+                <dl class="profile-stats-grid" id="profile-stats-grid"></dl>
+            </section>
+
+            <p class="profile-login-gate" id="profile-login-gate" hidden>
+                <a class="profile-button" href="/login.html?next=%2Fprofile%2F">Bitte einloggen</a>
+            </p>
+        </div>
+    </main>
+
+    <script src="/js/config.js"></script>
+    <script type="module" src="/js/auth-nav.js"></script>
+    <script type="module" src="/profile/profile.js"></script>
 </body>
 </html>
