@@ -843,9 +843,10 @@ body::before {
     font-size: 0.78rem;
 }
 
-.home-leaderboard-players span {
+/* Direkte Child-Span (Wrapper für Lvl-Tag + Badge + Name) — nicht alle Spans drin
+   weil .player-name + .level-tag + .badge-pill ihre eigenen Farben haben sollen. */
+.home-leaderboard-players li > span {
     overflow: hidden;
-    color: var(--accent-light);
     font-weight: 850;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -912,8 +913,7 @@ body::before {
     text-shadow: 0 0 18px rgba(99, 216, 255, 0.54);
 }
 
-.home-leaderboard-card.is-fishing .page-kicker,
-.home-leaderboard-card.is-fishing .home-leaderboard-players span {
+.home-leaderboard-card.is-fishing .page-kicker {
     color: #63d8ff;
 }
 
@@ -1788,6 +1788,11 @@ body::before {
     box-shadow: 0 0 6px color-mix(in srgb, var(--badge-c, transparent) 30%, transparent);
     margin-right: 0.2rem;
     vertical-align: middle;
+}
+.player-name {
+    /* Default: alle Spielernamen weiß auf Leaderboards, egal welches Parent-Element.
+       VIPs überschreiben das via inline-style (color:#xxx). */
+    color: #fff;
 }
 .player-name.is-vip {
     font-weight: 800;

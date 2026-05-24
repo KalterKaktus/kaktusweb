@@ -139,6 +139,8 @@ export function renderLevelTag(level, equippedBadgeId = null) {
 /**
  * Wickelt einen Spielernamen in einen Span mit VIP-Farbe wenn vorhanden.
  * Wird auf Leaderboards genutzt damit VIPs sich farblich abheben.
+ * Non-VIPs bekommen immer den Standard-Span ohne inline color — CSS .player-name
+ * forciert weiß damit kein Parent-Element die Farbe färbt.
  * `name` muss bereits HTML-escaped sein!
  */
 export function renderPlayerName(escapedName, { vip = false, vipColor = null } = {}) {
@@ -147,5 +149,5 @@ export function renderPlayerName(escapedName, { vip = false, vipColor = null } =
         const safeColor = String(vipColor).match(/^#[0-9a-fA-F]{3,8}$/) ? vipColor : "#ffd166";
         return `<span class="player-name is-vip" style="color:${safeColor}">${escapedName}</span>`;
     }
-    return escapedName;
+    return `<span class="player-name">${escapedName}</span>`;
 }
