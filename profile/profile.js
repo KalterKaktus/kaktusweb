@@ -165,7 +165,10 @@ function renderReferral() {
         els.referralCard.hidden = true;
         return;
     }
-    const link = `${window.location.origin}/login.html?ref=${myProfile.referral_code}`;
+    // Production-URL aus config.js — sonst kriegen lokal-Tester einen localhost-Link
+    // den niemand außer ihnen selbst öffnen kann.
+    const baseUrl = window.SITE_URL || window.location.origin;
+    const link = `${baseUrl}/login.html?ref=${myProfile.referral_code}`;
     els.referralLink.value = link;
     els.referralCard.hidden = false;
 }
