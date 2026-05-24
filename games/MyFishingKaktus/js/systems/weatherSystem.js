@@ -107,6 +107,47 @@ export class WeatherSystem {
         if (typeof opts.fog === "number") this.setFog(opts.fog);
     }
 
+    /**
+     * Schaltet den Event-Partikel-Layer für seltene Wetter-Events an/aus.
+     * Polymorph: passenden Look pro Event-Type. GPU-beschleunigt via CSS-Animationen.
+     * Aktuell unterstützte Types: abyss, polarlicht, glutsturm, blutmond, geistermeer.
+     */
+    setEventParticles(type) {
+        // Alten Layer ausfaden + entfernen.
+        if (this.eventLayer) {
+            this.eventLayer.classList.add("is-leaving");
+            const old = this.eventLayer;
+            this.eventLayer = null;
+            window.setTimeout(() => old.remove(), 700);
+        }
+        if (!type) return;
+
+        const cfg = EVENT_PARTICLE_CONFIGS[type];
+        if (!cfg) return;
+
+        const layer = document.createElement("div");
+        layer.className = `event-particles event-particles--${type}`;
+        layer.setAttribute("aria-hidden", "true");
+        const parts = [];
+        for (let i = 0; i < cfg.count; i++) {
+            const xPct = (Math.random() * 100).toFixed(1);
+            const dur = (cfg.dur[0] + Math.random() * (cfg.dur[1] - cfg.dur[0])).toFixed(1);
+            const delay = (-Math.random() * dur).toFixed(1);
+            const size = (cfg.size[0] + Math.random() * (cfg.size[1] - cfg.size[0])).toFixed(1);
+            const hue = (cfg.hue[0] + Math.random() * (cfg.hue[1] - cfg.hue[0])).toFixed(0);
+            const yStart = cfg.fromTop ? `${(Math.random() * 30).toFixed(0)}%` : "auto";
+            parts.push(`<span class="event-particle event-particle--${type}" style="left:${xPct}%; --dur:${dur}s; --delay:${delay}s; --size:${size}px; --hue:${hue}; --y-start:${yStart};"></span>`);
+        }
+        layer.innerHTML = parts.join("");
+        this.root.appendChild(layer);
+        this.eventLayer = layer;
+    }
+
+    /** Backwards-compat alias — weatherEventSystem rief vorher setAbyss(true/false) auf. */
+    setAbyss(active) {
+        this.setEventParticles(active ? "abyss" : null);
+    }
+
     /** Sanft auf neuen Zustand überblenden (über duration ms). */
     transitionTo(opts, durationMs = FOG_FADE_MS) {
         if (!opts) return;
@@ -130,3 +171,26 @@ export class WeatherSystem {
         if (this.wrap) this.wrap.remove();
     }
 }
+
+/** Partikel-Konfiguration pro Wetter-Event. Hue ist Hue in HSL. */
+const EVENT_PARTICLE_CONFIGS = {
+    abyss: {
+        count: 30, hue: [200, 230], size: [3, 6], dur: [12, 22], fromTop: false,
+    },
+    polarlicht: {
+        // Polarlicht: grün-magenta Wellenfunken die langsam treiben
+        count: 26, hue: [120, 290], size: [4, 8], dur: [10, 18], fromTop: false,
+    },
+    glutsturm: {
+        // Glutsturm: orange-rote Funken die schnell aufsteigen + flackern
+        count: 40, hue: [10, 40], size: [2, 5], dur: [5, 9], fromTop: false,
+    },
+    blutmond: {
+        // Blutmond: tiefroter Mist der träge durch die Szene treibt
+        count: 22, hue: [350, 10], size: [4, 9], dur: [18, 28], fromTop: false,
+    },
+    geistermeer: {
+        // Geistermeer: weiß-cyan Geister die langsam von oben herabschweben
+        count: 18, hue: [180, 220], size: [6, 12], dur: [14, 22], fromTop: true,
+    },
+};

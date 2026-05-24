@@ -57,7 +57,12 @@ const backgroundMusic = new Audio();
 const eventAppearSound = new Audio();
 let audioSettings = loadAudioSettings();
 let soundEffectsUnlocked = false;
-let soundEffectUnlockPending = false;
+// AudioContext: einheitlicher Unlock-Mechanismus (Fishing-Pattern). Beide Audio-Elemente
+// werden bei initAudio() per MediaElementSource an den Context gehängt — beim ersten
+// User-Klick reicht ein einziges ctx.resume() um die ganze Audio-Pipeline freizuschalten,
+// unabhängig vom Mute-Status. Vorher: cloned <audio> mit muted=true, was als "muted autoplay"
+// nicht als gültiger Unlock zählt → Goldkaktus-Sound kam bei Music=mute nicht.
+let audioCtx = null;
 
 const elements = {
   cactusCount: document.querySelector("#cactus-count"),
@@ -173,27 +178,19 @@ function startBackgroundMusic() {
 }
 
 function unlockSoundEffects() {
-  if (soundEffectsUnlocked || soundEffectUnlockPending) {
+  if (soundEffectsUnlocked) {
     return;
   }
-
-  // Prime SFX from a real user gesture without leaking the event sound as a test tone.
-  const silentUnlock = eventAppearSound.cloneNode();
-  silentUnlock.muted = true;
-  silentUnlock.volume = 0;
-  soundEffectUnlockPending = true;
-  silentUnlock.play()
-    .then(() => {
-      soundEffectsUnlocked = true;
-      silentUnlock.pause();
-      silentUnlock.currentTime = 0;
-    })
-    .catch(() => {
-      // A later user gesture can retry if the browser blocks this first attempt.
-    })
-    .finally(() => {
-      soundEffectUnlockPending = false;
-    });
+  // AudioContext-basierter Unlock (analog zum Fishing-AudioSystem): ein resume()
+  // genügt um die Audio-Pipeline endgültig freizugeben, unabhängig vom Mute-Status.
+  // Beide Audio-Elemente sind in initAudio() per MediaElementSource an den Context
+  // gehängt — sobald der Context "running" ist, dürfen sie alle .play()-Calls fahren.
+  if (audioCtx && audioCtx.state === "suspended") {
+    audioCtx.resume().catch(() => {});
+  }
+  if (audioCtx && audioCtx.state === "running") {
+    soundEffectsUnlocked = true;
+  }
 }
 
 function playEventAppearSound() {
@@ -212,6 +209,25 @@ function initAudio() {
   backgroundMusic.src = "./audio/ambient-glitch.mp3";
   eventAppearSound.preload = "auto";
   eventAppearSound.src = "./audio/event-appear.mp3";
+
+  // AudioContext aufsetzen + beide <audio>-Elemente per MediaElementSource einhängen.
+  // Damit reicht später ein einziges ctx.resume() um beide freizuschalten, unabhängig
+  // davon ob Musik gerade gemutet ist. Try/catch falls Browser AudioContext nicht
+  // unterstützt — dann fallen wir auf altes Verhalten zurück (Musik on = funktioniert,
+  // Musik mute = SFX blockiert; immerhin nicht schlimmer als vorher).
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (Ctx) {
+      audioCtx = new Ctx();
+      const musicSource = audioCtx.createMediaElementSource(backgroundMusic);
+      const eventSource = audioCtx.createMediaElementSource(eventAppearSound);
+      musicSource.connect(audioCtx.destination);
+      eventSource.connect(audioCtx.destination);
+    }
+  } catch {
+    // Browser ohne AudioContext oder bereits angeschlossene Element-Sources → ignorieren.
+  }
+
   renderAudioControls();
   startBackgroundMusic();
   window.addEventListener("pointerdown", startBackgroundMusic, { once: true });
@@ -1086,7 +1102,6 @@ function bindEvents() {
   window.visualViewport?.addEventListener("resize", recoverClickerViewport);
   window.addEventListener("pointerdown", tryLockPortraitOrientation, { once: true });
   window.addEventListener("keydown", tryLockPortraitOrientation, { once: true });
-  window.addEventListener("pagehide", () => pauseRandomEvents());
   window.addEventListener("beforeunload", () => saveState("Gespeichert"));
 }
 
@@ -1107,6 +1122,9 @@ async function initGame() {
     }
 
     const cloud = await loadCloudSave(session.user);
+    // Bewusst KEINE lokale-zu-Cloud-Migration: sonst könnte man localStorage
+    // editieren und sich per Login einen inflationierten Cloud-Save ins
+    // Leaderboard heben. Neuer Account = bei 0.
     state = normalizeLoadedState(cloud?.state, period.id);
     scheduleCloudSave();
   } else {

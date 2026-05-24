@@ -10,6 +10,13 @@ export class BubbleSystem {
         this.options = options;
         this.timer = 0;
         this.running = false;
+        // Visibility: im Hintergrund-Tab throttled der Browser setTimeout (auf ~1Hz) und
+        // pausiert CSS-Animationen. Resultat ohne Handler: Spots werden langsam weiter
+        // gespawnt, laufen aber nicht ab → bei Rückkehr stehen 2-3 Fische "auf Vorrat"
+        // bereit. Fix: bei hidden den Schedule stoppen + bei visible alle Stale-Spots
+        // wegräumen und sauber neu schedulen.
+        this._visibilityHandler = () => this._handleVisibility();
+        document.addEventListener("visibilitychange", this._visibilityHandler);
     }
 
     start() {
@@ -22,8 +29,36 @@ export class BubbleSystem {
         window.clearTimeout(this.timer);
     }
 
+    destroy() {
+        this.stop();
+        document.removeEventListener("visibilitychange", this._visibilityHandler);
+    }
+
     clear() {
         this.root.querySelectorAll(".fish-spot").forEach((spot) => spot.remove());
+    }
+
+    _handleVisibility() {
+        if (!this.running) return;
+        if (document.hidden) {
+            // Tab geht in den Hintergrund — keine neuen Spots schedulen.
+            this._hiddenAt = Date.now();
+            window.clearTimeout(this.timer);
+            return;
+        }
+        // Zurück aktiv: Spots wegräumen die in der Hidden-Zeit längst hätten ablaufen
+        // müssen (verhindert Stack-Effekt), den Rest behalten. Dann sauber neu schedulen.
+        const hiddenMs = this._hiddenAt ? Date.now() - this._hiddenAt : 0;
+        this._hiddenAt = 0;
+        const cutoff = Date.now() - 1500; // 1.5s Toleranz
+        this.root.querySelectorAll(".fish-spot").forEach((spot) => {
+            const spawnedAt = Number(spot.dataset.spawnedAt) || 0;
+            const lifeMs = (Number(spot.dataset.lifetimeSec) || 7) * 1000;
+            if (!spawnedAt || (Date.now() - spawnedAt > lifeMs) || (hiddenMs > 500 && spawnedAt < cutoff)) {
+                spot.remove();
+            }
+        });
+        this.schedule(550);
     }
 
     // Erzeugt einen Force-Spawn-Spot mit fixer Rarity. Ignoriert das Spawn-Cap, bleibt
@@ -40,6 +75,11 @@ export class BubbleSystem {
         spot.className = `fish-spot is-forced is-rarity-${String(rarity || "").toLowerCase()}`;
         spot.setAttribute("aria-label", `${rarity}-Fischstelle anangeln`);
         spot.dataset.forcedRarity = rarity;
+        const forcedLife = (options.lifetimeSec && Number.isFinite(options.lifetimeSec))
+            ? options.lifetimeSec
+            : 12;
+        spot.dataset.spawnedAt = String(Date.now());
+        spot.dataset.lifetimeSec = String(forcedLife);
         if (options.lifetimeSec && Number.isFinite(options.lifetimeSec)) {
             spot.style.animationDuration = `${options.lifetimeSec}s`;
         }
@@ -113,6 +153,8 @@ export class BubbleSystem {
         spot.style.setProperty("--spot-x", `${spotXPct}%`);
         spot.style.setProperty("--spot-y", `${spotYPct}%`);
         spot.style.animationDuration = `${lifetimeSec}s`;
+        spot.dataset.spawnedAt = String(Date.now());
+        spot.dataset.lifetimeSec = String(lifetimeSec);
         spot.innerHTML =
             '<span class="fish-spot-ring"></span>' +
             '<span class="fish-spot-ring"></span>' +

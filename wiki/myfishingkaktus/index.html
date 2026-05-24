@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#062844">
+    <title>My Fishing Kaktus Wiki - KalterKaktus</title>
+    <meta name="description" content="Technische Referenz zu My Fishing Kaktus: Areas, Fische, Upgrades, Minispiel-Formeln, Wetter-Events, Karl, Daily Rewards.">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://kalterkaktus.de/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://kalterkaktus.de/favicon-16x16.png">
+    <link rel="stylesheet" href="https://kalterkaktus.de/styles.css">
+    <link rel="stylesheet" href="../wiki.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a class="logo" href="https://kalterkaktus.de/">KK</a>
+            <div class="nav-links">
+                <a href="https://kalterkaktus.de/" class="nav-link">Home</a>
+                <a href="https://kalterkaktus.de/#about" class="nav-link">About</a>
+                <a href="https://kalterkaktus.de/steam-deals/" class="nav-link">Steam Deals</a>
+                <a href="https://kalterkaktus.de/games/" class="nav-link">Games</a>
+                <a href="../" class="nav-link">Wiki</a>
+                <div class="auth-nav">
+                    <a class="nav-link auth-link" href="https://kalterkaktus.de/login.html">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="wiki-shell">
+        <aside class="wiki-rail" aria-label="Wiki Inhalte">
+            <section class="rail-block">
+                <p class="rail-label">Games</p>
+                <a class="rail-link" href="../kaktusclicker/">KaktusClicker</a>
+                <a class="rail-link is-active" href="./">My Fishing Kaktus</a>
+            </section>
+
+            <section class="rail-block toc">
+                <p class="rail-label">Inhalt</p>
+                <a href="#overview">Übersicht</a>
+                <a href="#areas">Areas</a>
+                <a href="#rarities">Raritäten</a>
+                <a href="#fish">Fisch-Index</a>
+                <a href="#upgrades">Upgrades</a>
+                <a href="#minigame">Fang-Minispiel</a>
+                <a href="#coinfish">Coin-Fische</a>
+                <a href="#weather">Wetter-Events</a>
+                <a href="#mutations">Mutationen</a>
+                <a href="#karl">Karl</a>
+                <a href="#daily">Daily Rewards</a>
+                <a href="#admin">Admin-Events</a>
+                <a href="#prestige">Prestige</a>
+                <a href="#save">Save-Format</a>
+            </section>
+        </aside>
+
+        <article class="wiki-guide" data-wiki-searchable>
+            <header class="guide-head" id="overview">
+                <p class="guide-path">Technische Referenz</p>
+                <h1>My Fishing Kaktus</h1>
+                <p class="guide-lead">
+                    Mechanik-Doku für alle Systeme: Area-Werte, Rarity-Wahrscheinlichkeiten,
+                    Upgrade-Formeln, Wetter-Buffs, Karl-Rewards, Daily-Schedule, Save-Format.
+                    Kein Spielratgeber — nur Fakten und Formeln.
+                </p>
+                <div class="guide-meta">
+                    <span>Stand: 25.05.2026</span>
+                    <span>V1.x Active Fishing</span>
+                </div>
+            </header>
+
+            <div class="wiki-search">
+                <label for="wiki-search-input" class="sr-only">In dieser Wiki suchen</label>
+                <input type="search" id="wiki-search-input" placeholder="Wiki durchsuchen… (z.B. „Karl", „Legendary", „Köder")" autocomplete="off">
+                <span class="wiki-search-info" data-wiki-search-info></span>
+            </div>
+
+            <section data-searchable>
+                <h2>Übersicht</h2>
+                <p>
+                    My Fishing Kaktus ist ein aktives Sammel-Fischspiel. Spieler tippen auf
+                    Fischstellen, lösen ein Fang-Minispiel aus, sammeln Fische in einem Index,
+                    verkaufen sie für Coins, kaufen Upgrades und prestigen sich in tiefere Areas.
+                </p>
+                <ul>
+                    <li><strong>3 Areas</strong>: Pond (Start), Lake (Prestige 1), Ocean (Prestige 2).</li>
+                    <li><strong>132 Fische</strong> total, aufgeteilt nach Rarity in jeder Area.</li>
+                    <li><strong>5 Upgrades</strong>: Rute, Schnur, Haken, Köder, Glück (max Level 5).</li>
+                    <li><strong>10 Wetter-Events</strong> (5 Standard mit Buffs, Abyss + 4 Mutation-Events) — 15-min-Slots, 2,5-min aktiv.</li>
+                    <li><strong>Mutationen</strong>: Standard (BIG/HUGE/SHINY, 10 %) + Event-spezifisch (ABYSSAL → HAUNTED ×4–×10) — stacken multiplikativ.</li>
+                    <li><strong>Karl</strong> Bonus-Event mit Putz-Minispiel und Glücksrad.</li>
+                    <li><strong>Daily-Rewards</strong> mit Streak-System (Tag 7 = Epic, ab Woche 3 = Legendary).</li>
+                </ul>
+            </section>
+
+            <section data-searchable id="areas">
+                <h2>Areas</h2>
+                <p>
+                    Jede Area hat eigene Rarity-Gewichte, Gewichtsbereiche und Wert-Multiplikatoren.
+                    Spieler starten im Pond. Lake wird mit Prestige 1 freigeschaltet, Ocean mit Prestige 2.
+                </p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead>
+                            <tr><th>Area</th><th>Prestige</th><th>valueMult</th><th>upgradeMult</th><th>Spawn-Intervall</th><th>Prestige-Coins-Anker</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Pond</td><td>0</td><td>×1,05</td><td>×1</td><td>30–52 s (Basis)</td><td>24.000</td></tr>
+                            <tr><td>Lake</td><td>1</td><td>×0,46</td><td>×6</td><td>26–46 s (Basis)</td><td>750.000</td></tr>
+                            <tr><td>Ocean</td><td>2</td><td>×0,60</td><td>×10</td><td>22–40 s (Basis)</td><td>—</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    <code>valueMult</code> kommt in die Coin-Wert-Berechnung beim Verkauf,
+                    <code>upgradeMult</code> macht Upgrades in höheren Areas teurer (Pond Rod
+                    L0 = 80 Coins, Lake = 480 Coins, Ocean = 800 Coins).
+                </p>
+                <p>
+                    Spawn-Intervall ist die Basis-Wartezeit vor Köder-Upgrade — Köder reduziert
+                    pro Level (siehe Köder im Upgrades-Abschnitt).
+                </p>
+
+                <h3>Rarity-Gewichte (Roll-Wahrscheinlichkeiten)</h3>
+                <p>
+                    Innerhalb einer Area wird beim Anangeln eine Rarity per gewichtetem Zufall
+                    bestimmt. Glück-Upgrade verschiebt die Verteilung Richtung seltene Rarities:
+                </p>
+                <pre><code>luckPower = 1 + glückLevel × 0.26
+gewicht(rarity) = baseGewicht × luckPower ^ rarity.luckImpact</code></pre>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Area</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr></thead>
+                        <tbody>
+                            <tr><td>Pond</td><td>80</td><td>15</td><td>4,5</td><td>0,5</td><td>—</td></tr>
+                            <tr><td>Lake</td><td>68</td><td>22</td><td>8</td><td>1,8</td><td>0,2</td></tr>
+                            <tr><td>Ocean</td><td>55</td><td>26</td><td>14</td><td>4,3</td><td>0,7</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Gewichts-Bereiche (kg pro Fang)</h3>
+                <p>
+                    Pro Rarity in jeder Area gibt es einen kg-Bereich. <code>rollWeight</code> picked
+                    aus diesem Bereich; mit 4 % Chance gibt es einen <strong>Trophy-Roll</strong>
+                    (oberste 25 % des Bereichs).
+                </p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Area / Rarity</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr></thead>
+                        <tbody>
+                            <tr><td>Pond</td><td>0,05–0,5</td><td>0,12–0,9</td><td>0,25–1,8</td><td>0,6–3,5</td><td>—</td></tr>
+                            <tr><td>Lake</td><td>0,2–1,5</td><td>0,5–3,2</td><td>1–7</td><td>2,5–16</td><td>6–38</td></tr>
+                            <tr><td>Ocean</td><td>0,8–4,5</td><td>2–11</td><td>5–32</td><td>12–85</td><td>30–220</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section data-searchable id="rarities">
+                <h2>Raritäten</h2>
+                <p>5 Stufen, global definiert. Beeinflussen Wert, Glück-Shift und Fang-Schwierigkeit:</p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Rarity</th><th>Farbe</th><th>valuePerKg</th><th>luckImpact</th><th>difficulty</th></tr></thead>
+                        <tbody>
+                            <tr><td>Common</td><td>#79d9f7 (cyan)</td><td>8</td><td>−0,4</td><td>0,92</td></tr>
+                            <tr><td>Uncommon</td><td>#65e2a2 (grün)</td><td>20</td><td>+0,2</td><td>1,00</td></tr>
+                            <tr><td>Rare</td><td>#9f9dff (violett)</td><td>55</td><td>+0,7</td><td>1,12</td></tr>
+                            <tr><td>Epic</td><td>#d58cff (magenta)</td><td>150</td><td>+1,3</td><td>1,28</td></tr>
+                            <tr><td>Legendary</td><td>#ffc86c (gold)</td><td>500</td><td>+1,8</td><td>1,46</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Coin-Wert-Formel</h3>
+                <pre><code>coinWert = max(1, round(kg × valuePerKg × fish.valueMultiplier × area.valueMultiplier))</code></pre>
+                <p>
+                    <code>fish.valueMultiplier</code> ist pro Fisch leicht unterschiedlich (siehe
+                    Fish-Pool-Weights im Code, basiert auf Pool-Größe der Rarity in dieser Area).
+                </p>
+            </section>
+
+            <section data-searchable id="fish">
+                <h2>Fisch-Index</h2>
+                <p>
+                    Pond hat 36 Fische, Lake 44, Ocean 52 — total 132. Aufteilung nach Rarity:
+                </p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Area</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th><th>Total</th></tr></thead>
+                        <tbody>
+                            <tr><td>Pond</td><td>14</td><td>10</td><td>8</td><td>4</td><td>—</td><td>36</td></tr>
+                            <tr><td>Lake</td><td>10</td><td>12</td><td>12</td><td>8</td><td>2</td><td>44</td></tr>
+                            <tr><td>Ocean</td><td>6</td><td>12</td><td>16</td><td>12</td><td>6</td><td>52</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    Beim Fang wird ein zufälliger Fisch aus dem Area-Rarity-Pool per gewichtetem
+                    Pick gewählt (Pool-Gewichte siehe <code>FISH_POOL_WEIGHTS</code>). Im Fish-Index
+                    wird nur die aktuelle Area mit voller SVG-Liste gerendert, andere Areas zeigen
+                    nur den Counter (Performance).
+                </p>
+                <p>Vollständige Fisch-Namen siehe <a href="https://github.com/KalterKaktus/kaktusweb/blob/main/games/MyFishingKaktus/js/data/fish.js">js/data/fish.js</a> im Code.</p>
+            </section>
+
+            <section data-searchable id="upgrades">
+                <h2>Upgrades</h2>
+                <p>
+                    5 Upgrade-Pfade mit max Level 5. Kostensteigerung pro Level: <code>1,62</code>
+                    bis <code>1,72</code> Multiplier (variiert leicht). Skaliert mit <code>area.upgradeMultiplier</code>.
+                </p>
+                <pre><code>kaufPreis = round(baseCost × area.upgradeMultiplier × costGrowth^level)</code></pre>
+
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Upgrade</th><th>baseCost</th><th>costGrowth</th><th>Effekt</th></tr></thead>
+                        <tbody>
+                            <tr><td>Rute</td><td>80</td><td>1,62</td><td>Breitere Fangzone (+0,035 pro Level), reduziert Fisch-Speed um max 35 %</td></tr>
+                            <tr><td>Schnur</td><td>110</td><td>1,64</td><td>Reduziert Tension-Drain um 12 % pro Level (max 60 %)</td></tr>
+                            <tr><td>Haken</td><td>150</td><td>1,66</td><td>+15 % Fang-Balken-Fill pro Level, +35 % Tension-Refill pro Level</td></tr>
+                            <tr><td>Glück</td><td>240</td><td>1,72</td><td>luckPower +0,26 pro Level → seltenere Fische öfter</td></tr>
+                            <tr><td>Köder</td><td>180</td><td>1,65</td><td>+1 Spot Cap pro Level, +1,6s Lifetime, kürzeres Spawn-Intervall</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Rute (Fish-Speed-Modifier)</h3>
+                <pre><code>rodSpeedMult = max(0.65, 1 − rodLevel × 0.06)   // L0=1.0 ... L5=0.70 (Cap)
+rodTurnMult  = 1 + rodLevel × 0.08              // L0=1.0 ... L5=1.40</code></pre>
+
+                <h3>Köder (Spawn + Spot-Lifetime)</h3>
+                <pre><code>maxSpots = 1 + ködersLevel                     // L0=1 ... L5=6
+lifetimeSec = min(12, 4 + ködersLevel × 1.6)   // L0=4s ... L5=12s
+waitSec = max(0.4, 10 − ködersLevel × 1.92)    // L0=10s ... L5=0.4s
+spawnIntervalSec = waitSec + lifetimeSec       // Zyklus = Wartezeit + Lebenszeit</code></pre>
+
+                <h3>Visuelle Angel-Themes pro Area</h3>
+                <p>
+                    Im Angel-UI (Shop) wird eine SVG-Angel gerendert, deren Look pro Area und Upgrade-Level wechselt.
+                    Architektur in <code>js/systems/angel/</code> (Composer + Themes + Shapes).
+                </p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Area</th><th>Rod</th><th>Grip</th><th>Reel</th><th>Hook</th><th>Bait</th><th>Aura</th></tr></thead>
+                        <tbody>
+                            <tr><td>Pond</td><td>classic</td><td>cork</td><td>spinning</td><td>j</td><td>spinner</td><td>none</td></tr>
+                            <tr><td>Lake</td><td>driftwood</td><td>wrap</td><td>fly</td><td>barbed</td><td>fly</td><td>leaves</td></tr>
+                            <tr><td>Ocean</td><td>tactical</td><td>rubber</td><td>baitcaster</td><td>treble</td><td>jig</td><td>bubbles</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    Neue Areas brauchen nur einen Daten-Block in <code>themes.js</code> — keine neue Render-Logik.
+                    Shape-Slots: rod/grip/reel/eyelet/hook/bait/aura mit je 2-5 Varianten;
+                    weitere Auras (<code>embers</code>, <code>runes</code>) sind für künftige Areas (Volcano, Cosmic) schon vorbereitet.
+                </p>
+            </section>
+
+            <section data-searchable id="minigame">
+                <h2>Fang-Minispiel</h2>
+                <p>
+                    Beim Antippen einer Fischstelle öffnet sich das Minispiel mit zwei Bars:
+                    <strong>Fang-Fortschritt</strong> (oben, grün/blau/gold) und
+                    <strong>Schnur-Spannung</strong> (unten, rot).
+                </p>
+
+                <h3>Fang-Fortschritt</h3>
+                <p>
+                    Steigt wenn der Fisch in der grünen Catch-Zone ist, fällt sonst. Bei 100 % = Catch.
+                </p>
+                <pre><code>catchSpeed = (0.3 + hookLevel × 0.045) / rarity.difficulty
+lossSpeed  = max(0.035, 0.13 × rarity.difficulty × (1 − lineLevel × 0.11))
+zoneWidth  = min(0.44, 0.19 + rodLevel × 0.035)</code></pre>
+
+                <h3>Schnur-Spannung</h3>
+                <p>
+                    Startet bei 1.0. Drainet wenn Fisch ausserhalb der Zone, refillt wenn drinnen.
+                    Bei 0 → Catch verloren.
+                </p>
+                <pre><code>tensionDrain = max(0.04, TENSION_DRAIN[rarity] × (1 − lineLevel × 0.12))
+tensionRefill = 0.36 × (1 + hookLevel × 0.35)</code></pre>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Rarity</th><th>Drain/s (L0)</th><th>~Sek. bis Ausriss (L0)</th><th>~Sek. bis Ausriss (Line L5)</th></tr></thead>
+                        <tbody>
+                            <tr><td>Common</td><td>0,167</td><td>6,0 s</td><td>15,0 s</td></tr>
+                            <tr><td>Uncommon</td><td>0,21</td><td>4,8 s</td><td>11,9 s</td></tr>
+                            <tr><td>Rare</td><td>0,27</td><td>3,7 s</td><td>9,3 s</td></tr>
+                            <tr><td>Epic</td><td>0,34</td><td>2,9 s</td><td>7,4 s</td></tr>
+                            <tr><td>Legendary</td><td>0,42</td><td>2,4 s</td><td>6,0 s</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Fisch-Bewegung pro Rarity</h3>
+                <pre><code>// Speed = (baseSpeed + rand × speedVariance) × rodSpeedMult
+// TurnIn = (minTurn + rand × (maxTurn − minTurn)) × rodTurnMult
+// Beim Turn: flipChance = Wahrscheinlichkeit für Richtungswechsel</code></pre>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Rarity</th><th>baseSpeed</th><th>speedVariance</th><th>minTurn (s)</th><th>maxTurn (s)</th><th>flipChance</th></tr></thead>
+                        <tbody>
+                            <tr><td>Common</td><td>0,10</td><td>0,06</td><td>0,70</td><td>1,60</td><td>45 %</td></tr>
+                            <tr><td>Uncommon</td><td>0,14</td><td>0,10</td><td>0,55</td><td>1,35</td><td>55 %</td></tr>
+                            <tr><td>Rare</td><td>0,22</td><td>0,14</td><td>0,40</td><td>1,05</td><td>65 %</td></tr>
+                            <tr><td>Epic</td><td>0,30</td><td>0,18</td><td>0,28</td><td>0,85</td><td>72 %</td></tr>
+                            <tr><td>Legendary</td><td>0,42</td><td>0,22</td><td>0,20</td><td>0,68</td><td>78 %</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section data-searchable id="coinfish">
+                <h2>Coin-Fische (Timer-Fische)</h2>
+                <p>
+                    Schwimmen ab und zu durchs Wasser. Klick = direkter Coin-Reward.
+                    Vier Tiers (small / big / sword / shark) mit unterschiedlichen Reward-Tabellen pro Area:
+                </p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Area / Tier</th><th>small</th><th>big</th><th>sword</th><th>shark</th></tr></thead>
+                        <tbody>
+                            <tr><td>Pond</td><td>8</td><td>23</td><td>50</td><td>107</td></tr>
+                            <tr><td>Lake</td><td>46</td><td>138</td><td>300</td><td>632</td></tr>
+                            <tr><td>Ocean</td><td>1.300</td><td>3.900</td><td>8.600</td><td>18.000</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section data-searchable id="weather">
+                <h2>Wetter-Events</h2>
+                <p>
+                    Global synchron für alle Spieler. Slot = 15 Minuten, davon 2,5 Minuten aktiv. Buff
+                    wird multiplikativ auf den entsprechenden Stat angewendet. Slot-Bestimmung per
+                    deterministischem Hash vom Epoch-Index.
+                </p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Event</th><th>Weight</th><th>Chance</th><th>Effekt</th><th>Wasser-Look</th></tr></thead>
+                        <tbody>
+                            <tr><td>☀ Sonniges Wetter</td><td>20</td><td>16,7 %</td><td>luck ×2 &middot; SUNNY-Mutation ×2 (20 %)</td><td>Calm preset, helles Licht</td></tr>
+                            <tr><td>🌧 Regenschauer</td><td>20</td><td>16,7 %</td><td>spawnRate ×2 &middot; WET-Mutation ×2 (20 %)</td><td>Rain im Shader</td></tr>
+                            <tr><td>⛈ Sturm</td><td>20</td><td>16,7 %</td><td>hook ×2 &middot; STORMY-Mutation ×2 (20 %)</td><td>Storm preset, Sturm-Wellen + Regen</td></tr>
+                            <tr><td>🌫 Nebel</td><td>20</td><td>16,7 %</td><td>rod ×2 &middot; MISTY-Mutation ×2 (20 %)</td><td>Weißer Nebel-Overlay</td></tr>
+                            <tr><td>🌙 Nachtangeln</td><td>20</td><td>16,7 %</td><td>line ×2 &middot; NOCTURNAL-Mutation ×2 (20 %)</td><td>Deepsea preset, Night-Veil</td></tr>
+                            <tr><td>🌌 <strong>Abyss</strong></td><td>5</td><td>4,2 %</td><td>Epic+ ×2 &middot; ABYSSAL-Mutation ×4 (15 %)</td><td>Tiefblauer Veil + Neon-Partikel</td></tr>
+                            <tr><td>🌠 Polarlicht</td><td>6</td><td>5,0 %</td><td>AURORA-Mutation ×3 (30 %)</td><td>Grün-violetter Schleier + drifting Wisps</td></tr>
+                            <tr><td>🔥 Glutsturm</td><td>4</td><td>3,3 %</td><td>EMBER-Mutation ×5 (25 %)</td><td>Storm-Wasser + orange Glut-Funken</td></tr>
+                            <tr><td>🌑 Blutmond</td><td>3</td><td>2,5 %</td><td>CRIMSON-Mutation ×7 (20 %)</td><td>Deepsea + tiefroter Schleier</td></tr>
+                            <tr><td>👻 <strong>Geistermeer</strong></td><td>2</td><td><strong>1,7 %</strong></td><td><strong>HAUNTED-Mutation ×10 (15 %)</strong></td><td>Deepsea + cyan Geister-Wisps von oben</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    Event-Pick: <code>hash(slotIndex) % totalWeight</code> (total = 120), dann gewichtetes Bucket-Mapping.
+                    Neue seltene Events einfach mit kleinem <code>weight</code> in <code>WEATHER_EVENTS</code> ergänzen.
+                </p>
+                <p>
+                    <strong>Abyss-Spezial:</strong> Statt einen Minispiel-Stat zu boosten, multipliziert es direkt
+                    die Roll-Wahrscheinlichkeit für Epic- und Legendary-Rarities (Logik in
+                    <code>weatherEventSystem.getRarityMultipliers()</code>). Zusätzlich Chance auf ABYSSAL-Mutation.
+                </p>
+                <p>
+                    <strong>Mutation-Only Events:</strong> Polarlicht / Glutsturm / Blutmond / Geistermeer haben keinen
+                    Stat-Buff — ihre einzige Wirkung ist die jeweilige Event-Mutation während der 5-Min-Phase.
+                    Je seltener das Event, desto höher der Multiplier (Polarlicht ×3 → Geistermeer ×10). Details s. <a href="#mutations">Mutationen</a>.
+                </p>
+                <p>
+                    Buffs gehen direkt in die Minispiel-Bonus-Berechnung — z.B. „Sturm" verdoppelt
+                    den effektiven Hook-Level, was sowohl Fang-Speed als auch Tension-Refill steigert.
+                </p>
+            </section>
+
+            <section data-searchable id="mutations">
+                <h2>Mutationen</h2>
+                <p>
+                    Bei jedem Fang werden unabhängig zwei Würfe gemacht: <strong>Standard-Mutation</strong>
+                    (immer, 10 %) und <strong>Event-Mutation</strong> (nur während eines passenden Wetter-Events).
+                    Beide können gleichzeitig zuschlagen → multiplikativ stackbar.
+                    Der finale Coin-Wert ist <code>base × prod(mutations.mult)</code>.
+                </p>
+
+                <h3>Standard-Mutationen (immer würfelbar)</h3>
+                <pre><code>P(standard) = 10 %
+Pool (gewichtet): BIG 65 / HUGE 25 / SHINY 10</code></pre>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>ID</th><th>Name</th><th>Multiplier</th><th>Pool-Anteil</th><th>Effektive Chance</th></tr></thead>
+                        <tbody>
+                            <tr><td>big</td><td>BIG</td><td>×1,5</td><td>65 %</td><td>6,5 %</td></tr>
+                            <tr><td>huge</td><td>HUGE</td><td>×2,0</td><td>25 %</td><td>2,5 %</td></tr>
+                            <tr><td>shiny</td><td><strong>SHINY</strong> 🌟</td><td><strong>×3,0</strong></td><td>10 %</td><td>1,0 %</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Event-Mutationen (nur während aktivem Event)</h3>
+                <p>
+                    Jedes der 10 Wetter-Events hat eine eigene Mutation. Standard-5 ×2 (zusätzlich zum
+                    Stat-Buff), Rare-5 ×3 bis ×10. In-Event-Chance ist die Wahrscheinlichkeit pro Catch
+                    während das Event läuft, "Über-alles-Chance" rechnet das mit der Slot-Häufigkeit hoch.
+                </p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Event</th><th>Mutation</th><th>Mult</th><th>in-Event-Chance</th><th>Über-alles-Chance</th></tr></thead>
+                        <tbody>
+                            <tr><td>☀ Sonniges Wetter</td><td>SUNNY</td><td>×2</td><td>20 %</td><td>~3,3 %</td></tr>
+                            <tr><td>🌧 Regenschauer</td><td>WET</td><td>×2</td><td>20 %</td><td>~3,3 %</td></tr>
+                            <tr><td>⛈ Sturm</td><td>STORMY</td><td>×2</td><td>20 %</td><td>~3,3 %</td></tr>
+                            <tr><td>🌫 Nebel</td><td>MISTY</td><td>×2</td><td>20 %</td><td>~3,3 %</td></tr>
+                            <tr><td>🌙 Nachtangeln</td><td>NOCTURNAL</td><td>×2</td><td>20 %</td><td>~3,3 %</td></tr>
+                            <tr><td>🌌 Abyss</td><td>ABYSSAL</td><td>×4</td><td>15 %</td><td>~0,63 %</td></tr>
+                            <tr><td>🌠 Polarlicht</td><td>AURORA</td><td>×3</td><td>30 %</td><td>~1,5 %</td></tr>
+                            <tr><td>🔥 Glutsturm</td><td>EMBER</td><td>×5</td><td>25 %</td><td>~0,83 %</td></tr>
+                            <tr><td>🌑 Blutmond</td><td>CRIMSON</td><td>×7</td><td>20 %</td><td>~0,5 %</td></tr>
+                            <tr><td>👻 Geistermeer</td><td><strong>HAUNTED</strong></td><td><strong>×10</strong></td><td>15 %</td><td><strong>~0,25 %</strong></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    <strong>Stacking-Beispiel:</strong> Du fängst während Geistermeer (1,7 % Slot) einen
+                    Common-Fisch (10 Coins base). Du würfelst SHINY (×3) UND HAUNTED (×10) → finaler Wert
+                    <code>10 × 3 × 10 = 300 Coins</code>. Die seltensten Catches überhaupt im Spiel.
+                </p>
+                <p>
+                    <strong>P(SHINY HAUNTED) im Detail:</strong> Pro Catch während Geistermeer 1 % × 15 % = 0,15 %.
+                    Pro 15-Catch-Window ~2,2 %. Geistermeer triggert ~0,8 mal/Tag → bei aktivem Mitgrinden
+                    aller Events erwartet man ein SHINY HAUNTED nach ~3 Wochen, 95 % nach ~170 Tagen.
+                </p>
+                <p>
+                    Implementation: <code>rollMutations(event)</code> in <code>data/mutations.js</code>
+                    wird beim Cast in <code>startFishing()</code> aufgerufen, das Ergebnis fliesst per
+                    <code>applyMutationsToCandidate</code> direkt in <code>candidate.value</code>.
+                    Anzeige als Badges (Glow für SHINY + alle Event-Mutationen) über dem Fischnamen,
+                    plus Broadcast-Push an alle Spieler bei Event-Mutationen und SHINY.
+                </p>
+            </section>
+
+            <section data-searchable id="karl">
+                <h2>Karl die Schildkröte</h2>
+                <p>
+                    Bonus-Event. Karl taucht <strong>maximal 1× pro Stunde</strong> auf, zu einer
+                    deterministisch-zufälligen Sekunde innerhalb der Stunde (global synchron).
+                    Sichtbar für 30 Sekunden — wer nicht antippt, verpasst ihn.
+                </p>
+                <pre><code>KARL_SLOT_MS = 3.600.000   // 1 Stunde
+KARL_VISIBLE_MS = 30.000   // 30 Sekunden
+appearOffset = hash(slotIndex) → zwischen 60s und (SLOT_MS − VISIBLE_MS − 60s)</code></pre>
+
+                <h3>Cleaning-Minispiel</h3>
+                <ul>
+                    <li>Karls Panzer ist mit braun-grünem Schmutz bedeckt (Karl-Silhouette als Mask).</li>
+                    <li>Spieler wischt mit Maus/Finger → destination-out Erase auf dem Canvas.</li>
+                    <li>Brush-Radius: <code>5.5 %</code> der Canvas-Breite.</li>
+                    <li>Tolerance: <strong>93 % Sauberkeit</strong> → Cleaning fertig.</li>
+                </ul>
+
+                <h3>Glücksrad-Belohnungen</h3>
+                <p>Pro Area unterschiedliche Reward-Tabelle. Gewichte = Häufigkeit:</p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Area</th><th>Belohnungen (Gewicht: Reward)</th></tr></thead>
+                        <tbody>
+                            <tr><td>Pond</td><td>30: +10 · 25: +25 · 20: +50 · 15: +100 · 7: +250 · 3: ★ Epic-Spot</td></tr>
+                            <tr><td>Lake</td><td>25: +50 · 25: +150 · 20: +400 · 15: +800 · 10: +1.500 · 5: ★ Epic-Spot</td></tr>
+                            <tr><td>Ocean</td><td>22: +200 · 22: +600 · 20: +1.500 · 15: +4.000 · 10: +10.000 · 8: ★ Epic · 3: ★ Legendary</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section data-searchable id="daily">
+                <h2>Daily Rewards</h2>
+                <p>
+                    Streak-System. Pro täglichem Login wird belohnt; ein verpasster Tag resettet
+                    den Streak. Basis lokales Datum (Spieler-Zeitzone, nicht UTC).
+                </p>
+
+                <h3>Reward-Formel</h3>
+                <pre><code>dayInWeek = ((streakDay − 1) mod 7) + 1   // 1..7
+weekNum = ceil(streakDay / 7)              // 1, 2, 3, ...
+
+dayMultipliers = [1, 1.5, 2.2, 3.2, 4.5, 6.0, 8.0]   // Tag 1..7
+
+baseCoins(week 1) = 50
+baseCoins(week 2) = 90
+baseCoins(week 3) = 140
+baseCoins(week 4+) = min(2500, 140 × 1.12^(weekNum − 3))
+
+coins = round(baseCoins × dayMultipliers[dayInWeek − 1])</code></pre>
+
+                <h3>Tag-7 Spezial</h3>
+                <ul>
+                    <li><strong>Woche 1</strong>: 1× Epic-Fischstelle</li>
+                    <li><strong>Woche 2</strong>: 2× Epic-Fischstelle</li>
+                    <li><strong>Woche 3+</strong>: 1× Legendary-Fischstelle</li>
+                </ul>
+
+                <h3>Beispiel-Werte</h3>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Tag</th><th>Woche</th><th>Coins</th><th>Spezial</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>1</td><td>50</td><td>—</td></tr>
+                            <tr><td>7</td><td>1</td><td>400</td><td>Epic-Spot</td></tr>
+                            <tr><td>14</td><td>2</td><td>720</td><td>2× Epic-Spot</td></tr>
+                            <tr><td>21</td><td>3</td><td>1.120</td><td>Legendary-Spot</td></tr>
+                            <tr><td>70</td><td>10</td><td>~2.475</td><td>Legendary-Spot</td></tr>
+                            <tr><td>105</td><td>15</td><td>~4.360</td><td>Legendary-Spot</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    Daily-Spawned Fischstellen bleiben <strong>90 Sekunden</strong> sichtbar
+                    (statt 12 s wie reguläre Force-Spawns) damit niemand seine Belohnung verpasst.
+                </p>
+            </section>
+
+            <section data-searchable id="admin">
+                <h2>Admin-Events (Live-Push)</h2>
+                <p>
+                    Admins können globale Events an alle Online-Spieler pushen. Events laufen über
+                    die Supabase-Tabelle <code>admin_game_events</code>, Auto-Expire nach 60 s.
+                </p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Event</th><th>Effekt</th></tr></thead>
+                        <tbody>
+                            <tr><td>weather-{sunny,rain,storm,fog,night,abyss,polarlicht,glutsturm,blutmond,geistermeer,clear}</td><td>Forciert das Wetter-Event</td></tr>
+                            <tr><td>spawn-fish-{small,big,sword,shark}</td><td>Spawnt einen Coin-Fisch im Tier</td></tr>
+                            <tr><td>broadcast</td><td>Eigener Text im Broadcast-Feed (max 200 Zeichen)</td></tr>
+                            <tr><td>force-spawn-{epic,legendary}</td><td>Garantierte Fischstelle dieser Rarity (12 s sichtbar)</td></tr>
+                            <tr><td>spawn-karl</td><td>Karl die Schildkröte spawnen</td></tr>
+                            <tr><td>force-reload</td><td>Alle Clients reloaden nach 1,5 s (cross-game)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section data-searchable id="prestige">
+                <h2>Prestige</h2>
+                <p>
+                    Spieler prestigen sich in die nächste Area. Cap aktuell bei <strong>Prestige 2</strong>
+                    (Ocean = letzte Area). Anker-Werte für „Du kannst jetzt prestigen":
+                </p>
+                <ul>
+                    <li>Pond → Lake: erst möglich ab <strong>24.000 Coins</strong> totalEarned</li>
+                    <li>Lake → Ocean: erst möglich ab <strong>750.000 Coins</strong> totalEarned</li>
+                </ul>
+
+                <h3>Was bleibt / wird zurückgesetzt</h3>
+                <div class="reset-grid">
+                    <div>
+                        <h4>Bleibt</h4>
+                        <ul>
+                            <li>Fish-Index (alle gefangenen Fische)</li>
+                            <li>Stats (totalCaught, bestCatchValue, bestWeightKg)</li>
+                            <li>Prestige-Zähler</li>
+                            <li>Unlocked Areas</li>
+                            <li>Daily-Streak</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Zurückgesetzt</h4>
+                        <ul>
+                            <li>Coins (auf 0)</li>
+                            <li>Alle 5 Upgrades (auf Level 0)</li>
+                            <li>Inventar (verkauft / verworfen)</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section data-searchable id="save">
+                <h2>Save-Format (game_saves Tabelle)</h2>
+                <p>Im Supabase-Save (game_id = <code>my-fishing-kaktus</code>) wird gespeichert:</p>
+                <pre><code>{
+  version: 1,
+  coins: 0,
+  currentArea: "pond",
+  unlockedAreas: ["pond"],
+  prestige: 0,
+  upgrades: { rod: 0, line: 0, hook: 0, luck: 0, sonar: 0 },  // sonar = Köder intern
+  inventory: { [fishId]: { count, totalKg, totalValue, bestKg } },
+  index: { [fishId]: { count, bestKg } },
+  stats: {
+    totalCaught: 0,
+    totalSold: 0,
+    totalCoinsEarned: 0,
+    bestCatchValue: 0,
+    bestWeightKg: 0
+  },
+  settings: { reducedMotion: false },
+  daily: {
+    streak: 0,
+    lastClaimedDay: null,    // "YYYY-MM-DD" (lokal)
+    totalClaimed: 0,
+    bestStreak: 0
+  }
+}</code></pre>
+                <p>
+                    <code>total_earned</code> Spalte in der Tabelle wird mit <code>stats.totalCaught</code>
+                    synchronisiert (für die Rangliste-Sortierung als Sekundär-Schlüssel hinter Prestige).
+                </p>
+            </section>
+        </article>
+    </main>
+
+    <footer class="wiki-footer">
+        <a href="https://kalterkaktus.de/impressum">Impressum</a>
+        <a href="https://kalterkaktus.de/datenschutz">Datenschutz</a>
+        <a href="https://kalterkaktus.de/nutzungsbedingungen">Nutzungsbedingungen</a>
+    </footer>
+    <script src="../wiki.js"></script>
+    <script type="module" src="/js/auth-nav.js"></script>
+</body>
+</html>

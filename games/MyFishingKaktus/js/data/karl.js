@@ -44,15 +44,20 @@ export const KARL_REWARDS_BY_AREA = {
 
 // Deterministischer Hash → in welcher Sekunde innerhalb des Slots taucht Karl auf?
 // Zwischen 60s und (SLOT_MS - VISIBLE_MS - 60s) damit er nie genau am Slot-Rand klemmt.
+//
+// Nutzt einen 32-bit Integer-Hash mit guten Avalanche-Eigenschaften, sodass
+// aufeinanderfolgende Stunden komplett unterschiedliche Sekunden ergeben.
+// (Die alte string-basierte djb2-Variante hatte schwache Verteilung für
+//  consecutive Integers → Karl tauchte mehrere Stunden in Folge fast zur
+//  selben Sekunde auf.)
 export function karlAppearOffsetMs(slotIndex) {
-    let h = 0;
-    const str = String(slotIndex);
-    for (let i = 0; i < str.length; i++) {
-        h = ((h << 5) - h + str.charCodeAt(i)) | 0;
-    }
+    let x = (slotIndex | 0) >>> 0;
+    x = Math.imul(x ^ (x >>> 16), 0x7feb352d);
+    x = Math.imul(x ^ (x >>> 15), 0x846ca68b);
+    x = x ^ (x >>> 16);
     const usable = KARL_SLOT_MS - KARL_VISIBLE_MS - 60_000;
     const range = usable - 60_000;
-    return 60_000 + (Math.abs(h) % range);
+    return 60_000 + ((x >>> 0) % range);
 }
 
 export function currentKarlSlot(now = Date.now()) {

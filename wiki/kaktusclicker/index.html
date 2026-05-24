@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#07120c">
-    <title>KaktusClicker Guide - KalterKaktus Wiki</title>
-    <meta
-        name="description"
-        content="Spielerguide und Progression-Guide für KaktusClicker mit Kaufregeln, Prestige-Timing und aktiver Spielstrategie."
-    >
+    <title>KaktusClicker Wiki - KalterKaktus</title>
+    <meta name="description" content="Technische Referenz zu KaktusClicker: Gebäude, Upgrades, Formeln, Prestige, Goldlauf, Abzeichen, Saison-Reset.">
     <link rel="icon" type="image/png" sizes="32x32" href="https://kalterkaktus.de/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="https://kalterkaktus.de/favicon-16x16.png">
     <link rel="stylesheet" href="https://kalterkaktus.de/styles.css">
@@ -35,323 +32,389 @@
         <aside class="wiki-rail" aria-label="Wiki Inhalte">
             <section class="rail-block">
                 <p class="rail-label">Games</p>
-                <a class="rail-link is-active" href="./">KaktusClicker Guide</a>
-                <p class="rail-note">Weitere Games und Guides können hier später einfach dazukommen.</p>
+                <a class="rail-link is-active" href="./">KaktusClicker</a>
+                <a class="rail-link" href="../myfishingkaktus/">My Fishing Kaktus</a>
             </section>
 
             <section class="rail-block toc">
                 <p class="rail-label">Inhalt</p>
-                <a href="#start">Start</a>
-                <a href="#ziel">Ziel</a>
-                <a href="#systeme">Systeme</a>
-                <a href="#mathe">Kauf-Mathe</a>
+                <a href="#overview">Übersicht</a>
+                <a href="#click">Klick-Mechanik</a>
+                <a href="#buildings">Gebäude</a>
                 <a href="#upgrades">Upgrades</a>
-                <a href="#progression">Progression</a>
-                <a href="#prestige">Prestige</a>
-                <a href="#active-play">Active Play</a>
+                <a href="#multipliers">Multiplikator-Stack</a>
+                <a href="#achievements">Abzeichen</a>
+                <a href="#frenzy">Goldlauf</a>
+                <a href="#events">Random Events</a>
+                <a href="#offline">Offline-Ertrag</a>
+                <a href="#prestige">Prestige · Nopal</a>
+                <a href="#season">Saison</a>
+                <a href="#save">Save-Format</a>
+                <a href="#tools">Tools</a>
             </section>
         </aside>
 
-        <article class="wiki-guide">
-            <header class="guide-head" id="start">
-                <p class="guide-path">Games / KaktusClicker</p>
-                <h1>KaktusClicker Spieler- und Progression-Guide</h1>
+        <article class="wiki-guide" data-wiki-searchable>
+            <header class="guide-head" id="overview">
+                <p class="guide-path">Technische Referenz</p>
+                <h1>KaktusClicker</h1>
                 <p class="guide-lead">
-                    So startest du sauber, kaufst effizient und findest ein Prestige-Timing,
-                    das deinen Monats-Run wirklich schneller macht.
+                    Mechanik-Doku für alle Systeme im Spiel: Gebäude-Werte, Upgrade-Effekte,
+                    Multiplikator-Formeln, Prestige-Mathematik und Saison-Logik.
+                    Kein Spielratgeber — nur Fakten und Formeln.
                 </p>
                 <div class="guide-meta">
-                    <span>Stand: 22.05.2026</span>
-                    <span>Aktuelle Saison-Balance</span>
+                    <span>Stand: 25.05.2026</span>
+                    <span>Saison-Balance V2</span>
                 </div>
             </header>
 
-            <section class="guide-callout">
-                <h2>Kurzfassung für den ersten Run</h2>
-                <ol>
-                    <li>Klicke aktiv. Klicks geben Startkapital, Abzeichen und spaeter Goldlauf-Ladung.</li>
-                    <li>Wenn du aktiv spielst, ist <strong>Dicke Handschuhe</strong> für 100 Kakteen ein sehr starker erster großer Kauf.</li>
-                    <li>Baue früh automatische Produktion auf. <strong>Gewächshaus</strong> ist am Anfang effizienter als lange Mini-Kaktus-Ketten.</li>
-                    <li>Kaufe nicht nur den größten Namen. Frage dich: Wie schnell bezahlt sich der Kauf zurück?</li>
-                    <li>Kaufe das x2-Upgrade eines wichtigen Gebäudes oft bei etwa 8 bis 12 Exemplaren.</li>
-                    <li>Prestige nicht blind beim ersten möglichen Nopal drücken. Mehrere Nopal fühlen sich im ersten Reset deutlich besser an.</li>
-                </ol>
-            </section>
+            <div class="wiki-search">
+                <label for="wiki-search-input" class="sr-only">In dieser Wiki suchen</label>
+                <input type="search" id="wiki-search-input" placeholder="Wiki durchsuchen… (z.B. „Nopal", „Goldlauf", „Erntedrohne")" autocomplete="off">
+                <span class="wiki-search-info" data-wiki-search-info></span>
+            </div>
 
-            <section id="ziel">
-                <h2>1. Was ist das Ziel?</h2>
+            <section data-searchable>
+                <h2>Übersicht</h2>
                 <p>
-                    KaktusClicker ist ein saisonaler Idle- und Active-Clicker. In einer Monats-Saison
-                    willst du möglichst viele Kakteen verdienen und auf der Rangliste steigen.
+                    KaktusClicker ist ein saisonaler Idle-Clicker. Manuelle Klicks und automatische
+                    Gebäude-Produktion erzeugen <em>Kakteen</em>. Saisonen laufen monatlich (Europe/Berlin),
+                    Saison-Wert ist der ranglistenrelevante <code>totalEarned</code>.
                 </p>
                 <ul>
-                    <li>Manuelle Klicks geben frühes Tempo und laden den Goldlauf.</li>
-                    <li>Gebäude erzeugen Kakteen pro Sekunde.</li>
-                    <li>Upgrades verdoppeln Klicks oder einzelne Produktionslinien.</li>
-                    <li>Abzeichen und Nopal geben globale Multiplikatoren.</li>
-                    <li>Goldkakteen, Rubinkakteen und Offline-Fortschritt ziehen Progress nach vorne.</li>
+                    <li><strong>30 Gebäude</strong> mit exponentieller Kostensteigerung.</li>
+                    <li><strong>33 Upgrades</strong> (3 Klick × 2, 30 Gebäude × 2).</li>
+                    <li><strong>20 Abzeichen</strong>, jedes gibt +0.1× globalen Multiplikator.</li>
+                    <li><strong>Nopal-Prestige</strong> mit nicht-linearer Wertkurve (Exponent 0.35).</li>
+                    <li><strong>Goldlauf</strong> via Klick-Threshold, Gold-/Rubinkaktus-Events, Offline-Ertrag.</li>
                 </ul>
-                <p>
-                    Prestige setzt deinen aktuellen Run zurück, aber dein saisonaler Wert
-                    <code>totalEarned</code> bleibt innerhalb der Saison erhalten. Am Monatsreset am
-                    01. startet die Saison neu, inklusive Run, Nopal und saisonalen Abzeichen.
-                </p>
             </section>
 
-            <section>
-                <h2>2. Der Kernloop</h2>
-                <div class="phase-grid">
-                    <div>
-                        <h3>Anfang</h3>
-                        <p>Klicks sind dein Motor. Du holst erste Klick-Upgrades und setzt deine Auto-Produktion auf.</p>
-                    </div>
-                    <div>
-                        <h3>Mitte</h3>
-                        <p>Gebäude tragen den Run. Gute x2-Upgrades und aktive Rewards kürzen Sparphasen.</p>
-                    </div>
-                    <div>
-                        <h3>Spät</h3>
-                        <p>Nopal, Abzeichen und hohe Gebäude-Tiers machen neue Runs immer schneller.</p>
-                    </div>
-                </div>
-            </section>
-
-            <section id="systeme">
-                <h2>3. Die wichtigsten Systeme</h2>
-                <h3>Gebäude</h3>
-                <p>
-                    Gebäude erzeugen automatische Kakteen. Jedes weitere Exemplar desselben Gebäudes
-                    wird um 15 Prozent teurer.
-                </p>
-                <pre><code>Preis des nächsten Gebäudes = baseCost * 1,15^(Anzahl dieses Gebäudes)</code></pre>
-
-                <h3>Klick-Upgrades</h3>
-                <p>Die drei frühen Klick-Upgrades verdoppeln deinen Klick-Ertrag:</p>
+            <section data-searchable id="click">
+                <h2>Klick-Mechanik</h2>
+                <p>Jeder manuelle Klick produziert Kakteen nach dieser Formel:</p>
+                <pre><code>clickYield = clickMultiplier × coreMultiplier</code></pre>
+                <p>Wobei:</p>
                 <ul>
-                    <li><strong>Dicke Handschuhe</strong>: 100</li>
-                    <li><strong>Weiche Handschuhe</strong>: 500</li>
-                    <li><strong>Doppelte Zange</strong>: 10.000</li>
-                </ul>
-
-                <h3>Abzeichen</h3>
-                <p>
-                    Jedes Abzeichen gibt aktuell <code>+0,1x</code> auf den globalen Multiplikator.
-                    Bei 20 Abzeichen erreichst du dadurch einen Achievement-Bonus von <code>x3,0</code>.
-                    Klick-Meilensteine sind absichtlich wichtig.
-                </p>
-
-                <h3>Goldlauf</h3>
-                <p>
-                    Nach 1.000 manuellen Klicks läuft 30 Sekunden lang der Goldlauf. Er gibt
-                    <code>x2</code> auf Klicks und automatische Produktion und stackt mit Nopal und Abzeichen.
-                    Beim Prestige wird die Balkenladung zurückgesetzt.
-                </p>
-
-                <h3>Goldkaktus, Rubinkaktus und Offline-Ertrag</h3>
-                <ul>
-                    <li><strong>Goldkaktus</strong>: sofort 5 Minuten normale Auto-Produktion.</li>
-                    <li><strong>Rubinkaktus</strong>: sofort 30 Minuten normale Auto-Produktion.</li>
-                    <li><strong>Offline-Fortschritt</strong>: ab 5 Minuten Abwesenheit, 50 Prozent normale Auto-Produktion, maximal 12 Stunden.</li>
+                    <li><code>clickMultiplier</code> = Produkt aller gekauften Klick-Upgrades (Basis 1, jeweils ×2).</li>
+                    <li><code>coreMultiplier</code> = <code>prestigeMultiplier × achievementMultiplier × eventMultiplier</code> (siehe unten).</li>
                 </ul>
                 <p>
-                    Gold- und Rubinkaktus nutzen Upgrades, Nopal und Abzeichen. Der aktive Goldlauf
-                    verdoppelt ihren Sofort-Reward aktuell nicht noch einmal.
+                    Basis-Klick (keine Upgrades, kein Prestige, keine Abzeichen, kein Goldlauf) = <strong>1 Kaktus</strong>.
                 </p>
             </section>
 
-            <section id="mathe">
-                <h2>4. Die Mathematik hinter guten Käufen</h2>
+            <section data-searchable id="buildings">
+                <h2>Gebäude</h2>
+                <p>Jedes Gebäude erzeugt automatisch Kakteen pro Sekunde (CPS).</p>
+                <pre><code>kaufPreis = ceil(baseCost × 1.15^owned)</code></pre>
                 <p>
-                    Der wichtigste Effizienzbegriff ist die Payback-Zeit: Wie viele Sekunden braucht
-                    der Kauf, um seine eigenen Kosten wieder zu produzieren?
-                </p>
-                <pre><code>Payback-Zeit = aktueller Kaufpreis / zusätzliche Kakteen pro Sekunde</code></pre>
-                <p>
-                    Je kleiner die Zahl ist, desto effizienter ist der Kauf. Ein Kauf für 12.000,
-                    der 47 Kakteen pro Sekunde bringt, bezahlt sich in rund 255 Sekunden zurück.
+                    Die Preissteigerung von <strong>15 %</strong> pro besessenem Exemplar ist
+                    der Hauptbremser. Ein Gebäude wird mit jedem Kauf merklich teurer; ab ca. 12-15
+                    Exemplaren ist es signifikant über dem Basispreis.
                 </p>
 
-                <h3>Frühe Gebäude beim ersten Kauf</h3>
+                <h3>Alle 30 Gebäude</h3>
                 <div class="table-wrap">
-                    <table>
+                    <table class="wiki-table">
                         <thead>
-                            <tr>
-                                <th>Gebäude</th>
-                                <th>Kosten</th>
-                                <th>CPS</th>
-                                <th>Payback</th>
-                            </tr>
+                            <tr><th>#</th><th>Name</th><th>Base-Kosten</th><th>CPS</th><th>Payback @ owned=0</th></tr>
                         </thead>
                         <tbody>
-                            <tr><td>Gewächshaus</td><td>100</td><td>1</td><td>ca. 100 Sek.</td></tr>
-                            <tr><td>Kaktus-Ranch</td><td>1.100</td><td>8</td><td>ca. 138 Sek.</td></tr>
-                            <tr><td>Mini-Kaktus</td><td>15</td><td>0,1</td><td>ca. 150 Sek.</td></tr>
-                            <tr><td>Oasenpumpe</td><td>12.000</td><td>47</td><td>ca. 255 Sek.</td></tr>
-                            <tr><td>Stachelwerk</td><td>130.000</td><td>260</td><td>ca. 500 Sek.</td></tr>
-                            <tr><td>Erntedrohne</td><td>1,4 Mio.</td><td>1.400</td><td>ca. 1.000 Sek.</td></tr>
+                            <tr><td>1</td><td>Mini-Kaktus</td><td>15</td><td>0,1</td><td>150 s</td></tr>
+                            <tr><td>2</td><td>Gewächshaus</td><td>100</td><td>1</td><td>100 s</td></tr>
+                            <tr><td>3</td><td>Kaktus-Ranch</td><td>1.100</td><td>8</td><td>138 s</td></tr>
+                            <tr><td>4</td><td>Oasenpumpe</td><td>12.000</td><td>47</td><td>255 s</td></tr>
+                            <tr><td>5</td><td>Stachelwerk</td><td>130.000</td><td>260</td><td>500 s</td></tr>
+                            <tr><td>6</td><td>Erntedrohne</td><td>1,4 Mio</td><td>1.400</td><td>1.000 s</td></tr>
+                            <tr><td>7</td><td>Kaktuslabor</td><td>20 Mio</td><td>7.800</td><td>2.564 s</td></tr>
+                            <tr><td>8</td><td>Wüstenserver</td><td>330 Mio</td><td>44.000</td><td>7.500 s</td></tr>
+                            <tr><td>9</td><td>Orbit-Gewächshaus</td><td>5,1 Mrd</td><td>260.000</td><td>19.615 s</td></tr>
+                            <tr><td>10</td><td>Monsun-Rig</td><td>75 Mrd</td><td>1,6 Mio</td><td>46.875 s</td></tr>
+                            <tr><td>11</td><td>Canyon-Raffinerie</td><td>1 Bio</td><td>10 Mio</td><td>100.000 s</td></tr>
+                            <tr><td>12</td><td>Plasma-Bewässerung</td><td>14 Bio</td><td>65 Mio</td><td>215.384 s</td></tr>
+                            <tr><td>13</td><td>Mondgärtnerei</td><td>170 Bio</td><td>420 Mio</td><td>404.761 s</td></tr>
+                            <tr><td>14</td><td>Asteroiden-Hacienda</td><td>2,1 Brd</td><td>2,8 Mrd</td><td>750.000 s</td></tr>
+                            <tr><td>15</td><td>Solarsilo</td><td>26 Brd</td><td>18 Mrd</td><td>1,44 Mio s</td></tr>
+                            <tr><td>16</td><td>Quantenstachel</td><td>310 Brd</td><td>120 Mrd</td><td>2,58 Mio s</td></tr>
+                            <tr><td>17</td><td>Nebula-Pipeline</td><td>3,7 Bio Bio</td><td>790 Mrd</td><td>4,68 Mio s</td></tr>
+                            <tr><td>18</td><td>Rissgarten</td><td>44 Bio Bio</td><td>5,2 Bio</td><td>8,46 Mio s</td></tr>
+                            <tr><td>19</td><td>Prisma-Gießerei</td><td>520 Bio Bio</td><td>34 Bio</td><td>15,29 Mio s</td></tr>
+                            <tr><td>20</td><td>Void-Terrasse</td><td>6,2 Brd Bio</td><td>220 Bio</td><td>28,18 Mio s</td></tr>
+                            <tr><td>21</td><td>Sternwebstuhl</td><td>74 Brd Bio</td><td>1,45 Brd</td><td>51,03 Mio s</td></tr>
+                            <tr><td>22</td><td>Dornenreaktor</td><td>890 Brd Bio</td><td>9,6 Brd</td><td>92,7 Mio s</td></tr>
+                            <tr><td>23</td><td>Chrono-Orchard</td><td>1.07e25</td><td>6.3e16</td><td>169,8 Mio s</td></tr>
+                            <tr><td>24</td><td>Singularitätsgarten</td><td>1.28e26</td><td>4.2e17</td><td>304,7 Mio s</td></tr>
+                            <tr><td>25</td><td>Galaxie-Tresor</td><td>1.54e27</td><td>2.8e18</td><td>550 Mio s</td></tr>
+                            <tr><td>26</td><td>Mythische Wüste</td><td>1.85e28</td><td>1.85e19</td><td>1,0 Mrd s</td></tr>
+                            <tr><td>27</td><td>Kaktus-Matrix</td><td>2.22e29</td><td>1.22e20</td><td>1,8 Mrd s</td></tr>
+                            <tr><td>28</td><td>Nopal-Arche</td><td>2.66e30</td><td>8.1e20</td><td>3,3 Mrd s</td></tr>
+                            <tr><td>29</td><td>Kosmische Wurzel</td><td>3.19e31</td><td>5.4e21</td><td>5,9 Mrd s</td></tr>
+                            <tr><td>30</td><td>Endlosblüte</td><td>3.83e32</td><td>3.6e22</td><td>10,6 Mrd s</td></tr>
                         </tbody>
                     </table>
                 </div>
                 <p>
-                    Das Gewächshaus ist deshalb ein sauberer Startanker. Höhere Gebäude bleiben
-                    trotzdem wichtig, weil sie viel größere absolute Produktionssprünge freischalten.
+                    Payback ist die Sekunden bis sich der Erstkauf refinanziert hat
+                    (<code>baseCost / CPS</code>), ohne Multiplikatoren. Nach Multiplikatoren
+                    werden alle Werte gleich skaliert.
                 </p>
-                <div class="wiki-rule">
-                    <strong>Sparregel:</strong>
-                    Ist ein starkes neues Gebäude nur etwa 1 bis 3 Minuten entfernt, darfst du sparen.
-                    Dauert es deutlich länger, suche zuerst nach günstigen ROI-Käufen oder Upgrades.
-                </div>
             </section>
 
-            <section id="upgrades">
-                <h2>5. Welche Upgrades wann kaufen?</h2>
+            <section data-searchable id="upgrades">
+                <h2>Upgrades</h2>
                 <h3>Klick-Upgrades</h3>
-                <div class="upgrade-list">
-                    <div>
-                        <h4>Dicke Handschuhe</h4>
-                        <p>Sehr früh kaufen, wenn du aktiv klickst. Der grobe Break-even liegt bei 100 zusätzlichen Klicks.</p>
-                    </div>
-                    <div>
-                        <h4>Weiche Handschuhe</h4>
-                        <p>Früh gut, wenn du weiter manuell grindest. Der grobe Break-even liegt bei 250 zusätzlichen Klicks.</p>
-                    </div>
-                    <div>
-                        <h4>Doppelte Zange</h4>
-                        <p>Gut für aktive Runs und Klick-Abzeichen. Der grobe Break-even liegt bei 2.500 zusätzlichen Klicks.</p>
-                    </div>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Name</th><th>Kosten</th><th>Effekt</th></tr></thead>
+                        <tbody>
+                            <tr><td>Dicke Handschuhe</td><td>100</td><td>Klick × 2</td></tr>
+                            <tr><td>Weiche Handschuhe</td><td>500</td><td>Klick × 2</td></tr>
+                            <tr><td>Doppelte Zange</td><td>10.000</td><td>Klick × 2</td></tr>
+                        </tbody>
+                    </table>
                 </div>
+                <p>Alle 3 zusammen = <code>2 × 2 × 2 = 8×</code> Klick-Multiplikator.</p>
 
-                <h3>Gebäude-x2-Upgrades</h3>
-                <pre><code>Zusatz-CPS durch x2-Upgrade = aktuelle CPS dieses Gebäudetyps
-Payback = Upgrade-Kosten / Zusatz-CPS</code></pre>
-                <ul>
-                    <li>Bei etwa 8 bis 12 Exemplaren wird das x2-Upgrade eines wichtigen Gebäudes oft attraktiv.</li>
-                    <li>Kaufe früher, wenn dieser Gebäudetyp gerade den Großteil deiner Produktion trägt.</li>
-                    <li>Verschiebe es, wenn das Gebäude kaum noch Anteil hat und ein höheres Tier klar stärker ist.</li>
-                </ul>
-            </section>
-
-            <section id="progression">
-                <h2>6. Progression-Fahrplan</h2>
-                <div class="roadmap">
-                    <section>
-                        <h3>Phase A: Start bis ca. 10.000</h3>
-                        <ol>
-                            <li>Auf 100 klicken und Dicke Handschuhe kaufen.</li>
-                            <li>Frühe Produktion vor allem mit Gewächshaus aufbauen.</li>
-                            <li>Mini-Kaktus als Bruecke mitnehmen, aber nicht darin versinken.</li>
-                            <li>Weiche Handschuhe kaufen, wenn du weiter aktiv klickst.</li>
-                            <li>Erste Gewächshäuser und Ranches so kaufen, dass die Produktion nicht stehen bleibt.</li>
-                        </ol>
-                    </section>
-                    <section>
-                        <h3>Phase B: 10.000 bis ca. 1 Mio.</h3>
-                        <ul>
-                            <li>Doppelte Zange bei aktivem Spiel kaufen.</li>
-                            <li>Oasenpumpe und Stachelwerk erschließen.</li>
-                            <li>Das x2-Upgrade deiner Hauptproduktion mitnehmen.</li>
-                            <li>Klick- und Ernte-Abzeichen nicht ignorieren.</li>
-                        </ul>
-                    </section>
-                    <section>
-                        <h3>Phase C: Erste Prestiges</h3>
-                        <ul>
-                            <li>1 Nopal ist möglich, aber nicht automatisch der beste Reset.</li>
-                            <li>Ein erster Reset mit etwa 3 bis 6 Nopal fühlt sich oft deutlich besser an.</li>
-                            <li>Prestige ist gut, wenn Wiederaufbauzeit gegen Multiplikator-Gewinn passt.</li>
-                        </ul>
-                    </section>
-                    <section>
-                        <h3>Phase D: Millionen bis Milliarden</h3>
-                        <ul>
-                            <li>Erntedrohne, Kaktuslabor, Wüstenserver und Orbit-Gewächshaus tragen neue Sprünge.</li>
-                            <li>Gold- und Rubinkakteen werden wertvoller, je stärker deine Auto-Produktion ist.</li>
-                            <li>Prestige bricht lange Sparwände, nicht gerade laufende starke Sprünge.</li>
-                        </ul>
-                    </section>
-                </div>
-            </section>
-
-            <section id="prestige">
-                <h2>7. Prestige-Guide</h2>
+                <h3>Gebäude-Multiplikator-Upgrades</h3>
                 <p>
-                    Nopal basiert auf deinem insgesamt verdienten Saisonwert, nicht auf dem aktuellen Kontostand.
+                    Jedes der 30 Gebäude hat ein zugehöriges Upgrade mit Effekt <strong>× 2</strong>
+                    auf die CPS dieses Gebäudes. Kosten sind unterschiedlich verteilt:
                 </p>
-                <pre><code>verfügbarer Nopal-Gesamtwert = floor((totalEarned / 100.000)^0,35)
-neuer Nopal = verfügbarer Nopal-Gesamtwert - bereits verdienter Nopal
-Prestige-Multiplikator = 1 + Nopal^0,6 * 0,15</code></pre>
+                <ul>
+                    <li><strong>Gebäude 1-9</strong>: Hardcoded-Kosten (10× baseCost-Korridor).</li>
+                    <li><strong>Gebäude 10-30</strong>: <code>ceil(baseCost × (9 + (index % 4)))</code> — variiert leicht je nach Position.</li>
+                </ul>
+                <pre><code>buildingEffectiveCps = baseCps × Produkt(buildingMultiplier-Upgrades)</code></pre>
+                <p>
+                    Mehrere Upgrades für dasselbe Gebäude stacken multiplikativ — aber aktuell gibt
+                    es nur <strong>genau 1 Upgrade pro Gebäude</strong> (max ×2).
+                </p>
+            </section>
 
-                <h3>Nopal-Meilensteine</h3>
-                <div class="milestone-grid">
-                    <div><strong>1 Nopal</strong><span>100.000 totalEarned</span><em>x1,15</em></div>
-                    <div><strong>3 Nopal</strong><span>2,31 Mio.</span><em>x1,29</em></div>
-                    <div><strong>6 Nopal</strong><span>16,72 Mio.</span><em>x1,44</em></div>
-                    <div><strong>10 Nopal</strong><span>71,97 Mio.</span><em>x1,60</em></div>
-                    <div><strong>25 Nopal</strong><span>986,54 Mio.</span><em>x2,03</em></div>
-                    <div><strong>50 Nopal</strong><span>7,15 Mrd.</span><em>x2,57</em></div>
-                    <div><strong>100 Nopal</strong><span>51,79 Mrd.</span><em>x3,38</em></div>
-                    <div><strong>1.000 Nopal</strong><span>37,28 Bio.</span><em>x10,46</em></div>
+            <section data-searchable id="multipliers">
+                <h2>Multiplikator-Stack</h2>
+                <p>Die effektive Produktion und der Klick-Yield berechnen sich so:</p>
+                <pre><code>coreMultiplier = prestigeMultiplier × achievementMultiplier × eventMultiplier
+
+automatischeProduktion = Σ(building.cps × owned × buildingMultiplier)
+                        × productionMultiplier
+                        × coreMultiplier
+
+klickYield = clickMultiplier × coreMultiplier</code></pre>
+                <p>
+                    Aktuell gibt es keine Upgrades mit <code>productionMultiplier</code> — der ist
+                    immer 1. Hinzukommen können sie ohne Code-Änderung.
+                </p>
+            </section>
+
+            <section data-searchable id="achievements">
+                <h2>Abzeichen</h2>
+                <p>
+                    Jedes freigeschaltete Abzeichen erhöht den <code>achievementMultiplier</code> um
+                    <strong>+0,1</strong>. Mit allen 20 Abzeichen: <code>1 + 20 × 0,1 = ×3,0</code>.
+                </p>
+                <pre><code>achievementMultiplier = 1 + freigeschalteteAbzeichen × 0.1</code></pre>
+
+                <h3>Alle 20 Abzeichen</h3>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Name</th><th>Bedingung</th></tr></thead>
+                        <tbody>
+                            <tr><td>Erster Stich</td><td>≥ 1 manueller Klick</td></tr>
+                            <tr><td>Klickroutine</td><td>≥ 100 manuelle Klicks</td></tr>
+                            <tr><td>Goldfinger</td><td>≥ 1.000 manuelle Klicks</td></tr>
+                            <tr><td>Handarbeit</td><td>≥ 5.000 manuelle Klicks</td></tr>
+                            <tr><td>Dornenmaschine</td><td>≥ 25.000 manuelle Klicks</td></tr>
+                            <tr><td>Klicklegende</td><td>≥ 100.000 manuelle Klicks</td></tr>
+                            <tr><td>Kleiner Garten</td><td>≥ 100 totalEarned</td></tr>
+                            <tr><td>Grüne Welle</td><td>≥ 1.000 totalEarned</td></tr>
+                            <tr><td>Millionenernte</td><td>≥ 1 Mio totalEarned</td></tr>
+                            <tr><td>Milliardenfeld</td><td>≥ 1 Mrd totalEarned</td></tr>
+                            <tr><td>Billionenblüte</td><td>≥ 1 Bio totalEarned</td></tr>
+                            <tr><td>Trillionenwüste</td><td>≥ 1 Trio totalEarned</td></tr>
+                            <tr><td>Quintillionengrün</td><td>≥ 1 Quinto totalEarned</td></tr>
+                            <tr><td>Erste Nopal-Ernte</td><td>≥ 1 Prestige</td></tr>
+                            <tr><td>Nopal-Puffer</td><td>≥ 10 Nopal-Gesamtwert</td></tr>
+                            <tr><td>Saisonschleife</td><td>≥ 10 Prestiges</td></tr>
+                            <tr><td>Goldener Lauf</td><td>≥ 1 Goldlauf ausgelöst</td></tr>
+                            <tr><td>Goldkaktus</td><td>≥ 1 Goldkaktus gefangen</td></tr>
+                            <tr><td>Goldjäger</td><td>≥ 10 Goldkakteen</td></tr>
+                            <tr><td>Rubinkaktus</td><td>≥ 1 Rubinkaktus</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section data-searchable id="frenzy">
+                <h2>Goldlauf (Klick-Frenzy)</h2>
+                <p>
+                    Goldlauf wird ausgelöst sobald der Klick-Charge-Balken voll ist. Er gilt für
+                    <strong>30 Sekunden</strong> und vergibt einen <code>×2</code> Multiplikator auf
+                    sowohl Klicks als auch automatische Produktion (Event-Multiplikator).
+                </p>
+                <pre><code>frenzyMultiplier = 2 (während Goldlauf aktiv)
+clickChargeThreshold = 1.000 manuelle Klicks</code></pre>
+                <p>
+                    Der Klick-Charge-Balken wird beim Prestige zurückgesetzt. Multiple Goldläufe
+                    pro Run sind erreichbar — nach jedem Auslösen lädt der Balken wieder bei 0 los.
+                </p>
+            </section>
+
+            <section data-searchable id="events">
+                <h2>Random Events: Gold-/Rubinkaktus</h2>
+                <p>
+                    Während der Spieler aktiv ist (Tab sichtbar) können Goldkakteen oder Rubinkakteen
+                    zufällig erscheinen. Beim Antippen geben sie sofort die aktuelle Auto-Produktion
+                    für eine bestimmte Zeit als Einmal-Reward.
+                </p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Event</th><th>Sichtbar</th><th>Reward (× CPS)</th></tr></thead>
+                        <tbody>
+                            <tr><td>Goldkaktus</td><td>5 s</td><td>5 Minuten Auto-Produktion (= 300 × CPS)</td></tr>
+                            <tr><td>Rubinkaktus</td><td>5 s</td><td>30 Minuten Auto-Produktion (= 1.800 × CPS)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    Reward nutzt <code>getAutomaticProduction({ includeEvent: false })</code>, d.h. der
+                    aktuell laufende Goldlauf wird beim Sofort-Reward <strong>nicht</strong> nochmal
+                    multipliziert (würde sonst overpower werden).
+                </p>
+            </section>
+
+            <section data-searchable id="offline">
+                <h2>Offline-Ertrag</h2>
+                <p>
+                    Wenn der Spieler den Tab schließt und später zurückkommt, wird ihm ein Teil
+                    der Offline-Zeit als Auto-Produktion gutgeschrieben:
+                </p>
+                <ul>
+                    <li>Minimum Offline-Zeit: <strong>5 Minuten</strong> (kürzere Pausen geben nichts).</li>
+                    <li>Rate: <strong>50 %</strong> der normalen Auto-Produktion (ohne Event-Multiplier).</li>
+                    <li>Maximum: <strong>12 Stunden</strong> (alles darüber wird ignoriert).</li>
+                </ul>
+                <pre><code>offlineErtrag = min(12h, max(0, offlineZeit − 5min))
+              × getAutomaticProduction({ includeEvent: false })
+              × 0.5</code></pre>
+            </section>
+
+            <section data-searchable id="prestige">
+                <h2>Prestige · Nopal</h2>
+                <p>
+                    Prestige startet den aktuellen Run neu, lässt aber Nopal-Punkte als permanente
+                    Saison-Boni stehen. Nopal-Werte basieren auf dem <code>totalEarned</code> der
+                    laufenden Saison (nicht dem aktuellen Kontostand).
+                </p>
+
+                <h3>Verfügbarer Nopal</h3>
+                <pre><code>verfügbarerNopalGesamtwert = floor((totalEarned / 100.000) ^ 0.35)
+neuerNopal = verfügbarerNopalGesamtwert − bereitsErarbeiteterNopal</code></pre>
+                <p>
+                    Die <strong>0.35-Exponent</strong>-Kurve macht hohe Nopal-Werte exponentiell
+                    teurer. Du brauchst <code>(n)^(1/0.35) × 100.000</code> totalEarned für n Nopal.
+                </p>
+
+                <h3>Prestige-Multiplikator</h3>
+                <pre><code>prestigeMultiplier = 1 + nopal^0.6 × 0.15</code></pre>
+                <p>
+                    Mit jedem zusätzlichen Nopal steigt der Multiplikator immer flacher (Exponent 0.6).
+                </p>
+
+                <h3>Beispiel-Werte</h3>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Nopal</th><th>Benötigtes totalEarned</th><th>Multiplikator</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>100.000</td><td>×1,15</td></tr>
+                            <tr><td>3</td><td>2,31 Mio</td><td>×1,29</td></tr>
+                            <tr><td>6</td><td>16,72 Mio</td><td>×1,44</td></tr>
+                            <tr><td>10</td><td>71,97 Mio</td><td>×1,60</td></tr>
+                            <tr><td>25</td><td>986,54 Mio</td><td>×2,03</td></tr>
+                            <tr><td>50</td><td>7,15 Mrd</td><td>×2,57</td></tr>
+                            <tr><td>100</td><td>51,79 Mrd</td><td>×3,38</td></tr>
+                            <tr><td>1.000</td><td>37,28 Bio</td><td>×10,46</td></tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <h3>Was bleibt bei Prestige?</h3>
+                <h3>Was bleibt / wird zurückgesetzt</h3>
                 <div class="reset-grid">
                     <div>
                         <h4>Bleibt</h4>
                         <ul>
-                            <li>Nopal</li>
-                            <li>Abzeichen der laufenden Saison</li>
+                            <li>Nopal-Punkte</li>
+                            <li>Abzeichen (laufende Saison)</li>
                             <li><code>totalEarned</code></li>
                             <li><code>totalClicks</code></li>
                             <li>Prestige-Zähler</li>
+                            <li>Event-Zähler (goldenHits, redHits, frenzies)</li>
                         </ul>
                     </div>
                     <div>
-                        <h4>Wird zurückgesetzt</h4>
+                        <h4>Zurückgesetzt</h4>
                         <ul>
-                            <li>aktueller Kakteen-Kontostand</li>
-                            <li>Gebäude</li>
-                            <li>normale Upgrades</li>
-                            <li>Goldlauf-Ladung</li>
-                            <li>aktiver Goldlauf</li>
+                            <li>Kakteen-Kontostand</li>
+                            <li>Alle Gebäude (auf 0)</li>
+                            <li>Alle gekauften Upgrades</li>
+                            <li>Klick-Charge-Balken</li>
+                            <li>Aktiver Goldlauf</li>
                         </ul>
                     </div>
                 </div>
             </section>
 
-            <section id="active-play">
-                <h2>8. Active Play und typische Fehler</h2>
+            <section data-searchable id="season">
+                <h2>Saison</h2>
                 <p>
-                    Klicken bleibt stark, weil es Klick-Abzeichen, Goldlauf-Ladung und Tempo direkt
-                    nach Prestige liefert. Wenn ein Goldkaktus oder Rubinkaktus erscheint, fange ihn.
+                    Saisonen laufen monatlich nach <strong>Europe/Berlin</strong>-Zeit. Saison-ID ist
+                    <code>YYYY-MM</code>. Beim Übergang am 1. eines Monats wird der Spielstand komplett
+                    neu initialisiert, die Top 3 der vorherigen Saison werden archiviert und unten in
+                    der Rangliste angezeigt.
                 </p>
-                <div class="mistake-list">
-                    <div>
-                        <h3>Zu lange sparen</h3>
-                        <p>Ein großer Name bringt nichts, wenn deine Produktion vorher minutenlang fast stillsteht.</p>
-                    </div>
-                    <div>
-                        <h3>Upgrades vergessen</h3>
-                        <p>Ein gutes x2-Upgrade auf deine Hauptproduktion kann mehrere mittelmäßige Käufe schlagen.</p>
-                    </div>
-                    <div>
-                        <h3>Prestige aus Reflex</h3>
-                        <p>Der Button ist nicht automatisch optimal, nur weil er leuchtet. Reset kostet Wiederaufbauzeit.</p>
-                    </div>
-                    <div>
-                        <h3>Abzeichen ignorieren</h3>
-                        <p>Alle 20 Abzeichen zusammen machen einen globalen Multiplikator von x3,0 möglich.</p>
-                    </div>
-                </div>
+                <ul>
+                    <li>Ranking-Wert: <code>totalEarned</code> der laufenden Saison.</li>
+                    <li>Cloud-Save wird mit <code>season_id</code> getaggt.</li>
+                    <li>Push aus alter Saison schlägt fehl — das Spiel resettet automatisch.</li>
+                </ul>
             </section>
 
-            <section class="guide-callout end-card">
-                <h2>Mini-Spickzettel</h2>
+            <section data-searchable id="save">
+                <h2>Save-Format (game_saves Tabelle)</h2>
+                <p>Im Supabase-Save (game_id = <code>kaktus-clicker</code>) wird gespeichert:</p>
+                <pre><code>{
+  version: 2,
+  season: { id: "2026-05" },
+  cactus: 0,                  // aktueller Kakteen-Kontostand
+  totalEarned: 0,             // saison-totaler Wert (Rangliste)
+  totalClicks: 0,             // saison-totaler Klick-Zähler
+  buildings: { seedling: 5, greenhouse: 3, ... },  // owned per id
+  upgrades: ["gloves", ...],  // bought upgrade ids
+  achievements: ["first-click", ...],
+  prestige: { nopal: 0, totalNopalEarned: 0, prestiges: 0 },
+  events: {
+    clickCharge: 0,           // 0..1000
+    frenzyUntil: 0,           // timestamp
+    frenzies: 0,
+    goldenHits: 0,
+    redHits: 0,
+    nextGoldenAt: 0,
+    nextRedAt: 0,
+  },
+  lastOnlineTimestamp: 0,
+  lastSavedAt: 0
+}</code></pre>
+            </section>
+
+            <section data-searchable id="tools">
+                <h2>Tools</h2>
                 <p>
-                    Früh: klicken, Dicke Handschuhe, Gewächshaus. Mitte: Hauptproduktion verdoppeln,
-                    Abzeichen farmen, Goldlauf und Kaktus-Rewards mitnehmen. Spät: hohe Tiers öffnen,
-                    lange Sparwände mit gutem Prestige brechen und den Monatsreset im Blick behalten.
+                    Der <a href="../#optimizer-root">Kauf-Optimizer</a> (am Ende der
+                    <a href="../">Wiki-Startseite</a>) liest deinen Cloud-Save (read-only) und berechnet
+                    die nächsten 10 ROI-optimalen Käufe.
                 </p>
-                <a href="https://kalterkaktus.de/games/KaktusClicker/">KaktusClicker starten</a>
             </section>
         </article>
     </main>
@@ -362,5 +425,6 @@ Prestige-Multiplikator = 1 + Nopal^0,6 * 0,15</code></pre>
         <a href="https://kalterkaktus.de/nutzungsbedingungen">Nutzungsbedingungen</a>
     </footer>
     <script src="../wiki.js"></script>
+    <script type="module" src="/js/auth-nav.js"></script>
 </body>
 </html>

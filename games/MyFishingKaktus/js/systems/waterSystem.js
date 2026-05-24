@@ -84,6 +84,21 @@ const PRESETS = {
         waterDistortion: 0.28,
         idleSplashes: false,
     },
+    // Abyss: tiefer als deepsea, sehr langsam, fast kein Licht — fühlt sich
+    // an wie ein bottomless trench. Visuell zusätzlich Night-Veil + Neon-Partikel.
+    abyss: {
+        waveIntensity: 0.42,
+        rippleStrength: 0.85,
+        stormMultiplier: 0.55,
+        waterSpeed: 0.35,
+        waveSize: 1.4,
+        glowIntensity: 1.6,
+        particleDensity: 1.8,
+        lightRayIntensity: 0.08,
+        shimmerStrength: 0.45,
+        waterDistortion: 0.08,
+        idleSplashes: false,
+    },
 };
 
 const VERTEX_SRC = `

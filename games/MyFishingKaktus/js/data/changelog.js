@@ -1,5 +1,42 @@
 export const FISHING_CHANGELOG = [
     {
+        date: "25.05.2026",
+        title: "🌦🧬 Großes Wetter- & Mutationen-Update",
+        items: [
+            "5 neue Wetter-Events: 🌌 Abyss (Epic+ ×2 Spawn-Chance + Neon-Partikel), 🌠 Polarlicht (grün-violette Lichtschleier), 🔥 Glutsturm (orange Glut-Funken über aufgewühlter See), 🌑 Blutmond (tiefroter Schleier + Blut-Tropfen), 👻 Geistermeer (cyan Geister-Wisps + dichter Nebel).",
+            "Wetter-System läuft jetzt mit gewichteten Wahrscheinlichkeiten — Geistermeer ist mit 1,7 % pro Slot das seltenste Event im Spiel.",
+            "Mutationen-System: jeder Fang würfelt unabhängig auf Standard-Mutation (10 %) und Event-Mutation (während Wetter aktiv).",
+            "Standard-Pool: BIG ×1,5 · HUGE ×2 · SHINY ×3 (mit Glow).",
+            "Event-Mutationen Standard (20 % in-Event, parallel zum Stat-Buff): ☀ SUNNY · 🌧 WET · ⛈ STORMY · 🌫 MISTY · 🌙 NOCTURNAL — alle ×2.",
+            "Event-Mutationen Rare (mit Glow): 🌌 ABYSSAL ×4 · 🌠 AURORA ×3 · 🔥 EMBER ×5 · 🌑 CRIMSON ×7 · 👻 HAUNTED ×10.",
+            "Mutationen stacken multiplikativ: SHINY HAUNTED Common 10-Coin = 10 × 3 × 10 = 300 Coins. P(SHINY HAUNTED) pro Catch in Geistermeer: 0,15 %.",
+            "Catch-Popup zeigt Mutation-Badges mit Glow + Recolor. Event-Mutationen und SHINY pingen alle Spieler im Broadcast.",
+            "Inventar: pro Fisch farbige Mutation-Chips mit Multiplier + Fang-Count — auf einen Blick sichtbar wieviele HAUNTED-Karpfen du schon hast.",
+            "Wetter-Slots auf 15 min reduziert (vorher 30), aktive Phase auf 2,5 min (vorher 5) — doppelt so viel Wechsel + Abwechslung, gleicher Zeit-Anteil event-aktiv (16,7 %).",
+        ],
+    },
+    {
+        date: "25.05.2026",
+        title: "⚖ Balance & Tab-Fix: Ausreissen aggressiver, keine Wartespiele mehr",
+        items: [
+            "Hintergrund-Tab-Fix: Fisch-Spots warten nicht mehr auf dich. Wenn der Tab inaktiv war, werden Spots die längst hätten ablaufen müssen sauber weggeräumt — kein Stapel von 3 Fischen mehr beim Zurückkommen.",
+            "Tension-Drain deutlich aggressiver: Common reisst jetzt in 6 s aus (vorher 10 s), Legendary in 2,4 s (vorher 3 s) — ohne Upgrades spürst du den Druck.",
+            "Schnur-Upgrade dafür stärker: 12 % statt 11 % Drain-Reduktion pro Level → bei Maxlevel bleiben nur noch 40 % Drain übrig (Common 15 s, Legendary 6 s).",
+            "Refill bleibt unverändert (0.36/s, ×2,75 bei Hook Lvl 5) — schnelle Reaktion in der Zone rettet dich weiter.",
+        ],
+    },
+    {
+        date: "25.05.2026",
+        title: "Angel-Redesign V2",
+        items: [
+            "Komplett überarbeitete Angel-Optik mit klarem Charakter pro Area:",
+            "Pond — klassischer Angler: glatte Holzrute, Kork-Griff, Spinning-Reel, J-Hook, Spinner-Köder.",
+            "Lake — mystischer Wald: Driftwood-Rute mit Knoten und Ästen, Leder-Wickel, Fly-Reel, Widerhaken-Hook, Feder-Fly mit schwebenden Blättern.",
+            "Ocean — industrieller Tiefseejäger: Tactical-Rute mit Bandagen und Notches, Rubber-Grip, boxy Baitcaster, Drilling-Hook, Lead-Jig mit Skirt und Bubbles.",
+            "Jedes Upgrade-Level ändert sichtbar Farbe, Details und Glow — vom matten Holz bis zur Maxlevel-Gold-Variante.",
+        ],
+    },
+    {
         date: "24.05.2026",
         title: "Neue Angel-UI",
         items: [

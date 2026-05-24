@@ -3,3 +3,9 @@
 
 # Lokale Original-Audiodatei; die Website nutzt die komprimierte 96k-Version.
 games/MyFishingKaktus/assets/audio/meditation-music-4.mp3
+
+# Dev-Tools — dürfen NIE auf kalterkaktus.de landen.
+# Alles mit .dev.js Suffix oder unter _dev/ wird ignoriert.
+**/*.dev.js
+**/_dev/
+games/MyFishingKaktus/js/systems/devPanel.js

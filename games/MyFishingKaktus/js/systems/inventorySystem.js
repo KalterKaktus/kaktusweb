@@ -11,16 +11,30 @@ export function addCatch(state, candidate) {
         totalKg: 0,
         totalValue: 0,
         bestKg: 0,
+        mutations: {},
     };
     inventoryEntry.count += 1;
     inventoryEntry.totalKg += candidate.kg;
     inventoryEntry.totalValue += candidate.value;
     inventoryEntry.bestKg = Math.max(inventoryEntry.bestKg, candidate.kg);
+    // Mutationen pro Fisch zählen (z.B. {shiny: 3, haunted: 1}). Wird im Inventar
+    // als farbige Multiplier-Chip angezeigt und überlebt Sell-All nicht (Mutationen
+    // sind an die einzelnen Fänge gebunden — Sell wirft alles inkl. Mutation-Counts weg).
+    if (!inventoryEntry.mutations) inventoryEntry.mutations = {};
+    for (const mutId of (candidate.mutations || [])) {
+        inventoryEntry.mutations[mutId] = (inventoryEntry.mutations[mutId] || 0) + 1;
+    }
     state.inventory[fish.id] = inventoryEntry;
 
-    const indexEntry = state.index[fish.id] || { count: 0, bestKg: 0 };
+    const indexEntry = state.index[fish.id] || { count: 0, bestKg: 0, mutations: {} };
     indexEntry.count += 1;
     indexEntry.bestKg = Math.max(indexEntry.bestKg, candidate.kg);
+    // Index: Lifetime-Tracking aller jemals gesehenen Mutationen pro Fisch — bleibt
+    // auch nach Sell-All / Prestige erhalten (Sammler-Stat).
+    if (!indexEntry.mutations) indexEntry.mutations = {};
+    for (const mutId of (candidate.mutations || [])) {
+        indexEntry.mutations[mutId] = (indexEntry.mutations[mutId] || 0) + 1;
+    }
     state.index[fish.id] = indexEntry;
 
     state.stats.totalCaught += 1;

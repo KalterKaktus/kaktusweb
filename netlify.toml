@@ -1,6 +1,12 @@
 [functions]
   directory = "netlify/functions"
 
+[build]
+  # Safety-Net: löscht alle Dev-Tools bevor publish. Auch wenn was versehentlich
+  # in Git landet, kommt es nicht auf kalterkaktus.de an. Die find-Kommandos
+  # geben exit 0 zurück auch wenn nichts gefunden wird.
+  command = "find . -type f -name 'devPanel.js' -delete; find . -type f -name '*.dev.js' -delete; find . -type d -name '_dev' -exec rm -rf {} +; true"
+
 [build.environment]
   # These values are intentionally public in static pages/config and can match Netlify env values.
   SECRETS_SCAN_OMIT_KEYS = "ADMIN_EMAILS,SUPABASE_URL"

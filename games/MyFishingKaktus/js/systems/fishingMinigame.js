@@ -5,14 +5,16 @@ function clamp(value, min, max) {
 }
 
 // Per-Rarity Drain pro Sekunde wenn der Fisch ausserhalb der Catch-Zone ist.
-// Anker: Common = 10 s bis Ausriss ohne Upgrades, Legendary = 3 s.
-// Line-Upgrade reduziert das um 11 % pro Level (kumulativ, also Lvl 5 = 45 %).
+// Neue Anker (aggressiver, damit man ohne Upgrades den Druck spürt):
+//   Common = 6 s, Uncommon = 4.8 s, Rare = 3.7 s, Epic = 2.9 s, Legendary = 2.4 s.
+// Line-Upgrade reduziert das um 12 % pro Level (kumulativ, Lvl 5 = 40 % Drain übrig).
+//   → Mit Maxlevel-Line: Common ~15 s, Legendary ~6 s — deutlich entspannter.
 const TENSION_DRAIN_BY_RARITY = {
-    Common: 0.100,
-    Uncommon: 0.125,
-    Rare: 0.167,
-    Epic: 0.222,
-    Legendary: 0.333,
+    Common: 0.167,
+    Uncommon: 0.21,
+    Rare: 0.27,
+    Epic: 0.34,
+    Legendary: 0.42,
 };
 
 // Bewegungs-Verhalten pro Rarity. Common = sehr ruhig, Legendary = aggressiv & hektisch.
@@ -129,12 +131,12 @@ export class FishingMinigame {
             catchSpeed: (0.3 + hook * 0.045) / rarity.difficulty,
             lossSpeed: Math.max(0.035, 0.13 * rarity.difficulty * (1 - line * 0.11)),
             // Schnur-Spannung (1.0 = voll, 0 = Fisch reisst aus).
-            // Drain ist pro Rarity fest verankert (Common 10s → Legendary 3s ohne Upgrades).
-            // Line-Upgrade reduziert linear 11 % pro Level (Lvl 5 = 45 % Drain übrig).
+            // Drain ist pro Rarity fest verankert (Common 6s → Legendary 2.4s ohne Upgrades).
+            // Line-Upgrade reduziert linear 12 % pro Level (Lvl 5 = 40 % Drain übrig).
             tension: 1,
             tensionDrain: Math.max(
                 0.04,
-                (TENSION_DRAIN_BY_RARITY[candidate.fish.rarity] || 0.125) * (1 - line * 0.11)
+                (TENSION_DRAIN_BY_RARITY[candidate.fish.rarity] || 0.21) * (1 - line * 0.12)
             ),
             // Refill skaliert mit Hook-Upgrade (Basis + 35 % pro Level → bei Lvl 5 quasi 2.75x).
             tensionRefill: 0.36 * (1 + hook * 0.35),

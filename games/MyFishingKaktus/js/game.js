@@ -10,7 +10,9 @@ import { renderFishArt } from "./systems/fishArtSystem.js";
 import { FishingMinigame } from "./systems/fishingMinigame.js";
 import { getAreaIndexProgress, getGroupedFishIndex } from "./systems/indexSystem.js";
 import { addCatch, getInventoryEntries, sellAll } from "./systems/inventorySystem.js";
-import { getRarityChances, rollCatch } from "./systems/raritySystem.js";
+import { getFishValue, getRarestFishInArea, getRarityChances, rollCatch } from "./systems/raritySystem.js";
+import { applyMutationsToCandidate, MUTATIONS_BY_ID, rollMutations } from "./data/mutations.js";
+import { logCatch, setTelemetryUser } from "./systems/telemetry.js";
 import { createInitialState, fetchLeaderboard, loadState, normalizeState, saveState } from "./systems/saveSystem.js";
 import { buyUpgrade, getMinigameBonuses, getUpgradeCost } from "./systems/upgradeSystem.js";
 import { WaterSystem } from "./systems/waterSystem.js";
@@ -78,6 +80,9 @@ function showBroadcast(message) {
 }
 
 const RARITY_ADJECTIVE = {
+    Common: "Common",
+    Uncommon: "Uncommon",
+    Rare: "Rare",
     Epic: "Epischen",
     Legendary: "Legendären",
 };
@@ -131,7 +136,7 @@ function handleWeatherChange(event, previous) {
     audio.setRainAmbient(rainIntensity);
     if (event) {
         audio.playSell();
-        showBroadcast(`Wetter-Event: ${event.name} — ${event.buffLabel} (5 Min.)`);
+        showBroadcast(`Wetter-Event: ${event.name} — ${event.buffLabel} (2,5 Min.)`);
     } else if (previous) {
         showBroadcast("Wetter-Event vorbei.");
     }
@@ -142,7 +147,8 @@ const broadcast = new BroadcastSystem((payload) => {
     if (!adjective || !payload.fish) {
         return;
     }
-    showBroadcast(`${payload.name || "Ein Angler"} hat einen ${adjective} ${payload.fish} gefangen!!!`);
+    const mutPrefix = payload.mutationLabel ? `${payload.mutationLabel} ` : "";
+    showBroadcast(`${payload.name || "Ein Angler"} hat einen ${mutPrefix}${adjective} ${payload.fish} gefangen!!!`);
 });
 
 const coinFormat = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
@@ -262,6 +268,21 @@ function renderShop() {
     }
 }
 
+function renderMutationChips(mutationsMap) {
+    if (!mutationsMap) return "";
+    // Sortierung: Event-Mutationen zuerst (höherer Mult), dann Standard nach Mult absteigend.
+    const entries = Object.entries(mutationsMap)
+        .map(([id, count]) => ({ id, count, def: MUTATIONS_BY_ID[id] }))
+        .filter((e) => e.def && e.count > 0)
+        .sort((a, b) => (b.def.mult - a.def.mult) || (b.count - a.count));
+    if (!entries.length) return "";
+    return `<div class="inv-mut-row">${entries.map((e) => {
+        const glow = e.def.glow ? " is-glow" : "";
+        const mult = e.def.mult % 1 === 0 ? e.def.mult : e.def.mult.toFixed(1);
+        return `<span class="inv-mut-chip${glow}" style="--mut:${e.def.color}" title="${e.def.name} ×${mult} — ${e.count}× gefangen">×${mult} <b>${e.count}</b></span>`;
+    }).join("")}</div>`;
+}
+
 function renderInventory() {
     const entries = getInventoryEntries(state);
     const totalValue = entries.reduce((sum, entry) => sum + entry.totalValue, 0);
@@ -280,6 +301,7 @@ function renderInventory() {
                     <strong>${entry.fish.name}</strong>
                     <small>${entry.fish.rarity} &middot; ${entry.count}x gefangen</small>
                     <small>Gesamt ${kg(entry.totalKg)} &middot; Bestes ${kg(entry.bestKg)}</small>
+                    ${renderMutationChips(entry.mutations)}
                 </div>
                 <div class="inventory-value">
                     <b>${coins(entry.totalValue)}</b>
@@ -485,14 +507,43 @@ function renderAll() {
     }
 }
 
+function renderMutationBadges(candidate) {
+    const ids = Array.isArray(candidate?.mutations) ? candidate.mutations : [];
+    if (!ids.length) return "";
+    const badges = ids.map((id) => {
+        const m = MUTATIONS_BY_ID[id];
+        if (!m) return "";
+        const glow = m.glow ? " is-glow" : "";
+        return `<span class="mutation-badge${glow}" style="--mut:${m.color}">${m.name}</span>`;
+    }).join("");
+    const multTxt = candidate.mutationMult && candidate.mutationMult > 1
+        ? `<span class="mutation-mult">×${Number(candidate.mutationMult).toFixed(candidate.mutationMult % 1 === 0 ? 0 : 1)}</span>`
+        : "";
+    return `<div class="mutation-row">${badges}${multTxt}</div>`;
+}
+
+function mutationLabel(candidate) {
+    const ids = Array.isArray(candidate?.mutations) ? candidate.mutations : [];
+    return ids.map((id) => MUTATIONS_BY_ID[id]?.name).filter(Boolean).join(" ");
+}
+
 function showCatch(candidate, isNew = false) {
     const popup = document.createElement("article");
-    popup.className = isNew ? "catch-popup is-new" : "catch-popup";
+    const hasMutation = Array.isArray(candidate?.mutations) && candidate.mutations.length > 0;
+    popup.className = `catch-popup${isNew ? " is-new" : ""}${hasMutation ? " is-mutated" : ""}`;
     popup.style.setProperty("--rarity", RARITIES[candidate.fish.rarity]?.color || "#79d9f7");
+    if (hasMutation) {
+        // Erste Mutation gibt die Akzentfarbe des Popups; letzte (meist Event) den Glow.
+        const first = MUTATIONS_BY_ID[candidate.mutations[0]];
+        const last = MUTATIONS_BY_ID[candidate.mutations[candidate.mutations.length - 1]];
+        if (first) popup.style.setProperty("--mut-primary", first.color);
+        if (last) popup.style.setProperty("--mut-glow", last.color);
+    }
     popup.innerHTML = `
         ${isNew ? `<span class="catch-new-badge">NEU im Index</span>` : ""}
         ${renderFishArt(candidate.fish)}
         <div class="catch-popup-info">
+            ${renderMutationBadges(candidate)}
             ${isNew ? `<em class="catch-popup-kicker">Neuer Fisch entdeckt</em>` : ""}
             <strong>${candidate.fish.name}</strong>
             <small>${candidate.fish.rarity} &middot; ${kg(candidate.kg)}</small>
@@ -500,7 +551,9 @@ function showCatch(candidate, isNew = false) {
         </div>
     `;
     elements.popups.append(popup);
-    window.setTimeout(() => popup.remove(), isNew ? 4400 : 2800);
+    // Mutationen länger sichtbar (Show-Off-Moment).
+    const dur = hasMutation ? 4800 : (isNew ? 4400 : 2800);
+    window.setTimeout(() => popup.remove(), dur);
 }
 
 function showCoinGain(amount, fishEl) {
@@ -588,11 +641,22 @@ const minigame = new FishingMinigame(elements.fishingOverlay, {
         addCatch(state, candidate);
         showCatch(candidate, isNew);
         audio.playCatch();
-        if (candidate.fish.rarity === "Epic" || candidate.fish.rarity === "Legendary") {
+        // Telemetrie: anonymes Event-Log für Balance-Analyse (nur eingeloggte User).
+        logCatch(candidate, weatherEventSystem?.getEvent?.() || null);
+        // Broadcast-Trigger: Epic/Legendary IMMER, plus jeder Fang mit einer Mutation
+        // ab Multiplier ×3 — also SHINY (×3), AURORA (×3), ABYSSAL (×4), EMBER (×5),
+        // CRIMSON (×7), HAUNTED (×10). Die ×2-Mutationen (BIG/HUGE, alle Standard-Wetter)
+        // sind explizit ausgeschlossen, sonst würde der Feed spammen.
+        const SHOUT_MULT_THRESHOLD = 3;
+        const hasShoutMutation = (candidate.mutations || [])
+            .some((id) => (MUTATIONS_BY_ID[id]?.mult || 0) >= SHOUT_MULT_THRESHOLD);
+        const isHighRarity = candidate.fish.rarity === "Epic" || candidate.fish.rarity === "Legendary";
+        if (isHighRarity || hasShoutMutation) {
             broadcast.announce({
                 name: playerName,
                 fish: candidate.fish.name,
                 rarity: candidate.fish.rarity,
+                mutationLabel: mutationLabel(candidate),
             });
         }
         renderAll();
@@ -609,7 +673,38 @@ function startFishing(forcedRarity = null) {
     audio.playCast();
     const luckLevel = weatherEventSystem ? weatherEventSystem.applyLuck(state.upgrades.luck) : state.upgrades.luck;
     const bonuses = weatherEventSystem ? weatherEventSystem.applyBonuses(getMinigameBonuses(state)) : getMinigameBonuses(state);
-    const candidate = rollCatch(state.currentArea, luckLevel, forcedRarity);
+    const rarityMults = weatherEventSystem?.getRarityMultipliers?.() || null;
+    // Dev-Overrides (nur in Preview/Localhost aktiv): forciert Rarity / Fisch / Gewicht / Mutationen.
+    const devRarity = window.__dev?.consumeForcedRarity?.() || null;
+    const devFishMode = window.__dev?.consumeForcedFishMode?.() || null;
+    const devWeightMode = window.__dev?.consumeForcedWeightMode?.() || null;
+    let baseCandidate = rollCatch(state.currentArea, luckLevel, devRarity || forcedRarity, rarityMults);
+    // "Rarest"-Override: ersetzt den gerollten Fisch durch den seltensten im selben Rarity-Pool.
+    if (devFishMode === "rarest") {
+        const rarest = getRarestFishInArea(state.currentArea, baseCandidate.fish.rarity);
+        if (rarest) {
+            baseCandidate = {
+                ...baseCandidate,
+                fishId: rarest.id,
+                fish: rarest,
+                value: getFishValue(rarest, baseCandidate.kg),
+            };
+        }
+    }
+    // "Max Weight"-Override: pusht kg auf den Max-Wert des Fisches.
+    if (devWeightMode === "max") {
+        const maxKg = Number(baseCandidate.fish.maxKg) || baseCandidate.kg;
+        baseCandidate = {
+            ...baseCandidate,
+            kg: maxKg,
+            value: getFishValue(baseCandidate.fish, maxKg),
+        };
+    }
+    const event = weatherEventSystem?.getEvent?.() || null;
+    let mutations = rollMutations(event);
+    const devMuts = window.__dev?.consumeForcedMutations?.();
+    if (devMuts) mutations = devMuts;
+    const candidate = applyMutationsToCandidate(baseCandidate, mutations);
     minigame.start(candidate, bonuses);
 }
 
@@ -778,6 +873,11 @@ const ADMIN_WEATHER_LABELS = {
     storm: "Sturm",
     fog: "Nebel",
     night: "Nacht",
+    abyss: "🌌 Abyss",
+    polarlicht: "🌠 Polarlicht",
+    glutsturm: "🔥 Glutsturm",
+    blutmond: "🌑 Blutmond",
+    geistermeer: "👻 Geistermeer",
     clear: "Wetter-Reset",
 };
 const ADMIN_FISH_LABELS = {
@@ -918,6 +1018,7 @@ async function init() {
     const loaded = await loadState();
     state = normalizeState(loaded.state);
     user = loaded.user;
+    setTelemetryUser(user);
     cloudSaveBlocked = loaded.mode === "cloud-error";
     setSaveStatus(
         loaded.mode === "cloud"
@@ -1051,6 +1152,40 @@ async function init() {
     }
 
     subscribeAdminEvents();
+
+    // Dev-Panel — wird NUR dynamisch geladen wenn:
+    //   1) wir auf localhost / ?dev=1 sind UND
+    //   2) die Datei devPanel.js überhaupt existiert (sie ist gitignored + wird vom
+    //      Netlify-Build-Step gelöscht → in Production ist sie schlicht 404).
+    // Try/catch frisst jeden Fehler still, damit das Spiel im Live-Deploy 100 %
+    // unverändert läuft. NICHTS davon ist in Production sichtbar oder fetchbar.
+    const isDevHost = (() => {
+        try {
+            const host = location.hostname || "";
+            if (host === "localhost" || host === "127.0.0.1" || host === "" || host.endsWith(".local")) return true;
+            if (location.protocol === "file:") return true;
+            if (new URLSearchParams(location.search).get("dev") === "1") return true;
+        } catch {}
+        return false;
+    })();
+    if (isDevHost) {
+        import("./systems/devPanel.js")
+            .then((mod) => mod.initDevPanel({
+                weatherEventSystem,
+                bubbleSystem,
+                karlSystem,
+                giveCoins: (amount) => {
+                    const n = Math.max(0, Math.floor(Number(amount) || 0));
+                    if (!n) return;
+                    state.coins += n;
+                    state.stats.totalCoinsEarned += n;
+                    renderHud();
+                    scheduleSave();
+                },
+            }))
+            .catch(() => { /* Datei existiert in Production nicht — alles ok */ });
+    }
+
     renderAll();
     } catch (err) {
         console.error("Init failed nach Save-Load:", err);

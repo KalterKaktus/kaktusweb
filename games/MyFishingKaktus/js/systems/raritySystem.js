@@ -36,13 +36,15 @@ export function getRarityChances(areaId, luckLevel = 0) {
     return Object.fromEntries(weighted.map((entry) => [entry.rarity, entry.weight / total]));
 }
 
-export function rollRarity(areaId, luckLevel = 0) {
+export function rollRarity(areaId, luckLevel = 0, rarityMults = null) {
     const area = AREAS[areaId];
     const luckPower = getLuckPower(luckLevel);
-    const choices = Object.entries(area.rarityWeights).map(([rarity, weight]) => ({
-        rarity,
-        weight: weight * Math.pow(luckPower, RARITIES[rarity].luckImpact),
-    }));
+    const choices = Object.entries(area.rarityWeights).map(([rarity, weight]) => {
+        let w = weight * Math.pow(luckPower, RARITIES[rarity].luckImpact);
+        // Direkte Rarity-Boosts (z.B. Abyss-Event: Epic+ × 2).
+        if (rarityMults && rarityMults[rarity]) w *= rarityMults[rarity];
+        return { rarity, weight: w };
+    });
 
     return weightedPick(choices, (choice) => choice.weight).rarity;
 }
@@ -55,6 +57,13 @@ export function rollFish(areaId, rarity) {
 // Findet einen Fish-Pool für (area, rarity). Wenn die aktuelle Area diese Rarity nicht hat
 // (z.B. Pond hat kein Legendary), wird in den Nachbar-Areas gesucht. So funktioniert ein
 // Force-Legendary auch wenn der Spieler noch im Pond ist.
+export function getRarestFishInArea(areaId, rarity) {
+    const pool = findFishPoolForRarity(areaId, rarity);
+    if (!pool.length) return null;
+    // Niedrigster spawnWeight = seltenster Fisch im Pool. Bei Gleichstand: erster Treffer.
+    return pool.slice().sort((a, b) => a.spawnWeight - b.spawnWeight)[0];
+}
+
 function findFishPoolForRarity(areaId, rarity) {
     const own = getAreaRarityFish(areaId, rarity);
     if (own.length) return own;
@@ -81,12 +90,12 @@ export function getFishValue(fish, kg) {
     return Math.max(1, Math.round(kg * rarity.valuePerKg * fish.valueMultiplier * area.valueMultiplier));
 }
 
-export function rollCatch(areaId, luckLevel, forcedRarity = null) {
-    const rarity = forcedRarity || rollRarity(areaId, luckLevel);
+export function rollCatch(areaId, luckLevel, forcedRarity = null, rarityMults = null) {
+    const rarity = forcedRarity || rollRarity(areaId, luckLevel, rarityMults);
     const pool = findFishPoolForRarity(areaId, rarity);
     // Fallback: wenn weder lokale Area noch andere Areas diese Rarity haben → normaler Roll.
     if (!pool.length) {
-        return rollCatch(areaId, luckLevel, null);
+        return rollCatch(areaId, luckLevel, null, rarityMults);
     }
     const fish = weightedPick(pool, (entry) => entry.spawnWeight);
     const kg = rollWeight(fish);

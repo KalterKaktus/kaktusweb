@@ -42,13 +42,40 @@
 
         <section class="wiki-home-list" aria-label="Wiki Guides">
             <a class="wiki-home-entry" href="./kaktusclicker/">
-                <span>KaktusClicker</span>
-                <strong>Spieler- und Progression-Guide</strong>
-                <small>Kaufregeln, Prestige-Timing, Goldlauf und Nopal-Skalierung.</small>
+                <span>Technische Referenz</span>
+                <strong>KaktusClicker</strong>
+                <small>Gebäude-Werte, Upgrade-Formeln, Prestige-Mathe, Goldlauf, Save-Format.</small>
+            </a>
+            <a class="wiki-home-entry" href="./myfishingkaktus/">
+                <span>Technische Referenz</span>
+                <strong>My Fishing Kaktus</strong>
+                <small>Areas, Rarity-Wahrscheinlichkeiten, Minispiel-Formeln, Karl, Daily-Rewards.</small>
             </a>
             <div class="wiki-home-empty">
                 Weitere Games und Wiki-Seiten kommen später dazu.
             </div>
+        </section>
+
+        <section class="wiki-optimizer" id="optimizer-root" aria-labelledby="optimizer-title">
+            <header class="opt-head">
+                <p class="opt-kicker">KaktusClicker · Tool</p>
+                <h2 id="optimizer-title">Kauf-Optimizer</h2>
+                <p class="opt-sub">
+                    Berechnet aus deinem Cloud-Save die nächsten <b>10 besten Käufe</b> nach Refinanzierungs-Zeit (ROI).
+                    Liest deinen Spielstand nur — <strong>verändert nichts</strong>.
+                </p>
+            </header>
+
+            <p class="opt-status" id="optimizer-status" data-type="info">Initialisiere …</p>
+
+            <div class="opt-actions">
+                <button type="button" class="opt-recompute" id="optimizer-recompute" hidden>Cloud-Save neu laden</button>
+                <button type="button" class="opt-toggle" id="optimizer-toggle-manual" hidden>Manueller Modus</button>
+            </div>
+
+            <div class="opt-result" id="optimizer-result"></div>
+
+            <div class="opt-manual" id="optimizer-manual" hidden></div>
         </section>
     </main>
 
@@ -58,5 +85,7 @@
         <a href="https://kalterkaktus.de/nutzungsbedingungen">Nutzungsbedingungen</a>
     </footer>
     <script src="./wiki.js"></script>
+    <script type="module" src="/js/auth-nav.js"></script>
+    <script type="module" src="./optimizer.js"></script>
 </body>
 </html>

@@ -7,6 +7,11 @@ import { resetUpgrades } from "./upgradeSystem.js";
 
 export const FISHING_GAME_ID = "my-fishing-kaktus";
 const LOCAL_KEY = "my-fishing-kaktus-save-v1";
+// Save-Format-Version. Wird in jedem normalizeState gesetzt + im createInitialState
+// gespeichert. Erhöht sich nur bei BREAKING changes am Schema (additive Felder wie
+// `mutations` brauchen das nicht — die werden in cleanMutations default zu {} gesetzt).
+// V2 (25.05.2026): Mutations-Feld dazu — alte V1 Saves laden weiter ohne Datenverlust.
+const SAVE_VERSION = 2;
 
 function number(value, fallback = 0) {
     return Number.isFinite(Number(value)) ? Number(value) : fallback;
@@ -24,9 +29,28 @@ function cleanFishMap(map, normalizer) {
     );
 }
 
+// Mutation-Counts: erwartetes Format { mutationId: count }. Ungültige IDs werden
+// rausgefiltert (z.B. wenn jemand einen Save aus einem alten Build importiert).
+// Liste der bekannten IDs hardcoded statt Import wegen zyklischer Abhängigkeit.
+const KNOWN_MUTATION_IDS = new Set([
+    "big", "huge", "shiny",
+    "sunny", "wet", "stormy", "misty", "nocturnal",
+    "abyssal", "aurora", "ember", "crimson", "haunted",
+]);
+function cleanMutations(map) {
+    if (!map || typeof map !== "object" || Array.isArray(map)) return {};
+    const out = {};
+    for (const [id, count] of Object.entries(map)) {
+        if (!KNOWN_MUTATION_IDS.has(id)) continue;
+        const n = Math.max(0, Math.floor(number(count)));
+        if (n > 0) out[id] = n;
+    }
+    return out;
+}
+
 export function createInitialState() {
     return {
-        version: 1,
+        version: SAVE_VERSION,
         coins: 0,
         currentArea: "pond",
         unlockedAreas: ["pond"],
@@ -77,6 +101,7 @@ export function normalizeState(raw) {
 
     return {
         ...initial,
+        version: SAVE_VERSION,
         coins: Math.max(0, Math.floor(number(raw.coins))),
         currentArea,
         prestige,
@@ -87,10 +112,12 @@ export function normalizeState(raw) {
             totalKg: Math.max(0, number(entry.totalKg)),
             totalValue: Math.max(0, Math.floor(number(entry.totalValue))),
             bestKg: Math.max(0, number(entry.bestKg)),
+            mutations: cleanMutations(entry.mutations),
         })),
         index: cleanFishMap(raw.index, (entry = {}) => ({
             count: Math.max(0, Math.floor(number(entry.count))),
             bestKg: Math.max(0, number(entry.bestKg)),
+            mutations: cleanMutations(entry.mutations),
         })),
         stats: {
             totalCaught: Math.max(0, Math.floor(number(raw.stats?.totalCaught))),
@@ -138,6 +165,9 @@ async function displayNameFor(user) {
     return getDisplayName(user, profile);
 }
 
+// Bewusst KEINE lokale-zu-Cloud-Migration: Cheater könnten sonst localStorage
+// editieren (z.B. coins/prestige/stats hochsetzen) und sich dann per Login einen
+// inflationierten Cloud-Save + Leaderboard-Eintrag holen. Neuer Account = bei 0.
 export async function loadState() {
     const session = await getSession();
     if (!session?.user?.id) {
