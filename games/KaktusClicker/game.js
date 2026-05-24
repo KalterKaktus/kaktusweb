@@ -39,8 +39,8 @@ const GOLDEN_EVENT_DELAY = [3 * 60 * 1000, 7 * 60 * 1000];
 const RED_EVENT_DELAY = [20 * 60 * 1000, 40 * 60 * 1000];
 const ADMIN_GAME_EVENT_POLL_MS = 2500;
 const RANDOM_EVENT_CONFIG = {
-  golden: { duration: 5000, rewardSeconds: GOLDEN_REWARD_SECONDS, label: "Goldkaktus" },
-  red: { duration: 5000, rewardSeconds: RED_REWARD_SECONDS, label: "Rubinkaktus" },
+  golden: { duration: 10000, rewardSeconds: GOLDEN_REWARD_SECONDS, label: "Goldkaktus" },
+  red: { duration: 10000, rewardSeconds: RED_REWARD_SECONDS, label: "Rubinkaktus" },
 };
 
 let state = createInitialState(getMonthlyLeaderboardPeriod().id);
@@ -734,37 +734,42 @@ function randomDelay([min, max]) {
   return Math.floor(min + Math.random() * (max - min));
 }
 
-function scheduleNextRandomEvent(kind, now = Date.now()) {
+function scheduleNextRandomEvent(kind) {
   if (kind === "golden") {
-    state.events.nextGoldenAt = now + randomDelay(GOLDEN_EVENT_DELAY);
+    state.events.nextGoldenAt = randomDelay(GOLDEN_EVENT_DELAY);
   } else {
-    state.events.nextRedAt = now + randomDelay(RED_EVENT_DELAY);
+    state.events.nextRedAt = randomDelay(RED_EVENT_DELAY);
   }
 }
 
-function ensureRandomEventSchedules(now = Date.now()) {
-  if (!state.events.nextGoldenAt || state.events.nextGoldenAt <= now) {
-    scheduleNextRandomEvent("golden", now);
+function ensureRandomEventSchedules() {
+  if (!state.events.nextGoldenAt || state.events.nextGoldenAt <= 0) {
+    scheduleNextRandomEvent("golden");
   }
-  if (!state.events.nextRedAt || state.events.nextRedAt <= now) {
-    scheduleNextRandomEvent("red", now);
+
+  if (!state.events.nextRedAt || state.events.nextRedAt <= 0) {
+    scheduleNextRandomEvent("red");
   }
 }
 
-function restartRandomEventSchedules(now = Date.now()) {
-  scheduleNextRandomEvent("golden", now);
-  scheduleNextRandomEvent("red", now);
+function restartRandomEventSchedules() {
+  scheduleNextRandomEvent("golden");
+  scheduleNextRandomEvent("red");
 }
 
-function checkRandomEvents(now = Date.now()) {
+function checkRandomEvents() {
   if (document.hidden) {
     return;
   }
 
-  if (!activeRandomEvents.has("golden") && state.events.nextGoldenAt && now >= state.events.nextGoldenAt) {
+  state.events.nextGoldenAt -= 1000;
+  state.events.nextRedAt -= 1000;
+
+  if (!activeRandomEvents.has("golden") && state.events.nextGoldenAt <= 0) {
     spawnConfiguredRandomEvent("golden");
   }
-  if (!activeRandomEvents.has("red") && state.events.nextRedAt && now >= state.events.nextRedAt) {
+
+  if (!activeRandomEvents.has("red") && state.events.nextRedAt <= 0) {
     spawnConfiguredRandomEvent("red");
   }
 }
@@ -778,7 +783,6 @@ function pauseRandomEvents() {
     }
 
     activeRandomEvents.delete(kind);
-    scheduleNextRandomEvent(kind);
   }
 
   saveState("Random Events pausiert");
@@ -1109,7 +1113,7 @@ async function initGame() {
     state = normalizeLoadedState(loadLocalState(), period.id);
   }
 
-  restartRandomEventSchedules();
+  ensureRandomEventSchedules();
   bindEvents();
   recoverClickerViewport();
   tryLockPortraitOrientation();
