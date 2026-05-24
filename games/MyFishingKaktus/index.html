@@ -13,8 +13,92 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="stylesheet" href="/styles.css" />
     <link rel="stylesheet" href="styles.css" />
+    <!-- Inline-Styles für Loading-Screen damit er ohne stylesheet-wait sofort sichtbar ist. -->
+    <style>
+      #fishing-loading {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(ellipse at 50% 30%, rgba(99, 216, 255, 0.18), transparent 60%),
+          linear-gradient(160deg, #02101e 0%, #053967 50%, #02101e 100%);
+        color: #eaf8ff;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        text-align: center;
+        transition: opacity 0.6s ease;
+      }
+      #fishing-loading.is-done {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .fl-card {
+        display: grid;
+        gap: 1.2rem;
+        justify-items: center;
+        max-width: 22rem;
+        padding: 0 1.5rem;
+      }
+      .fl-kicker {
+        margin: 0;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: rgba(170, 220, 250, 0.78);
+      }
+      .fl-title {
+        margin: 0;
+        font-size: clamp(1.8rem, 4.4vw, 2.6rem);
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        text-shadow: 0 0 1.5rem rgba(99, 216, 255, 0.35);
+      }
+      .fl-waves {
+        position: relative;
+        width: 9rem;
+        height: 2.4rem;
+      }
+      .fl-waves span {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        border-radius: 50%;
+        border: 2px solid rgba(99, 216, 255, 0.75);
+        opacity: 0;
+        animation: fl-pulse 1.8s ease-out infinite;
+      }
+      .fl-waves span:nth-child(2) { animation-delay: 0.6s; }
+      .fl-waves span:nth-child(3) { animation-delay: 1.2s; }
+      .fl-hint {
+        margin: 0;
+        font-size: 0.86rem;
+        color: rgba(190, 230, 250, 0.82);
+      }
+      @keyframes fl-pulse {
+        0%   { transform: scale(0.4); opacity: 0; }
+        25%  { opacity: 1; }
+        100% { transform: scale(1.2); opacity: 0; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .fl-waves span { animation: none; opacity: 1; }
+      }
+    </style>
   </head>
   <body class="fishing-page">
+    <div id="fishing-loading" aria-live="polite" aria-busy="true">
+      <div class="fl-card">
+        <p class="fl-kicker">My Fishing Kaktus</p>
+        <h1 class="fl-title">Der Ozean wartet</h1>
+        <div class="fl-waves" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <p class="fl-hint">Lädt Spielstand und Wasser…</p>
+      </div>
+    </div>
     <nav class="nav fishing-site-nav">
       <div class="nav-container">
         <a class="logo" href="/">KK</a>
@@ -62,14 +146,13 @@
       </header>
 
       <nav class="game-actions" aria-label="Spielbereiche">
-        <button type="button" data-open-window="shop">Shop</button>
+        <button type="button" data-open-window="shop">Angel</button>
         <button type="button" data-open-window="index">Fish Index</button>
         <button type="button" data-open-window="inventory">Inventar</button>
         <button type="button" data-open-window="areas">Areas</button>
         <button type="button" data-open-window="stats">Stats</button>
         <button type="button" data-open-window="settings">Settings</button>
         <button type="button" data-open-window="changelog">Changelog</button>
-        <button type="button" data-open-window="test" data-test-only hidden>Test</button>
       </nav>
 
       <aside class="game-menu" id="game-menu" hidden>
@@ -77,14 +160,13 @@
           <strong>My Fishing Kaktus</strong>
           <button type="button" data-close-menu aria-label="Menü schließen">x</button>
         </div>
-        <button type="button" data-open-window="shop">Shop</button>
+        <button type="button" data-open-window="shop">Angel</button>
         <button type="button" data-open-window="index">Fish Index</button>
         <button type="button" data-open-window="inventory">Inventar</button>
         <button type="button" data-open-window="areas">Areas</button>
         <button type="button" data-open-window="stats">Stats</button>
         <button type="button" data-open-window="settings">Settings</button>
         <button type="button" data-open-window="changelog">Changelog</button>
-        <button type="button" data-open-window="test" data-test-only hidden>Test</button>
       </aside>
 
       <section class="water-stage" id="water-stage" aria-label="Wasserfläche mit Fischstellen">
@@ -94,15 +176,19 @@
         <div class="catch-popups" id="catch-popups" aria-live="polite"></div>
       </section>
 
-      <section class="game-window" data-window="shop" hidden aria-labelledby="shop-title">
+      <section class="game-window angel-window" data-window="shop" hidden aria-labelledby="shop-title">
         <header>
           <div>
-            <p>Shop</p>
-            <h2 id="shop-title">Upgrades</h2>
+            <p>Ausrüstung</p>
+            <h2 id="shop-title">Deine Angel</h2>
           </div>
           <button type="button" data-close-window aria-label="Fenster schließen">x</button>
         </header>
-        <div class="window-body upgrade-grid" id="upgrade-list"></div>
+        <div class="window-body angel-body" id="angel-body">
+          <div class="angel-stage" id="angel-stage" aria-hidden="true"></div>
+          <div class="angel-parts" id="angel-parts" role="tablist"></div>
+          <div class="angel-detail" id="angel-detail"></div>
+        </div>
       </section>
 
       <section class="game-window index-window" data-window="index" hidden aria-labelledby="index-title">
@@ -212,45 +298,6 @@
         <div class="window-body fishing-changelog" id="fishing-changelog"></div>
       </section>
 
-      <section class="game-window" data-window="test" hidden aria-labelledby="test-title">
-        <header>
-          <div>
-            <p>Debug</p>
-            <h2 id="test-title">Testmenü</h2>
-          </div>
-          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
-        </header>
-        <div class="window-body settings-list" id="test-panel">
-          <p class="save-status">Nur sichtbar mit <strong>?test</strong> in der URL.</p>
-          <button type="button" data-test-action="coins">+100.000 Coins</button>
-          <button type="button" data-test-action="fish-small">Timer-Fisch: Kleiner Fisch</button>
-          <button type="button" data-test-action="fish-big">Timer-Fisch: Großer Fisch</button>
-          <button type="button" data-test-action="fish-sword">Timer-Fisch: Schwertfisch</button>
-          <button type="button" data-test-action="fish-shark">Timer-Fisch: Hai</button>
-          <button type="button" data-test-action="weather-sunny">Wetter: Sonnig (Glück 2×)</button>
-          <button type="button" data-test-action="weather-rain">Wetter: Regen (Spawn 2×)</button>
-          <button type="button" data-test-action="weather-storm">Wetter: Sturm (Haken 2×)</button>
-          <button type="button" data-test-action="weather-fog">Wetter: Nebel (Rute 2×)</button>
-          <button type="button" data-test-action="weather-night">Wetter: Nacht (Schnur 2×)</button>
-          <button type="button" data-test-action="weather-clear">Wetter: zurücksetzen</button>
-          <button type="button" data-test-action="force-spawn-epic">Force-Spawn: Epic-Spot</button>
-          <button type="button" data-test-action="force-spawn-legendary">Force-Spawn: Legendary-Spot</button>
-          <button type="button" data-test-action="preview-fish">Fisch-Galerie öffnen</button>
-        </div>
-      </section>
-
-      <div class="fish-gallery-overlay" id="fish-gallery-overlay" hidden aria-hidden="true">
-        <div class="fish-gallery-card">
-          <header>
-            <div>
-              <p>Test</p>
-              <h2>Fisch-Galerie</h2>
-            </div>
-            <button type="button" id="fish-gallery-close" aria-label="Galerie schließen">x</button>
-          </header>
-          <div class="fish-gallery-body" id="fish-gallery-body"></div>
-        </div>
-      </div>
     </main>
 
     <section class="fishing-overlay" id="fishing-overlay" hidden aria-label="Fang-Minispiel">

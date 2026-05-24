@@ -44,6 +44,12 @@ export function createInitialState() {
         settings: {
             reducedMotion: false,
         },
+        daily: {
+            streak: 0,
+            lastClaimedDay: null,
+            totalClaimed: 0,
+            bestStreak: 0,
+        },
     };
 }
 
@@ -95,6 +101,12 @@ export function normalizeState(raw) {
         },
         settings: {
             reducedMotion: Boolean(raw.settings?.reducedMotion),
+        },
+        daily: {
+            streak: Math.max(0, Math.floor(number(raw.daily?.streak))),
+            lastClaimedDay: typeof raw.daily?.lastClaimedDay === "string" ? raw.daily.lastClaimedDay : null,
+            totalClaimed: Math.max(0, Math.floor(number(raw.daily?.totalClaimed))),
+            bestStreak: Math.max(0, Math.floor(number(raw.daily?.bestStreak))),
         },
     };
 }

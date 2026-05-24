@@ -1,9 +1,8 @@
 import { AREAS, PRESTIGE_CAP } from "./data/areas.js";
-import { FISH_BY_ID } from "./data/fish.js";
 import { RARITIES } from "./data/rarities.js";
 import { UPGRADES, UPGRADE_ORDER } from "./data/upgrades.js";
 import { getAvailableAreas, getPrestigeState, prestigeToNextArea } from "./systems/areaSystem.js";
-import { AudioSystem } from "./systems/audioSystem.js";
+import { AudioSystem } from "./systems/audioSystem.js?v=2";
 import { BroadcastSystem } from "./systems/broadcastSystem.js";
 import { BubbleSystem } from "./systems/bubbleSystem.js";
 import { CoinFishSystem } from "./systems/coinFishSystem.js";
@@ -17,6 +16,10 @@ import { buyUpgrade, getMinigameBonuses, getUpgradeCost } from "./systems/upgrad
 import { WaterSystem } from "./systems/waterSystem.js";
 import { WeatherSystem } from "./systems/weatherSystem.js";
 import { WeatherEventSystem } from "./systems/weatherEventSystem.js";
+import { KarlSystem } from "./systems/karlSystem.js";
+import { KARL_NAME } from "./data/karl.js";
+import { DailySystem } from "./systems/dailySystem.js";
+import { AngelUiSystem } from "./systems/angelUiSystem.js";
 import { FISHING_CHANGELOG } from "./data/changelog.js";
 import { fetchProfile } from "/js/profile.js";
 import { getSupabase, isConfigReady } from "/js/supabase-client.js";
@@ -33,6 +36,7 @@ const elements = {
     menu: document.getElementById("game-menu"),
     menuToggle: document.getElementById("game-menu-toggle"),
     upgrades: document.getElementById("upgrade-list"),
+    angelBody: document.getElementById("angel-body"),
     inventory: document.getElementById("inventory-list"),
     inventoryValue: document.getElementById("inventory-value"),
     sellAll: document.getElementById("sell-all"),
@@ -55,7 +59,6 @@ const elements = {
     areaTransition: document.getElementById("area-transition"),
     areaTransitionName: document.getElementById("area-transition-name"),
     areaTransitionKicker: document.getElementById("area-transition-kicker"),
-    testPanel: document.getElementById("test-panel"),
     weatherBanner: document.getElementById("weather-banner"),
 };
 
@@ -120,76 +123,6 @@ function renderWeatherBanner() {
     }
 }
 
-const GALLERY_SHAPES = [
-    ["dart", "Sleek / cozy", "plain"],
-    ["wedge", "Kompakt", "leaf-fin"],
-    ["deep", "Hoher Körper", "gills"],
-    ["block", "Dick & breit", "crest"],
-    ["kite", "Drachen-Form", "fork-tail"],
-    ["orb", "Kugelfisch", "puffer-spikes"],
-    ["angler", "Anglerfisch", "lure"],
-    ["ribbon", "Aal", "barbel"],
-    ["needle", "Lang & dünn", "long-fin"],
-    ["blade", "Scharf", "teeth"],
-    ["sail", "Riesenflosse", "sail"],
-    ["crown", "Krone", "horn-gills"],
-    ["monarch", "Königlich", "stripes"],
-    ["shark", "Hai", "teeth"],
-    ["ray", "Rochen", "wings"],
-    ["vertical", "Seepferdchen", "armor"],
-    ["segmented", "Krustentier", "armor"],
-    ["jellyfish", "Qualle", "whiskers"],
-    ["kraken", "Kraken", "stripes"],
-    ["leviathan", "Seeschlange", "spikes"],
-    ["wyrm", "Drachenfisch", "horn"],
-    ["abyssal", "Tiefsee-Horror", "streamers"],
-];
-const GALLERY_RARITIES = [
-    { name: "Common", color: "#79d9f7" },
-    { name: "Uncommon", color: "#65e2a2" },
-    { name: "Rare", color: "#9f9dff" },
-    { name: "Epic", color: "#d58cff" },
-    { name: "Legendary", color: "#ffc86c" },
-];
-
-function showFishGallery() {
-    const overlay = document.getElementById("fish-gallery-overlay");
-    const body = document.getElementById("fish-gallery-body");
-    if (!overlay || !body) {
-        return;
-    }
-    const head = `<div class="fish-gallery-row is-head">
-        <span>Shape</span>
-        ${GALLERY_RARITIES.map((r) => `<span style="color:${r.color}">${r.name}</span>`).join("")}
-    </div>`;
-    const rows = GALLERY_SHAPES.map(([shape, label, feature]) => {
-        const cells = GALLERY_RARITIES.map((r, idx) => {
-            const fish = {
-                id: `gallery-${shape}-${idx}`,
-                name: `${shape}/${feature}`,
-                rarity: r.name,
-                art: { shape, feature, color: r.color, outline: "#082237" },
-            };
-            return `<div class="fish-gallery-cell">${renderFishArt(fish)}</div>`;
-        }).join("");
-        return `<div class="fish-gallery-row">
-            <span class="fish-gallery-shape">${shape}<small>${label} · ${feature}</small></span>
-            ${cells}
-        </div>`;
-    }).join("");
-    body.innerHTML = head + rows;
-    overlay.hidden = false;
-}
-
-function hideFishGallery() {
-    const overlay = document.getElementById("fish-gallery-overlay");
-    if (overlay) {
-        overlay.hidden = true;
-        const body = document.getElementById("fish-gallery-body");
-        if (body) body.innerHTML = "";
-    }
-}
-
 function handleWeatherChange(event, previous) {
     renderWeatherBanner();
     audio.unlock();
@@ -217,12 +150,15 @@ const kgFormat = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maxi
 let state = createInitialState();
 let user = null;
 let saveTimer = 0;
+let cloudSaveBlocked = false;
 let activeWindow = null;
 let leaderboardLoaded = false;
 let bubbleSystem;
 let coinFishSystem;
 let waterSystem;
 let weatherSystem;
+let karlSystem;
+let dailySystem;
 let weatherEventSystem;
 
 function escapeHtml(value) {
@@ -318,25 +254,12 @@ function renderHud() {
     elements.water.dataset.area = state.currentArea;
 }
 
+let angelUiSystem = null;
+
 function renderShop() {
-    elements.upgrades.innerHTML = UPGRADE_ORDER.map((upgradeId) => {
-        const upgrade = UPGRADES[upgradeId];
-        const level = state.upgrades[upgradeId] || 0;
-        const cost = getUpgradeCost(state, upgradeId);
-        const done = cost === null;
-        return `
-            <article class="upgrade-card">
-                <div class="upgrade-card-head">
-                    <h3>${upgrade.name}</h3>
-                    <em>Level ${level}/${upgrade.maxLevel}</em>
-                </div>
-                <p>${upgrade.copy}</p>
-                <button data-buy-upgrade="${upgrade.id}" type="button" ${done || state.coins < cost ? "disabled" : ""}>
-                    ${done ? "Max Level" : `${coins(cost)} Coins`}
-                </button>
-            </article>
-        `;
-    }).join("");
+    if (angelUiSystem) {
+        angelUiSystem.render();
+    }
 }
 
 function renderInventory() {
@@ -368,15 +291,37 @@ function renderInventory() {
 }
 
 function renderIndex() {
-    elements.index.innerHTML = getGroupedFishIndex(state).map((areaBlock) => {
+    // Performance: nur die aktuelle Area rendert die vollen Fisch-SVGs.
+    // Andere Areas zeigen nur den Fortschritts-Counter — vermeidet 60+ SVG-Renders.
+    const groups = getGroupedFishIndex(state);
+    elements.index.innerHTML = groups.map((areaBlock) => {
         const unlocked = state.unlockedAreas.includes(areaBlock.areaId);
         const area = AREAS[areaBlock.areaId];
+        const isCurrent = areaBlock.areaId === state.currentArea;
+
         if (!unlocked) {
             return `
-                <section class="index-area is-locked">
+                <section class="index-area is-locked is-collapsed">
                     <div class="index-area-head">
                         <h3>${area.name}</h3>
-                        <span class="area-lock">Durch Prestige gesperrt</span>
+                        <div class="index-area-meta">
+                            <strong>${areaBlock.progress.caught}/${areaBlock.progress.total}</strong>
+                            <span class="area-lock">Durch Prestige gesperrt</span>
+                        </div>
+                    </div>
+                </section>
+            `;
+        }
+
+        if (!isCurrent) {
+            return `
+                <section class="index-area is-collapsed">
+                    <div class="index-area-head">
+                        <h3>${area.name}</h3>
+                        <div class="index-area-meta">
+                            <strong>${areaBlock.progress.caught}/${areaBlock.progress.total}</strong>
+                            <span class="area-hint">Wechsel zu ${area.name} um die Fische zu sehen</span>
+                        </div>
                     </div>
                 </section>
             `;
@@ -385,7 +330,7 @@ function renderIndex() {
         const chances = getRarityChances(areaBlock.areaId, state.upgrades.luck);
 
         return `
-            <section class="index-area">
+            <section class="index-area is-current">
                 <div class="index-area-head">
                     <h3>${area.name}</h3>
                     <strong>${areaBlock.progress.caught}/${areaBlock.progress.total}</strong>
@@ -575,6 +520,10 @@ function showCoinGain(amount, fishEl) {
 
 async function saveNow() {
     window.clearTimeout(saveTimer);
+    if (cloudSaveBlocked) {
+        setSaveStatus("Cloud nicht geladen. Bitte neu laden.", true);
+        return;
+    }
     setSaveStatus(user ? "Cloud-Save läuft..." : "Lokal speichern...");
     const result = await saveState(state, user);
     if (result.error) {
@@ -585,6 +534,10 @@ async function saveNow() {
 }
 
 function scheduleSave() {
+    if (cloudSaveBlocked) {
+        setSaveStatus("Cloud nicht geladen. Bitte neu laden.", true);
+        return;
+    }
     window.clearTimeout(saveTimer);
     saveTimer = window.setTimeout(() => saveNow(), 750);
 }
@@ -620,7 +573,15 @@ const minigame = new FishingMinigame(elements.fishingOverlay, {
         setHint("Halte die grüne Zone am Punkt. Der Fangfortschritt sinkt nur langsam, wenn du ihn verlierst.");
     },
     onClose() {
+        audio.pauseReel?.();
         setHint("Tippe die nächste Fischstelle an.");
+    },
+    onHoldChange(held) {
+        if (held) {
+            audio.playReel?.();
+        } else {
+            audio.pauseReel?.();
+        }
     },
     onCatch(candidate) {
         const isNew = !state.index[candidate.fishId]?.count;
@@ -698,17 +659,17 @@ function bindUi() {
         }
     });
 
-    elements.upgrades.addEventListener("click", (event) => {
-        const button = event.target.closest("[data-buy-upgrade]");
-        if (!button) {
-            return;
-        }
-        if (!buyUpgrade(state, button.dataset.buyUpgrade)) {
-            return;
-        }
-        audio.playBuy();
-        renderAll();
-        scheduleSave();
+    // Angel-UI system bridge: buyUpgrade + Buy-Sound + Save
+    angelUiSystem = new AngelUiSystem(elements.angelBody, {
+        getState: () => state,
+        formatCoins: (value) => coins(value),
+        onBuy(upgradeId) {
+            if (!buyUpgrade(state, upgradeId)) return false;
+            audio.playBuy?.();
+            renderAll();
+            scheduleSave();
+            return true;
+        },
     });
 
     elements.sellAll.addEventListener("click", () => {
@@ -785,71 +746,6 @@ function bindUi() {
 
     window.addEventListener("pointerdown", () => audio.unlock(), { once: true });
     window.addEventListener("keydown", () => audio.unlock(), { once: true });
-
-    const params = new URLSearchParams(location.search);
-    if (params.has("test")) {
-        try { localStorage.setItem("mfk_test", "1"); } catch {}
-    }
-    if (params.has("notest")) {
-        try { localStorage.removeItem("mfk_test"); } catch {}
-    }
-    let testEnabled = false;
-    try { testEnabled = localStorage.getItem("mfk_test") === "1"; } catch {}
-    if (testEnabled || params.has("test")) {
-        document.querySelectorAll("[data-test-only]").forEach((el) => {
-            el.hidden = false;
-        });
-    }
-
-    elements.testPanel.addEventListener("click", (event) => {
-        const button = event.target.closest("[data-test-action]");
-        if (!button) {
-            return;
-        }
-        const action = button.dataset.testAction;
-        if (action === "coins") {
-            state.coins += 100000;
-            state.stats.totalCoinsEarned += 100000;
-            renderAll();
-            scheduleSave();
-            return;
-        }
-        if (action.startsWith("fish-")) {
-            closeWindows();
-            coinFishSystem?.spawnTier(action.slice(5));
-            return;
-        }
-        if (action.startsWith("weather-")) {
-            const type = action.slice(8);
-            if (type === "clear") {
-                weatherEventSystem?.forceEvent(null);
-            } else {
-                weatherEventSystem?.forceEvent(type);
-            }
-            closeWindows();
-            return;
-        }
-        if (action.startsWith("force-spawn-")) {
-            const rarity = action.slice(12);
-            const niceRarity = rarity.charAt(0).toUpperCase() + rarity.slice(1).toLowerCase();
-            // WICHTIG: closeWindows() vor spawnForced(), sonst blockt canSpawn() weil activeWindow gesetzt ist.
-            closeWindows();
-            bubbleSystem?.spawnForced(niceRarity);
-            return;
-        }
-        if (action === "preview-fish") {
-            closeWindows();
-            showFishGallery();
-            return;
-        }
-    });
-
-    document.getElementById("fish-gallery-close")?.addEventListener("click", hideFishGallery);
-    document.getElementById("fish-gallery-overlay")?.addEventListener("click", (event) => {
-        if (event.target === event.currentTarget) {
-            hideFishGallery();
-        }
-    });
 
     elements.saveNow.addEventListener("click", saveNow);
     elements.leaderboardReload.addEventListener("click", () => {
@@ -941,6 +837,11 @@ function handleAdminEvent(row) {
         bubbleSystem?.spawnForced(niceRarity);
         showBroadcast(`⚙ Admin: ${niceRarity}-Fischstelle aufgetaucht!`);
         audio.playCatch?.();
+        return;
+    }
+
+    if (type === "spawn-karl") {
+        karlSystem?.spawn(30000);
     }
 }
 
@@ -1001,11 +902,23 @@ function subscribeAdminEvents() {
     adminEventPollTimer = window.setInterval(pollAdminEvents, 12000);
 }
 
+// Sicherheitsnetz: falls init() aus irgendeinem Grund hängt (Supabase-Timeout,
+// Modul-Loading-Error etc.) blendet sich der Loading-Screen nach 8 s automatisch aus
+// damit der Spieler nicht endlos vorm "Der Ozean wartet" Screen steht.
+window.setTimeout(() => {
+    const loader = document.getElementById("fishing-loading");
+    if (loader && !loader.classList.contains("is-done")) {
+        console.warn("Loading-Screen Sicherheits-Fallback ausgelöst nach 8 s.");
+        hideLoadingScreen();
+    }
+}, 8000);
+
 async function init() {
     bindUi();
     const loaded = await loadState();
     state = normalizeState(loaded.state);
     user = loaded.user;
+    cloudSaveBlocked = loaded.mode === "cloud-error";
     setSaveStatus(
         loaded.mode === "cloud"
             ? "Cloud-Save geladen."
@@ -1068,9 +981,93 @@ async function init() {
             scheduleSave();
         },
     });
+    try {
     coinFishSystem.start();
+
+    karlSystem = new KarlSystem(elements.water, {
+        canSpawn: () => !activeWindow && elements.fishingOverlay.hidden && elements.areaTransition.hidden,
+        getCurrentArea: () => state.currentArea,
+        onSpawn() {
+            showBroadcast(`🐢 ${KARL_NAME} ist aufgetaucht — tippe ihn schnell an!`);
+            audio.playCatch?.();
+        },
+        onEscape() {
+            showBroadcast(`🐢 ${KARL_NAME} ist wieder abgetaucht.`);
+        },
+        onReward(reward) {
+            if (reward.type === "coins-fixed") {
+                state.coins += reward.amount;
+                state.stats.totalCoinsEarned += reward.amount;
+                showBroadcast(`🐢 Karl: +${reward.amount} Coins!`);
+                audio.playSell?.();
+                renderAll();
+                scheduleSave();
+            } else if (reward.type === "spawn" && reward.rarity) {
+                bubbleSystem?.spawnForced(reward.rarity);
+                showBroadcast(`🐢 Karl spawnt eine ${reward.rarity}-Fischstelle!`);
+                audio.playCatch?.();
+            }
+        },
+    });
+    karlSystem.start();
+
+    dailySystem = new DailySystem({
+        onClaimRegistered() {
+            // Wird sofort persistiert damit Reload nicht doppelt zeigt.
+            scheduleSave();
+            renderHud();
+        },
+        onClaim(reward) {
+            // Coins gutschreiben
+            if (reward.coins > 0) {
+                state.coins += reward.coins;
+                state.stats.totalCoinsEarned += reward.coins;
+            }
+            // Spawn-Belohnung: pro count einen Force-Spawn auslösen.
+            // Daily-Spots leben 90 s (statt 12 s) damit niemand seine garantierte
+            // Belohnung verpasst — auch nicht bei 2 gleichzeitigen Spawns.
+            if (reward.spawn?.rarity && reward.spawn.count > 0) {
+                const count = reward.spawn.count;
+                const rarity = reward.spawn.rarity;
+                for (let i = 0; i < count; i++) {
+                    // Leicht zeitversetzt damit Spots nicht direkt übereinander spawnen
+                    window.setTimeout(() => bubbleSystem?.spawnForced(rarity, { lifetimeSec: 90 }), i * 600);
+                }
+            }
+            const parts = [];
+            if (reward.coins > 0) parts.push(`+${reward.coins.toLocaleString("de-DE")} Coins`);
+            if (reward.spawn) {
+                parts.push(`${reward.spawn.count > 1 ? reward.spawn.count + "× " : ""}${reward.spawn.rarity}-Fischstelle`);
+            }
+            if (parts.length) showBroadcast(`📅 Daily-Bonus (Tag ${reward.streakDay}): ${parts.join(" + ")}`);
+            audio.playSell?.();
+            renderAll();
+            scheduleSave();
+        },
+    });
+    // Erst nach init zeigen damit das Spiel komplett gerendert ist.
+    if (!cloudSaveBlocked) {
+        window.setTimeout(() => dailySystem.checkAndShow(state), 800);
+    }
+
     subscribeAdminEvents();
     renderAll();
+    } catch (err) {
+        console.error("Init failed nach Save-Load:", err);
+    } finally {
+        hideLoadingScreen();
+    }
+}
+
+function hideLoadingScreen() {
+    const loader = document.getElementById("fishing-loading");
+    if (!loader) return;
+    // Ein Frame Verzögerung damit Wasser-Canvas + erstes Render auf dem Bildschirm sind
+    // bevor wir ausblenden — vermeidet weißen Flash.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        loader.classList.add("is-done");
+        window.setTimeout(() => loader.remove(), 700);
+    }));
 }
 
 init();

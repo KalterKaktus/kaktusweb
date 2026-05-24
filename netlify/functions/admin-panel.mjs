@@ -19,6 +19,7 @@ const ADMIN_GAME_EVENT_TYPES = {
         "force-spawn-legendary",
         // Upgrade-sicher: bei neuer Rarity (z.B. "force-spawn-mythic") einfach hier
         // ergänzen + Client-Handler matched per Prefix automatisch.
+        "spawn-karl",
         "force-reload",
     ]),
 };

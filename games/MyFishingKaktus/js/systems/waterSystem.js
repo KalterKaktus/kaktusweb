@@ -190,17 +190,18 @@ float height(vec2 p, float t){
     h += exp(-r*0.02) * exp(-age*4.0) * 1.6 * u_splashAmp;
   }
 
-  // Rain — viele kleine Tropfen-Impulse, prozedural. Kleinere Ringe, mehr Drops.
+  // Rain — wenige mittelgroße Tropfen statt vieler kleiner. Spart massiv GPU,
+  // besonders im Sturm-Event. Loop-Count 22 → 8, dafür größere Ringe.
   if (u_rain > 0.001) {
-    for (int i = 0; i < 22; i++) {
+    for (int i = 0; i < 8; i++) {
       vec3 drop = rainDrop(i, t);
       if (drop.z > 0.85) continue;
       vec2 dd = p - drop.xy;
       float dr = length(dd);
-      float waveR = dr - drop.z * 110.0;
-      float envR  = exp(-drop.z * 2.4) * exp(-abs(waveR) * 0.07);
-      h += sin(waveR * 0.5) * envR * 0.30 * u_rain;
-      h += exp(-dr * 0.11) * exp(-drop.z * 10.0) * 0.26 * u_rain;
+      float waveR = dr - drop.z * 190.0;
+      float envR  = exp(-drop.z * 1.9) * exp(-abs(waveR) * 0.04);
+      h += sin(waveR * 0.32) * envR * 0.55 * u_rain;
+      h += exp(-dr * 0.07) * exp(-drop.z * 8.0) * 0.45 * u_rain;
     }
   }
   return h;
@@ -271,14 +272,14 @@ void main(){
     splashGlow += vec3(0.8,0.97,1.0) * (core*0.7 + ring*0.35) * u_splashAmp;
   }
 
-  // Rain splash cores — helle Köpfchen wo Tropfen einschlagen (kleiner, dichter)
+  // Rain splash cores — wenige große, helle Köpfchen. Matching auf die 8-Drop-Variante oben.
   if (u_rain > 0.001) {
-    for (int i = 0; i < 22; i++) {
+    for (int i = 0; i < 8; i++) {
       vec3 drop = rainDrop(i, t);
       if (drop.z > 0.40) continue;
       float dr = length(p - drop.xy);
-      float core = exp(-dr * 0.10) * exp(-drop.z * 9.0);
-      splashGlow += vec3(0.7, 0.93, 1.0) * core * 0.16 * u_rain;
+      float core = exp(-dr * 0.06) * exp(-drop.z * 7.5);
+      splashGlow += vec3(0.7, 0.93, 1.0) * core * 0.34 * u_rain;
     }
   }
 
@@ -634,6 +635,15 @@ export class WaterSystem {
         if (this._stopped) return;
         this._raf = requestAnimationFrame(this._frame);
 
+        // Performance: skip rendering wenn Tab nicht sichtbar oder das Wasser komplett
+        // von einer UI verdeckt ist. Spart auf iPad/Safari massiv GPU.
+        if (document.hidden) return;
+        // Eine einzige querySelector-Abfrage pro Frame (~0.01 ms) für alle voll-deckenden
+        // Overlays: Shop/Inventory/Index/etc., Karl-Flow, Daily-Reward, Fang-Minispiel.
+        // WICHTIG: area-transition fehlt bewusst — das Wasser MUSS während Cloud-Sweep
+        // weiterrendern damit die neuen Area-Farben hinter den Wolken sichtbar werden.
+        if (document.querySelector(WaterSystem.COVERING_SELECTOR)) return;
+
         if (isMotionReduced()) {
             if (!this._staticDone) {
                 this._draw(0, 0, 0);
@@ -764,3 +774,14 @@ export class WaterSystem {
 }
 
 export const WATER_PRESETS = Object.keys(PRESETS);
+
+// Voll-deckende UI-Overlays die das Wasser visuell komplett verdecken — während
+// eines davon offen ist pausiert der Shader. Spart massiv GPU auf Mobile.
+WaterSystem.COVERING_SELECTOR = [
+    ".game-window:not([hidden])",
+    "#fishing-overlay:not([hidden])",
+    "#daily-overlay:not([hidden])",
+    "#karl-overlay:not([hidden])",
+    "#karl-wheel-overlay:not([hidden])",
+    "#karl-reward-popup:not([hidden])",
+].join(",");

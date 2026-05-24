@@ -1,19 +1,7 @@
 const STORAGE_KEY = "my-fishing-kaktus-audio-v1";
 const DEFAULTS = { musicMuted: false, sfxMuted: false, musicVolume: 0.55, sfxVolume: 0.7 };
-
-const STEP_SECONDS = 0.72;
-const STEPS_PER_LOOP = 64;
-
-// Soft pad chords (three low-mid voices each) for a calm I-vi-IV-V feel.
-const CHORDS = [
-    [130.81, 196.0, 329.63],
-    [110.0, 164.81, 261.63],
-    [87.31, 130.81, 220.0],
-    [98.0, 146.83, 246.94],
-];
-
-// C major pentatonic pluck notes — never dissonant.
-const PLUCK_NOTES = [392.0, 440.0, 523.25, 587.33, 659.25, 783.99];
+const MUSIC_SRC = "assets/audio/meditation-music-4-96k.mp3";
+const REEL_SRC = "assets/audio/fishing-reel.mp3";
 
 function clamp01(value) {
     return Math.min(1, Math.max(0, Number(value) || 0));
@@ -42,10 +30,14 @@ export class AudioSystem {
         this.ctx = null;
         this.musicBus = null;
         this.sfxBus = null;
-        this.step = 0;
-        this.nextStepTime = 0;
-        this.schedulerId = 0;
-        this.pluckIndex = 2;
+        this.musicFilter = null;
+        this.musicEl = null;
+        this.musicSource = null;
+        this.reelEl = null;
+        this.reelSource = null;
+        this.rainSource = null;
+        this.rainFilter = null;
+        this.rainGain = null;
     }
 
     unlock() {
@@ -57,23 +49,63 @@ export class AudioSystem {
             this.ctx = new Ctx();
             this.musicBus = this.ctx.createGain();
             this.sfxBus = this.ctx.createGain();
-            // Musik läuft durch einen Lowpass-Filter, damit Wetter-Events
-            // die Stimmung modulieren können (sunny = offen, nacht = gedämpft).
+
             this.musicFilter = this.ctx.createBiquadFilter();
             this.musicFilter.type = "lowpass";
             this.musicFilter.frequency.value = 22050;
             this.musicFilter.Q.value = 0.7;
+
             this.musicBus.connect(this.musicFilter);
             this.musicFilter.connect(this.ctx.destination);
             this.sfxBus.connect(this.ctx.destination);
+
+            this.initMusicLoop();
+            this.initReelLoop();
             this.applyVolumes();
-            this.step = 0;
-            this.nextStepTime = this.ctx.currentTime + 0.18;
-            this.runScheduler();
         }
         if (this.ctx.state === "suspended") {
             this.ctx.resume();
         }
+        this.playMusicIfAllowed();
+    }
+
+    initMusicLoop() {
+        if (this.musicEl || !this.ctx) {
+            return;
+        }
+        this.musicEl = new Audio(MUSIC_SRC);
+        this.musicEl.loop = true;
+        this.musicEl.preload = "metadata";
+        this.musicSource = this.ctx.createMediaElementSource(this.musicEl);
+        this.musicSource.connect(this.musicBus);
+    }
+
+    initReelLoop() {
+        if (this.reelEl || !this.ctx) {
+            return;
+        }
+        this.reelEl = new Audio(REEL_SRC);
+        this.reelEl.loop = true;
+        this.reelEl.preload = "metadata";
+        this.reelSource = this.ctx.createMediaElementSource(this.reelEl);
+        this.reelSource.connect(this.sfxBus);
+    }
+
+    playAudioElement(el) {
+        if (!el) {
+            return;
+        }
+        const play = el.play();
+        if (play && typeof play.catch === "function") {
+            play.catch(() => {});
+        }
+    }
+
+    playMusicIfAllowed() {
+        if (this.settings.musicMuted) {
+            return;
+        }
+        this.playAudioElement(this.musicEl);
     }
 
     save() {
@@ -97,18 +129,27 @@ export class AudioSystem {
     setMusicMuted(muted) {
         this.settings.musicMuted = Boolean(muted);
         this.applyVolumes();
+        if (this.settings.musicMuted) {
+            this.musicEl?.pause();
+        } else {
+            this.playMusicIfAllowed();
+        }
         this.save();
     }
 
     setSfxMuted(muted) {
         this.settings.sfxMuted = Boolean(muted);
         this.applyVolumes();
+        if (this.settings.sfxMuted) {
+            this.pauseReel();
+        }
         this.save();
     }
 
     setMusicVolume(value) {
         this.settings.musicVolume = clamp01(value);
         this.applyVolumes();
+        this.playMusicIfAllowed();
         this.save();
     }
 
@@ -118,75 +159,16 @@ export class AudioSystem {
         this.save();
     }
 
-    runScheduler() {
-        if (!this.ctx) {
+    playReel() {
+        this.unlock();
+        if (this.settings.sfxMuted) {
             return;
         }
-        while (this.nextStepTime < this.ctx.currentTime + 0.7) {
-            if (!this.settings.musicMuted) {
-                this.scheduleStep(this.step, Math.max(this.nextStepTime, this.ctx.currentTime));
-            }
-            this.step = (this.step + 1) % STEPS_PER_LOOP;
-            this.nextStepTime += STEP_SECONDS;
-        }
-        this.schedulerId = window.setTimeout(() => this.runScheduler(), 220);
+        this.playAudioElement(this.reelEl);
     }
 
-    scheduleStep(step, time) {
-        if (step % 8 === 0) {
-            this.playPad(CHORDS[(step / 8) % CHORDS.length], time);
-        }
-        if (step % 2 === 0 && Math.random() < 0.62) {
-            const drift = Math.round((Math.random() - 0.5) * 2.4);
-            this.pluckIndex = Math.min(PLUCK_NOTES.length - 1, Math.max(0, this.pluckIndex + drift));
-            this.playPluck(PLUCK_NOTES[this.pluckIndex], time);
-        }
-    }
-
-    playPad(freqs, time) {
-        const duration = STEP_SECONDS * 8 + 2.4;
-        freqs.forEach((freq, voice) => {
-            const osc = this.ctx.createOscillator();
-            osc.type = "triangle";
-            osc.frequency.value = freq;
-            osc.detune.value = (voice - 1) * 5;
-            const filter = this.ctx.createBiquadFilter();
-            filter.type = "lowpass";
-            filter.frequency.value = 760;
-            const gain = this.ctx.createGain();
-            gain.gain.setValueAtTime(0.0001, time);
-            gain.gain.linearRampToValueAtTime(0.12, time + 2.6);
-            gain.gain.linearRampToValueAtTime(0.09, time + duration - 2.6);
-            gain.gain.linearRampToValueAtTime(0.0001, time + duration);
-            osc.connect(filter);
-            filter.connect(gain);
-            gain.connect(this.musicBus);
-            osc.start(time);
-            osc.stop(time + duration + 0.1);
-        });
-    }
-
-    playPluck(freq, time) {
-        const osc = this.ctx.createOscillator();
-        osc.type = "sine";
-        osc.frequency.value = freq;
-        const shimmer = this.ctx.createOscillator();
-        shimmer.type = "sine";
-        shimmer.frequency.value = freq * 2;
-        const shimmerGain = this.ctx.createGain();
-        shimmerGain.gain.value = 0.16;
-        const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(0.0001, time);
-        gain.gain.linearRampToValueAtTime(0.13, time + 0.03);
-        gain.gain.exponentialRampToValueAtTime(0.0006, time + 1.7);
-        osc.connect(gain);
-        shimmer.connect(shimmerGain);
-        shimmerGain.connect(gain);
-        gain.connect(this.musicBus);
-        osc.start(time);
-        shimmer.start(time);
-        osc.stop(time + 1.8);
-        shimmer.stop(time + 1.8);
+    pauseReel() {
+        this.reelEl?.pause();
     }
 
     blip({ type = "sine", from, to, peak, attack = 0.014, duration, delay = 0 }) {
@@ -241,20 +223,17 @@ export class AudioSystem {
     }
 
     playBuy() {
-        // affirmative two-tone ding
         this.blip({ type: "triangle", from: 988, to: 988, peak: 0.32, duration: 0.18, attack: 0.006 });
         this.blip({ type: "triangle", from: 1318, to: 1318, peak: 0.3, duration: 0.34, attack: 0.008, delay: 0.07 });
-        this.blip({ type: "sine",     from: 1976, to: 1976, peak: 0.14, duration: 0.5,  attack: 0.012, delay: 0.07 });
+        this.blip({ type: "sine", from: 1976, to: 1976, peak: 0.14, duration: 0.5, attack: 0.012, delay: 0.07 });
     }
 
     playSpotEmerge() {
-        // bubble pop — short sine rise + soft thump
         this.blip({ type: "sine", from: 240, to: 480, peak: 0.26, duration: 0.18, attack: 0.005 });
         this.blip({ type: "sine", from: 900, to: 1200, peak: 0.10, duration: 0.10, attack: 0.004, delay: 0.02 });
     }
 
     playSplash() {
-        // Bewusst derselbe Sound wie das Fisch-Auftauch-Plop — fühlt sich konsistenter an.
         this.playSpotEmerge();
     }
 

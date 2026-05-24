@@ -15,6 +15,23 @@ const TENSION_DRAIN_BY_RARITY = {
     Legendary: 0.333,
 };
 
+// Bewegungs-Verhalten pro Rarity. Common = sehr ruhig, Legendary = aggressiv & hektisch.
+//   baseSpeed/speedVariance: Geschwindigkeit (Anteil der Track-Breite pro Sekunde)
+//   minTurn/maxTurn: Sekunden bis zur nächsten Richtungs-Entscheidung
+//   flipChance: Wahrscheinlichkeit, beim Turn die Richtung umzukehren
+const FISH_BEHAVIOR = {
+    Common:    { baseSpeed: 0.10, speedVariance: 0.06, minTurn: 0.70, maxTurn: 1.60, flipChance: 0.45 },
+    Uncommon:  { baseSpeed: 0.14, speedVariance: 0.10, minTurn: 0.55, maxTurn: 1.35, flipChance: 0.55 },
+    Rare:      { baseSpeed: 0.22, speedVariance: 0.14, minTurn: 0.40, maxTurn: 1.05, flipChance: 0.65 },
+    Epic:      { baseSpeed: 0.30, speedVariance: 0.18, minTurn: 0.28, maxTurn: 0.85, flipChance: 0.72 },
+    Legendary: { baseSpeed: 0.42, speedVariance: 0.22, minTurn: 0.20, maxTurn: 0.68, flipChance: 0.78 },
+};
+
+// Rod-Level beeinflusst Fish-Speed (langsamer) und Turn-Häufigkeit (seltener).
+// Cap so dass selbst bei Maxlevel ein Legendary noch deutlich aggressiver bleibt als ein Common.
+function rodSpeedMultiplier(rod) { return Math.max(0.65, 1 - rod * 0.06); }
+function rodTurnMultiplier(rod) { return 1 + rod * 0.08; }
+
 export class FishingMinigame {
     constructor(root, options) {
         this.root = root;
@@ -36,6 +53,9 @@ export class FishingMinigame {
     bindInput() {
         const setHeld = (held) => {
             if (this.active) {
+                if (this.active.held !== held) {
+                    this.options.onHoldChange?.(held);
+                }
                 this.active.held = held;
             }
         };
@@ -60,6 +80,21 @@ export class FishingMinigame {
         this.holdSurface.addEventListener("selectstart", blockSelection);
         this.holdSurface.addEventListener("contextmenu", blockSelection);
         this.holdSurface.addEventListener("dragstart", blockSelection);
+
+        // iOS-Lupe: muss touchstart/touchend explizit mit { passive: false } blockt
+        // werden — CSS allein reicht nicht. Auch dblclick blocken weil Safari sonst
+        // beim doppelten Tippen die Text-Auswahl-Lupe öffnet.
+        const blockTouch = (event) => { if (event.cancelable) event.preventDefault(); };
+        this.holdSurface.addEventListener("touchstart", blockTouch, { passive: false });
+        this.holdSurface.addEventListener("touchend", blockTouch, { passive: false });
+        this.holdSurface.addEventListener("touchmove", blockTouch, { passive: false });
+        this.holdSurface.addEventListener("dblclick", blockSelection);
+        // Auch auf dem ganzen Overlay-Card iOS-Lupe verhindern beim Doppeltippen.
+        const overlayCard = this.root.querySelector(".fishing-overlay-card");
+        if (overlayCard) {
+            overlayCard.addEventListener("dblclick", blockSelection);
+            overlayCard.addEventListener("contextmenu", blockSelection);
+        }
     }
 
     start(candidate, bonuses) {
@@ -71,14 +106,23 @@ export class FishingMinigame {
         const rod = Math.max(0, bonuses.rod || 0);
         const line = Math.max(0, bonuses.line || 0);
         const hook = Math.max(0, bonuses.hook || 0);
+        const behavior = FISH_BEHAVIOR[candidate.fish.rarity] || FISH_BEHAVIOR.Common;
+        const rodSpeedMult = rodSpeedMultiplier(rod);
+        const rodTurnMult = rodTurnMultiplier(rod);
+        const initSpeed = (behavior.baseSpeed + Math.random() * behavior.speedVariance) * rodSpeedMult;
+        const initTurn = (behavior.minTurn + Math.random() * (behavior.maxTurn - behavior.minTurn)) * rodTurnMult;
+
         this.active = {
             candidate,
+            behavior,
+            rodSpeedMult,
+            rodTurnMult,
             held: false,
             lastTime: performance.now(),
             progress: 0,
             fishPosition: 0.5,
-            fishVelocity: (Math.random() > 0.5 ? 1 : -1) * (0.18 + Math.random() * 0.18) * rarity.difficulty,
-            fishTurnIn: 0.4 + Math.random() * 0.7,
+            fishVelocity: (Math.random() > 0.5 ? 1 : -1) * initSpeed,
+            fishTurnIn: initTurn,
             zonePosition: 0.2,
             zoneVelocity: 0,
             zoneWidth: Math.min(0.44, 0.19 + rod * 0.035),
@@ -115,10 +159,10 @@ export class FishingMinigame {
         game.lastTime = time;
         game.fishTurnIn -= delta;
         if (game.fishTurnIn <= 0) {
-            const flip = Math.random() > 0.28 ? -1 : 1;
-            const speed = 0.15 + Math.random() * 0.31;
-            game.fishVelocity = flip * Math.sign(game.fishVelocity || 1) * speed * RARITIES[game.candidate.fish.rarity].difficulty;
-            game.fishTurnIn = 0.26 + Math.random() * 0.9;
+            const flip = Math.random() < game.behavior.flipChance ? -1 : 1;
+            const speed = (game.behavior.baseSpeed + Math.random() * game.behavior.speedVariance) * game.rodSpeedMult;
+            game.fishVelocity = flip * Math.sign(game.fishVelocity || 1) * speed;
+            game.fishTurnIn = (game.behavior.minTurn + Math.random() * (game.behavior.maxTurn - game.behavior.minTurn)) * game.rodTurnMult;
         }
 
         game.fishPosition += game.fishVelocity * delta;
@@ -191,6 +235,7 @@ export class FishingMinigame {
 
         const candidate = this.active.candidate;
         cancelAnimationFrame(this.animationFrame);
+        this.options.onHoldChange?.(false);
         this.active = null;
         this.root.hidden = true;
         this.options.onClose();

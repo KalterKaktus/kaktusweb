@@ -1,8 +1,10 @@
 import { fetchLeaderboard } from "./game-cloud.js";
+import { fetchLeaderboard as fetchFishingLeaderboard } from "/games/MyFishingKaktus/js/systems/saveSystem.js";
 import { formatNumber } from "/games/KaktusClicker/format.js";
 
 const monthlyPlayers = document.getElementById("home-monthly-players");
 const lastMonthPlayers = document.getElementById("home-last-month-players");
+const fishingPlayers = document.getElementById("home-fishing-players");
 
 async function renderHomeLeaderboard() {
     if (!monthlyPlayers || !lastMonthPlayers) {
@@ -20,6 +22,20 @@ async function renderHomeLeaderboard() {
     renderPlayers(lastMonthPlayers, previousTopThree || [], "Noch kein Abschluss");
 }
 
+async function renderHomeFishingLeaderboard() {
+    if (!fishingPlayers) {
+        return;
+    }
+
+    const { entries, error } = await fetchFishingLeaderboard();
+    if (error) {
+        renderPlayers(fishingPlayers, [], "Rangliste offline");
+        return;
+    }
+
+    renderFishingPlayers(fishingPlayers, entries.slice(0, 3), "Noch kein Angler");
+}
+
 function renderPlayers(root, entries, emptyText) {
     root.innerHTML = entries.length
         ? entries.map((entry) => `
@@ -27,6 +43,18 @@ function renderPlayers(root, entries, emptyText) {
                 <b>#${entry.rank}</b>
                 <span>${escapeHtml(entry.name)}</span>
                 <em>${escapeHtml(formatNumber(entry.totalEarned ?? entry.score))}</em>
+            </li>
+        `).join("")
+        : `<li>${escapeHtml(emptyText)}</li>`;
+}
+
+function renderFishingPlayers(root, entries, emptyText) {
+    root.innerHTML = entries.length
+        ? entries.map((entry, index) => `
+            <li>
+                <b>#${entry.rank || index + 1}</b>
+                <span>${escapeHtml(entry.name)}</span>
+                <em>Prestige ${escapeHtml(entry.prestige)} · ${escapeHtml(formatNumber(entry.totalCaught))} Fänge</em>
             </li>
         `).join("")
         : `<li>${escapeHtml(emptyText)}</li>`;
@@ -42,3 +70,4 @@ function escapeHtml(value) {
 }
 
 renderHomeLeaderboard();
+renderHomeFishingLeaderboard();

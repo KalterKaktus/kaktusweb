@@ -1,2 +1,5 @@
 # Optional: lokale Overrides (Publishable Key darf in js/config.js committed werden)
 # js/config.local.js
+
+# Lokale Original-Audiodatei; die Website nutzt die komprimierte 96k-Version.
+games/MyFishingKaktus/assets/audio/meditation-music-4.mp3
