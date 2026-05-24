@@ -935,6 +935,53 @@ body::before {
     color: #041d30;
 }
 
+/* === XP Leaderboard (Top 3 Accounts) === */
+.home-leaderboard-card.is-xp {
+    border-color: rgba(213, 140, 255, 0.32);
+    background:
+        radial-gradient(circle at 16% 12%, rgba(95, 184, 255, 0.18), transparent 16rem),
+        radial-gradient(circle at 92% 18%, rgba(213, 140, 255, 0.18), transparent 18rem),
+        linear-gradient(145deg, rgba(40, 16, 78, 0.85), rgba(3, 12, 31, 0.96) 56%);
+    box-shadow:
+        0 16px 44px rgba(0, 0, 0, 0.28),
+        inset 0 1px rgba(220, 200, 255, 0.1);
+}
+.home-leaderboard-card.is-xp:hover {
+    border-color: #d58cff;
+    box-shadow:
+        0 22px 54px rgba(0, 0, 0, 0.32),
+        0 0 32px rgba(213, 140, 255, 0.14);
+}
+.home-leaderboard-badge.is-xp {
+    border-color: rgba(213, 140, 255, 0.4);
+    background:
+        radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.18), transparent 45%),
+        linear-gradient(180deg, rgba(120, 60, 200, 0.78), rgba(45, 20, 90, 0.86));
+    box-shadow:
+        inset 0 -18px 30px rgba(20, 8, 40, 0.3),
+        0 0 26px rgba(213, 140, 255, 0.14);
+    display: grid;
+    place-items: center;
+    color: #ffd166;
+    font-size: 2.4rem;
+    font-weight: 900;
+    text-shadow: 0 0 18px rgba(255, 209, 102, 0.6);
+}
+.home-leaderboard-card.is-xp .page-kicker { color: #d58cff; }
+.home-leaderboard-card.is-xp .home-xp-board {
+    display: block;
+    margin-top: 0.9rem;
+    padding: 0.72rem 0.78rem;
+    border: 1px solid rgba(213, 140, 255, 0.18);
+    border-radius: 8px;
+    background: rgba(20, 8, 40, 0.55);
+}
+.home-leaderboard-card.is-xp .home-leaderboard-players b { color: #ffd166; }
+.home-leaderboard-card.is-xp .home-leaderboard-cta {
+    background: #d58cff;
+    color: #1a0830;
+}
+
 .primary-link,
 .ghost-link {
     display: inline-flex;

@@ -5,18 +5,37 @@
 
 // Level-Formel: XP_to_reach(N) = N² × 8
 //   → Lvl 25 = 5.000 XP · Lvl 50 = 20k · Lvl 75 = 45k · Lvl 100 = 80k
+//   → Lvl 500 = 2 Mio · Lvl 1000 = 8 Mio · Lvl 9999 ≈ 800 Mio XP
 // Inverse: level(xp) = floor(sqrt(xp/8))
+// Cap bei 9999 — Lvl 100 ist eine Milestone (Badge), nicht das Ende.
+// Bei 1000 XP/Tag Hardcore-Grind erreicht man Lvl 9999 in ~22 Jahren = praktisch unerreichbar.
 export const LEVEL_COEF = 8;
+export const LEVEL_CAP = 9999;
 
 export function xpForLevel(level) {
-    return Math.floor(level * level * LEVEL_COEF);
+    const safe = Math.min(LEVEL_CAP, Math.max(0, Math.floor(Number(level) || 0)));
+    return Math.floor(safe * safe * LEVEL_COEF);
 }
 export function levelFromXp(xp) {
-    return Math.floor(Math.sqrt(Math.max(0, Number(xp) || 0) / LEVEL_COEF));
+    const raw = Math.floor(Math.sqrt(Math.max(0, Number(xp) || 0) / LEVEL_COEF));
+    return Math.min(LEVEL_CAP, raw);
 }
 export function xpProgress(xp) {
     const n = Math.max(0, Number(xp) || 0);
     const level = levelFromXp(n);
+    if (level >= LEVEL_CAP) {
+        // Bei erreichtem Cap: progress = 100 %, kein "next level"
+        const currentLevelXp = xpForLevel(LEVEL_CAP);
+        return {
+            level: LEVEL_CAP,
+            xp: n,
+            gained: Math.max(0, n - currentLevelXp),
+            needed: 0,
+            percent: 100,
+            nextLevelAt: currentLevelXp,
+            capped: true,
+        };
+    }
     const currentLevelXp = xpForLevel(level);
     const nextLevelXp = xpForLevel(level + 1);
     const gained = n - currentLevelXp;
@@ -28,6 +47,7 @@ export function xpProgress(xp) {
         needed,
         percent: needed > 0 ? Math.min(100, (gained / needed) * 100) : 100,
         nextLevelAt: nextLevelXp,
+        capped: false,
     };
 }
 

@@ -2,10 +2,12 @@ import { fetchLeaderboard } from "./game-cloud.js";
 import { fetchLeaderboard as fetchFishingLeaderboard } from "/games/MyFishingKaktus/js/systems/saveSystem.js";
 import { formatNumber } from "/games/KaktusClicker/format.js";
 import { renderLevelTag, renderPlayerName } from "./progression.js";
+import { getSupabase, isConfigReady } from "./supabase-client.js";
 
 const monthlyPlayers = document.getElementById("home-monthly-players");
 const lastMonthPlayers = document.getElementById("home-last-month-players");
 const fishingPlayers = document.getElementById("home-fishing-players");
+const xpPlayers = document.getElementById("home-xp-players");
 
 async function renderHomeLeaderboard() {
     if (!monthlyPlayers || !lastMonthPlayers) {
@@ -70,5 +72,42 @@ function escapeHtml(value) {
         .replace(/'/g, "&#039;");
 }
 
+async function renderHomeXpLeaderboard() {
+    if (!xpPlayers) return;
+    if (!isConfigReady()) {
+        xpPlayers.innerHTML = `<li>Rangliste offline</li>`;
+        return;
+    }
+    const supabase = getSupabase();
+    if (!supabase) {
+        xpPlayers.innerHTML = `<li>Rangliste offline</li>`;
+        return;
+    }
+    const { data, error } = await supabase
+        .from("profiles_public")
+        .select("id, username, total_xp, level, equipped_badge, vip, vip_color")
+        .gt("total_xp", 0)
+        .order("total_xp", { ascending: false })
+        .limit(3);
+    if (error) {
+        xpPlayers.innerHTML = `<li>Rangliste offline</li>`;
+        return;
+    }
+    renderXpPlayers(xpPlayers, data || [], "Noch keine Spieler mit XP");
+}
+
+function renderXpPlayers(root, entries, emptyText) {
+    root.innerHTML = entries.length
+        ? entries.map((entry, index) => `
+            <li>
+                <b>#${index + 1}</b>
+                <span>${renderLevelTag(entry.level || 0, entry.equipped_badge || null)}${renderPlayerName(escapeHtml(entry.username || "Spieler"), { vip: entry.vip, vipColor: entry.vip_color })}</span>
+                <em>${formatNumber(entry.total_xp || 0)} XP</em>
+            </li>
+        `).join("")
+        : `<li>${escapeHtml(emptyText)}</li>`;
+}
+
 renderHomeLeaderboard();
 renderHomeFishingLeaderboard();
+renderHomeXpLeaderboard();

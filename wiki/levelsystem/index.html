@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a0830">
+    <title>Level &amp; XP System - KalterKaktus Wiki</title>
+    <meta name="description" content="Technische Referenz zum Level/XP/Badge-System auf kalterkaktus.de: Level-Formel, XP-Quellen, Badges, VIP, Referral.">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="../wiki.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a class="logo" href="/">KK</a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/#about" class="nav-link">About</a>
+                <a href="/steam-deals/" class="nav-link">Steam Deals</a>
+                <a href="/games/" class="nav-link">Games</a>
+                <a href="/wiki/" class="nav-link">Wiki</a>
+                <div id="auth-nav" class="auth-nav" aria-live="polite">
+                    <a class="nav-link auth-link" href="/login.html?next=%2Fwiki%2Flevelsystem%2F">Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="wiki-shell">
+        <aside class="wiki-rail" aria-label="Wiki Inhalte">
+            <section class="rail-block">
+                <p class="rail-label">Plattform</p>
+                <a class="rail-link is-active" href="./">Level &amp; XP</a>
+            </section>
+            <section class="rail-block">
+                <p class="rail-label">Games</p>
+                <a class="rail-link" href="../kaktusclicker/">KaktusClicker</a>
+                <a class="rail-link" href="../myfishingkaktus/">My Fishing Kaktus</a>
+            </section>
+
+            <section class="rail-block toc">
+                <p class="rail-label">Inhalt</p>
+                <a href="#overview">Übersicht</a>
+                <a href="#formula">Level-Formel</a>
+                <a href="#sources">XP-Quellen</a>
+                <a href="#milestones">Level-Beispiele</a>
+                <a href="#badges">Badges</a>
+                <a href="#vip">VIP &amp; Unterstützer</a>
+                <a href="#referral">Referral</a>
+                <a href="#anti-cheat">Anti-Cheat / Limits</a>
+            </section>
+        </aside>
+
+        <article class="wiki-guide" data-wiki-searchable>
+            <header class="guide-head" id="overview">
+                <p class="guide-path">Technische Referenz</p>
+                <h1>Level &amp; XP System</h1>
+                <p class="guide-lead">
+                    Das Account-weite Progressions-System auf kalterkaktus.de. Jeder eingeloggte
+                    Spieler sammelt XP über alle Spiele hinweg, schaltet Level-Milestones frei
+                    und kann Badges einem Profil zuweisen die auf Leaderboards sichtbar sind.
+                </p>
+                <div class="guide-meta">
+                    <span>Stand: 25.05.2026</span>
+                    <span>Level-Cap: 9.999</span>
+                </div>
+            </header>
+
+            <div class="wiki-search">
+                <label for="wiki-search-input" class="sr-only">In dieser Wiki suchen</label>
+                <input type="search" id="wiki-search-input" placeholder="Wiki durchsuchen… (z.B. „Heartbeat", „HAUNTED", „Werber")" autocomplete="off">
+                <span class="wiki-search-info" data-wiki-search-info></span>
+            </div>
+
+            <section data-searchable>
+                <h2>Übersicht</h2>
+                <ul>
+                    <li><strong>1 Account, 1 Level</strong> — XP über alle Spiele hinweg gemeinsam.</li>
+                    <li><strong>Cap bei Level 9.999</strong> — Lvl 100 ist nur ein Milestone, kein Ende.</li>
+                    <li><strong>10 Badges</strong> — 4 Level-Auto-Awards, plus manuelle/spezielle Trigger.</li>
+                    <li><strong>1 Badge gleichzeitig sichtbar</strong> — wählbar im Profil, erscheint neben dem Namen auf Leaderboards + Nav.</li>
+                    <li><strong>VIP-Bonus</strong> +20 % XP-Boost, eigene Namensfarbe.</li>
+                    <li><strong>Referral-System</strong> belohnt Werber sobald geworbener Freund Lvl 5 erreicht.</li>
+                </ul>
+            </section>
+
+            <section data-searchable id="formula">
+                <h2>Level-Formel</h2>
+                <pre><code>XP_to_reach(N) = N² × 8
+level(xp)      = floor(sqrt(xp / 8))
+LEVEL_CAP      = 9999</code></pre>
+                <p>
+                    Quadratische Skalierung — frühe Level kommen schnell, spätere brauchen exponentiell mehr Aufwand.
+                    Server (Supabase RPC <code>add_xp</code>) schreibt rohe XP, Client und DB-View
+                    <code>profiles_public</code> cappen das Level beim Lesen auf 9.999.
+                </p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Level</th><th>Total XP nötig</th><th>XP-Diff zum Vorlevel</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>8</td><td>8</td></tr>
+                            <tr><td>5</td><td>200</td><td>72</td></tr>
+                            <tr><td>10</td><td>800</td><td>152</td></tr>
+                            <tr><td>25</td><td>5.000</td><td>392</td></tr>
+                            <tr><td>50</td><td>20.000</td><td>792</td></tr>
+                            <tr><td>75</td><td>45.000</td><td>1.192</td></tr>
+                            <tr><td>100</td><td>80.000</td><td>1.592</td></tr>
+                            <tr><td>250</td><td>500.000</td><td>3.992</td></tr>
+                            <tr><td>500</td><td>2.000.000</td><td>7.992</td></tr>
+                            <tr><td>1.000</td><td>8.000.000</td><td>15.992</td></tr>
+                            <tr><td>5.000</td><td>200.000.000</td><td>79.992</td></tr>
+                            <tr><td><strong>9.999</strong></td><td><strong>799.840.008</strong></td><td>159.984</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section data-searchable id="sources">
+                <h2>XP-Quellen</h2>
+                <p>Alle Werte gelten ohne VIP-Boost. VIP multipliziert jede Quelle mit <strong>×1,2</strong>.</p>
+
+                <h3>My Fishing Kaktus — Fang-XP</h3>
+                <p>Bei jedem gefangenen Fisch nach Rarity, plus Mutations-Bonus.</p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Rarity</th><th>Basis-XP</th></tr></thead>
+                        <tbody>
+                            <tr><td>Common</td><td>1</td></tr>
+                            <tr><td>Uncommon</td><td>3</td></tr>
+                            <tr><td>Rare</td><td>10</td></tr>
+                            <tr><td>Epic</td><td>30</td></tr>
+                            <tr><td>Legendary</td><td>100</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Mutations-Bonus (oben drauf)</h3>
+                <p>Nur Mutationen ab ×3 geben Bonus-XP — Standard-Wetter-Mutationen (SUNNY/WET/STORMY/MISTY/NOCTURNAL ×2) sowie BIG/HUGE zählen nicht.</p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Mutation</th><th>Bonus-XP</th></tr></thead>
+                        <tbody>
+                            <tr><td>🌟 SHINY</td><td>+10</td></tr>
+                            <tr><td>🌠 AURORA</td><td>+15</td></tr>
+                            <tr><td>🌌 ABYSSAL</td><td>+20</td></tr>
+                            <tr><td>🔥 EMBER</td><td>+25</td></tr>
+                            <tr><td>🌑 CRIMSON</td><td>+35</td></tr>
+                            <tr><td>👻 HAUNTED</td><td>+50</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    <strong>Beispiel:</strong> ein <em>SHINY HAUNTED Common</em> während Geistermeer gibt
+                    <code>1 (Common) + 10 (SHINY) + 50 (HAUNTED) = 61 XP</code>.
+                </p>
+
+                <h3>KaktusClicker — Klick &amp; Prestige</h3>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Aktion</th><th>XP</th></tr></thead>
+                        <tbody>
+                            <tr><td>Pro 100 Cactus-Klicks</td><td>+1</td></tr>
+                            <tr><td>Pro Prestige</td><td>100 + min(900, gewonnene_Nopals × 5)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    Prestige-XP skaliert mit der Größe des Runs. Kleines Prestige (1 Nopal): 105 XP. Großes Prestige (180+ Nopals): max. 1.000 XP.
+                </p>
+
+                <h3>Aktive Zeit auf der Site (Heartbeat)</h3>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Bedingung</th><th>XP</th></tr></thead>
+                        <tbody>
+                            <tr><td>Tab sichtbar UND letzte Interaktion &lt; 2 min her</td><td>+2 XP/min (max 120/h)</td></tr>
+                            <tr><td>Tab im Hintergrund oder AFK &gt;2 min</td><td>0</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    Server-Throttle: max 1 Heartbeat alle 50 Sekunden, max 2 XP pro Call.
+                    Verhindert AFK-Farming und Bot-Manipulation.
+                </p>
+            </section>
+
+            <section data-searchable id="milestones">
+                <h2>Realistische Spielzeit zu Level X</h2>
+                <p>
+                    Grobe Schätzung mit unterschiedlichen Spielprofilen. Annahme: ein paar Catches
+                    pro Minute, gelegentlich ein Prestige, Tab meistens aktiv.
+                </p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Profil</th><th>XP/Tag (geschätzt)</th><th>Lvl 5</th><th>Lvl 25</th><th>Lvl 100</th><th>Lvl 1.000</th></tr></thead>
+                        <tbody>
+                            <tr><td>Casual (15 min/Tag)</td><td>~50</td><td>4 Tage</td><td>100 Tage</td><td>~4,5 Jahre</td><td>—</td></tr>
+                            <tr><td>Regular (1 h/Tag)</td><td>~250</td><td>1 Tag</td><td>20 Tage</td><td>~11 Monate</td><td>~88 Jahre</td></tr>
+                            <tr><td>Hardcore (4 h/Tag)</td><td>~1.000</td><td>&lt; 1 h</td><td>5 Tage</td><td>~80 Tage</td><td>~22 Jahre</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    Lvl 9.999 (800 Mio XP) ist mit normalen XP-Rates praktisch unerreichbar — bewusst als „nie wirklich-Endkampf" designt.
+                </p>
+            </section>
+
+            <section data-searchable id="badges">
+                <h2>Badges</h2>
+                <p>
+                    Jeder User kann jederzeit <strong>genau ein Badge</strong> als „angezeigt" wählen
+                    (auf Profil-Seite). Dieses Badge erscheint dann auf allen Leaderboards + in der Nav.
+                </p>
+                <div class="table-wrap">
+                    <table class="wiki-table">
+                        <thead><tr><th>Badge</th><th>Trigger</th><th>Wie freischalten</th></tr></thead>
+                        <tbody>
+                            <tr><td>⚡ Level 25</td><td>auto</td><td>Erreiche Level 25 (5.000 XP)</td></tr>
+                            <tr><td>💎 Level 50</td><td>auto</td><td>Erreiche Level 50 (20.000 XP)</td></tr>
+                            <tr><td>🏆 Level 75</td><td>auto</td><td>Erreiche Level 75 (45.000 XP)</td></tr>
+                            <tr><td>🎖 Level 100</td><td>auto</td><td>Erreiche Level 100 (80.000 XP)</td></tr>
+                            <tr><td>❤️ Werber</td><td>auto (Referral)</td><td>Wirb 1 Freund der Lvl 5 erreicht — Details unten</td></tr>
+                            <tr><td>👻 Geisterjäger</td><td>auto (Fang)</td><td>Fange einen Fisch mit HAUNTED-Mutation (My Fishing Kaktus)</td></tr>
+                            <tr><td>📅 Wochen-Pilger</td><td>auto (Daily)</td><td>7 Tage Daily-Login-Streak in My Fishing Kaktus</td></tr>
+                            <tr><td>🧪 Tester</td><td>manuell</td><td>Vom Admin verliehen (Pre-Release Spieler)</td></tr>
+                            <tr><td>🌹 Unterstützer</td><td>manuell</td><td>Auf Discord-Anfrage vergeben</td></tr>
+                            <tr><td>👑 VIP</td><td>manuell</td><td>Auf Discord-Anfrage vergeben — inkl. XP-Boost &amp; Namensfarbe</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    Auto-Awards laufen über die Postgres-Funktion <code>check_level_badges()</code>, die nach
+                    jedem <code>add_xp</code>-Call ausgeführt wird. Idempotent — vergibt jeden Badge nur einmal.
+                </p>
+            </section>
+
+            <section data-searchable id="vip">
+                <h2>VIP &amp; Unterstützer</h2>
+                <p>
+                    Beide Statusse werden auf Discord-Anfrage manuell vergeben. Wenn du die Seite unterstützen
+                    willst, melde dich.
+                </p>
+                <h3>🌹 Unterstützer</h3>
+                <ul>
+                    <li>Sichtbares Badge im Profil-Auswahl-Grid</li>
+                    <li>Keine spielmechanischen Vorteile</li>
+                </ul>
+
+                <h3>👑 VIP</h3>
+                <ul>
+                    <li>Alle Unterstützer-Vorteile</li>
+                    <li><strong>+20 % XP-Boost</strong> auf jede XP-Quelle (server-seitig in <code>add_xp</code>)</li>
+                    <li><strong>Eigene Namensfarbe</strong> wählbar im Profil — Color-Wheel + 11 Presets</li>
+                    <li>Namensfarbe erscheint auf allen Leaderboards + in der Nav</li>
+                </ul>
+                <p>
+                    Die VIP-Vorteile gelten <strong>immer wenn <code>profiles.vip = true</code></strong>,
+                    unabhängig davon ob das VIP-Badge gerade als „angezeigt" gewählt ist.
+                </p>
+            </section>
+
+            <section data-searchable id="referral">
+                <h2>Referral-System</h2>
+                <p>
+                    Jeder eingeloggte User hat einen einzigartigen Referral-Code (auto-generiert bei
+                    Account-Erstellung). Der Werbe-Link ist auf der Profil-Seite kopierbar.
+                </p>
+                <pre><code>https://kalterkaktus.de/login.html?ref=DEINCODE</code></pre>
+
+                <h3>Ablauf</h3>
+                <ol>
+                    <li>Du teilst deinen Werbe-Link.</li>
+                    <li>Freund klickt → <code>?ref=</code> wird in <code>localStorage</code> gespeichert.</li>
+                    <li>Freund registriert sich (Google OAuth oder Email).</li>
+                    <li>Beim ersten erfolgreichen Login wird <code>claim_referral(code)</code> aufgerufen → Referral als <strong>pending</strong> markiert.</li>
+                    <li>Sobald der Freund <strong>Level 5</strong> erreicht (200 XP, ~30-60 min Spielzeit) → Referral wird <strong>qualified</strong>, du bekommst automatisch das <strong>❤️ Werber-Badge</strong>.</li>
+                </ol>
+
+                <h3>Anti-Cheat-Regeln</h3>
+                <ul>
+                    <li>Niemand kann sich selbst werben (eigener Code wird abgelehnt).</li>
+                    <li>Jeder User kann nur ein einziges Mal von jemandem geworben werden (UNIQUE-Constraint).</li>
+                    <li>Lvl 5 erfordert mindestens ~30 min echtes Spielen — Fake-Accounts mit 0 XP qualifizieren nicht.</li>
+                </ul>
+            </section>
+
+            <section data-searchable id="anti-cheat">
+                <h2>Anti-Cheat &amp; Limits</h2>
+                <p>
+                    XP-Vergabe läuft serverseitig über die <code>add_xp(amount, reason)</code> RPC mit folgenden Limits:
+                </p>
+                <ul>
+                    <li><strong>Max 1.000 XP pro Einzelcall</strong> — Safety-Cap gegen Massenmanipulation</li>
+                    <li><strong>Heartbeat-Throttle</strong>: max 1 Call alle 50 s, max 2 XP pro Call</li>
+                    <li><strong>Nur authentifizierte User</strong> können XP claimen (RLS-Policy + <code>auth.uid()</code> Check)</li>
+                    <li><strong>Kein localStorage-zu-Cloud-Save</strong>: lokal manipulierte Saves werden NICHT in die Cloud übernommen</li>
+                </ul>
+                <p>
+                    Catches/Klicks werden batched (alle 30 s gebündelt) gesendet — der Client kann theoretisch
+                    die Anzahl lügen, der Cap verhindert aber Extremmissbrauch.
+                </p>
+            </section>
+        </article>
+    </main>
+
+    <footer class="wiki-footer">
+        <a href="/impressum">Impressum</a>
+        <a href="/datenschutz">Datenschutz</a>
+        <a href="/nutzungsbedingungen">Nutzungsbedingungen</a>
+    </footer>
+    <script src="/js/config.js"></script>
+    <script src="../wiki.js"></script>
+    <script type="module" src="/js/auth-nav.js"></script>
+</body>
+</html>

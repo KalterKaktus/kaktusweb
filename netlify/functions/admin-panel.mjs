@@ -273,6 +273,19 @@ async function awardBadge(userId, badgeId) {
         headers: { Prefer: "return=minimal,resolution=ignore-duplicates" },
         body: JSON.stringify({ user_id: userId, badge_id: safe }),
     });
+    // Konvenienz: Klick auf das vip-Badge soll auch profiles.vip aktivieren (sonst
+    // bleibt Namensfarbe + XP-Boost ohne Wirkung). Symmetrisch zur set-vip Action.
+    if (safe === "vip") {
+        await supabase(
+            "profiles",
+            {
+                method: "PATCH",
+                headers: { Prefer: "return=minimal" },
+                body: JSON.stringify({ vip: true, updated_at: new Date().toISOString() }),
+            },
+            `?id=eq.${encodeURIComponent(userId)}`
+        );
+    }
 }
 
 async function revokeBadge(userId, badgeId) {
@@ -293,6 +306,18 @@ async function revokeBadge(userId, badgeId) {
         },
         `?id=eq.${encodeURIComponent(userId)}&equipped_badge=eq.${encodeURIComponent(safe)}`
     );
+    // Konvenienz: Revoke des vip-Badges deaktiviert auch profiles.vip (Boost + Farbe weg).
+    if (safe === "vip") {
+        await supabase(
+            "profiles",
+            {
+                method: "PATCH",
+                headers: { Prefer: "return=minimal" },
+                body: JSON.stringify({ vip: false, updated_at: new Date().toISOString() }),
+            },
+            `?id=eq.${encodeURIComponent(userId)}`
+        );
+    }
 }
 
 async function setVipStatus(userId, isVip) {

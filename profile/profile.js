@@ -80,9 +80,9 @@ function renderHeader(profile, user) {
     els.xpNext.textContent = `${fmtNumber.format(prog.gained)} / ${fmtNumber.format(prog.needed)}`;
     els.xpFill.style.width = `${prog.percent}%`;
     const remaining = Math.max(0, prog.needed - prog.gained);
-    els.xpHint.textContent = remaining > 0
-        ? `Nächstes Level in ${fmtNumber.format(remaining)} XP`
-        : `Maximal-Level erreicht — Glückwunsch!`;
+    els.xpHint.textContent = prog.capped
+        ? `Level-Cap 9999 erreicht — du bist der absolute King.`
+        : `Nächstes Level in ${fmtNumber.format(remaining)} XP`;
 
     els.header.hidden = false;
 }

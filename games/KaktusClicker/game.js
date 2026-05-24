@@ -975,10 +975,9 @@ function spawnRandomEvent(kind, duration, rewardSeconds, label) {
     button.remove();
     scheduleNextRandomEvent(kind);
 
-    if (!caught) {
-      return;
-    }
-
+    // AFK-friendly: auch ohne Klick gibt's den Reward (vorher: 10s Timeout = verloren).
+    // Sound + visueller Spawn passieren bereits am Anfang, der Klick ist nur noch
+    // ein "snel collect" — auto-collect bei Timeout liefert das gleiche Coin-Plus.
     const reward = getAutomaticProduction(state, { includeEvent: false }) * rewardSeconds;
     addCactus(reward);
     if (kind === "golden") {
@@ -989,10 +988,10 @@ function spawnRandomEvent(kind, duration, rewardSeconds, label) {
     spawnFloat(
       buttonRect.left + buttonRect.width / 2,
       buttonRect.top + buttonRect.height / 2,
-      `${label} +${formatNumber(reward)}`,
+      `${label} ${caught ? "+" : "(auto) +"}${formatNumber(reward)}`,
       `is-event-reward is-${kind}`
     );
-    elements.saveStatus.textContent = `${label}: +${formatNumber(reward)}`;
+    elements.saveStatus.textContent = `${label}${caught ? "" : " (AFK auto)"}: +${formatNumber(reward)}`;
     updateAchievements();
     render();
   };

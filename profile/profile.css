@@ -593,10 +593,84 @@
     box-shadow: 0 0 6px color-mix(in srgb, var(--badge-c, transparent) 30%, transparent);
 }
 
-@media (max-width: 540px) {
-    .profile-shell { padding: 2rem 0.7rem 3rem; }
-    .profile-identity { grid-template-columns: auto 1fr; }
-    .profile-level-block { grid-column: 1 / -1; justify-self: stretch; flex-direction: row; }
-    .profile-name { font-size: 1.5rem; }
-    .profile-avatar { width: 4rem; height: 4rem; font-size: 1.7rem; }
+@media (max-width: 640px) {
+    .profile-shell { padding: 1.6rem 0.7rem 2.5rem; }
+    .profile-container { gap: 1rem; }
+    .profile-card { padding: 1.2rem 1rem; border-radius: 1.1rem; }
+    .profile-card-head { gap: 0.6rem; }
+    .profile-card-head h2 { font-size: 1.1rem; }
+    .profile-card-lead { font-size: 0.85rem; }
+
+    /* Header — Avatar + Identity in 2 Spalten, Level-Block & XP-Bar drunter */
+    .profile-header { padding: 1.3rem 1rem; }
+    .profile-identity {
+        grid-template-columns: auto 1fr;
+        grid-template-areas: "avatar text" "level level";
+        gap: 0.9rem 1rem;
+        margin-bottom: 1.1rem;
+    }
+    .profile-avatar { grid-area: avatar; width: 3.6rem; height: 3.6rem; font-size: 1.5rem; }
+    .profile-identity-text { grid-area: text; }
+    .profile-name { font-size: 1.35rem; line-height: 1.15; }
+    .profile-email { font-size: 0.78rem; word-break: break-all; }
+
+    /* Level-Block: full width row unter Avatar/Text */
+    .profile-level-block {
+        grid-area: level;
+        grid-template-columns: 1fr auto;
+        gap: 0.8rem;
+        place-items: center;
+        padding: 0.5rem 1rem;
+        text-align: left;
+    }
+    .profile-level-label { justify-self: start; }
+    .profile-level-value { font-size: 1.8rem; }
+
+    /* Color-Trigger: kompakter, eigene Zeile */
+    .profile-color-trigger {
+        margin: 0.4rem 0 0.3rem;
+        font-size: 0.74rem;
+        padding: 0.32rem 0.7rem;
+    }
+
+    /* XP-Bar */
+    .profile-xp-meta { font-size: 0.75rem; }
+    .profile-xp-hint { font-size: 0.72rem; }
+
+    /* Username + Referral Inputs: 100% width, Button drunter */
+    .profile-username-row,
+    .referral-link-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.45rem;
+    }
+    .profile-username-row input,
+    .referral-link-row input { min-width: 0; width: 100%; }
+    .profile-username-row .profile-button,
+    .referral-link-row .profile-button { width: 100%; }
+
+    /* Badges: 2 Spalten statt minmax-11rem (das wrappet auf 320px schlecht) */
+    .badge-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+    .badge-card { padding: 0.7rem 0.6rem; }
+    .badge-card-icon { font-size: 1.4rem; }
+    .badge-card-name { font-size: 0.82rem; }
+    .badge-card-desc { font-size: 0.68rem; }
+
+    /* Referral Stats: stack statt row, sonst quetscht zwei Zahlen */
+    .profile-referral-stats {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+
+    /* Stats-Grid: 2 Spalten */
+    .profile-stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+    .profile-stats-grid > div { padding: 0.6rem 0.7rem; }
+    .profile-stats-grid dd { font-size: 1.15rem; }
+}
+
+@media (max-width: 380px) {
+    /* Sehr enge Screens: alles 1-spaltig damit nichts wrappet */
+    .badge-grid { grid-template-columns: 1fr; }
+    .profile-stats-grid { grid-template-columns: 1fr; }
 }
