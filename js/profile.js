@@ -74,8 +74,8 @@ export function validateUsername(username) {
         return "Bitte einen Benutzernamen eingeben.";
     }
 
-    if (username.length < 3 || username.length > 24) {
-        return "Der Benutzername braucht 3–24 Zeichen.";
+    if (username.length < 2 || username.length > 24) {
+        return "Der Benutzername braucht 2–24 Zeichen.";
     }
 
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
