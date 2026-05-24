@@ -107,8 +107,11 @@ export async function saveUsername(userId, username) {
         if (error.code === "23505") {
             return { error: new Error("Dieser Benutzername ist schon vergeben.") };
         }
-
-        return { error: new Error("Profil konnte nicht gespeichert werden.") };
+        if (error.code === "23514") {
+            return { error: new Error("Username erfüllt nicht die Format-Regeln (nur a-Z, 0-9, _ erlaubt, 2-24 Zeichen).") };
+        }
+        // Echten Supabase-Fehler durchreichen damit man im Status sieht was kaputt ist
+        return { error: new Error(`Profil-Speichern fehlgeschlagen: ${error.message || error.code || "unbekannt"}`) };
     }
 
     await supabase
