@@ -249,59 +249,6 @@ body::before {
     border-radius: 8px;
 }
 
-.ios-install-hint {
-    position: fixed;
-    right: max(0.85rem, env(safe-area-inset-right));
-    bottom: max(0.85rem, calc(env(safe-area-inset-bottom) + 0.35rem));
-    z-index: 2300;
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    width: min(330px, calc(100vw - 1.7rem));
-    padding: 0.8rem;
-    border: 1px solid rgba(105, 240, 174, 0.34);
-    border-radius: 8px;
-    background:
-        linear-gradient(135deg, rgba(105, 240, 174, 0.12), rgba(5, 12, 9, 0.96)),
-        var(--card-bg);
-    box-shadow: 0 18px 54px rgba(0, 0, 0, 0.38), 0 0 28px rgba(105, 240, 174, 0.12);
-}
-
-.ios-install-hint div {
-    display: grid;
-    min-width: 0;
-    gap: 0.12rem;
-}
-
-.ios-install-hint strong {
-    color: var(--text-primary);
-    font-size: 0.88rem;
-    line-height: 1.25;
-}
-
-.ios-install-hint span {
-    color: var(--text-secondary);
-    font-size: 0.78rem;
-    font-weight: 750;
-    line-height: 1.35;
-}
-
-.ios-install-hint button {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 34px;
-    height: 34px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: rgba(5, 12, 9, 0.76);
-    color: var(--accent-light);
-    font: inherit;
-    font-size: 0.78rem;
-    font-weight: 900;
-    cursor: pointer;
-}
-
 .auth-page {
     max-width: 520px;
 }

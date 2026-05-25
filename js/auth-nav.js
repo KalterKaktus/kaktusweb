@@ -5,8 +5,6 @@ import { levelFromXp, renderLevelTag, renderPlayerName } from "./progression.js"
 
 const PRESENCE_HEARTBEAT_MS = 30000;
 const FORCE_RELOAD_MESSAGE = "Dein Spielstand wurde aktualisiert. Die Seite wird neu geladen.";
-const INSTALL_HINT_DISMISS_KEY = "kk-ios-install-hint-dismissed";
-const INSTALL_HINT_COOLDOWN_MS = 1000 * 60 * 60 * 24 * 14;
 
 let adminMessageChannel = null;
 let presenceTimer = null;
@@ -47,51 +45,12 @@ function profileHref() {
         : "/profile/";
 }
 
-function isStandaloneApp() {
-    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-}
-
 function blockTouchDoubleTapZoom() {
     document.addEventListener("dblclick", (event) => {
         if (window.matchMedia("(pointer: coarse)").matches) {
             event.preventDefault();
         }
     }, { passive: false });
-}
-
-function isIPhoneSafari() {
-    const userAgent = window.navigator.userAgent || "";
-    const platform = window.navigator.platform || "";
-    const ios = /iPhone|iPad|iPod/i.test(userAgent) || (platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
-    const safari = /Safari/i.test(userAgent) && !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(userAgent);
-    return ios && safari;
-}
-
-function isInstallHintDismissed() {
-    const dismissedAt = Number(window.localStorage.getItem(INSTALL_HINT_DISMISS_KEY));
-    return Number.isFinite(dismissedAt) && Date.now() - dismissedAt < INSTALL_HINT_COOLDOWN_MS;
-}
-
-function showIOSInstallHint() {
-    if (!isIPhoneSafari() || isStandaloneApp() || isInstallHintDismissed() || document.querySelector(".ios-install-hint")) {
-        return;
-    }
-
-    const hint = document.createElement("aside");
-    hint.className = "ios-install-hint";
-    hint.setAttribute("aria-label", "KalterKaktus zum Home-Bildschirm hinzufügen");
-    hint.innerHTML = `
-        <div>
-            <strong>KalterKaktus auf iPhone</strong>
-            <span>Teilen > Zum Home-Bildschirm</span>
-        </div>
-        <button type="button" aria-label="Hinweis schließen">X</button>
-    `;
-    hint.querySelector("button")?.addEventListener("click", () => {
-        window.localStorage.setItem(INSTALL_HINT_DISMISS_KEY, String(Date.now()));
-        hint.remove();
-    });
-    document.body.append(hint);
 }
 
 function setupSiteNav() {
@@ -436,4 +395,3 @@ async function initAuthNav() {
 setupSiteNav();
 blockTouchDoubleTapZoom();
 initAuthNav();
-window.setTimeout(showIOSInstallHint, 1200);
