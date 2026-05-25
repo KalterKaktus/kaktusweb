@@ -51,9 +51,12 @@ export async function ensureProfile(userId) {
     return data;
 }
 
+// Default-Username für neue Accounts. Bewusst "User_xxxx" damit es nach
+// generischer Platzhalter aussieht — motiviert den Spieler den Namen aktiv
+// zu setzen statt den Default zu behalten.
 function createKaktusUsername() {
     const suffix = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
-    return `Kaktus_${suffix}`;
+    return `User_${suffix}`;
 }
 
 export function getDisplayName(user, profile) {

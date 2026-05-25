@@ -266,7 +266,6 @@ const FLAG_TYPE_LABELS = {
     save_jump_suspicious: "Save-Sprung verdächtig",
     xp_oversize_call: "XP-Call zu groß",
     xp_throttle_hit: "XP-Throttle erreicht",
-    xp_rate_limit: "XP-Calls zu schnell hintereinander",
     catch_event_spam: "Catch-Spam",
     catch_event_invalid_rarity: "Catch: ungültige Rarity",
     catch_event_value_anomaly: "Catch: Wert-Anomalie",
