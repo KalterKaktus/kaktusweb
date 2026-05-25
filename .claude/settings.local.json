@@ -12,7 +12,8 @@
       "Bash(node --check js/game.js)",
       "Bash(awk ' *)",
       "mcp__587bdc82-bddd-4643-8f53-759fda7acf16__execute_sql",
-      "mcp__587bdc82-bddd-4643-8f53-759fda7acf16__get_advisors"
+      "mcp__587bdc82-bddd-4643-8f53-759fda7acf16__get_advisors",
+      "WebFetch(domain:kalterkaktus.de)"
     ]
   }
 }

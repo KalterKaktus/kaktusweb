@@ -108,19 +108,6 @@ async function handleEmailSignUp() {
     }
 }
 
-// Email/Passwort-Login nur in Dev-Umgebung anzeigen (localhost / 127.0.0.1 / ?dev=1).
-// In Production läuft alles über Google OAuth — verhindert dass jemand mit Fake-Mails
-// Accounts erstellt.
-function isDevHost() {
-    try {
-        const host = location.hostname || "";
-        if (host === "localhost" || host === "127.0.0.1" || host === "" || host.endsWith(".local")) return true;
-        if (location.protocol === "file:") return true;
-        if (new URLSearchParams(location.search).get("dev") === "1") return true;
-    } catch {}
-    return false;
-}
-
 function initLoginPage() {
     const returnPath = getReturnPath();
     sessionStorage.setItem("auth_return_to", returnPath);
@@ -137,22 +124,18 @@ function initLoginPage() {
         googleButton.addEventListener("click", startGoogleLogin);
     }
 
+    // Email/Passwort-Login ist überall aktiv (Production + Dev). Fake-Account-Schutz
+    // läuft via Supabase Email-Confirm (in Dashboard → Auth → Sign In/Up aktivieren)
+    // plus die DB-Anti-Cheat-Trigger.
     const emailForm = document.getElementById("auth-email-form");
-    const emailDivider = document.querySelector(".auth-divider");
     const signUpBtn = document.getElementById("auth-email-signup");
-    if (!isDevHost()) {
-        // Production: Email-Form + Divider komplett aus dem DOM nehmen
-        if (emailForm) emailForm.remove();
-        if (emailDivider) emailDivider.remove();
-    } else {
-        if (emailForm) emailForm.addEventListener("submit", handleEmailSignIn);
-        if (signUpBtn) signUpBtn.addEventListener("click", handleEmailSignUp);
-    }
+    if (emailForm) emailForm.addEventListener("submit", handleEmailSignIn);
+    if (signUpBtn) signUpBtn.addEventListener("click", handleEmailSignUp);
 
     if (!isConfigReady()) {
         setStatus("Anmeldung ist gerade nicht verfügbar.", true);
         setOAuthLoading(true);
-        if (isDevHost()) setEmailLoading(true);
+        setEmailLoading(true);
     }
 }
 
