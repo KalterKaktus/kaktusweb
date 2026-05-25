@@ -320,6 +320,100 @@ async function revokeBadge(userId, badgeId) {
     }
 }
 
+// ----- Cheat-Flags --------------------------------------------------------
+// Flags werden von Postgres-Triggern / SECURITY-DEFINER-RPCs via
+// public.log_cheat_flag(...) eingetragen. RLS auf cheat_flags ist enabled
+// ohne Policies → nur service_role kommt dran. Hier holen wir die offenen
+// (unresolved) Flags inkl. Username für die Anzeige im Adminpanel.
+const CHEAT_FLAG_LIMIT = 250;
+const RESOLUTION_VALUES = new Set(["ignored", "warned", "banned"]);
+
+async function listCheatFlags() {
+    const flags = await supabase(
+        "cheat_flags",
+        {},
+        `?select=id,user_id,flag_type,severity,details,created_at,resolved_at,resolved_by,resolution&resolved_at=is.null&order=created_at.desc&limit=${CHEAT_FLAG_LIMIT}`
+    );
+
+    const userIds = [...new Set((flags || []).map((flag) => flag.user_id).filter(Boolean))];
+    let profileLookup = new Map();
+    if (userIds.length) {
+        const inList = userIds.map((id) => `"${id}"`).join(",");
+        const profiles = await supabase(
+            "profiles",
+            {},
+            `?select=id,username,is_banned&id=in.(${encodeURIComponent(inList)})`
+        );
+        profileLookup = new Map((profiles || []).map((p) => [p.id, p]));
+    }
+
+    // Aggregat: pro User Counts + neueste Flags. Reihenfolge bleibt nach
+    // created_at desc damit jüngste User-Aktivität ganz oben steht.
+    const userMap = new Map();
+    for (const flag of flags || []) {
+        const userId = flag.user_id;
+        if (!userMap.has(userId)) {
+            const profile = profileLookup.get(userId);
+            userMap.set(userId, {
+                user_id: userId,
+                username: profile?.username || "(unbekannt)",
+                is_banned: Boolean(profile?.is_banned),
+                flags: [],
+                count: 0,
+                worstSeverity: "warn",
+            });
+        }
+        const entry = userMap.get(userId);
+        entry.flags.push(flag);
+        entry.count += 1;
+        if (flag.severity === "critical") entry.worstSeverity = "critical";
+    }
+
+    return [...userMap.values()];
+}
+
+async function resolveCheatFlag(flagId, resolution, adminUserId) {
+    const id = Number(flagId);
+    if (!Number.isInteger(id) || id <= 0) {
+        throw httpError("Flag-ID ungültig.", 400);
+    }
+    if (!RESOLUTION_VALUES.has(resolution)) {
+        throw httpError("Resolution muss ignored|warned|banned sein.", 400);
+    }
+    await supabase(
+        "cheat_flags",
+        {
+            method: "PATCH",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({
+                resolved_at: new Date().toISOString(),
+                resolved_by: adminUserId,
+                resolution,
+            }),
+        },
+        `?id=eq.${encodeURIComponent(id)}`
+    );
+}
+
+async function resolveAllUserFlags(userId, resolution, adminUserId) {
+    if (!RESOLUTION_VALUES.has(resolution)) {
+        throw httpError("Resolution muss ignored|warned|banned sein.", 400);
+    }
+    await supabase(
+        "cheat_flags",
+        {
+            method: "PATCH",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({
+                resolved_at: new Date().toISOString(),
+                resolved_by: adminUserId,
+                resolution,
+            }),
+        },
+        `?user_id=eq.${encodeURIComponent(userId)}&resolved_at=is.null`
+    );
+}
+
 async function setVipStatus(userId, isVip) {
     await supabase(
         "profiles",
@@ -409,10 +503,11 @@ export default async (req) => {
     }
 
     try {
-        await requireAdmin(req);
+        const adminUser = await requireAdmin(req);
 
         if (req.method === "GET") {
-            return json({ users: await listUsers() });
+            const [users, cheatFlags] = await Promise.all([listUsers(), listCheatFlags()]);
+            return json({ users, cheatFlags });
         }
 
         if (req.method !== "POST") {
@@ -427,6 +522,19 @@ export default async (req) => {
 
         if (body.action === "trigger-cross-game-event") {
             await triggerCrossGameEvent(body.eventType, body.payload);
+            return json({ ok: true });
+        }
+
+        if (body.action === "resolve-cheat-flag") {
+            await resolveCheatFlag(body.flagId, body.resolution, adminUser?.id || null);
+            return json({ ok: true });
+        }
+
+        if (body.action === "resolve-user-flags") {
+            if (!body.userId) {
+                return json({ error: "User fehlt." }, 400);
+            }
+            await resolveAllUserFlags(body.userId, body.resolution, adminUser?.id || null);
             return json({ ok: true });
         }
 

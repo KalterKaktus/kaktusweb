@@ -7,6 +7,9 @@ const refreshButton = document.getElementById("admin-refresh");
 const adminAbuseRoot = document.getElementById("admin-abuse");
 const adminAbuseGame = document.getElementById("admin-abuse-game");
 const loginGate = document.getElementById("admin-login-gate");
+const cheatFlagsRoot = document.getElementById("admin-cheat-flags");
+const cheatFlagsBody = document.getElementById("admin-cheat-flags-body");
+const cheatFlagsCount = document.getElementById("admin-cheat-flags-count");
 
 function setStatus(message, isError = false, showLogin = false) {
     status.textContent = message;
@@ -31,6 +34,7 @@ function setAdminContentVisible(visible) {
     adminAbuseRoot.hidden = !visible;
     usersRoot.hidden = !visible;
     refreshButton.hidden = !visible;
+    cheatFlagsRoot.hidden = !visible;
 }
 
 function escapeHtml(value) {
@@ -248,6 +252,75 @@ function renderGamePanel(save, index) {
     `;
 }
 
+// ----- Cheat-Flag rendering ----------------------------------------------
+const FLAG_TYPE_LABELS = {
+    profile_tamper: "Profil-Tampering (geschützte Spalte)",
+    vip_color_without_vip: "VIP-Farbe ohne VIP-Status",
+    badge_equip_without_owning: "Badge equippt ohne zu besitzen",
+    save_value_overflow: "Save: total_earned > 10¹⁸",
+    save_spam: "Save-Spam (<2s)",
+    save_jump_suspicious: "Save-Sprung >10× in <60s",
+    xp_oversize_call: "XP-Call >1000 in einem Hop",
+    xp_throttle_hit: "XP-Throttle erreicht",
+    catch_event_spam: "Catch-Spam (>5/s)",
+    catch_event_invalid_rarity: "Catch: ungültige Rarity",
+    catch_event_value_anomaly: "Catch: value > 10M",
+    catch_event_kg_anomaly: "Catch: kg > 100",
+};
+
+function flagLabel(type) {
+    return FLAG_TYPE_LABELS[type] || type;
+}
+
+function renderFlagDetails(details) {
+    if (!details || typeof details !== "object" || !Object.keys(details).length) {
+        return "";
+    }
+    return `<pre class="admin-flag-details">${escapeHtml(JSON.stringify(details, null, 2))}</pre>`;
+}
+
+function renderCheatFlags(groups) {
+    const total = groups.reduce((sum, g) => sum + g.count, 0);
+    cheatFlagsCount.textContent = String(total);
+    cheatFlagsCount.classList.toggle("is-critical", groups.some((g) => g.worstSeverity === "critical"));
+
+    if (!groups.length) {
+        cheatFlagsBody.innerHTML = `<p class="admin-empty">Keine offenen Flags. 🎉</p>`;
+        return;
+    }
+
+    cheatFlagsBody.innerHTML = groups.map((group) => `
+        <article class="admin-flag-group ${group.worstSeverity === "critical" ? "is-critical" : "is-warn"}" data-flag-user="${escapeAttr(group.user_id)}">
+            <header class="admin-flag-group-head">
+                <div>
+                    <h3>${escapeHtml(group.username)}${group.is_banned ? ` <span class="admin-flag-banned">gesperrt</span>` : ""}</h3>
+                    <p class="admin-user-meta">${group.count} offene Flag${group.count === 1 ? "" : "s"} &middot; <code>${escapeHtml(group.user_id)}</code></p>
+                </div>
+                <div class="admin-flag-group-actions">
+                    <button class="admin-button" data-flag-bulk="ignored" type="button">Alle ignorieren</button>
+                    <button class="admin-button is-danger" data-flag-bulk="banned" type="button">Bannen &amp; Markieren</button>
+                </div>
+            </header>
+            <ul class="admin-flag-list">
+                ${group.flags.map((flag) => `
+                    <li class="admin-flag-item is-${escapeAttr(flag.severity || "warn")}" data-flag-id="${escapeAttr(flag.id)}">
+                        <div class="admin-flag-item-head">
+                            <span class="admin-flag-type">${escapeHtml(flagLabel(flag.flag_type))}</span>
+                            <span class="admin-flag-severity">${escapeHtml(flag.severity || "warn")}</span>
+                            <time>${escapeHtml(formatDate(flag.created_at))}</time>
+                        </div>
+                        ${renderFlagDetails(flag.details)}
+                        <div class="admin-inline">
+                            <button class="admin-button" data-flag-action="ignored" type="button">Ignorieren</button>
+                            <button class="admin-button" data-flag-action="warned" type="button">Als gewarnt markieren</button>
+                        </div>
+                    </li>
+                `).join("")}
+            </ul>
+        </article>
+    `).join("");
+}
+
 function renderUsers(users) {
     if (!users.length) {
         usersRoot.innerHTML = `<p class="admin-empty">Keine User gefunden.</p>`;
@@ -429,12 +502,23 @@ async function loadUsers() {
     try {
         setStatus("Adminzugriff wird geprüft...");
         setAdminContentVisible(false);
-        const { users } = await api("list");
+        const { users, cheatFlags } = await api("list");
         renderUsers(users || []);
+        renderCheatFlags(cheatFlags || []);
         setAdminContentVisible(true);
-        setStatus(`${users?.length || 0} User geladen.`);
+        const flagTotal = (cheatFlags || []).reduce((sum, g) => sum + g.count, 0);
+        const flagSuffix = flagTotal ? ` &middot; ${flagTotal} offene Flag${flagTotal === 1 ? "" : "s"}` : "";
+        status.innerHTML = `${users?.length || 0} User geladen.${flagSuffix}`;
+        status.classList.remove("is-error");
+        loginGate.hidden = true;
+        // Cheat-Flag-Panel automatisch aufklappen wenn was zu tun ist
+        if (flagTotal > 0 && !cheatFlagsRoot.open) {
+            cheatFlagsRoot.open = true;
+        }
     } catch (error) {
         usersRoot.innerHTML = "";
+        cheatFlagsBody.innerHTML = "";
+        cheatFlagsCount.textContent = "0";
         setAdminContentVisible(false);
         setStatus(error.message, true, /einlogg/i.test(error.message));
     }
@@ -529,6 +613,55 @@ usersRoot.addEventListener("click", async (event) => {
 });
 
 refreshButton.addEventListener("click", loadUsers);
+
+cheatFlagsRoot.addEventListener("click", async (event) => {
+    // Per-Flag-Aktion (Ignorieren / Als gewarnt markieren)
+    const itemButton = event.target.closest("[data-flag-action]");
+    if (itemButton) {
+        const item = itemButton.closest("[data-flag-id]");
+        const flagId = item?.dataset.flagId;
+        const resolution = itemButton.dataset.flagAction;
+        if (!flagId) return;
+        itemButton.disabled = true;
+        try {
+            await api("resolve-cheat-flag", { flagId: Number(flagId), resolution });
+            setStatus(`Flag #${flagId} als „${resolution}" markiert.`);
+            await loadUsers();
+        } catch (error) {
+            setStatus(error.message, true);
+            itemButton.disabled = false;
+        }
+        return;
+    }
+
+    // Bulk-Aktion auf User-Ebene (alle Flags ignorieren / User bannen)
+    const bulkButton = event.target.closest("[data-flag-bulk]");
+    if (bulkButton) {
+        const group = bulkButton.closest("[data-flag-user]");
+        const userId = group?.dataset.flagUser;
+        const resolution = bulkButton.dataset.flagBulk;
+        if (!userId) return;
+        const confirmText = resolution === "banned"
+            ? "User sperren und alle offenen Flags als „banned" markieren?"
+            : "Alle offenen Flags dieses Users als ignoriert markieren?";
+        if (!window.confirm(confirmText)) return;
+        bulkButton.disabled = true;
+        try {
+            if (resolution === "banned") {
+                await api("ban", { userId, isBanned: true });
+            }
+            await api("resolve-user-flags", { userId, resolution });
+            setStatus(resolution === "banned"
+                ? "User gesperrt und Flags als „banned" markiert."
+                : "Alle Flags dieses Users ignoriert.");
+            await loadUsers();
+        } catch (error) {
+            setStatus(error.message, true);
+            bulkButton.disabled = false;
+        }
+    }
+});
+
 function showAbuseSection() {
     const selected = adminAbuseGame.value;
     adminAbuseRoot.querySelectorAll("[data-admin-abuse-game]").forEach((section) => {

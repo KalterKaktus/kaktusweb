@@ -535,3 +535,180 @@
         min-width: 100%;
     }
 }
+
+/* ----- Cheat-Flags -------------------------------------------------------
+   Eigenes Panel oberhalb der User-Liste. Severity bestimmt Akzentfarbe:
+   warn = orange, critical = rot. Bleibt im Style des Adminabuse-Panels. */
+.admin-cheat-flags {
+    margin-bottom: 1rem;
+    border: 1px solid rgba(255, 99, 99, 0.34);
+    border-radius: 8px;
+    background: rgba(45, 10, 10, 0.32);
+}
+
+.admin-cheat-flags[hidden] {
+    display: none;
+}
+
+.admin-cheat-flags summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+    color: #ffb3b3;
+    cursor: pointer;
+    font-weight: 950;
+}
+
+.admin-cheat-flags[open] summary {
+    border-bottom: 1px solid rgba(255, 99, 99, 0.24);
+}
+
+.admin-cheat-flags-count {
+    display: inline-flex;
+    min-width: 1.6rem;
+    padding: 0.1rem 0.45rem;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(255, 180, 90, 0.28);
+    color: #ffd69b;
+    font-size: 0.85rem;
+    font-weight: 950;
+}
+
+.admin-cheat-flags-count.is-critical {
+    background: rgba(255, 80, 80, 0.32);
+    color: #ffd0d0;
+}
+
+.admin-cheat-flags-body {
+    display: grid;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem 1rem;
+}
+
+.admin-flag-group {
+    padding: 0.85rem 0.95rem;
+    border: 1px solid rgba(255, 180, 90, 0.34);
+    border-left-width: 4px;
+    border-radius: 8px;
+    background: rgba(40, 24, 8, 0.45);
+}
+
+.admin-flag-group.is-critical {
+    border-color: rgba(255, 80, 80, 0.55);
+    background: rgba(50, 12, 12, 0.55);
+}
+
+.admin-flag-group-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.6rem;
+}
+
+.admin-flag-group-head h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #fff;
+}
+
+.admin-flag-banned {
+    display: inline-block;
+    margin-left: 0.4rem;
+    padding: 0.05rem 0.4rem;
+    border-radius: 4px;
+    background: rgba(255, 80, 80, 0.35);
+    color: #ffd0d0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.admin-flag-group-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.admin-flag-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.admin-flag-item {
+    padding: 0.55rem 0.7rem;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.28);
+    border-left: 3px solid rgba(255, 180, 90, 0.55);
+}
+
+.admin-flag-item.is-critical {
+    border-left-color: rgba(255, 80, 80, 0.85);
+    background: rgba(60, 8, 8, 0.42);
+}
+
+.admin-flag-item-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem 0.7rem;
+    margin-bottom: 0.35rem;
+    color: #f0f0f0;
+}
+
+.admin-flag-type {
+    font-weight: 700;
+}
+
+.admin-flag-severity {
+    display: inline-block;
+    padding: 0.05rem 0.4rem;
+    border-radius: 4px;
+    background: rgba(255, 180, 90, 0.28);
+    color: #ffd69b;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.admin-flag-item.is-critical .admin-flag-severity {
+    background: rgba(255, 80, 80, 0.4);
+    color: #ffd0d0;
+}
+
+.admin-flag-item-head time {
+    margin-left: auto;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.admin-flag-details {
+    margin: 0 0 0.45rem;
+    padding: 0.45rem 0.6rem;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.32);
+    color: #d8d8d8;
+    font-size: 0.78rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 12rem;
+    overflow: auto;
+}
+
+@media (max-width: 720px) {
+    .admin-flag-group-actions {
+        width: 100%;
+    }
+
+    .admin-flag-group-actions .admin-button {
+        flex: 1 1 auto;
+    }
+}
