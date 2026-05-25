@@ -200,9 +200,17 @@ function playEventAppearSound() {
     return;
   }
 
-  const sound = eventAppearSound.cloneNode();
-  sound.volume = audioSettings.soundVolume;
-  sound.play().catch(() => {});
+  // WICHTIG: nicht cloneNode() — der Clone ist NICHT am audioCtx (MediaElementSource
+  // ist 1:1 zum Original gebunden). Auf iOS Safari + Music-mute hat der Browser
+  // keine aktive Audio-Session, und der Clone bleibt stumm. Das Original-Element
+  // läuft durch den audioCtx und respektiert ctx.resume() → klingt überall.
+  // Trade-off: schnell aufeinanderfolgende Spawns überlappen nicht (currentTime
+  // resettet jedes Mal). Für Goldkaktus/Rubinkaktus die nicht <1s spawnen ist das ok.
+  try {
+    eventAppearSound.currentTime = 0;
+  } catch {}
+  eventAppearSound.volume = audioSettings.soundVolume;
+  eventAppearSound.play().catch(() => {});
 }
 
 function initAudio() {
