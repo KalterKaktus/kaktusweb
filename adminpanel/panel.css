@@ -438,6 +438,38 @@
     vertical-align: middle;
     text-shadow: 0 0 6px rgba(255, 209, 102, 0.5);
 }
+.admin-user-autoban {
+    display: inline-block;
+    padding: 0.08rem 0.5rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(255, 80, 80, 0.35), rgba(180, 30, 30, 0.25));
+    border: 1px solid #ff5050;
+    color: #ff8b8b;
+    font-size: 0.62rem;
+    font-weight: 900;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+    text-shadow: 0 0 8px rgba(255, 80, 80, 0.6);
+    letter-spacing: 0.04em;
+}
+.admin-user-autoban-meta {
+    margin-top: 0.3rem !important;
+    padding: 0.4rem 0.6rem;
+    border-left: 3px solid #ff5050;
+    background: rgba(255, 80, 80, 0.08);
+    border-radius: 0 4px 4px 0;
+    font-size: 0.75rem;
+    color: #ffb3b3;
+}
+.admin-user-autoban-meta strong {
+    color: #ff8b8b;
+    font-family: ui-monospace, monospace;
+}
+.admin-autoban-tools {
+    margin-top: 0.6rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed rgba(255, 80, 80, 0.3);
+}
 .admin-user-meta {
     font-size: 0.78rem;
     color: var(--text-secondary);

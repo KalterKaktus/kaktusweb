@@ -131,11 +131,12 @@ async function supabase(path, options = {}, query = "") {
 }
 
 async function listUsers() {
-    const [profiles, saves, presenceRows, badges] = await Promise.all([
+    const [profiles, saves, presenceRows, badges, autoBans] = await Promise.all([
         supabase("profiles", {}, "?select=id,username,is_banned,avatar_url,updated_at,total_xp,equipped_badge,vip,vip_color,referral_code,donation_total_cents,donation_count&order=updated_at.desc"),
         supabase("game_saves", {}, "?select=user_id,game_id,display_name,total_earned,season_id,payload,updated_at&order=updated_at.desc"),
         listPresence(),
         supabase("user_badges", {}, "?select=user_id,badge_id,awarded_at"),
+        listAutoBans(),
     ]);
     const savesByUser = new Map();
     const presenceByUser = new Map((presenceRows || []).map((presence) => [presence.user_id, presence]));
@@ -152,12 +153,27 @@ async function listUsers() {
         savesByUser.set(save.user_id, userSaves);
     }
 
+    const autoBanByUser = new Map((autoBans || []).map((ab) => [ab.user_id, ab]));
+
     return (profiles || []).map((profile) => ({
         ...profile,
         saves: savesByUser.get(profile.id) || [],
         presence: formatPresence(presenceByUser.get(profile.id)),
         badges: badgesByUser.get(profile.id) || [],
+        auto_ban: autoBanByUser.get(profile.id) || null,
     }));
+}
+
+// Liest die auto_banned_users View — enthält für jeden auto-banned User:
+// banned_at, ban_trigger_flag, auto_banned_flag_count, restore_history_id.
+async function listAutoBans() {
+    try {
+        return await supabase("auto_banned_users", {}, "?select=*");
+    } catch (error) {
+        // View existiert evtl. noch nicht (Migration nicht gelaufen) — soft-fail.
+        console.error("auto_banned_users View konnte nicht geladen werden:", error.message);
+        return [];
+    }
 }
 
 async function listPresence() {
@@ -235,6 +251,20 @@ async function sendMessage(userId, message) {
         method: "POST",
         headers: { Prefer: "return=minimal" },
         body: JSON.stringify({ user_id: userId, message: value }),
+    });
+}
+
+// Restore eines einzelnen Spielstands aus der game_saves_history Tabelle.
+// Genutzt nach Unban von Auto-Banned Usern um den Pre-Ban-State wiederherzustellen.
+async function restoreSave(historyId) {
+    const id = Number(historyId);
+    if (!Number.isInteger(id) || id <= 0) {
+        throw httpError("history-id ungültig.", 400);
+    }
+    await supabase("rpc/restore_game_save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Prefer: "return=minimal" },
+        body: JSON.stringify({ history_id: id }),
     });
 }
 
@@ -667,6 +697,8 @@ export default async (req) => {
             await setVipStatus(body.userId, body.vip);
         } else if (body.action === "update-profile") {
             await updateProfileFields(body.userId, body.updates);
+        } else if (body.action === "restore-save") {
+            await restoreSave(body.historyId);
         } else {
             return json({ error: "Aktion unbekannt." }, 400);
         }

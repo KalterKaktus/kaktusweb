@@ -345,9 +345,10 @@ function renderUsers(users) {
             <article class="admin-user" data-user-id="${escapeAttr(user.id)}">
                 <div class="admin-user-head">
                     <div>
-                        <h2>${escapeHtml(user.username || "Ohne Name")} <span class="admin-user-level">Lvl ${userLevel}</span>${user.vip ? `<span class="admin-user-vip" title="VIP-Status">👑 VIP</span>` : ""}</h2>
+                        <h2>${escapeHtml(user.username || "Ohne Name")} <span class="admin-user-level">Lvl ${userLevel}</span>${user.vip ? `<span class="admin-user-vip" title="VIP-Status">👑 VIP</span>` : ""}${user.auto_ban ? `<span class="admin-user-autoban" title="Automatisch gesperrt — Trigger: ${escapeAttr(user.auto_ban.ban_trigger_flag || "unbekannt")}">🤖 AUTO-BAN</span>` : ""}</h2>
                         <p>${escapeHtml(user.id)}</p>
                         <p class="admin-user-meta">${formatNumber(user.total_xp || 0)} XP &middot; ${userBadges.size} Badges${user.referral_code ? ` &middot; Ref-Code <code>${escapeHtml(user.referral_code)}</code>` : ""}</p>
+                        ${user.auto_ban ? `<p class="admin-user-autoban-meta">Auto-gesperrt am ${escapeHtml(formatDate(user.auto_ban.banned_at))} wegen <strong>${escapeHtml(user.auto_ban.ban_trigger_flag || "unbekannt")}</strong> · ${user.auto_ban.auto_banned_flag_count || 0} Auto-Ban-Flag${user.auto_ban.auto_banned_flag_count === 1 ? "" : "s"} insgesamt</p>` : ""}
                     </div>
                     <div class="admin-user-flags">
                         <button class="admin-presence ${presence.online ? "is-online" : "is-offline"}" type="button" title="${escapeAttr(formatPresenceTitle(presence))}">
@@ -401,13 +402,18 @@ function renderUsers(users) {
                     </div>
                 </details>
 
-                <details class="admin-account-tools">
-                    <summary>Account-Werkzeuge</summary>
+                <details class="admin-account-tools"${user.auto_ban ? " open" : ""}>
+                    <summary>Account-Werkzeuge${user.auto_ban ? " — 🤖 Auto-Ban offen" : ""}</summary>
                     <div class="admin-inline">
                         <input class="admin-input is-message" data-message-input type="text" maxlength="500" placeholder="Nachricht an User">
                         <button class="admin-button" data-action="message" type="button">Nachricht schicken</button>
                         <button class="admin-button is-danger" data-action="ban" type="button">${user.is_banned ? "Entsperren" : "Sperren"}</button>
                     </div>
+                    ${user.auto_ban ? `
+                    <div class="admin-inline admin-autoban-tools">
+                        ${user.auto_ban.restore_history_id ? `<button class="admin-button" data-action="restore-save" data-history-id="${escapeAttr(user.auto_ban.restore_history_id)}" type="button" title="Spielstand vor dem Auto-Ban aus History wiederherstellen">↺ Save vor Auto-Ban restoren</button>` : `<span class="admin-empty">Kein pre-ban History-Eintrag vorhanden — Save war beim Ban schon leer.</span>`}
+                    </div>
+                    ` : ""}
 
                     <div class="admin-meta-grid admin-profile-editor" data-profile-editor>
                         <label class="admin-field">
@@ -655,6 +661,18 @@ usersRoot.addEventListener("click", async (event) => {
             const vip = button.dataset.vip === "true";
             await api("set-vip", { userId, vip });
             setStatus(vip ? "VIP-Status gesetzt." : "VIP-Status entfernt.");
+        }
+
+        if (action === "restore-save") {
+            const historyId = button.dataset.historyId;
+            if (!historyId) {
+                throw new Error("history-id fehlt.");
+            }
+            if (!window.confirm("Spielstand aus History wiederherstellen? Aktueller (leerer) State wird überschrieben.")) {
+                return;
+            }
+            await api("restore-save", { historyId });
+            setStatus("Spielstand wiederhergestellt aus History.");
         }
 
         if (action === "update-profile") {
