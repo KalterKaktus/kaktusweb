@@ -253,19 +253,23 @@ function renderGamePanel(save, index) {
 }
 
 // ----- Cheat-Flag rendering ----------------------------------------------
+// Labels bewusst OHNE die exakten Anticheat-Schwellen. Die panel.js wird ohne
+// Auth ausgeliefert (statisches Asset) — ein Cheater könnte die Schwellen
+// sonst auslesen und gezielt knapp drunter bleiben. Genaue Zahlen kommen im
+// flag.details Feld (server-seitig) und nur Admins sehen die.
 const FLAG_TYPE_LABELS = {
     profile_tamper: "Profil-Tampering (geschützte Spalte)",
     vip_color_without_vip: "VIP-Farbe ohne VIP-Status",
     badge_equip_without_owning: "Badge equippt ohne zu besitzen",
-    save_value_overflow: "Save: total_earned > 10¹⁸",
-    save_spam: "Save-Spam (<2s)",
-    save_jump_suspicious: "Save-Sprung >10× in <60s",
-    xp_oversize_call: "XP-Call >1000 in einem Hop",
+    save_value_overflow: "Save: total_earned ungewöhnlich hoch",
+    save_spam: "Save-Spam",
+    save_jump_suspicious: "Save-Sprung verdächtig",
+    xp_oversize_call: "XP-Call zu groß",
     xp_throttle_hit: "XP-Throttle erreicht",
-    catch_event_spam: "Catch-Spam (>5/s)",
+    catch_event_spam: "Catch-Spam",
     catch_event_invalid_rarity: "Catch: ungültige Rarity",
-    catch_event_value_anomaly: "Catch: value > 10M",
-    catch_event_kg_anomaly: "Catch: kg > 100",
+    catch_event_value_anomaly: "Catch: Wert-Anomalie",
+    catch_event_kg_anomaly: "Catch: Gewicht-Anomalie",
 };
 
 function flagLabel(type) {
@@ -402,6 +406,50 @@ function renderUsers(users) {
                         <input class="admin-input is-message" data-message-input type="text" maxlength="500" placeholder="Nachricht an User">
                         <button class="admin-button" data-action="message" type="button">Nachricht schicken</button>
                         <button class="admin-button is-danger" data-action="ban" type="button">${user.is_banned ? "Entsperren" : "Sperren"}</button>
+                    </div>
+
+                    <div class="admin-meta-grid admin-profile-editor" data-profile-editor>
+                        <label class="admin-field">
+                            <span>Total XP</span>
+                            <input class="admin-input" data-profile-field="total_xp" type="number" min="0" step="1" value="${escapeAttr(user.total_xp ?? 0)}">
+                        </label>
+                        <label class="admin-field">
+                            <span>VIP</span>
+                            <select class="admin-input" data-profile-field="vip">
+                                <option value="false" ${user.vip ? "" : "selected"}>nein</option>
+                                <option value="true" ${user.vip ? "selected" : ""}>ja</option>
+                            </select>
+                        </label>
+                        <label class="admin-field">
+                            <span>VIP-Farbe (Hex)</span>
+                            <input class="admin-input" data-profile-field="vip_color" type="text" maxlength="9" placeholder="#ff00aa" value="${escapeAttr(user.vip_color || "")}">
+                        </label>
+                        <label class="admin-field">
+                            <span>Equipped Badge</span>
+                            <select class="admin-input" data-profile-field="equipped_badge">
+                                <option value="" ${user.equipped_badge ? "" : "selected"}>— kein —</option>
+                                ${BADGE_ORDER.map((badgeId) => {
+                                    const b = BADGES[badgeId];
+                                    if (!b) return "";
+                                    return `<option value="${escapeAttr(badgeId)}" ${user.equipped_badge === badgeId ? "selected" : ""}>${escapeHtml(b.icon)} ${escapeHtml(b.name)}</option>`;
+                                }).join("")}
+                            </select>
+                        </label>
+                        <label class="admin-field">
+                            <span>Avatar URL</span>
+                            <input class="admin-input" data-profile-field="avatar_url" type="text" placeholder="https://…" value="${escapeAttr(user.avatar_url || "")}">
+                        </label>
+                        <label class="admin-field">
+                            <span>Spenden (Cent)</span>
+                            <input class="admin-input" data-profile-field="donation_total_cents" type="number" min="0" step="1" value="${escapeAttr(user.donation_total_cents ?? 0)}">
+                        </label>
+                        <label class="admin-field">
+                            <span>Spenden-Count</span>
+                            <input class="admin-input" data-profile-field="donation_count" type="number" min="0" step="1" value="${escapeAttr(user.donation_count ?? 0)}">
+                        </label>
+                    </div>
+                    <div class="admin-inline">
+                        <button class="admin-button" data-action="update-profile" type="button">Profil-Werte speichern</button>
                     </div>
                 </details>
             </article>
@@ -606,6 +654,22 @@ usersRoot.addEventListener("click", async (event) => {
             const vip = button.dataset.vip === "true";
             await api("set-vip", { userId, vip });
             setStatus(vip ? "VIP-Status gesetzt." : "VIP-Status entfernt.");
+        }
+
+        if (action === "update-profile") {
+            const editor = card.querySelector("[data-profile-editor]");
+            const updates = {};
+            editor?.querySelectorAll("[data-profile-field]").forEach((field) => {
+                const key = field.dataset.profileField;
+                let value = field.value;
+                // <select> für booleans liefert String "true"/"false"
+                if (field.tagName === "SELECT" && (value === "true" || value === "false")) {
+                    value = value === "true";
+                }
+                updates[key] = value;
+            });
+            await api("update-profile", { userId, updates });
+            setStatus("Profil-Werte gespeichert.");
         }
 
         await loadUsers();

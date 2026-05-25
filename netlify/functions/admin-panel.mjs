@@ -414,6 +414,104 @@ async function resolveAllUserFlags(userId, resolution, adminUserId) {
     );
 }
 
+// Whitelisted Profile-Felder die Admin direkt setzen kann. JEDES Feld kriegt
+// eine Normalize-Funktion die invalid Werte ablehnt — Service-Role bypassed
+// die DB-Trigger, daher muss die Validierung hier passieren.
+const PROFILE_EDITABLE_FIELDS = {
+    total_xp: (value) => {
+        const n = Math.floor(Number(value));
+        if (!Number.isFinite(n) || n < 0) {
+            throw httpError("total_xp muss eine nicht-negative Zahl sein.", 400);
+        }
+        return n;
+    },
+    vip: (value) => Boolean(value),
+    vip_color: (value) => {
+        const s = String(value ?? "").trim();
+        if (!s) return null;
+        if (!/^#[0-9a-fA-F]{3,8}$/.test(s)) {
+            throw httpError("vip_color: Hex-Color erwartet (z.B. #ff00aa).", 400);
+        }
+        return s;
+    },
+    equipped_badge: (value) => {
+        const s = String(value ?? "").trim();
+        if (!s) return null;
+        if (!KNOWN_BADGE_IDS.has(s)) {
+            throw httpError(`equipped_badge "${s}" ist nicht freigegeben.`, 400);
+        }
+        return s;
+    },
+    donation_total_cents: (value) => {
+        const n = Math.floor(Number(value));
+        if (!Number.isFinite(n) || n < 0) {
+            throw httpError("donation_total_cents muss >= 0 sein.", 400);
+        }
+        return n;
+    },
+    donation_count: (value) => {
+        const n = Math.floor(Number(value));
+        if (!Number.isFinite(n) || n < 0) {
+            throw httpError("donation_count muss >= 0 sein.", 400);
+        }
+        return n;
+    },
+    avatar_url: (value) => {
+        const s = String(value ?? "").trim();
+        if (!s) return null;
+        if (!/^https?:\/\/[^\s<>"']+$/i.test(s)) {
+            throw httpError("avatar_url: nur http(s)-URLs erlaubt.", 400);
+        }
+        return s;
+    },
+};
+
+async function updateProfileFields(userId, updates) {
+    if (!updates || typeof updates !== "object" || Array.isArray(updates)) {
+        throw httpError("updates muss ein Objekt sein.", 400);
+    }
+
+    const patch = { updated_at: new Date().toISOString() };
+    for (const [key, raw] of Object.entries(updates)) {
+        if (!Object.prototype.hasOwnProperty.call(PROFILE_EDITABLE_FIELDS, key)) {
+            // Unbekannte Felder still ignorieren (Frontend könnte mehr senden als hier whitelisted)
+            continue;
+        }
+        patch[key] = PROFILE_EDITABLE_FIELDS[key](raw);
+    }
+
+    if (Object.keys(patch).length === 1) {
+        throw httpError("Keine erlaubten Felder im Patch.", 400);
+    }
+
+    await supabase(
+        "profiles",
+        {
+            method: "PATCH",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify(patch),
+        },
+        `?id=eq.${encodeURIComponent(userId)}`
+    );
+
+    // Wenn equipped_badge gesetzt wurde aber der User das Badge gar nicht besitzt,
+    // ihn auto-grant — sonst sieht es im UI komisch aus (Badge equipped aber nicht
+    // in der Badge-Liste). KNOWN_BADGE_IDS oben validiert schon dass der Wert
+    // ein erlaubtes Badge ist.
+    if (patch.equipped_badge) {
+        await awardBadge(userId, patch.equipped_badge);
+    }
+    // Wenn vip aktiviert via diesen Editor → auch das Badge konsistent halten
+    // (analog zu setVipStatus). Wenn vip auf false → vip-Badge entfernen.
+    if (Object.prototype.hasOwnProperty.call(patch, "vip")) {
+        if (patch.vip) {
+            await awardBadge(userId, "vip");
+        } else {
+            await revokeBadge(userId, "vip");
+        }
+    }
+}
+
 async function setVipStatus(userId, isVip) {
     await supabase(
         "profiles",
@@ -567,6 +665,8 @@ export default async (req) => {
             await revokeBadge(body.userId, body.badgeId);
         } else if (body.action === "set-vip") {
             await setVipStatus(body.userId, body.vip);
+        } else if (body.action === "update-profile") {
+            await updateProfileFields(body.userId, body.updates);
         } else {
             return json({ error: "Aktion unbekannt." }, 400);
         }

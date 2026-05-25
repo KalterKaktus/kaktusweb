@@ -143,9 +143,11 @@ export async function pushCloudSave(user, state) {
         return { error: new Error("Dieser Save gehört zu einer alten Saison. Bitte neu laden.") };
     }
 
-    const displayName = await resolveDisplayName(user);
     const totalEarned = Number(state.totalEarned) || 0;
 
+    // display_name wird vom DB-Trigger game_saves_force_display_name_trigger
+    // aus profiles.username geforct (verhindert Impersonation). Hier nur als
+    // Fallback für brandneue Profile mitsenden — der Trigger überschreibt es eh.
     const { error } = await supabase
         .from("game_saves")
         .upsert({
@@ -154,7 +156,7 @@ export async function pushCloudSave(user, state) {
             season_id: period.id,
             payload: state,
             total_earned: totalEarned,
-            display_name: displayName,
+            display_name: "Spieler",
             updated_at: new Date().toISOString(),
         });
 
@@ -191,10 +193,13 @@ export async function fetchLeaderboard(limit = 1000) {
     const period = getMonthlyLeaderboardPeriod();
     const previousPeriod = getMonthlyLeaderboardPeriod(new Date(period.resetAt.getTime() - 1000));
     const [{ data, error }, { data: archive, error: archiveError }] = await Promise.all([
+        // Liest aus kaktus_clicker_leaderboard View statt rohem game_saves.
+        // View exposed nur leaderboard-relevante Spalten — kein payload, kein
+        // privacy-sensitive Feld. Ersetzt die alte game_saves_select_leaderboard
+        // RLS-Policy die alle payload-Felder geleakt hat.
         supabase
-            .from("game_saves")
+            .from("kaktus_clicker_leaderboard")
             .select("user_id, total_earned, display_name, season_id, updated_at")
-            .eq("game_id", KAKTUS_GAME_ID)
             .eq("season_id", period.id)
             .order("total_earned", { ascending: false })
             .limit(limit),
