@@ -629,7 +629,7 @@ cheatFlagsRoot?.addEventListener("click", async (event) => {
         itemButton.disabled = true;
         try {
             await api("resolve-cheat-flag", { flagId: Number(flagId), resolution });
-            setStatus(`Flag #${flagId} als „${resolution}" markiert.`);
+            setStatus(`Flag #${flagId} als '${resolution}' markiert.`);
             await loadUsers();
         } catch (error) {
             setStatus(error.message, true);
@@ -646,7 +646,7 @@ cheatFlagsRoot?.addEventListener("click", async (event) => {
         const resolution = bulkButton.dataset.flagBulk;
         if (!userId) return;
         const confirmText = resolution === "banned"
-            ? "User sperren und alle offenen Flags als „banned" markieren?"
+            ? "User sperren und alle offenen Flags als 'banned' markieren?"
             : "Alle offenen Flags dieses Users als ignoriert markieren?";
         if (!window.confirm(confirmText)) return;
         bulkButton.disabled = true;
@@ -656,7 +656,7 @@ cheatFlagsRoot?.addEventListener("click", async (event) => {
             }
             await api("resolve-user-flags", { userId, resolution });
             setStatus(resolution === "banned"
-                ? "User gesperrt und Flags als „banned" markiert."
+                ? "User gesperrt und Flags als 'banned' markiert."
                 : "Alle Flags dieses Users ignoriert.");
             await loadUsers();
         } catch (error) {
