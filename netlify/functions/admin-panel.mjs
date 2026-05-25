@@ -506,7 +506,16 @@ export default async (req) => {
         const adminUser = await requireAdmin(req);
 
         if (req.method === "GET") {
-            const [users, cheatFlags] = await Promise.all([listUsers(), listCheatFlags()]);
+            // listCheatFlags ist optional — wenn PostgREST das neue Schema noch
+            // nicht kennt oder etwas schiefläuft, soll wenigstens die User-Liste
+            // funktionieren (Adminpanel sonst komplett tot).
+            const [users, cheatFlags] = await Promise.all([
+                listUsers(),
+                listCheatFlags().catch((error) => {
+                    console.error("Cheat-Flags konnten nicht geladen werden:", error.message);
+                    return [];
+                }),
+            ]);
             return json({ users, cheatFlags });
         }
 

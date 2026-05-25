@@ -34,7 +34,7 @@ function setAdminContentVisible(visible) {
     adminAbuseRoot.hidden = !visible;
     usersRoot.hidden = !visible;
     refreshButton.hidden = !visible;
-    cheatFlagsRoot.hidden = !visible;
+    if (cheatFlagsRoot) cheatFlagsRoot.hidden = !visible;
 }
 
 function escapeHtml(value) {
@@ -280,6 +280,10 @@ function renderFlagDetails(details) {
 }
 
 function renderCheatFlags(groups) {
+    // Defensive: wenn das neue HTML noch nicht im Browser ist (z.B. CDN-Cache),
+    // einfach skippen statt mit TypeError den ganzen Loader zu blockieren.
+    if (!cheatFlagsBody || !cheatFlagsCount) return;
+
     const total = groups.reduce((sum, g) => sum + g.count, 0);
     cheatFlagsCount.textContent = String(total);
     cheatFlagsCount.classList.toggle("is-critical", groups.some((g) => g.worstSeverity === "critical"));
@@ -512,13 +516,13 @@ async function loadUsers() {
         status.classList.remove("is-error");
         loginGate.hidden = true;
         // Cheat-Flag-Panel automatisch aufklappen wenn was zu tun ist
-        if (flagTotal > 0 && !cheatFlagsRoot.open) {
+        if (flagTotal > 0 && cheatFlagsRoot && !cheatFlagsRoot.open) {
             cheatFlagsRoot.open = true;
         }
     } catch (error) {
         usersRoot.innerHTML = "";
-        cheatFlagsBody.innerHTML = "";
-        cheatFlagsCount.textContent = "0";
+        if (cheatFlagsBody) cheatFlagsBody.innerHTML = "";
+        if (cheatFlagsCount) cheatFlagsCount.textContent = "0";
         setAdminContentVisible(false);
         setStatus(error.message, true, /einlogg/i.test(error.message));
     }
@@ -614,7 +618,7 @@ usersRoot.addEventListener("click", async (event) => {
 
 refreshButton.addEventListener("click", loadUsers);
 
-cheatFlagsRoot.addEventListener("click", async (event) => {
+cheatFlagsRoot?.addEventListener("click", async (event) => {
     // Per-Flag-Aktion (Ignorieren / Als gewarnt markieren)
     const itemButton = event.target.closest("[data-flag-action]");
     if (itemButton) {
