@@ -384,18 +384,22 @@ tensionRefill = 0.36 × (1 + hookLevel × 0.35)</code></pre>
                 </p>
 
                 <h3>Standard-Mutationen (immer würfelbar)</h3>
-                <pre><code>P(standard) = 10 %
+                <pre><code>P(standard) = 10 % × (1 + Glück × 0.08)
 Pool (gewichtet): BIG 65 / HUGE 25 / SHINY 10</code></pre>
                 <div class="table-wrap">
                     <table class="wiki-table">
-                        <thead><tr><th>ID</th><th>Name</th><th>Multiplier</th><th>Pool-Anteil</th><th>Effektive Chance</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Name</th><th>Multiplier</th><th>Pool-Anteil</th><th>Chance Glück Lvl 0</th><th>Chance Glück Lvl 5</th></tr></thead>
                         <tbody>
-                            <tr><td>big</td><td>BIG</td><td>×1,5</td><td>65 %</td><td>6,5 %</td></tr>
-                            <tr><td>huge</td><td>HUGE</td><td>×2,0</td><td>25 %</td><td>2,5 %</td></tr>
-                            <tr><td>shiny</td><td><strong>SHINY</strong> 🌟</td><td><strong>×3,0</strong></td><td>10 %</td><td>1,0 %</td></tr>
+                            <tr><td>big</td><td>BIG</td><td>×1,5</td><td>65 %</td><td>6,5 %</td><td>9,1 %</td></tr>
+                            <tr><td>huge</td><td>HUGE</td><td>×2,0</td><td>25 %</td><td>2,5 %</td><td>3,5 %</td></tr>
+                            <tr><td>shiny</td><td><strong>SHINY</strong> 🌟</td><td><strong>×3,0</strong></td><td>10 %</td><td>1,0 %</td><td>1,4 %</td></tr>
                         </tbody>
                     </table>
                 </div>
+                <p>
+                    <strong>Glück-Bonus:</strong> jedes Level Glück (max 5) erhöht alle Mutationen-Wahrscheinlichkeiten
+                    um +8 % (sanft). Bei Lvl 5: <code>×1,40</code> auf alle Mutationen.
+                </p>
 
                 <h3>Event-Mutationen (nur während aktivem Event)</h3>
                 <p>
@@ -424,6 +428,27 @@ Pool (gewichtet): BIG 65 / HUGE 25 / SHINY 10</code></pre>
                     <strong>Stacking-Beispiel:</strong> Du fängst während Geistermeer (1,7 % Slot) einen
                     Common-Fisch (10 Coins base). Du würfelst SHINY (×3) UND HAUNTED (×10) → finaler Wert
                     <code>10 × 3 × 10 = 300 Coins</code>. Die seltensten Catches überhaupt im Spiel.
+                </p>
+                <p>
+                    <strong>Event-Mutationen Glück-Skalierung</strong> (analog Standard): jeweilige
+                    in-Event-Chance × (1 + Glück × 0,08). Bei Lvl 5: HAUNTED-Chance steigt von 15 % auf 21 %
+                    innerhalb von Geistermeer.
+                </p>
+                <h3>Was ist die seltenste Catch-Kombi?</h3>
+                <p>
+                    Theoretisches Optimum: <strong>Legendary + SHINY + HAUNTED + ≥99 % kg</strong> während Geistermeer aktiv.
+                </p>
+                <ul>
+                    <li>P(Legendary) ohne Glück: 0,5 %, mit Glück Lvl 5 (Luck-Boost auf Rarity): ~2,3 %</li>
+                    <li>P(SHINY): 1 % (Lvl 0) / 1,4 % (Lvl 5)</li>
+                    <li>P(HAUNTED): 0,25 % (Lvl 0) / 0,35 % (Lvl 5)</li>
+                    <li>P(kg ≥ 99 %): ~0,8 %</li>
+                </ul>
+                <p>
+                    <strong>Kombiniert ohne Glück: ~1 in 1 Milliarde (1 / 1.000.000.000).</strong> Mit Glück Lvl 5
+                    auf den Rarity- und Mutation-Buffs zusammen: ~<strong>1 in 110 Millionen</strong>. Das wäre
+                    der absolute Trophäen-Fang — praktisch nicht erreichbar ohne forciertes Spielen aller
+                    Geistermeer-Events.
                 </p>
                 <p>
                     <strong>P(SHINY HAUNTED) im Detail:</strong> Pro Catch während Geistermeer 1 % × 15 % = 0,15 %.

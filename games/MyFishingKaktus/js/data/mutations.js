@@ -55,14 +55,22 @@ function pickWeighted(pool) {
     return pool[0];
 }
 
-export function rollStandardMutation() {
-    if (Math.random() > STANDARD_MUTATION_CHANCE) return null;
+// Glück-Multiplier auf Mutation-Chance: sanfte Skalierung +8 % pro Level.
+// Lvl 0 = ×1.00 (10 % std), Lvl 5 = ×1.40 (14 % std). Gilt für Standard + Event-Mutationen.
+export function luckMutationMultiplier(luckLevel = 0) {
+    return 1 + Math.max(0, Number(luckLevel) || 0) * 0.08;
+}
+
+export function rollStandardMutation(luckLevel = 0) {
+    const chance = Math.min(0.95, STANDARD_MUTATION_CHANCE * luckMutationMultiplier(luckLevel));
+    if (Math.random() > chance) return null;
     return pickWeighted(STANDARD_MUTATIONS);
 }
 
-export function rollEventMutation(event) {
+export function rollEventMutation(event, luckLevel = 0) {
     if (!event || !event.mutation || !event.mutationChance) return null;
-    if (Math.random() > event.mutationChance) return null;
+    const chance = Math.min(0.95, event.mutationChance * luckMutationMultiplier(luckLevel));
+    if (Math.random() > chance) return null;
     return EVENT_MUTATIONS[event.mutation] || null;
 }
 
@@ -86,11 +94,11 @@ export function applyMutationsToCandidate(candidate, mutations) {
  * Convenience: würfelt Standard + (optional) Event-Mutation und liefert beide
  * als Array (kann leer sein).
  */
-export function rollMutations(event) {
+export function rollMutations(event, luckLevel = 0) {
     const out = [];
-    const std = rollStandardMutation();
+    const std = rollStandardMutation(luckLevel);
     if (std) out.push(std);
-    const ev = rollEventMutation(event);
+    const ev = rollEventMutation(event, luckLevel);
     if (ev) out.push(ev);
     return out;
 }
