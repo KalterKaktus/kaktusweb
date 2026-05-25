@@ -1283,6 +1283,20 @@ async function init() {
     if (user) {
         try {
             const profile = await fetchProfile(user.id);
+            // Ban-Enforcement: gleicher Block wie KaktusClicker. Save ist
+            // server-seitig schon geblockt (Trigger), aber ohne client-Check
+            // würde der User weiterspielen und nichts persistieren — verwirrend.
+            if (profile?.is_banned) {
+                const { getSupabase } = await import("/js/supabase-client.js");
+                const supabase = getSupabase();
+                if (supabase) {
+                    try { await supabase.auth.signOut(); } catch {}
+                }
+                setSaveStatus("Account gesperrt — Zugriff verweigert.");
+                try { window.alert("Dein Account wurde gesperrt."); } catch {}
+                window.location.replace("/login.html?banned=1");
+                return;
+            }
             if (profile?.username) {
                 playerName = profile.username;
             }

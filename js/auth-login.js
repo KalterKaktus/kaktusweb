@@ -68,15 +68,44 @@ async function handleEmailSignIn(event) {
     }
     setEmailLoading(true);
     setStatus("Anmeldung läuft…");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
         setStatus(`Anmeldung fehlgeschlagen: ${error.message}`, true);
         setEmailLoading(false);
         return;
     }
+
+    // Ban-Check nach erfolgreichem Login. Wenn gebannt: sofort wieder ausloggen.
+    if (await rejectIfBanned(data?.user)) {
+        setEmailLoading(false);
+        return;
+    }
+
     setStatus("Erfolgreich angemeldet — Weiterleitung…");
     const returnPath = sessionStorage.getItem("auth_return_to") || "/";
     window.location.href = returnPath;
+}
+
+async function rejectIfBanned(user) {
+    if (!user?.id) return false;
+    const supabase = getSupabase();
+    if (!supabase) return false;
+    try {
+        const { data: profile } = await supabase
+            .from("profiles")
+            .select("is_banned")
+            .eq("id", user.id)
+            .maybeSingle();
+        if (profile?.is_banned) {
+            await supabase.auth.signOut();
+            setStatus("Dieser Account ist gesperrt.", true);
+            return true;
+        }
+    } catch {
+        // Im Zweifel durchlassen — Auth-Nav macht beim nächsten Page-Load
+        // den zentralen Ban-Check.
+    }
+    return false;
 }
 
 async function handleEmailSignUp() {
@@ -98,6 +127,12 @@ async function handleEmailSignUp() {
     }
     if (data?.session) {
         // Auto-confirmed (z.B. wenn Supabase Email-Confirm deaktiviert ist)
+        // Auch hier ban-check — falls jemand mit gleicher Email nach Account-Delete + Re-Create
+        // wieder einen alten gebannten Profile-Eintrag triggert.
+        if (await rejectIfBanned(data.user)) {
+            setEmailLoading(false);
+            return;
+        }
         setStatus("Account erstellt — Weiterleitung…");
         const returnPath = sessionStorage.getItem("auth_return_to") || "/";
         window.location.href = returnPath;
@@ -111,6 +146,12 @@ async function handleEmailSignUp() {
 function initLoginPage() {
     const returnPath = getReturnPath();
     sessionStorage.setItem("auth_return_to", returnPath);
+
+    // ?banned=1 wird vom zentralen auth-nav Ban-Check beim Redirect gesetzt.
+    // Zeigt einen sticky Hinweis sodass der User versteht warum er hier ist.
+    if (new URLSearchParams(window.location.search).get("banned") === "1") {
+        setStatus("Dein Account wurde gesperrt. Login nicht möglich.", true);
+    }
 
     // Referral-Code aus URL (?ref=ABCDEF) für späteren claim_referral Aufruf merken.
     // Wird beim nächsten Auth-Login (in auth-nav.js) verbraucht. Lebenszeit: bis localStorage geleert.

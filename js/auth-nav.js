@@ -400,8 +400,36 @@ async function renderSession(container, session) {
 
     await ensureProfile(session.user.id);
     const profile = await fetchProfile(session.user.id);
+
+    // Ban-Enforcement (zentral): jeder Page-Load checkt is_banned und kickt
+    // den User raus. Daten bleiben unverändert — bei Unban läuft alles weiter.
+    if (profile?.is_banned) {
+        await handleBannedSession(container);
+        return;
+    }
+
     renderLoggedIn(container, session.user, profile);
     await startSessionFeatures(session.user);
+}
+
+let bannedRedirectInFlight = false;
+async function handleBannedSession(container) {
+    if (bannedRedirectInFlight) return;
+    bannedRedirectInFlight = true;
+
+    await stopSessionFeatures();
+    const supabase = getSupabase();
+    if (supabase) {
+        try { await supabase.auth.signOut(); } catch {}
+    }
+    renderLoggedOut(container);
+
+    // Auf /login.html wartet der ?banned=1 Param schon — login.js zeigt
+    // dann den Hinweis sticky. Auf anderen Pages: kurzer Hinweis + redirect.
+    if (window.location.pathname !== "/login.html") {
+        try { window.alert("Dein Account wurde gesperrt."); } catch {}
+        window.location.replace("/login.html?banned=1");
+    }
 }
 
 async function initAuthNav() {
