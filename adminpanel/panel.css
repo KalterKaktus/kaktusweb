@@ -470,6 +470,136 @@
     padding-top: 0.6rem;
     border-top: 1px dashed rgba(255, 80, 80, 0.3);
 }
+
+/* === Gesperrte User: ganzer Block knallig rot, sticht aus der Liste === */
+.admin-user.is-banned {
+    border-color: #ff3030 !important;
+    background: linear-gradient(135deg, rgba(255, 30, 30, 0.18), rgba(120, 0, 0, 0.10));
+    box-shadow: 0 0 0 1px rgba(255, 30, 30, 0.5), 0 0 24px rgba(255, 30, 30, 0.25);
+    position: relative;
+}
+.admin-user.is-banned::before {
+    content: "GESPERRT";
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.6rem;
+    background: #ff3030;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    border-radius: 4px;
+    box-shadow: 0 0 12px rgba(255, 48, 48, 0.6);
+    z-index: 1;
+}
+.admin-user.is-banned .admin-ban {
+    background: #ff3030 !important;
+    color: #fff !important;
+    border-color: #ff5050 !important;
+    font-weight: 900;
+    box-shadow: 0 0 10px rgba(255, 48, 48, 0.5);
+}
+.admin-user.is-banned h2,
+.admin-user.is-banned .admin-user-meta {
+    color: #ffd0d0;
+}
+.admin-user.is-banned .admin-game-panel,
+.admin-user.is-banned details {
+    background: rgba(255, 30, 30, 0.06);
+    border-left: 2px solid rgba(255, 48, 48, 0.4);
+}
+
+/* === Ban-Verlauf section === */
+.admin-username-field {
+    margin-bottom: 0.6rem;
+}
+.admin-username-field > span {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 0.3rem;
+}
+.admin-ban-log {
+    margin-top: 0.8rem;
+    padding: 0.6rem 0.8rem;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 80, 80, 0.25);
+    border-radius: 6px;
+}
+.admin-ban-log h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.85rem;
+    color: #ff9999;
+    letter-spacing: 0.03em;
+}
+.admin-ban-log ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.4rem;
+}
+.admin-ban-log-item {
+    padding: 0.4rem 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 3px solid rgba(255, 80, 80, 0.4);
+    border-radius: 0 4px 4px 0;
+    font-size: 0.78rem;
+}
+.admin-ban-log-item.is-auto {
+    border-left-color: #ff5050;
+    background: rgba(255, 80, 80, 0.08);
+}
+.admin-ban-log-item.is-manual {
+    border-left-color: #ffaa55;
+    background: rgba(255, 170, 85, 0.08);
+}
+.admin-ban-log-head {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.admin-ban-log-tag {
+    font-weight: 900;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    padding: 0.08rem 0.4rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.35);
+    color: #ffb3b3;
+}
+.admin-ban-log-item.is-manual .admin-ban-log-tag {
+    color: #ffd0a0;
+}
+.admin-ban-log-type {
+    font-family: ui-monospace, monospace;
+    color: #ffe0e0;
+}
+.admin-ban-log-item time {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+}
+.admin-ban-log-sev {
+    display: inline-block;
+    margin-top: 0.25rem;
+    padding: 0.05rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.admin-ban-log-sev.is-critical {
+    background: #ff3030;
+    color: #fff;
+}
+.admin-ban-log-sev.is-warn {
+    background: rgba(255, 170, 85, 0.25);
+    color: #ffd0a0;
+}
 .admin-user-meta {
     font-size: 0.78rem;
     color: var(--text-secondary);

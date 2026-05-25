@@ -381,6 +381,13 @@ function getUpgrade(id) {
   return upgrades.find((upgrade) => upgrade.id === id);
 }
 
+// Anti-Autoclick: rollende Liste der letzten ~60s an Click-Timestamps.
+// log_clicker_telemetry RPC analysiert das alle 30s (max_cps_1s + CV der
+// inter-click-Intervalle). Server erkennt damit auch konstante Rhythmen
+// die unter dem 22-cps-avg-Trigger durchrutschen würden.
+const clickTimestamps = [];
+const CLICK_BUFFER_WINDOW_MS = 60_000;
+
 function clickCactus(event) {
   const earned = getClickYield(state);
   addCactus(earned);
@@ -388,10 +395,96 @@ function clickCactus(event) {
   // XP: alle 100 Clicks = 1 XP (sehr gemächlich, dafür konstant beim Spielen).
   // Spike-XP gibt's beim Prestige.
   if (state.totalClicks % 100 === 0) addPendingXp(1, "clicker-click");
+  trackClickTimestamp();
   chargeClickFrenzy();
   spawnFloat(event.clientX, event.clientY, `+${formatNumber(earned)}`);
   const achievementChanged = updateAchievements();
   renderGameplayHud({ achievementChanged });
+}
+
+function trackClickTimestamp() {
+  const now = Date.now();
+  clickTimestamps.push(now);
+  const cutoff = now - CLICK_BUFFER_WINDOW_MS;
+  while (clickTimestamps.length && clickTimestamps[0] < cutoff) {
+    clickTimestamps.shift();
+  }
+}
+
+async function reportClickTelemetry() {
+  if (clickTimestamps.length < 30) return;
+  const supabase = getSupabase();
+  if (!supabase) return;
+  const session = (await supabase.auth.getSession()).data?.session;
+  if (!session?.user) return;
+
+  const now = Date.now();
+  const oldest = clickTimestamps[0];
+  const windowSeconds = Math.round((now - oldest) / 1000);
+  if (windowSeconds < 30) return;
+  const clickCount = clickTimestamps.length;
+
+  let maxCps1s = 0;
+  let j = 0;
+  for (let i = 0; i < clickTimestamps.length; i++) {
+    while (j < clickTimestamps.length && clickTimestamps[j] < clickTimestamps[i] + 1000) j++;
+    const c = j - i;
+    if (c > maxCps1s) maxCps1s = c;
+  }
+
+  let cv = 0;
+  if (clickTimestamps.length > 2) {
+    const intervals = [];
+    for (let i = 1; i < clickTimestamps.length; i++) {
+      intervals.push(clickTimestamps[i] - clickTimestamps[i - 1]);
+    }
+    const mean = intervals.reduce((s, x) => s + x, 0) / intervals.length;
+    if (mean > 0) {
+      const variance = intervals.reduce((s, x) => s + (x - mean) ** 2, 0) / intervals.length;
+      cv = Math.sqrt(variance) / mean;
+    }
+  }
+
+  // Lokale Detection — selbe Schwellen wie der Server (sodass User sofort
+  // den Popup sieht, nicht erst nach Server-Roundtrip). Server loggt parallel
+  // den Flag fürs Adminpanel.
+  if (maxCps1s > 22 || (cv > 0 && cv < 0.05 && windowSeconds >= 60)) {
+    showAutoclickWarning();
+  }
+
+  try {
+    await supabase.rpc("log_clicker_telemetry", {
+      p_window_seconds: windowSeconds,
+      p_click_count: clickCount,
+      p_max_cps_1s: maxCps1s,
+      p_cv: Number(cv.toFixed(4)),
+    });
+  } catch {
+    // best effort
+  }
+}
+
+let autoclickWarningOpen = false;
+function showAutoclickWarning() {
+  if (autoclickWarningOpen) return;
+  autoclickWarningOpen = true;
+  // Buffer leeren damit nach dem Popup nicht sofort wieder triggert
+  clickTimestamps.length = 0;
+
+  const backdrop = document.createElement("div");
+  backdrop.className = "autoclick-warning-backdrop";
+  backdrop.innerHTML = `
+    <div class="autoclick-warning" role="alertdialog" aria-labelledby="autoclick-warning-title">
+      <h2 id="autoclick-warning-title">Stop!</h2>
+      <p>Autoklicker verderben den Spielspaß und sind verboten.</p>
+      <button type="button" class="autoclick-warning-dismiss">Verstanden</button>
+    </div>
+  `;
+  backdrop.querySelector(".autoclick-warning-dismiss").addEventListener("click", () => {
+    backdrop.remove();
+    autoclickWarningOpen = false;
+  });
+  document.body.append(backdrop);
 }
 
 function chargeClickFrenzy() {
@@ -1082,6 +1175,7 @@ function bindEvents() {
   });
 
   window.setInterval(() => saveState("Automatisch gespeichert"), 15000);
+  window.setInterval(() => { reportClickTelemetry(); }, 30000);
   window.setInterval(() => {
     payProductionSecond();
     checkRandomEvents();

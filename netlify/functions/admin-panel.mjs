@@ -131,12 +131,13 @@ async function supabase(path, options = {}, query = "") {
 }
 
 async function listUsers() {
-    const [profiles, saves, presenceRows, badges, autoBans] = await Promise.all([
+    const [profiles, saves, presenceRows, badges, autoBans, banLogs] = await Promise.all([
         supabase("profiles", {}, "?select=id,username,is_banned,avatar_url,updated_at,total_xp,equipped_badge,vip,vip_color,referral_code,donation_total_cents,donation_count&order=updated_at.desc"),
         supabase("game_saves", {}, "?select=user_id,game_id,display_name,total_earned,season_id,payload,updated_at&order=updated_at.desc"),
         listPresence(),
         supabase("user_badges", {}, "?select=user_id,badge_id,awarded_at"),
         listAutoBans(),
+        listBanLogs(),
     ]);
     const savesByUser = new Map();
     const presenceByUser = new Map((presenceRows || []).map((presence) => [presence.user_id, presence]));
@@ -154,6 +155,12 @@ async function listUsers() {
     }
 
     const autoBanByUser = new Map((autoBans || []).map((ab) => [ab.user_id, ab]));
+    const banLogByUser = new Map();
+    for (const entry of banLogs || []) {
+        const log = banLogByUser.get(entry.user_id) || [];
+        log.push(entry);
+        banLogByUser.set(entry.user_id, log);
+    }
 
     return (profiles || []).map((profile) => ({
         ...profile,
@@ -161,6 +168,7 @@ async function listUsers() {
         presence: formatPresence(presenceByUser.get(profile.id)),
         badges: badgesByUser.get(profile.id) || [],
         auto_ban: autoBanByUser.get(profile.id) || null,
+        ban_log: banLogByUser.get(profile.id) || [],
     }));
 }
 
@@ -172,6 +180,22 @@ async function listAutoBans() {
     } catch (error) {
         // View existiert evtl. noch nicht (Migration nicht gelaufen) — soft-fail.
         console.error("auto_banned_users View konnte nicht geladen werden:", error.message);
+        return [];
+    }
+}
+
+// Ban-History: alle cheat_flags die zu einem Ban geführt haben (manuell oder auto).
+// Zeigt im Adminpanel pro User: wann + warum + ob auto oder manuell.
+async function listBanLogs() {
+    try {
+        return await supabase("cheat_flags", {},
+            "?select=user_id,flag_type,severity,details,created_at,resolved_at,resolved_by,resolution" +
+            "&resolution=in.(auto_banned,banned)" +
+            "&order=resolved_at.desc" +
+            "&limit=500"
+        );
+    } catch (error) {
+        console.error("Ban-Logs konnten nicht geladen werden:", error.message);
         return [];
     }
 }
@@ -448,6 +472,17 @@ async function resolveAllUserFlags(userId, resolution, adminUserId) {
 // eine Normalize-Funktion die invalid Werte ablehnt — Service-Role bypassed
 // die DB-Trigger, daher muss die Validierung hier passieren.
 const PROFILE_EDITABLE_FIELDS = {
+    username: (value) => {
+        const s = String(value ?? "").trim();
+        if (!s) throw httpError("Username darf nicht leer sein.", 400);
+        if (s.length < 3 || s.length > 24) {
+            throw httpError("Username braucht 3-24 Zeichen.", 400);
+        }
+        if (!/^[a-zA-Z0-9_]+$/.test(s)) {
+            throw httpError("Username: nur Buchstaben, Zahlen, Unterstriche.", 400);
+        }
+        return s;
+    },
     total_xp: (value) => {
         const n = Math.floor(Number(value));
         if (!Number.isFinite(n) || n < 0) {
@@ -530,6 +565,17 @@ async function updateProfileFields(userId, updates) {
     // ein erlaubtes Badge ist.
     if (patch.equipped_badge) {
         await awardBadge(userId, patch.equipped_badge);
+    }
+    // Wenn username geändert: cascade auf alle game_saves.display_name, sodass
+    // Leaderboards sofort den neuen Namen zeigen. Der display_name-Trigger
+    // würde das beim nächsten Save sowieso forcen, aber per Admin-Edit wollen
+    // wir es immediat.
+    if (Object.prototype.hasOwnProperty.call(patch, "username")) {
+        await supabase("game_saves", {
+            method: "PATCH",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({ display_name: patch.username, updated_at: new Date().toISOString() }),
+        }, `?user_id=eq.${encodeURIComponent(userId)}`);
     }
     // Wenn vip aktiviert via diesen Editor → auch das Badge konsistent halten
     // (analog zu setVipStatus). Wenn vip auf false → vip-Badge entfernen.

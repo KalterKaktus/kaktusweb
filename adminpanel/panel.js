@@ -341,8 +341,12 @@ function renderUsers(users) {
         const presence = user.presence || {};
         const userLevel = levelFromXp(user.total_xp);
         const userBadges = new Set(Array.isArray(user.badges) ? user.badges : []);
+        const articleClasses = ["admin-user"];
+        if (user.is_banned) articleClasses.push("is-banned");
+        if (user.auto_ban) articleClasses.push("is-auto-banned");
+        const banLog = Array.isArray(user.ban_log) ? user.ban_log : [];
         return `
-            <article class="admin-user" data-user-id="${escapeAttr(user.id)}">
+            <article class="${articleClasses.join(" ")}" data-user-id="${escapeAttr(user.id)}">
                 <div class="admin-user-head">
                     <div>
                         <h2>${escapeHtml(user.username || "Ohne Name")} <span class="admin-user-level">Lvl ${userLevel}</span>${user.vip ? `<span class="admin-user-vip" title="VIP-Status">👑 VIP</span>` : ""}${user.auto_ban ? `<span class="admin-user-autoban" title="Automatisch gesperrt — Trigger: ${escapeAttr(user.auto_ban.ban_trigger_flag || "unbekannt")}">🤖 AUTO-BAN</span>` : ""}</h2>
@@ -402,8 +406,17 @@ function renderUsers(users) {
                     </div>
                 </details>
 
-                <details class="admin-account-tools"${user.auto_ban ? " open" : ""}>
-                    <summary>Account-Werkzeuge${user.auto_ban ? " — 🤖 Auto-Ban offen" : ""}</summary>
+                <details class="admin-account-tools"${user.auto_ban || user.is_banned ? " open" : ""}>
+                    <summary>Account-Werkzeuge${user.is_banned ? " — 🔒 GESPERRT" : ""}${user.auto_ban ? " (Auto-Ban)" : ""}</summary>
+
+                    <label class="admin-field admin-username-field">
+                        <span>Username (gameübergreifend)</span>
+                        <div class="admin-inline">
+                            <input class="admin-input" data-username-input type="text" minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]+" value="${escapeAttr(user.username || "")}" placeholder="3-24 Zeichen, a-Z 0-9 _">
+                            <button class="admin-button" data-action="save-username" type="button">Username speichern</button>
+                        </div>
+                    </label>
+
                     <div class="admin-inline">
                         <input class="admin-input is-message" data-message-input type="text" maxlength="500" placeholder="Nachricht an User">
                         <button class="admin-button" data-action="message" type="button">Nachricht schicken</button>
@@ -412,6 +425,29 @@ function renderUsers(users) {
                     ${user.auto_ban ? `
                     <div class="admin-inline admin-autoban-tools">
                         ${user.auto_ban.restore_history_id ? `<button class="admin-button" data-action="restore-save" data-history-id="${escapeAttr(user.auto_ban.restore_history_id)}" type="button" title="Spielstand vor dem Auto-Ban aus History wiederherstellen">↺ Save vor Auto-Ban restoren</button>` : `<span class="admin-empty">Kein pre-ban History-Eintrag vorhanden — Save war beim Ban schon leer.</span>`}
+                    </div>
+                    ` : ""}
+
+                    ${banLog.length > 0 ? `
+                    <div class="admin-ban-log">
+                        <h4>Ban-Verlauf (${banLog.length} Einträge)</h4>
+                        <ul>
+                            ${banLog.slice(0, 10).map((entry) => {
+                                const isAuto = entry.resolution === "auto_banned";
+                                const label = flagLabel(entry.flag_type);
+                                return `
+                                    <li class="admin-ban-log-item is-${isAuto ? "auto" : "manual"}">
+                                        <div class="admin-ban-log-head">
+                                            <span class="admin-ban-log-tag">${isAuto ? "🤖 AUTO" : "👤 MANUELL"}</span>
+                                            <span class="admin-ban-log-type">${escapeHtml(label)}</span>
+                                            <time>${escapeHtml(formatDate(entry.resolved_at || entry.created_at))}</time>
+                                        </div>
+                                        ${entry.severity ? `<small class="admin-ban-log-sev is-${escapeAttr(entry.severity)}">${escapeHtml(entry.severity)}</small>` : ""}
+                                        ${renderFlagDetails(entry.details)}
+                                    </li>
+                                `;
+                            }).join("")}
+                        </ul>
                     </div>
                     ` : ""}
 
@@ -661,6 +697,16 @@ usersRoot.addEventListener("click", async (event) => {
             const vip = button.dataset.vip === "true";
             await api("set-vip", { userId, vip });
             setStatus(vip ? "VIP-Status gesetzt." : "VIP-Status entfernt.");
+        }
+
+        if (action === "save-username") {
+            const input = card.querySelector("[data-username-input]");
+            const newUsername = input?.value.trim();
+            if (!newUsername) {
+                throw new Error("Username darf nicht leer sein.");
+            }
+            await api("update-profile", { userId, updates: { username: newUsername } });
+            setStatus(`Username gesetzt: ${newUsername}.`);
         }
 
         if (action === "restore-save") {

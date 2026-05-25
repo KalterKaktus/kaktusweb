@@ -755,6 +755,56 @@ h3 {
   margin-top: 16px;
 }
 
+.autoclick-warning-backdrop {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(6px);
+}
+.autoclick-warning {
+  width: min(440px, 100%);
+  padding: 28px 24px;
+  border: 2px solid #ff5050;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(60, 0, 0, 0.95), rgba(20, 0, 0, 0.95));
+  box-shadow: 0 0 50px rgba(255, 80, 80, 0.45);
+  text-align: center;
+}
+.autoclick-warning h2 {
+  margin: 0 0 12px;
+  color: #ff7878;
+  font-size: 28px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-shadow: 0 0 16px rgba(255, 80, 80, 0.6);
+}
+.autoclick-warning p {
+  color: #ffd0d0;
+  line-height: 1.55;
+  font-size: 15px;
+  margin: 0;
+}
+.autoclick-warning-dismiss {
+  margin-top: 20px;
+  padding: 10px 24px;
+  background: #ff3030;
+  color: #fff;
+  border: 1px solid #ff7878;
+  border-radius: 6px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  font-size: 14px;
+}
+.autoclick-warning-dismiss:hover {
+  background: #ff5050;
+  box-shadow: 0 0 18px rgba(255, 80, 80, 0.5);
+}
+
 @keyframes float-pop {
   from {
     opacity: 1;
