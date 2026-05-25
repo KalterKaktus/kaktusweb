@@ -300,10 +300,7 @@ function renderInventory() {
         ? entries.map((entry) => {
             const rarity = RARITIES[entry.fish.rarity];
             const area = AREAS[entry.fish.area];
-            // Basewert pro Fisch = avgKg * rarity.valuePerKg * fish.valueMultiplier * area.valueMultiplier.
-            // Wir nehmen mittleren kg-Wert (zwischen min+max), nur als Indikator.
-            const avgKg = (Number(entry.fish.minKg) + Number(entry.fish.maxKg)) / 2;
-            const baseValue = Math.max(1, Math.round(avgKg * rarity.valuePerKg * entry.fish.valueMultiplier * area.valueMultiplier));
+            const basePerKg = Math.max(1, Math.round(rarity.valuePerKg * entry.fish.valueMultiplier * area.valueMultiplier));
             return `
             <article class="inventory-row">
                 ${renderFishArt(entry.fish)}
@@ -311,7 +308,7 @@ function renderInventory() {
                     <strong>${entry.fish.name}</strong>
                     <small>${entry.fish.rarity} &middot; ${entry.count}x gefangen</small>
                     <small>Gesamt ${kg(entry.totalKg)} &middot; Bestes ${kg(entry.bestKg)}</small>
-                    <small class="inv-base">~${coins(baseValue)} Coins/Fisch (Ø)</small>
+                    <small class="inv-base">${coins(basePerKg)} Coins/kg</small>
                     ${renderMutationChips(entry.mutations)}
                 </div>
                 <div class="inventory-value">
