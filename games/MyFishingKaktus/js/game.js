@@ -1319,7 +1319,10 @@ async function init() {
     }, 1000);
     bubbleSystem = new BubbleSystem(elements.water, {
         getState: () => state,
-        canSpawn: () => !activeWindow && elements.fishingOverlay.hidden && elements.areaTransition.hidden,
+        // Beim Angel-Minispiel weiter spawnen lassen — Spots erscheinen + verfallen
+        // im Hintergrund während der User den aktuellen Fisch fängt. Nur Shop/Stats
+        // (activeWindow) + Area-Transition pausieren.
+        canSpawn: () => !activeWindow && elements.areaTransition.hidden,
         onPick: startFishing,
         getSpawnMultiplier: () => weatherEventSystem?.getBuffs().spawnRate || 1,
         onSpawn(x, y) {
@@ -1329,7 +1332,8 @@ async function init() {
     });
     bubbleSystem.start();
     coinFishSystem = new CoinFishSystem(elements.water, {
-        canSpawn: () => !activeWindow && elements.fishingOverlay.hidden && elements.areaTransition.hidden,
+        // Auch Coin-Fische laufen im Hintergrund weiter während des Minispiels.
+        canSpawn: () => !activeWindow && elements.areaTransition.hidden,
         getSpawnMultiplier: () => weatherEventSystem?.getBuffs().spawnRate || 1,
         onTrail() {
             // Wellen-Trail bewusst entfernt — Timer-Fische schwimmen geräuschlos vorbei.
