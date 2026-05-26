@@ -27,14 +27,6 @@ import {
 } from "./economy.js";
 import { formatDuration, formatNumber } from "./format.js";
 import { createInitialState, normalizeLoadedState, resetRunForPrestige } from "./state.js";
-import {
-  SKIN_SLOTS,
-  SKIN_ITEMS,
-  SLOT_LABELS,
-  buildCosmeticOverlays,
-  emptyCosmetics,
-  normalizeCosmetics,
-} from "./skins.js";
 
 const STORAGE_KEY = "kaktus-clicker-save-v1";
 const AUDIO_STORAGE_KEY = "kaktus-clicker-audio-v1";
@@ -76,10 +68,6 @@ let soundEffectsUnlocked = false;
 // nicht als gültiger Unlock zählt → Goldkaktus-Sound kam bei Music=mute nicht.
 let audioCtx = null;
 
-// Skin-System: cosmetics-state + ist-User-VIP. Wird in init() aus profile gefüllt.
-let cosmetics = emptyCosmetics();
-let isVip = false;
-let skinsRendered = false;
 
 const elements = {
   cactusCount: document.querySelector("#cactus-count"),
@@ -106,13 +94,6 @@ const elements = {
   changelogButton: document.querySelector("#changelog-button"),
   resetButton: document.querySelector("#reset-button"),
   tabs: document.querySelectorAll(".tab"),
-  skinsTab: document.querySelector(".skins-tab"),
-  skinsVipGate: document.querySelector("#skins-vip-gate"),
-  skinsEditor: document.querySelector("#skins-editor"),
-  skinsPreview: document.querySelector("#skins-preview"),
-  skinsCategories: document.querySelector("#skins-categories"),
-  skinsStatus: document.querySelector("#skins-status"),
-  cactusArt: document.querySelector(".cactus-art"),
   panels: document.querySelectorAll(".tab-panel"),
   scoreCard: document.querySelector(".score-card"),
   frenzyBadge: document.querySelector("#frenzy-badge"),
@@ -233,162 +214,6 @@ function playEventAppearSound() {
   } catch {}
   eventAppearSound.volume = audioSettings.soundVolume;
   eventAppearSound.play().catch(() => {});
-}
-
-// ----- Skin-System ---------------------------------------------------------
-// Rendert Cosmetic-Overlays über den Cactus-Button. Pro Slot ein <div>
-// mit Inline-SVG, das via position:absolute über der cactus-art liegt.
-// SVG nutzt currentColor → wir setzen `color` auf dem Container und
-// CSS (.cactus-cosmetic) sorgt für den Neon-Glow via drop-shadow.
-function buildCosmeticElement(overlay) {
-  const el = document.createElement("div");
-  el.className = `cactus-cosmetic is-${overlay.slot}`;
-  el.setAttribute("aria-hidden", "true");
-  el.style.top = overlay.top;
-  el.style.width = overlay.width;
-  el.style.color = overlay.color;
-  el.innerHTML = overlay.svg;
-  return el;
-}
-
-function applyCosmeticsToCactus() {
-  // Wichtig: Overlays gehen in die .cactus-stage (Wrapper um die cactus-art),
-  // nicht direkt in den cactus-button. Der Button ist Grid mit vertical-
-  // centering, dort wäre `top: -1.4em` relativ zum button-top (= leerer
-  // Raum oberhalb der zentrierten Art). Der stage-Wrapper ist inline-block
-  // direkt um die cactus-art → cosmetics landen genau auf der Höhe wo die
-  // Preview sie auch zeigt.
-  const stage = elements.cactusButton?.querySelector(".cactus-stage");
-  if (!stage) return;
-  stage.querySelectorAll(".cactus-cosmetic").forEach((el) => el.remove());
-
-  for (const overlay of buildCosmeticOverlays(cosmetics)) {
-    stage.append(buildCosmeticElement(overlay));
-  }
-}
-
-function applyCosmeticsToPreview() {
-  if (!elements.skinsPreview || !elements.cactusArt) return;
-  // Kopiere die cactus-art + overlays in den Preview-Container
-  elements.skinsPreview.innerHTML = "";
-  const wrap = document.createElement("div");
-  wrap.className = "skins-preview-stage";
-
-  const base = document.createElement("pre");
-  base.className = "cactus-art";
-  base.textContent = elements.cactusArt.textContent;
-  wrap.append(base);
-
-  for (const overlay of buildCosmeticOverlays(cosmetics)) {
-    wrap.append(buildCosmeticElement(overlay));
-  }
-
-  elements.skinsPreview.append(wrap);
-}
-
-function setSkinsStatus(text, isError = false) {
-  if (!elements.skinsStatus) return;
-  elements.skinsStatus.textContent = text || "";
-  elements.skinsStatus.classList.toggle("is-error", Boolean(isError));
-}
-
-async function persistCosmetics() {
-  const supabase = getSupabase();
-  if (!supabase) return;
-  setSkinsStatus("Speichern…");
-  try {
-    const { error } = await supabase.rpc("set_cosmetics", { p_cosmetics: cosmetics });
-    if (error) {
-      setSkinsStatus(`Speichern fehlgeschlagen: ${error.message}`, true);
-      return;
-    }
-    setSkinsStatus("Gespeichert.");
-  } catch (e) {
-    setSkinsStatus(`Speichern fehlgeschlagen: ${e?.message || e}`, true);
-  }
-}
-
-function renderSkinsCategories() {
-  if (!elements.skinsCategories) return;
-  elements.skinsCategories.innerHTML = SKIN_SLOTS.map((slot) => {
-    const current = cosmetics[slot] || { id: "none", color: null };
-    const items = Object.values(SKIN_ITEMS[slot]);
-    const currentItem = SKIN_ITEMS[slot][current.id] || SKIN_ITEMS[slot].none;
-    const colorVal = current.color || currentItem.defaultColor || "#ffffff";
-    const hasColor = current.id !== "none";
-
-    const options = items.map((item) => `
-      <option value="${item.id}" ${item.id === current.id ? "selected" : ""}>${item.name}</option>
-    `).join("");
-
-    return `
-      <fieldset class="skin-slot" data-slot="${slot}">
-        <legend>${SLOT_LABELS[slot]}</legend>
-        <div class="skin-slot-row">
-          <label class="skin-slot-select">
-            <span class="sr-only">${SLOT_LABELS[slot]} wählen</span>
-            <select data-skin-select>${options}</select>
-          </label>
-          <label class="skin-slot-color ${hasColor ? "" : "is-disabled"}">
-            <span class="sr-only">Farbe</span>
-            <input type="color" data-skin-color value="${colorVal}" ${hasColor ? "" : "disabled"}>
-          </label>
-        </div>
-      </fieldset>
-    `;
-  }).join("");
-
-  // Event-Handler
-  elements.skinsCategories.querySelectorAll("[data-slot]").forEach((slot) => {
-    const slotId = slot.dataset.slot;
-    const select = slot.querySelector("[data-skin-select]");
-    const color = slot.querySelector("[data-skin-color]");
-
-    select?.addEventListener("change", () => {
-      const newId = select.value;
-      const item = SKIN_ITEMS[slotId][newId];
-      cosmetics[slotId] = {
-        id: newId,
-        color: newId === "none" ? null : (cosmetics[slotId]?.color || item?.defaultColor || null),
-      };
-      applyCosmeticsToCactus();
-      applyCosmeticsToPreview();
-      renderSkinsCategories();
-      persistCosmetics();
-    });
-
-    color?.addEventListener("input", () => {
-      if (!cosmetics[slotId] || cosmetics[slotId].id === "none") return;
-      cosmetics[slotId].color = color.value;
-      applyCosmeticsToCactus();
-      applyCosmeticsToPreview();
-    });
-    color?.addEventListener("change", () => {
-      if (!cosmetics[slotId] || cosmetics[slotId].id === "none") return;
-      cosmetics[slotId].color = color.value;
-      persistCosmetics();
-    });
-  });
-}
-
-function renderSkinsPanel() {
-  if (skinsRendered) return;
-  if (isVip) {
-    elements.skinsVipGate.hidden = true;
-    elements.skinsEditor.hidden = false;
-    applyCosmeticsToPreview();
-    renderSkinsCategories();
-  } else {
-    elements.skinsVipGate.hidden = false;
-    elements.skinsEditor.hidden = true;
-  }
-  skinsRendered = true;
-}
-
-function initSkinSystem(profile) {
-  isVip = Boolean(profile?.vip);
-  cosmetics = normalizeCosmetics(profile?.cosmetics);
-  applyCosmeticsToCactus();
 }
 
 function initAudio() {
@@ -567,13 +392,6 @@ function getUpgrade(id) {
   return upgrades.find((upgrade) => upgrade.id === id);
 }
 
-// Anti-Autoclick: rollende Liste der letzten ~60s an Click-Timestamps.
-// log_clicker_telemetry RPC analysiert das alle 30s (max_cps_1s + CV der
-// inter-click-Intervalle). Server erkennt damit auch konstante Rhythmen
-// die unter dem 22-cps-avg-Trigger durchrutschen würden.
-const clickTimestamps = [];
-const CLICK_BUFFER_WINDOW_MS = 60_000;
-
 function clickCactus(event) {
   const earned = getClickYield(state);
   addCactus(earned);
@@ -581,96 +399,10 @@ function clickCactus(event) {
   // XP: alle 100 Clicks = 1 XP (sehr gemächlich, dafür konstant beim Spielen).
   // Spike-XP gibt's beim Prestige.
   if (state.totalClicks % 100 === 0) addPendingXp(1, "clicker-click");
-  trackClickTimestamp();
   chargeClickFrenzy();
   spawnFloat(event.clientX, event.clientY, `+${formatNumber(earned)}`);
   const achievementChanged = updateAchievements();
   renderGameplayHud({ achievementChanged });
-}
-
-function trackClickTimestamp() {
-  const now = Date.now();
-  clickTimestamps.push(now);
-  const cutoff = now - CLICK_BUFFER_WINDOW_MS;
-  while (clickTimestamps.length && clickTimestamps[0] < cutoff) {
-    clickTimestamps.shift();
-  }
-}
-
-async function reportClickTelemetry() {
-  if (clickTimestamps.length < 30) return;
-  const supabase = getSupabase();
-  if (!supabase) return;
-  const session = (await supabase.auth.getSession()).data?.session;
-  if (!session?.user) return;
-
-  const now = Date.now();
-  const oldest = clickTimestamps[0];
-  const windowSeconds = Math.round((now - oldest) / 1000);
-  if (windowSeconds < 30) return;
-  const clickCount = clickTimestamps.length;
-
-  let maxCps1s = 0;
-  let j = 0;
-  for (let i = 0; i < clickTimestamps.length; i++) {
-    while (j < clickTimestamps.length && clickTimestamps[j] < clickTimestamps[i] + 1000) j++;
-    const c = j - i;
-    if (c > maxCps1s) maxCps1s = c;
-  }
-
-  let cv = 0;
-  if (clickTimestamps.length > 2) {
-    const intervals = [];
-    for (let i = 1; i < clickTimestamps.length; i++) {
-      intervals.push(clickTimestamps[i] - clickTimestamps[i - 1]);
-    }
-    const mean = intervals.reduce((s, x) => s + x, 0) / intervals.length;
-    if (mean > 0) {
-      const variance = intervals.reduce((s, x) => s + (x - mean) ** 2, 0) / intervals.length;
-      cv = Math.sqrt(variance) / mean;
-    }
-  }
-
-  // Lokale Detection — selbe Schwellen wie der Server (sodass User sofort
-  // den Popup sieht, nicht erst nach Server-Roundtrip). Server loggt parallel
-  // den Flag fürs Adminpanel.
-  if (maxCps1s > 22 || (cv > 0 && cv < 0.05 && windowSeconds >= 60)) {
-    showAutoclickWarning();
-  }
-
-  try {
-    await supabase.rpc("log_clicker_telemetry", {
-      p_window_seconds: windowSeconds,
-      p_click_count: clickCount,
-      p_max_cps_1s: maxCps1s,
-      p_cv: Number(cv.toFixed(4)),
-    });
-  } catch {
-    // best effort
-  }
-}
-
-let autoclickWarningOpen = false;
-function showAutoclickWarning() {
-  if (autoclickWarningOpen) return;
-  autoclickWarningOpen = true;
-  // Buffer leeren damit nach dem Popup nicht sofort wieder triggert
-  clickTimestamps.length = 0;
-
-  const backdrop = document.createElement("div");
-  backdrop.className = "autoclick-warning-backdrop";
-  backdrop.innerHTML = `
-    <div class="autoclick-warning" role="alertdialog" aria-labelledby="autoclick-warning-title">
-      <h2 id="autoclick-warning-title">Stop!</h2>
-      <p>Autoklicker verderben den Spielspaß und sind verboten.</p>
-      <button type="button" class="autoclick-warning-dismiss">Verstanden</button>
-    </div>
-  `;
-  backdrop.querySelector(".autoclick-warning-dismiss").addEventListener("click", () => {
-    backdrop.remove();
-    autoclickWarningOpen = false;
-  });
-  document.body.append(backdrop);
 }
 
 function chargeClickFrenzy() {
@@ -1346,9 +1078,6 @@ function bindEvents() {
       if (tab.dataset.tab === "leaderboard") {
         renderLeaderboard(true);
       }
-      if (tab.dataset.tab === "skins") {
-        renderSkinsPanel();
-      }
     });
   });
 
@@ -1366,7 +1095,6 @@ function bindEvents() {
   });
 
   window.setInterval(() => saveState("Automatisch gespeichert"), 15000);
-  window.setInterval(() => { reportClickTelemetry(); }, 30000);
   window.setInterval(() => {
     payProductionSecond();
     checkRandomEvents();
@@ -1412,10 +1140,6 @@ async function initGame() {
       elements.saveStatus.textContent = "Account gesperrt";
       return;
     }
-
-    // Skin-System: VIP-Status + gespeicherte Cosmetics setzen, Overlay auf
-    // dem Live-Cactus rendern.
-    initSkinSystem(profile);
 
     const cloud = await loadCloudSave(session.user);
     // Bewusst KEINE lokale-zu-Cloud-Migration: sonst könnte man localStorage

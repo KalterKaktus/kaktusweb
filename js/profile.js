@@ -10,7 +10,7 @@ export async function fetchProfile(userId) {
 
     const { data, error } = await supabase
         .from("profiles")
-        .select("id, username, is_banned, avatar_url, updated_at, total_xp, equipped_badge, vip, vip_color, cosmetics")
+        .select("id, username, is_banned, avatar_url, updated_at, total_xp, equipped_badge, vip, vip_color")
         .eq("id", userId)
         .maybeSingle();
 

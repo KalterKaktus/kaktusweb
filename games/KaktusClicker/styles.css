@@ -755,56 +755,6 @@ h3 {
   margin-top: 16px;
 }
 
-.autoclick-warning-backdrop {
-  position: fixed;
-  z-index: 9999;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.88);
-  backdrop-filter: blur(6px);
-}
-.autoclick-warning {
-  width: min(440px, 100%);
-  padding: 28px 24px;
-  border: 2px solid #ff5050;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(60, 0, 0, 0.95), rgba(20, 0, 0, 0.95));
-  box-shadow: 0 0 50px rgba(255, 80, 80, 0.45);
-  text-align: center;
-}
-.autoclick-warning h2 {
-  margin: 0 0 12px;
-  color: #ff7878;
-  font-size: 28px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  text-shadow: 0 0 16px rgba(255, 80, 80, 0.6);
-}
-.autoclick-warning p {
-  color: #ffd0d0;
-  line-height: 1.55;
-  font-size: 15px;
-  margin: 0;
-}
-.autoclick-warning-dismiss {
-  margin-top: 20px;
-  padding: 10px 24px;
-  background: #ff3030;
-  color: #fff;
-  border: 1px solid #ff7878;
-  border-radius: 6px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  font-size: 14px;
-}
-.autoclick-warning-dismiss:hover {
-  background: #ff5050;
-  box-shadow: 0 0 18px rgba(255, 80, 80, 0.5);
-}
-
 @keyframes float-pop {
   from {
     opacity: 1;
@@ -1579,142 +1529,33 @@ h3 {
 
 /* === Skin-System === */
 
-.tab.skins-tab {
-  color: #ffd166;
-}
 .cactus-button {
   position: relative;
 }
-/* Wrapper um die cactus-art im Live-Game. Inline-block + position: relative
- * sodass Cosmetic-Overlays relativ zur cactus-art positioniert werden — nicht
- * zum cactus-button (der ist Grid mit vertical-centering, dort wäre top: -1.4em
- * relativ zum leeren Raum oberhalb der zentrierten Art). Identische Geometrie
- * wie .skins-preview-stage, daher passen die em-Werte 1:1. */
+/* Wrapper um die cactus-art. Inline-block + position: relative für die
+ * hardcodierte pink Blume die als Overlay leicht rechts vom Kopf sitzt. */
 .cactus-stage {
   position: relative;
   display: inline-block;
 }
-/* SVG-Cosmetic-Overlays. SVG nutzt currentColor → Container-color
- * vererbt die User-Farbe in fill/stroke. Glow kommt über drop-shadow
- * (zweimal gestapelt für satten Neon-Look, GPU-billig). */
-.cactus-cosmetic {
+/* Pink Blume — Standard-Decor auf dem Kaktus-Kopf, leicht rechts versetzt. */
+.cactus-flower {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  margin: 0;
+  top: -0.6em;
+  left: 60%;
+  width: 2.6em;
   pointer-events: none;
-  line-height: 0;
-  z-index: 2;
+  color: #ff5ec8;
   filter:
     drop-shadow(0 0 4px currentColor)
     drop-shadow(0 0 10px currentColor);
+  z-index: 2;
 }
-.cactus-cosmetic svg {
+.cactus-flower svg {
   display: block;
   width: 100%;
   height: auto;
   overflow: visible;
-}
-/* Preview-Stage nutzt eine kleinere Cactus-Font, daher Overlay
- * proportional kleiner (em-basierte top/width skaliert automatisch). */
-.skins-preview-stage .cactus-cosmetic {
-  filter:
-    drop-shadow(0 0 3px currentColor)
-    drop-shadow(0 0 7px currentColor);
-}
-
-.skins-vip-gate {
-  padding: 16px;
-  border: 1px solid rgba(255, 209, 102, 0.4);
-  border-radius: 8px;
-  background: rgba(255, 209, 102, 0.08);
-  color: #ffe0b3;
-  font-size: 14px;
-  line-height: 1.5;
-}
-.skins-vip-gate strong {
-  color: #ffd166;
-}
-
-.skins-editor {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.skins-preview-wrap {
-  display: grid;
-  place-items: center;
-  padding: 12px;
-  border: 1px solid var(--line-soft);
-  border-radius: 8px;
-  background: rgba(0, 12, 6, 0.6);
-}
-.skins-preview-stage {
-  position: relative;
-  display: inline-block;
-}
-.skins-preview-stage .cactus-art {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1;
-  color: var(--green);
-}
-
-.skins-categories {
-  display: grid;
-  gap: 12px;
-}
-.skin-slot {
-  margin: 0;
-  padding: 10px 12px;
-  border: 1px solid var(--line-soft);
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.02);
-}
-.skin-slot legend {
-  padding: 0 6px;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-secondary, #88a);
-}
-.skin-slot-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.skin-slot-select {
-  flex: 1;
-}
-.skin-slot-select select {
-  width: 100%;
-  padding: 6px 8px;
-  background: rgba(0, 0, 0, 0.4);
-  color: var(--green);
-  border: 1px solid var(--line-soft);
-  border-radius: 4px;
-  font-family: inherit;
-}
-.skin-slot-color input[type="color"] {
-  width: 42px;
-  height: 32px;
-  padding: 0;
-  border: 1px solid var(--line-soft);
-  border-radius: 4px;
-  background: transparent;
-  cursor: pointer;
-}
-.skin-slot-color.is-disabled {
-  opacity: 0.35;
-}
-
-.skins-status {
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-secondary, #88a);
-}
-.skins-status.is-error {
-  color: #ff8b8b;
 }
 
 .sr-only {
