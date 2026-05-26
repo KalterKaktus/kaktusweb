@@ -143,6 +143,33 @@ async function handleEmailSignUp() {
     }
 }
 
+async function handleForgotPassword() {
+    const supabase = getSupabase();
+    if (!supabase) {
+        setStatus("Anmeldung ist gerade nicht verfügbar.", true);
+        return;
+    }
+    const emailField = document.getElementById("auth-email");
+    const email = emailField?.value.trim();
+    if (!email) {
+        setStatus("Bitte oben deine Email eintragen, dann nochmal klicken.", true);
+        emailField?.focus();
+        return;
+    }
+    setEmailLoading(true);
+    setStatus("Reset-Link wird verschickt…");
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset.html`,
+    });
+    setEmailLoading(false);
+    if (error) {
+        setStatus(`Reset fehlgeschlagen: ${error.message}`, true);
+        return;
+    }
+    // Bewusst keine "Email existiert" Info — sonst kann jemand Mails enumerieren.
+    setStatus("Falls ein Account zu dieser Email existiert, wurde ein Reset-Link verschickt. Schau in dein Postfach.");
+}
+
 function initLoginPage() {
     const returnPath = getReturnPath();
     sessionStorage.setItem("auth_return_to", returnPath);
@@ -170,8 +197,10 @@ function initLoginPage() {
     // plus die DB-Anti-Cheat-Trigger.
     const emailForm = document.getElementById("auth-email-form");
     const signUpBtn = document.getElementById("auth-email-signup");
+    const forgotBtn = document.getElementById("auth-forgot-password");
     if (emailForm) emailForm.addEventListener("submit", handleEmailSignIn);
     if (signUpBtn) signUpBtn.addEventListener("click", handleEmailSignUp);
+    if (forgotBtn) forgotBtn.addEventListener("click", handleForgotPassword);
 
     if (!isConfigReady()) {
         setStatus("Anmeldung ist gerade nicht verfügbar.", true);
