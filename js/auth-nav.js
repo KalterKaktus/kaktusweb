@@ -378,6 +378,7 @@ function renderLoggedIn(container, user, profile) {
         const supabase = getSupabase();
         if (!supabase) {
             renderLoggedOut(container);
+            window.location.replace("/");
             return;
         }
 
@@ -388,6 +389,10 @@ function renderLoggedIn(container, user, profile) {
         if (error) {
             console.error("Logout fehlgeschlagen:", error.message);
         }
+        // Nach Logout zur Homepage — sonst läuft das Game (oder andere
+        // page-specific Auth-State) mit halb-resettetem Zustand weiter.
+        // replace() statt href: kein Back-Button zur authenticated Page.
+        window.location.replace("/");
     });
 }
 
