@@ -1585,18 +1585,42 @@ h3 {
 .cactus-button {
   position: relative;
 }
+/* Wrapper um die cactus-art im Live-Game. Inline-block + position: relative
+ * sodass Cosmetic-Overlays relativ zur cactus-art positioniert werden — nicht
+ * zum cactus-button (der ist Grid mit vertical-centering, dort wäre top: -1.4em
+ * relativ zum leeren Raum oberhalb der zentrierten Art). Identische Geometrie
+ * wie .skins-preview-stage, daher passen die em-Werte 1:1. */
+.cactus-stage {
+  position: relative;
+  display: inline-block;
+}
+/* SVG-Cosmetic-Overlays. SVG nutzt currentColor → Container-color
+ * vererbt die User-Farbe in fill/stroke. Glow kommt über drop-shadow
+ * (zweimal gestapelt für satten Neon-Look, GPU-billig). */
 .cactus-cosmetic {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
   margin: 0;
   pointer-events: none;
-  font-family: ui-monospace, "JetBrains Mono", "Cascadia Code", monospace;
-  font-size: 14px;
-  line-height: 1;
-  white-space: pre;
-  text-shadow: 0 0 6px currentColor;
+  line-height: 0;
   z-index: 2;
+  filter:
+    drop-shadow(0 0 4px currentColor)
+    drop-shadow(0 0 10px currentColor);
+}
+.cactus-cosmetic svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+/* Preview-Stage nutzt eine kleinere Cactus-Font, daher Overlay
+ * proportional kleiner (em-basierte top/width skaliert automatisch). */
+.skins-preview-stage .cactus-cosmetic {
+  filter:
+    drop-shadow(0 0 3px currentColor)
+    drop-shadow(0 0 7px currentColor);
 }
 
 .skins-vip-gate {

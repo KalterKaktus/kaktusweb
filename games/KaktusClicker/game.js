@@ -236,22 +236,34 @@ function playEventAppearSound() {
 }
 
 // ----- Skin-System ---------------------------------------------------------
-// Rendert Cosmetic-Overlays über den Cactus-Button. Pro Slot ein <pre>-element
-// das via position:absolute oberhalb / über der cactus-art liegt.
+// Rendert Cosmetic-Overlays über den Cactus-Button. Pro Slot ein <div>
+// mit Inline-SVG, das via position:absolute über der cactus-art liegt.
+// SVG nutzt currentColor → wir setzen `color` auf dem Container und
+// CSS (.cactus-cosmetic) sorgt für den Neon-Glow via drop-shadow.
+function buildCosmeticElement(overlay) {
+  const el = document.createElement("div");
+  el.className = `cactus-cosmetic is-${overlay.slot}`;
+  el.setAttribute("aria-hidden", "true");
+  el.style.top = overlay.top;
+  el.style.width = overlay.width;
+  el.style.color = overlay.color;
+  el.innerHTML = overlay.svg;
+  return el;
+}
+
 function applyCosmeticsToCactus() {
-  const button = elements.cactusButton;
-  if (!button) return;
-  // Bestehende Overlays entfernen
-  button.querySelectorAll(".cactus-cosmetic").forEach((el) => el.remove());
+  // Wichtig: Overlays gehen in die .cactus-stage (Wrapper um die cactus-art),
+  // nicht direkt in den cactus-button. Der Button ist Grid mit vertical-
+  // centering, dort wäre `top: -1.4em` relativ zum button-top (= leerer
+  // Raum oberhalb der zentrierten Art). Der stage-Wrapper ist inline-block
+  // direkt um die cactus-art → cosmetics landen genau auf der Höhe wo die
+  // Preview sie auch zeigt.
+  const stage = elements.cactusButton?.querySelector(".cactus-stage");
+  if (!stage) return;
+  stage.querySelectorAll(".cactus-cosmetic").forEach((el) => el.remove());
 
   for (const overlay of buildCosmeticOverlays(cosmetics)) {
-    const pre = document.createElement("pre");
-    pre.className = `cactus-cosmetic is-${overlay.slot}`;
-    pre.setAttribute("aria-hidden", "true");
-    pre.style.top = overlay.top;
-    pre.style.color = overlay.color;
-    pre.textContent = overlay.ascii;
-    button.append(pre);
+    stage.append(buildCosmeticElement(overlay));
   }
 }
 
@@ -268,12 +280,7 @@ function applyCosmeticsToPreview() {
   wrap.append(base);
 
   for (const overlay of buildCosmeticOverlays(cosmetics)) {
-    const pre = document.createElement("pre");
-    pre.className = `cactus-cosmetic is-${overlay.slot}`;
-    pre.style.top = overlay.top;
-    pre.style.color = overlay.color;
-    pre.textContent = overlay.ascii;
-    wrap.append(pre);
+    wrap.append(buildCosmeticElement(overlay));
   }
 
   elements.skinsPreview.append(wrap);
