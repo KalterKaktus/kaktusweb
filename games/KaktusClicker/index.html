@@ -133,6 +133,7 @@
           <button class="tab" data-tab="stats" type="button">Stats</button>
           <button class="tab prestige-tab" data-tab="prestige" type="button">Prestige</button>
           <button class="tab" data-tab="leaderboard" type="button">Rangliste</button>
+          <button class="tab skins-tab" data-tab="skins" type="button" title="VIP-only">👑 Skins</button>
         </nav>
 
         <section class="tab-panel is-active" id="shop-panel">
@@ -231,6 +232,24 @@
           </section>
           <div id="leaderboard-list" class="leaderboard-list" aria-live="polite"></div>
           <p id="leaderboard-hint" class="leaderboard-hint"></p>
+        </section>
+
+        <section class="tab-panel" id="skins-panel">
+          <div class="section-title">
+            <h2>👑 Skins</h2>
+            <p>VIP-only — kosmetisiere deinen Kaktus</p>
+          </div>
+          <div class="skins-vip-gate" id="skins-vip-gate" hidden>
+            <p><strong>VIP exklusiv.</strong></p>
+            <p>Diese Funktion ist nur für VIP-User. Frage im Discord nach VIP-Status.</p>
+          </div>
+          <div class="skins-editor" id="skins-editor" hidden>
+            <div class="skins-preview-wrap">
+              <div class="skins-preview" id="skins-preview" aria-hidden="true"></div>
+            </div>
+            <div class="skins-categories" id="skins-categories"></div>
+            <p class="skins-status" id="skins-status" aria-live="polite"></p>
+          </div>
         </section>
 
         <details class="extra-menu">

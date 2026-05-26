@@ -33,31 +33,86 @@ export class CoinFishSystem {
     constructor(root, options) {
         this.root = root;
         this.options = options;
+        // Jeder Eintrag: { tier, handle, startedAt, delay }. So können wir
+        // beim Pause die remaining-Zeit ausrechnen und beim Resume genau dort
+        // weitermachen wo wir waren — der 45-Min-Shark läuft also auch über
+        // Tab-Switches durch.
         this.timers = [];
+        // tier.id → ms remaining, gesetzt beim Pause, verbraucht beim Resume
+        this.pausedRemaining = new Map();
         this.running = false;
+        this._visibilityHandler = () => {
+            if (!this.running) return;
+            if (document.hidden) {
+                this._pauseTimers();
+            } else {
+                this._resumeTimers();
+            }
+        };
+        document.addEventListener("visibilitychange", this._visibilityHandler);
     }
 
     start() {
         this.running = true;
-        TIERS.forEach((tier) => this.scheduleTier(tier));
+        if (!document.hidden) {
+            TIERS.forEach((tier) => this.scheduleTier(tier));
+        }
     }
 
     stop() {
         this.running = false;
-        this.timers.forEach((timer) => window.clearTimeout(timer));
+        this._clearTimers();
+        this.pausedRemaining.clear();
+    }
+
+    _clearTimers() {
+        this.timers.forEach((entry) => window.clearTimeout(entry.handle));
         this.timers = [];
     }
 
-    scheduleTier(tier) {
+    _pauseTimers() {
+        // Tab hidden: berechne remaining-Zeit pro Tier-Timer, speichere sie,
+        // und stop alle setTimeouts. Resume nutzt dann die remaining-Zeit
+        // statt einen frischen Random-Delay.
+        const now = Date.now();
+        this.timers.forEach((entry) => {
+            const elapsed = now - entry.startedAt;
+            const remaining = Math.max(0, entry.delay - elapsed);
+            this.pausedRemaining.set(entry.tier.id, remaining);
+            window.clearTimeout(entry.handle);
+        });
+        this.timers = [];
+    }
+
+    _resumeTimers() {
+        if (!this.running) return;
+        if (this.timers.length > 0) return; // schon scheduled
+        TIERS.forEach((tier) => {
+            const remaining = this.pausedRemaining.get(tier.id);
+            this.scheduleTier(tier, remaining != null ? remaining : null);
+        });
+        this.pausedRemaining.clear();
+    }
+
+    _randomDelay(tier) {
         const spawnMult = Math.max(0.1, Number(this.options.getSpawnMultiplier?.()) || 1);
-        const delay = tier.baseMs * (0.6 + Math.random() * 0.8) / spawnMult;
-        const timer = window.setTimeout(() => {
-            this.spawn(tier);
-            if (this.running) {
+        return tier.baseMs * (0.6 + Math.random() * 0.8) / spawnMult;
+    }
+
+    scheduleTier(tier, customDelay = null) {
+        const delay = customDelay != null ? customDelay : this._randomDelay(tier);
+        const entry = { tier, startedAt: Date.now(), delay, handle: null };
+        entry.handle = window.setTimeout(() => {
+            const idx = this.timers.indexOf(entry);
+            if (idx >= 0) this.timers.splice(idx, 1);
+            // Defensive: falls Browser-Throttling den Timer doch zu spät
+            // feuert oder wir mittlerweile hidden sind, nichts spawnen.
+            if (this.running && !document.hidden) {
+                this.spawn(tier);
                 this.scheduleTier(tier);
             }
         }, delay);
-        this.timers.push(timer);
+        this.timers.push(entry);
     }
 
     spawnTier(tierId) {
@@ -68,7 +123,12 @@ export class CoinFishSystem {
     }
 
     spawn(tier, force = false) {
-        if (!force && (!this.running || !this.options.canSpawn())) {
+        // Auch bei force: wenn tab hidden, kein spawn (sonst sammeln sich
+        // unsichtbare Fische die der User beim Wechsel als Burst sieht).
+        if (!force && (!this.running || !this.options.canSpawn() || document.hidden)) {
+            return;
+        }
+        if (force && document.hidden) {
             return;
         }
 

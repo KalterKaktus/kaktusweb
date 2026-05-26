@@ -27,6 +27,14 @@ import {
 } from "./economy.js";
 import { formatDuration, formatNumber } from "./format.js";
 import { createInitialState, normalizeLoadedState, resetRunForPrestige } from "./state.js";
+import {
+  SKIN_SLOTS,
+  SKIN_ITEMS,
+  SLOT_LABELS,
+  buildCosmeticOverlays,
+  emptyCosmetics,
+  normalizeCosmetics,
+} from "./skins.js";
 
 const STORAGE_KEY = "kaktus-clicker-save-v1";
 const AUDIO_STORAGE_KEY = "kaktus-clicker-audio-v1";
@@ -37,8 +45,10 @@ const OFFLINE_MIN_SECONDS = 5 * 60;
 const OFFLINE_RATE = 0.5;
 const GOLDEN_REWARD_SECONDS = 300;
 const RED_REWARD_SECONDS = 1800;
-const GOLDEN_EVENT_DELAY = [3 * 60 * 1000, 7 * 60 * 1000];
-const RED_EVENT_DELAY = [20 * 60 * 1000, 40 * 60 * 1000];
+// Spawn-Intervalle: nach Removal des Auto-Collect höher getaktet damit
+// aktives Spielen sich lohnt. (Vorher: Golden 3-7min, Red 20-40min.)
+const GOLDEN_EVENT_DELAY = [90 * 1000, 3.5 * 60 * 1000];
+const RED_EVENT_DELAY = [10 * 60 * 1000, 22 * 60 * 1000];
 const ADMIN_GAME_EVENT_POLL_MS = 2500;
 const RANDOM_EVENT_CONFIG = {
   golden: { duration: 10000, rewardSeconds: GOLDEN_REWARD_SECONDS, label: "Goldkaktus" },
@@ -66,6 +76,11 @@ let soundEffectsUnlocked = false;
 // nicht als gültiger Unlock zählt → Goldkaktus-Sound kam bei Music=mute nicht.
 let audioCtx = null;
 
+// Skin-System: cosmetics-state + ist-User-VIP. Wird in init() aus profile gefüllt.
+let cosmetics = emptyCosmetics();
+let isVip = false;
+let skinsRendered = false;
+
 const elements = {
   cactusCount: document.querySelector("#cactus-count"),
   cactusRate: document.querySelector("#cactus-rate"),
@@ -91,6 +106,13 @@ const elements = {
   changelogButton: document.querySelector("#changelog-button"),
   resetButton: document.querySelector("#reset-button"),
   tabs: document.querySelectorAll(".tab"),
+  skinsTab: document.querySelector(".skins-tab"),
+  skinsVipGate: document.querySelector("#skins-vip-gate"),
+  skinsEditor: document.querySelector("#skins-editor"),
+  skinsPreview: document.querySelector("#skins-preview"),
+  skinsCategories: document.querySelector("#skins-categories"),
+  skinsStatus: document.querySelector("#skins-status"),
+  cactusArt: document.querySelector(".cactus-art"),
   panels: document.querySelectorAll(".tab-panel"),
   scoreCard: document.querySelector(".score-card"),
   frenzyBadge: document.querySelector("#frenzy-badge"),
@@ -211,6 +233,155 @@ function playEventAppearSound() {
   } catch {}
   eventAppearSound.volume = audioSettings.soundVolume;
   eventAppearSound.play().catch(() => {});
+}
+
+// ----- Skin-System ---------------------------------------------------------
+// Rendert Cosmetic-Overlays über den Cactus-Button. Pro Slot ein <pre>-element
+// das via position:absolute oberhalb / über der cactus-art liegt.
+function applyCosmeticsToCactus() {
+  const button = elements.cactusButton;
+  if (!button) return;
+  // Bestehende Overlays entfernen
+  button.querySelectorAll(".cactus-cosmetic").forEach((el) => el.remove());
+
+  for (const overlay of buildCosmeticOverlays(cosmetics)) {
+    const pre = document.createElement("pre");
+    pre.className = `cactus-cosmetic is-${overlay.slot}`;
+    pre.setAttribute("aria-hidden", "true");
+    pre.style.top = overlay.top;
+    pre.style.color = overlay.color;
+    pre.textContent = overlay.ascii;
+    button.append(pre);
+  }
+}
+
+function applyCosmeticsToPreview() {
+  if (!elements.skinsPreview || !elements.cactusArt) return;
+  // Kopiere die cactus-art + overlays in den Preview-Container
+  elements.skinsPreview.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "skins-preview-stage";
+
+  const base = document.createElement("pre");
+  base.className = "cactus-art";
+  base.textContent = elements.cactusArt.textContent;
+  wrap.append(base);
+
+  for (const overlay of buildCosmeticOverlays(cosmetics)) {
+    const pre = document.createElement("pre");
+    pre.className = `cactus-cosmetic is-${overlay.slot}`;
+    pre.style.top = overlay.top;
+    pre.style.color = overlay.color;
+    pre.textContent = overlay.ascii;
+    wrap.append(pre);
+  }
+
+  elements.skinsPreview.append(wrap);
+}
+
+function setSkinsStatus(text, isError = false) {
+  if (!elements.skinsStatus) return;
+  elements.skinsStatus.textContent = text || "";
+  elements.skinsStatus.classList.toggle("is-error", Boolean(isError));
+}
+
+async function persistCosmetics() {
+  const supabase = getSupabase();
+  if (!supabase) return;
+  setSkinsStatus("Speichern…");
+  try {
+    const { error } = await supabase.rpc("set_cosmetics", { p_cosmetics: cosmetics });
+    if (error) {
+      setSkinsStatus(`Speichern fehlgeschlagen: ${error.message}`, true);
+      return;
+    }
+    setSkinsStatus("Gespeichert.");
+  } catch (e) {
+    setSkinsStatus(`Speichern fehlgeschlagen: ${e?.message || e}`, true);
+  }
+}
+
+function renderSkinsCategories() {
+  if (!elements.skinsCategories) return;
+  elements.skinsCategories.innerHTML = SKIN_SLOTS.map((slot) => {
+    const current = cosmetics[slot] || { id: "none", color: null };
+    const items = Object.values(SKIN_ITEMS[slot]);
+    const currentItem = SKIN_ITEMS[slot][current.id] || SKIN_ITEMS[slot].none;
+    const colorVal = current.color || currentItem.defaultColor || "#ffffff";
+    const hasColor = current.id !== "none";
+
+    const options = items.map((item) => `
+      <option value="${item.id}" ${item.id === current.id ? "selected" : ""}>${item.name}</option>
+    `).join("");
+
+    return `
+      <fieldset class="skin-slot" data-slot="${slot}">
+        <legend>${SLOT_LABELS[slot]}</legend>
+        <div class="skin-slot-row">
+          <label class="skin-slot-select">
+            <span class="sr-only">${SLOT_LABELS[slot]} wählen</span>
+            <select data-skin-select>${options}</select>
+          </label>
+          <label class="skin-slot-color ${hasColor ? "" : "is-disabled"}">
+            <span class="sr-only">Farbe</span>
+            <input type="color" data-skin-color value="${colorVal}" ${hasColor ? "" : "disabled"}>
+          </label>
+        </div>
+      </fieldset>
+    `;
+  }).join("");
+
+  // Event-Handler
+  elements.skinsCategories.querySelectorAll("[data-slot]").forEach((slot) => {
+    const slotId = slot.dataset.slot;
+    const select = slot.querySelector("[data-skin-select]");
+    const color = slot.querySelector("[data-skin-color]");
+
+    select?.addEventListener("change", () => {
+      const newId = select.value;
+      const item = SKIN_ITEMS[slotId][newId];
+      cosmetics[slotId] = {
+        id: newId,
+        color: newId === "none" ? null : (cosmetics[slotId]?.color || item?.defaultColor || null),
+      };
+      applyCosmeticsToCactus();
+      applyCosmeticsToPreview();
+      renderSkinsCategories();
+      persistCosmetics();
+    });
+
+    color?.addEventListener("input", () => {
+      if (!cosmetics[slotId] || cosmetics[slotId].id === "none") return;
+      cosmetics[slotId].color = color.value;
+      applyCosmeticsToCactus();
+      applyCosmeticsToPreview();
+    });
+    color?.addEventListener("change", () => {
+      if (!cosmetics[slotId] || cosmetics[slotId].id === "none") return;
+      cosmetics[slotId].color = color.value;
+      persistCosmetics();
+    });
+  });
+}
+
+function renderSkinsPanel() {
+  if (skinsRendered) return;
+  if (isVip) {
+    elements.skinsVipGate.hidden = true;
+    elements.skinsEditor.hidden = false;
+    applyCosmeticsToPreview();
+    renderSkinsCategories();
+  } else {
+    elements.skinsVipGate.hidden = false;
+    elements.skinsEditor.hidden = true;
+  }
+  skinsRendered = true;
+}
+
+function initSkinSystem(profile) {
+  isVip = Boolean(profile?.vip);
+  cosmetics = normalizeCosmetics(profile?.cosmetics);
+  applyCosmeticsToCactus();
 }
 
 function initAudio() {
@@ -1076,9 +1247,11 @@ function spawnRandomEvent(kind, duration, rewardSeconds, label) {
     button.remove();
     scheduleNextRandomEvent(kind);
 
-    // AFK-friendly: auch ohne Klick gibt's den Reward (vorher: 10s Timeout = verloren).
-    // Sound + visueller Spawn passieren bereits am Anfang, der Klick ist nur noch
-    // ein "snel collect" — auto-collect bei Timeout liefert das gleiche Coin-Plus.
+    // Kein Auto-Collect mehr: nur bei aktivem Klick gibt's Reward + Hit-Count.
+    // Spawn-Häufigkeit ist im Gegenzug erhöht (GOLDEN_EVENT_DELAY / RED_EVENT_DELAY).
+    if (!caught) {
+      return;
+    }
     const reward = getAutomaticProduction(state, { includeEvent: false }) * rewardSeconds;
     addCactus(reward);
     if (kind === "golden") {
@@ -1089,10 +1262,10 @@ function spawnRandomEvent(kind, duration, rewardSeconds, label) {
     spawnFloat(
       buttonRect.left + buttonRect.width / 2,
       buttonRect.top + buttonRect.height / 2,
-      `${label} ${caught ? "+" : "(auto) +"}${formatNumber(reward)}`,
+      `${label} +${formatNumber(reward)}`,
       `is-event-reward is-${kind}`
     );
-    elements.saveStatus.textContent = `${label}${caught ? "" : " (AFK auto)"}: +${formatNumber(reward)}`;
+    elements.saveStatus.textContent = `${label}: +${formatNumber(reward)}`;
     updateAchievements();
     render();
   };
@@ -1166,6 +1339,9 @@ function bindEvents() {
       if (tab.dataset.tab === "leaderboard") {
         renderLeaderboard(true);
       }
+      if (tab.dataset.tab === "skins") {
+        renderSkinsPanel();
+      }
     });
   });
 
@@ -1229,6 +1405,10 @@ async function initGame() {
       elements.saveStatus.textContent = "Account gesperrt";
       return;
     }
+
+    // Skin-System: VIP-Status + gespeicherte Cosmetics setzen, Overlay auf
+    // dem Live-Cactus rendern.
+    initSkinSystem(profile);
 
     const cloud = await loadCloudSave(session.user);
     // Bewusst KEINE lokale-zu-Cloud-Migration: sonst könnte man localStorage
