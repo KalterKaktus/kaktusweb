@@ -5,7 +5,7 @@
 
 export const KARL_NAME = "Bella's Schildkröte Karl";
 export const KARL_EPOCH = Date.UTC(2026, 0, 1, 0, 0, 0); // 2026-01-01 UTC
-export const KARL_SLOT_MS = 60 * 60 * 1000;             // 60 Minuten — max 1× pro Stunde
+export const KARL_SLOT_MS = 30 * 60 * 1000;             // 30 Minuten — max 1× pro halbe Stunde
 export const KARL_VISIBLE_MS = 30 * 1000;               // 30 Sekunden Klick-Fenster
 
 // Wheel-Segmente pro Area. Gewicht = relative Häufigkeit.
