@@ -1021,6 +1021,26 @@ function spawnRandomEvent(kind, duration, rewardSeconds, label) {
 
 function bindEvents() {
   elements.cactusButton.addEventListener("click", clickCactus);
+
+  // Keyboard: Leertaste = Cactus klicken. event.repeat ignorieren damit
+  // gehaltene Space nicht spammt (würde sonst die ganze Anti-Click-Frenzy
+  // Logik umgehen). Skip wenn fokus in input/textarea oder Modal offen.
+  window.addEventListener("keydown", (event) => {
+    if (event.code !== "Space" && event.key !== " ") return;
+    if (event.repeat) return;
+    const target = event.target;
+    const tag = target?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable) return;
+    // Auch nicht klicken wenn ein modal/changelog overlay offen ist
+    if (document.querySelector(".game-modal-backdrop")) return;
+    event.preventDefault();
+    // spawnFloat braucht x/y — bei Keyboard nehmen wir das Zentrum des Buttons
+    const rect = elements.cactusButton.getBoundingClientRect();
+    clickCactus({
+      clientX: rect.left + rect.width / 2,
+      clientY: rect.top + rect.height / 2,
+    });
+  });
   elements.saveButton.addEventListener("click", () => saveState("Manuell gespeichert"));
   elements.musicToggle.addEventListener("click", () => {
     audioSettings.musicMuted = !audioSettings.musicMuted;

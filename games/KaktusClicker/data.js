@@ -86,6 +86,17 @@ export const achievements = [
 
 export const changelogEntries = [
   {
+    date: "27.05.2026",
+    title: "Keyboard-Klick + Spawn-Tuning",
+    items: [
+      "Leertaste klickt den Kaktus — kein Maus-Klick mehr nötig.",
+      "Gold- und Rubinkakteen spawnen häufiger (Goldkaktus 1,5–3,5 min, Rubinkaktus 10–22 min).",
+      "Kein Auto-Collect mehr: nur aktives Antippen zählt, dafür kommen die Events deutlich öfter.",
+      "Pinke Standard-Blume sitzt oben rechts auf dem Kaktus.",
+      "Sound-Effekte spielen jetzt zuverlässig auch wenn die Musik stummgeschaltet ist (Mobile-Fix).",
+    ],
+  },
+  {
     date: "23.05.2026",
     title: "Belohnungen mit mehr WOW",
     items: [

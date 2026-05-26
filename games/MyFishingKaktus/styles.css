@@ -1096,24 +1096,33 @@ body.fishing-page {
 .index-fish.is-collectible { cursor: pointer; transition: transform 0.15s; }
 .index-fish.is-collectible:hover { transform: translateY(-2px); }
 
-.index-claim-overlay {
-  /* Deckt nur die Fischbox (= .fish-art) ab, nicht die ganze Card. Eckiger
-     Look damit's nicht random-rund wirkt — passt direkt auf das Fisch-Bild. */
+/* Specificity-Boost: `.game-window button` setzt border-radius: 999px (pill) für
+   alle Buttons im Game-Window. Mit dem nested Selector schlage ich das. */
+.game-window .index-claim-overlay,
+.fish-index .index-claim-overlay {
+  /* Deckt die KOMPLETTE Fish-Card ab (nicht nur die fish-art oben). border-radius
+     matched .index-fish damit der goldene Layer bündig auf der Card sitzt. */
   position: absolute;
-  top: 0.52rem;
-  left: 0.52rem;
-  right: 0.52rem;
-  aspect-ratio: 3 / 2;
+  inset: 0;
+  width: auto;
+  height: auto;
+  aspect-ratio: auto;
+  box-sizing: border-box;
   display: grid;
   place-items: center;
   gap: 0.2rem;
+  padding: 0.5rem;
   background: rgba(2, 8, 18, 0.85);
   backdrop-filter: blur(2px);
   border: 1px solid rgba(255, 209, 102, 0.32);
-  border-radius: 0.5rem;
+  border-radius: 1.1rem;
   cursor: pointer;
   z-index: 2;
   animation: index-claim-pulse 2.4s ease-in-out infinite;
+  font: inherit;
+  /* Hard-reset gegen browser-defaults für <button> */
+  appearance: none;
+  -webkit-appearance: none;
 }
 .index-claim-coin {
   font-size: 1.4rem;
