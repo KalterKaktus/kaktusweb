@@ -129,12 +129,12 @@ export class BubbleSystem {
         // Spawns. Wichtig: nextDelay nutzt NUR waitSec (nicht +lifetime), damit
         // sich Spots tatsächlich überlappen und der maxSpots-Wert greift.
         const SONAR_TUNING = [
-            { spots: 1, lifetime: 7,  wait: 5 },    // L0 — entspannt, single spot
-            { spots: 2, lifetime: 9,  wait: 3.5 },  // L1 — fühlbar mehr action
-            { spots: 3, lifetime: 11, wait: 2.2 },  // L2 — meistens 2 spots aktiv
-            { spots: 5, lifetime: 13, wait: 1.3 },  // L3 — klar mehr fische
-            { spots: 7, lifetime: 15, wait: 0.6 },  // L4 — meiste Zeit bei max
-            { spots: 9, lifetime: 17, wait: 0.3 },  // L5 — quasi non-stop max
+            { spots: 1, lifetime: 5,  wait: 6 },    // L0
+            { spots: 2, lifetime: 7,  wait: 5 },    // L1
+            { spots: 3, lifetime: 9,  wait: 4 },    // L2
+            { spots: 4, lifetime: 11, wait: 3 },    // L3
+            { spots: 5, lifetime: 13, wait: 2 },    // L4
+            { spots: 6, lifetime: 15, wait: 1 },    // L5
         ];
         const tuning = SONAR_TUNING[Math.min(SONAR_TUNING.length - 1, sonarLevel)];
         const maxSpots = tuning.spots;
