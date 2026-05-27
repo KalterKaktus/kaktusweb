@@ -13,7 +13,10 @@
       "Bash(awk ' *)",
       "mcp__587bdc82-bddd-4643-8f53-759fda7acf16__execute_sql",
       "mcp__587bdc82-bddd-4643-8f53-759fda7acf16__get_advisors",
-      "WebFetch(domain:kalterkaktus.de)"
+      "WebFetch(domain:kalterkaktus.de)",
+      "mcp__587bdc82-bddd-4643-8f53-759fda7acf16__list_projects",
+      "mcp__587bdc82-bddd-4643-8f53-759fda7acf16__get_logs",
+      "mcp__587bdc82-bddd-4643-8f53-759fda7acf16__apply_migration"
     ]
   }
 }
