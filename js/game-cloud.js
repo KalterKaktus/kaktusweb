@@ -219,25 +219,37 @@ export async function fetchLeaderboard(limit = 1000) {
         console.error("Letzter Monatsabschluss konnte nicht geladen werden:", archiveError.message);
     }
 
-    const previousTopThree = Array.isArray(archive?.top_entries)
-        ? archive.top_entries.map((entry, index) => ({
-            rank: index + 1,
-            name: entry.name || "Spieler",
-            score: Number(entry.score) || 0,
-            updatedAt: entry.updatedAt || null,
-        }))
-        : [];
+    const archiveEntries = Array.isArray(archive?.top_entries) ? archive.top_entries : [];
 
-    // Profile-Infos (level + equipped_badge) für alle User in einem Batch-Request.
-    const userIds = (data || []).map((e) => e.user_id).filter(Boolean);
+    // Profile-Infos (level + equipped_badge + name + vip) für alle User in EINEM
+    // Batch-Request. „Letzter Monat" zieht den AKTUELLEN Profil-Stand — Score und
+    // Rang bleiben historisch, Name/Level/Badge/VIP-Farbe sind aber live.
+    const userIds = new Set();
+    (data || []).forEach((entry) => { if (entry.user_id) userIds.add(entry.user_id); });
+    archiveEntries.forEach((entry) => { if (entry?.user_id) userIds.add(entry.user_id); });
+
     let profilesById = new Map();
-    if (userIds.length) {
+    if (userIds.size) {
         const { data: profiles } = await supabase
             .from("profiles_public")
-            .select("id, level, equipped_badge, vip, vip_color")
-            .in("id", userIds);
+            .select("id, username, level, equipped_badge, vip, vip_color")
+            .in("id", [...userIds]);
         profilesById = new Map((profiles || []).map((p) => [p.id, p]));
     }
+
+    const previousTopThree = archiveEntries.map((entry, index) => {
+        const profile = entry?.user_id ? profilesById.get(entry.user_id) : null;
+        return {
+            rank: index + 1,
+            name: profile?.username || entry?.name || "Spieler",
+            score: Number(entry?.score) || 0,
+            updatedAt: entry?.updatedAt || null,
+            level: Number(profile?.level) || 0,
+            equippedBadge: profile?.equipped_badge || null,
+            vip: Boolean(profile?.vip),
+            vipColor: profile?.vip_color || null,
+        };
+    });
 
     return {
         period,
