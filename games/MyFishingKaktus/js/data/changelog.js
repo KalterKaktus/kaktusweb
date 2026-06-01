@@ -1,6 +1,17 @@
 export const FISHING_CHANGELOG = [
     {
         date: "25.05.2026",
+        title: "🍀 Glück wirkt jetzt auch auf Mutationen",
+        items: [
+            "Jedes Level Glück (max 5) erhöht ALLE Mutationen-Wahrscheinlichkeiten um +8 % (sanft).",
+            "Beispiele bei Glück Lvl 5: SHINY-Chance steigt von 1 % auf 1,4 %, HAUNTED im Geistermeer von 15 % auf 21 %.",
+            "Gilt für Standard-Mutationen (BIG/HUGE/SHINY) UND alle Event-Mutationen.",
+            "Macht das Glück-Upgrade jetzt doppelt nützlich: bessere Rarities + häufigere Mutationen.",
+            "Theoretisch seltenster Catch (Legendary + SHINY + HAUNTED + ≥99 % kg im Geistermeer): ~1 in 1 Milliarde ohne Glück, ~1 in 110 Millionen mit Glück Lvl 5.",
+        ],
+    },
+    {
+        date: "25.05.2026",
         title: "🌦🧬 Großes Wetter- & Mutationen-Update",
         items: [
             "5 neue Wetter-Events: 🌌 Abyss (Epic+ ×2 Spawn-Chance + Neon-Partikel), 🌠 Polarlicht (grün-violette Lichtschleier), 🔥 Glutsturm (orange Glut-Funken über aufgewühlter See), 🌑 Blutmond (tiefroter Schleier + Blut-Tropfen), 👻 Geistermeer (cyan Geister-Wisps + dichter Nebel).",

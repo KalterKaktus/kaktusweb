@@ -47,30 +47,48 @@ function stopTimers() {
     if (flushTimer) { clearInterval(flushTimer); flushTimer = 0; }
 }
 
+// Single-flight Lock: verhindert dass Heartbeat (60s-Timer) und Flush
+// (30s-Timer) parallel feuern. Ohne den Lock können 2 XP-RPCs <10ms
+// auseinander rausgehen — der server-side xp_rate_limit-Trigger flagged
+// das dann als verdächtig, obwohl es legit Client-Verhalten ist.
+let inFlightXpCall = null;
+
 async function callAddXp(amount, reason) {
     if (!userId || amount <= 0) return null;
     if (!isConfigReady()) return null;
     const supabase = getSupabase();
     if (!supabase) return null;
-    try {
-        const { data, error } = await supabase.rpc("add_xp", {
-            amount: Math.min(amount, MAX_BATCH_XP),
-            reason,
-        });
-        if (error) {
-            console.debug("[xp] add_xp error:", error.message);
-            return null;
-        }
-        // Auto-Award für Level-Badges (idempotent server-seitig)
-        supabase.rpc("check_level_badges").then(() => {}).catch(() => {});
-        if (typeof onXpChange === "function" && data != null) {
-            try { onXpChange(Number(data)); } catch {}
-        }
-        return Number(data);
-    } catch (e) {
-        console.debug("[xp] add_xp exception:", e?.message || e);
-        return null;
+
+    // Wenn schon ein add_xp Call läuft: erst auf den warten, damit der server
+    // den ersten verbucht hat bevor wir den zweiten schicken.
+    if (inFlightXpCall) {
+        try { await inFlightXpCall; } catch {}
     }
+
+    inFlightXpCall = (async () => {
+        try {
+            const { data, error } = await supabase.rpc("add_xp", {
+                amount: Math.min(amount, MAX_BATCH_XP),
+                reason,
+            });
+            if (error) {
+                console.debug("[xp] add_xp error:", error.message);
+                return null;
+            }
+            supabase.rpc("check_level_badges").then(() => {}).catch(() => {});
+            if (typeof onXpChange === "function" && data != null) {
+                try { onXpChange(Number(data)); } catch {}
+            }
+            return Number(data);
+        } catch (e) {
+            console.debug("[xp] add_xp exception:", e?.message || e);
+            return null;
+        } finally {
+            inFlightXpCall = null;
+        }
+    })();
+
+    return inFlightXpCall;
 }
 
 async function sendHeartbeat() {

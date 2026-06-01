@@ -10,7 +10,10 @@
       "PowerShell(Copy-Item \"C:\\\\Users\\\\maxwi\\\\Downloads\\\\fishArtSystem.js\" \"games\\\\MyFishingKaktus\\\\js\\\\systems\\\\fishArtSystem.js\" -Force; \\(Get-Content \"games\\\\MyFishingKaktus\\\\js\\\\systems\\\\fishArtSystem.js\" | Measure-Object -Line\\).Lines)",
       "mcp__2bbf63e8-3bc9-4fac-8a0c-31f2829fdea4__describe_a_sound",
       "Bash(node --check js/game.js)",
-      "Bash(awk ' *)"
+      "Bash(awk ' *)",
+      "mcp__587bdc82-bddd-4643-8f53-759fda7acf16__execute_sql",
+      "mcp__587bdc82-bddd-4643-8f53-759fda7acf16__get_advisors",
+      "WebFetch(domain:kalterkaktus.de)"
     ]
   }
 }

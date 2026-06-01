@@ -102,6 +102,11 @@
                 <p>
                     Basis-Klick (keine Upgrades, kein Prestige, keine Abzeichen, kein Goldlauf) = <strong>1 Kaktus</strong>.
                 </p>
+                <p>
+                    <strong>Steuerung:</strong> Maus-/Touch-Tap auf den Kaktus <em>oder</em> <kbd>Leertaste</kbd>
+                    (key-repeat ignoriert, gehaltene Space spammt also nicht). Funktioniert nicht wenn ein
+                    Modal/Overlay offen ist oder Fokus in einem Input-Feld liegt.
+                </p>
             </section>
 
             <section data-searchable id="buildings">
@@ -265,22 +270,24 @@ clickChargeThreshold = 1.000 manuelle Klicks</code></pre>
                 <h2>Random Events: Gold-/Rubinkaktus</h2>
                 <p>
                     Während der Spieler aktiv ist (Tab sichtbar) können Goldkakteen oder Rubinkakteen
-                    zufällig erscheinen. Beim Antippen geben sie sofort die aktuelle Auto-Produktion
-                    für eine bestimmte Zeit als Einmal-Reward.
+                    zufällig erscheinen. <strong>Nur durch aktives Antippen</strong> innerhalb der
+                    sichtbaren Zeit gibt's den Reward — verpasste Events bringen nichts. AFK-Auto-Collect
+                    wurde entfernt, dafür kommen die Events deutlich häufiger.
                 </p>
                 <div class="table-wrap">
                     <table class="wiki-table">
-                        <thead><tr><th>Event</th><th>Sichtbar</th><th>Reward (× CPS)</th></tr></thead>
+                        <thead><tr><th>Event</th><th>Spawn-Intervall</th><th>Sichtbar</th><th>Reward (× CPS)</th></tr></thead>
                         <tbody>
-                            <tr><td>Goldkaktus</td><td>5 s</td><td>5 Minuten Auto-Produktion (= 300 × CPS)</td></tr>
-                            <tr><td>Rubinkaktus</td><td>5 s</td><td>30 Minuten Auto-Produktion (= 1.800 × CPS)</td></tr>
+                            <tr><td>Goldkaktus</td><td>1,5–3,5 min</td><td>10 s</td><td>5 Minuten Auto-Produktion (= 300 × CPS)</td></tr>
+                            <tr><td>Rubinkaktus</td><td>10–22 min</td><td>10 s</td><td>30 Minuten Auto-Produktion (= 1.800 × CPS)</td></tr>
                         </tbody>
                     </table>
                 </div>
                 <p>
                     Reward nutzt <code>getAutomaticProduction({ includeEvent: false })</code>, d.h. der
                     aktuell laufende Goldlauf wird beim Sofort-Reward <strong>nicht</strong> nochmal
-                    multipliziert (würde sonst overpower werden).
+                    multipliziert (würde sonst overpower werden). Achievement-Counter (<code>goldenHits</code>,
+                    <code>redHits</code>) zählen nur bei aktivem Klick — verpasste Events nicht.
                 </p>
             </section>
 

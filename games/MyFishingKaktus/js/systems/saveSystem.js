@@ -215,6 +215,9 @@ export async function saveState(state, user) {
         return { mode: "cloud", error: new Error("Cloud-Save ist gerade nicht verfügbar.") };
     }
 
+    // display_name wird vom DB-Trigger game_saves_force_display_name_trigger
+    // aus profiles.username forciert — verhindert Impersonation. Wir senden
+    // 'Spieler' als Pflicht-Wert mit, der Trigger überschreibt eh.
     const { error } = await supabase
         .from("game_saves")
         .upsert({
@@ -222,7 +225,7 @@ export async function saveState(state, user) {
             game_id: FISHING_GAME_ID,
             payload: normalized,
             total_earned: normalized.stats.totalCaught,
-            display_name: await displayNameFor(user),
+            display_name: "Spieler",
             updated_at: new Date().toISOString(),
         });
 
@@ -244,10 +247,13 @@ export async function fetchLeaderboard(limit = 1000) {
         return { entries: [], error: new Error("Rangliste ist gerade nicht verfügbar.") };
     }
 
+    // Liest aus my_fishing_kaktus_leaderboard View statt rohem game_saves.
+    // Die View extrahiert prestige column-explizit aus dem payload und exposed
+    // keinen weiteren payload-Inhalt — verhindert Privacy-Leak (Inventar,
+    // letzter Online-Timestamp, Achievements anderer User).
     const { data, error } = await supabase
-        .from("game_saves")
-        .select("user_id,display_name,total_earned,payload,updated_at")
-        .eq("game_id", FISHING_GAME_ID)
+        .from("my_fishing_kaktus_leaderboard")
+        .select("user_id,display_name,total_earned,prestige,updated_at")
         .limit(limit);
 
     if (error) {
@@ -271,8 +277,8 @@ export async function fetchLeaderboard(limit = 1000) {
             const profile = profilesById.get(entry.user_id) || {};
             return {
                 name: entry.display_name || "Spieler",
-                prestige: Math.max(0, Math.floor(number(entry.payload?.prestige))),
-                totalCaught: Math.max(0, Math.floor(number(entry.total_earned || entry.payload?.stats?.totalCaught))),
+                prestige: Math.max(0, Math.floor(number(entry.prestige))),
+                totalCaught: Math.max(0, Math.floor(number(entry.total_earned))),
                 updatedAt: entry.updated_at,
                 level: Number(profile.level) || 0,
                 equippedBadge: profile.equipped_badge || null,

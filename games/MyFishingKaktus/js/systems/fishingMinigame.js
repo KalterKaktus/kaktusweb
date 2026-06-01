@@ -97,6 +97,34 @@ export class FishingMinigame {
             overlayCard.addEventListener("dblclick", blockSelection);
             overlayCard.addEventListener("contextmenu", blockSelection);
         }
+
+        // Keyboard-Shortcuts: Leertaste = halten zum Angeln, X / ESC = abbrechen.
+        // window-level listeners damit auch funktioniert wenn focus nicht auf
+        // holdSurface ist. Filter via `this.active` (kein Effekt wenn Minispiel
+        // gerade nicht läuft).
+        window.addEventListener("keydown", (event) => {
+            if (!this.active) return;
+            if (event.repeat) return;  // ignoriere OS-key-repeat (Space hold)
+            if (event.code === "Space" || event.key === " ") {
+                event.preventDefault();
+                setHeld(true);
+            } else if (event.key === "x" || event.key === "X" || event.key === "Escape") {
+                event.preventDefault();
+                this.finish(false);
+            }
+        });
+        window.addEventListener("keyup", (event) => {
+            if (!this.active) return;
+            if (event.code === "Space" || event.key === " ") {
+                event.preventDefault();
+                setHeld(false);
+            }
+        });
+        // Falls Browser fokus verliert während Space gehalten wird:
+        // setHeld(false) sonst klemmt der hold-state.
+        window.addEventListener("blur", () => {
+            if (this.active) setHeld(false);
+        });
     }
 
     start(candidate, bonuses) {

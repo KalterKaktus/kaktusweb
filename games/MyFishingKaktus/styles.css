@@ -1067,25 +1067,62 @@ body.fishing-page {
   opacity: 0.85;
 }
 
+/* Kg-Quality: Farbe wird inline gesetzt (red→orange→green→gold).
+   .is-perfect = 100% Max-Gewicht erreicht → Glow + bold. */
+.kg-quality {
+  font-weight: 700;
+  text-shadow: 0 0 6px color-mix(in srgb, currentColor 40%, transparent);
+}
+.kg-quality small {
+  font-size: 0.85em;
+  opacity: 0.8;
+  margin-left: 0.15em;
+}
+.kg-quality.is-perfect {
+  font-weight: 900;
+  text-shadow:
+    0 0 8px currentColor,
+    0 0 16px color-mix(in srgb, currentColor 60%, transparent);
+  animation: kg-perfect-pulse 1.6s ease-in-out infinite alternate;
+}
+@keyframes kg-perfect-pulse {
+  from { filter: drop-shadow(0 0 0 transparent); }
+  to   { filter: drop-shadow(0 0 6px currentColor); }
+}
+
 /* === Index: Claim-Overlay (für freigeschaltete, noch nicht abgeholte Fische) === */
 .index-fish { position: relative; }
 
 .index-fish.is-collectible { cursor: pointer; transition: transform 0.15s; }
 .index-fish.is-collectible:hover { transform: translateY(-2px); }
 
-.index-claim-overlay {
+/* Specificity-Boost: `.game-window button` setzt border-radius: 999px (pill) für
+   alle Buttons im Game-Window. Mit dem nested Selector schlage ich das. */
+.game-window .index-claim-overlay,
+.fish-index .index-claim-overlay {
+  /* Deckt die KOMPLETTE Fish-Card ab (nicht nur die fish-art oben). border-radius
+     matched .index-fish damit der goldene Layer bündig auf der Card sitzt. */
   position: absolute;
   inset: 0;
+  width: auto;
+  height: auto;
+  aspect-ratio: auto;
+  box-sizing: border-box;
   display: grid;
   place-items: center;
   gap: 0.2rem;
+  padding: 0.5rem;
   background: rgba(2, 8, 18, 0.85);
   backdrop-filter: blur(2px);
-  border: 0;
-  border-radius: inherit;
+  border: 1px solid rgba(255, 209, 102, 0.32);
+  border-radius: 1.1rem;
   cursor: pointer;
   z-index: 2;
   animation: index-claim-pulse 2.4s ease-in-out infinite;
+  font: inherit;
+  /* Hard-reset gegen browser-defaults für <button> */
+  appearance: none;
+  -webkit-appearance: none;
 }
 .index-claim-coin {
   font-size: 1.4rem;
@@ -1100,6 +1137,74 @@ body.fishing-page {
   color: rgba(255, 209, 102, 0.85);
   text-transform: uppercase;
   letter-spacing: 0.16em;
+}
+
+/* Index-Mutations-Counter Badge — kleiner Sticker oben rechts auf jeder gefangenen
+   Fisch-Card. Signalisiert "hier kannste klicken um die Mutationen zu sehen". */
+.index-mut-badge {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  z-index: 3;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(2, 8, 18, 0.78);
+  border: 1px solid rgba(213, 140, 255, 0.4);
+  color: #d58cff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 6px rgba(213, 140, 255, 0.45);
+  pointer-events: none;
+}
+
+/* Roblox-Style Rarity-Odds-Popup — peaked NACH dem Catch-Popup, bouncet rein. */
+.rarity-odds-popup {
+  position: absolute;
+  top: 64%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  padding: 0.55rem 1.2rem;
+  border-radius: 0.9rem;
+  background: linear-gradient(140deg, rgba(8, 16, 30, 0.96), rgba(4, 12, 24, 0.96));
+  border: 2px solid var(--accent, #ffd166);
+  box-shadow:
+    0 0 0 1px var(--accent, #ffd166),
+    0 0 24px -2px var(--accent, transparent),
+    0 12px 32px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  z-index: 5;
+  animation: rarity-odds-bounce 3.6s cubic-bezier(0.2, 0.9, 0.25, 1.2) forwards;
+}
+.rarity-odds-kicker {
+  display: block;
+  color: var(--accent, #ffd166);
+  font-size: 0.6rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-shadow: 0 0 6px var(--accent, transparent);
+}
+.rarity-odds-value {
+  display: block;
+  margin-top: 0.15rem;
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-shadow:
+    0 0 10px var(--accent, transparent),
+    0 0 22px color-mix(in srgb, var(--accent, transparent) 50%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+@keyframes rarity-odds-bounce {
+  0%   { transform: translate(-50%, 20%) scale(0); opacity: 0; }
+  18%  { transform: translate(-50%, -55%) scale(1.18); opacity: 1; }
+  30%  { transform: translate(-50%, -50%) scale(0.92); }
+  42%  { transform: translate(-50%, -50%) scale(1.04); }
+  55%  { transform: translate(-50%, -50%) scale(1); }
+  82%  { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -80%) scale(0.85); opacity: 0; }
 }
 
 @keyframes index-claim-pulse {

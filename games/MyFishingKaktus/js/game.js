@@ -300,6 +300,8 @@ function renderInventory() {
         ? entries.map((entry) => {
             const rarity = RARITIES[entry.fish.rarity];
             const area = AREAS[entry.fish.area];
+            // Basewert pro KILOGRAMM (Rarity × Fish-Mult × Area-Mult) — Indikator wie wertvoll
+            // dieser Fisch generell pro kg ist, unabhängig vom konkreten Gewicht.
             const basePerKg = Math.max(1, Math.round(rarity.valuePerKg * entry.fish.valueMultiplier * area.valueMultiplier));
             return `
             <article class="inventory-row">
@@ -307,7 +309,7 @@ function renderInventory() {
                 <div class="inventory-info">
                     <strong>${entry.fish.name}</strong>
                     <small>${entry.fish.rarity} &middot; ${entry.count}x gefangen</small>
-                    <small>Gesamt ${kg(entry.totalKg)} &middot; Bestes ${kg(entry.bestKg)}</small>
+                    <small>Gesamt ${kg(entry.totalKg)} &middot; Bestes ${kgQualityDisplay(entry.bestKg, entry.fish.maxKg)}</small>
                     <small class="inv-base">${coins(basePerKg)} Coins/kg</small>
                     ${renderMutationChips(entry.mutations)}
                 </div>
@@ -336,7 +338,7 @@ function renderIndex() {
                         <h3>${area.name}</h3>
                         <div class="index-area-meta">
                             <strong>${areaBlock.progress.caught}/${areaBlock.progress.total}</strong>
-                            <span class="area-lock">Durch Prestige gesperrt</span>
+                            <span class="area-lock">Noch nicht freigeschaltet</span>
                         </div>
                     </div>
                 </section>
@@ -384,11 +386,17 @@ function renderIndex() {
                                 if (!owned) classes.push("is-shadow");
                                 if (unclaimed) classes.push("is-unclaimed");
                                 if (owned && !unclaimed) classes.push("is-collectible");
+                                // Mutations-Counter X/13 — sichtbarer Hinweis dass Card anklickbar ist
+                                const mutCount = owned && entry.mutations ? Object.keys(entry.mutations).filter((id) => entry.mutations[id] > 0).length : 0;
+                                const mutBadge = owned && !unclaimed
+                                    ? `<span class="index-mut-badge" title="Klick für Mutations-Übersicht">${mutCount}/13 🧬</span>`
+                                    : "";
                                 return `
-                                    <article class="${classes.join(" ")}" data-fish-id="${fish.id}" ${owned ? `data-action="open-mutations"` : ""}>
+                                    <article class="${classes.join(" ")}" data-fish-id="${fish.id}" ${owned && !unclaimed ? `data-action="open-mutations"` : ""}>
+                                        ${mutBadge}
                                         ${renderFishArt(fish, { silhouette: !owned })}
                                         <strong>${owned ? fish.name : "Unbekannter Fisch"}</strong>
-                                        <small>${owned ? `${entry.count}x gefangen - Bestes Gewicht ${kg(entry.bestKg)}` : "Noch nicht gefangen"}</small>
+                                        <small>${owned ? `${entry.count}x &middot; ${kgQualityDisplay(entry.bestKg, fish.maxKg)}` : "Noch nicht gefangen"}</small>
                                         ${unclaimed ? `
                                             <button class="index-claim-overlay" type="button" data-action="claim-index" data-fish-id="${fish.id}">
                                                 <span class="index-claim-coin">+${coins(reward)}</span>
@@ -414,7 +422,7 @@ function renderAreas() {
             <article class="area-card ${state.currentArea === area.id ? "is-active" : ""}">
                 <div class="area-card-head">
                     <h3>${area.name}</h3>
-                    <span class="area-lock">${unlocked ? `${progress.caught}/${progress.total}` : `Prestige ${area.prestige}`}</span>
+                    <span class="area-lock">${unlocked ? `${progress.caught}/${progress.total}` : `Freischaltbar ab Prestige ${area.prestige}`}</span>
                 </div>
                 <p>${unlocked ? "Dieses Gewässer ist verfügbar." : "Noch nicht freigeschaltet."}</p>
                 <button data-switch-area="${area.id}" type="button" ${!unlocked || state.currentArea === area.id ? "disabled" : ""}>
@@ -432,13 +440,13 @@ function renderAreas() {
         `
         : `
             <h3>Nächstes Gewässer: ${AREAS[prestige.nextArea].name}</h3>
-            <p>Prestige leert Coins, Upgrades und Inventar. Dein Fish Index, Fänge und freigeschaltete Areas bleiben.</p>
+            <p>Beim Freischalten startest du mit frischen Coins, Upgrades und leerem Inventar. Dein Fish Index, alle bisherigen Fänge und freigeschalteten Areas bleiben dir erhalten.</p>
             <ul>
-                <li class="${prestige.coinsReady ? "is-ready" : ""}">${prestige.coinsReady ? "Bereit:" : "Fehlt:"} ${coins(prestige.requiredCoins)} Coins halten</li>
-                <li class="${prestige.upgradesReady ? "is-ready" : ""}">${prestige.upgradesReady ? "Bereit:" : "Fehlt:"} alle Upgrades maxen</li>
+                <li class="${prestige.coinsReady ? "is-ready" : ""}">${prestige.coinsReady ? "Bereit:" : "Noch nötig:"} ${coins(prestige.requiredCoins)} Coins zur Hand haben</li>
+                <li class="${prestige.upgradesReady ? "is-ready" : ""}">${prestige.upgradesReady ? "Bereit:" : "Noch nötig:"} alle Upgrades voll ausgebaut</li>
                 <li class="is-open">Prestige ${state.prestige + 1} schaltet ${AREAS[prestige.nextArea].name} frei</li>
             </ul>
-            <button id="prestige-now" type="button" ${prestige.canPrestige ? "" : "disabled"}>Prestige durchführen</button>
+            <button id="prestige-now" type="button" ${prestige.canPrestige ? "" : "disabled"}>${AREAS[prestige.nextArea].name} freischalten</button>
         `;
 }
 
@@ -528,6 +536,86 @@ function renderAll() {
     }
 }
 
+// Quality-Color: lerp red → orange → green → gold basierend auf kg/maxKg Ratio.
+// Smooth Übergang über 4 RGB-Stops.
+function qualityColor(ratio) {
+    const r = Math.max(0, Math.min(1, Number(ratio) || 0));
+    const stops = [
+        { p: 0.00, rgb: [255, 107, 107] }, // red
+        { p: 0.33, rgb: [255, 153, 102] }, // orange
+        { p: 0.66, rgb: [101, 226, 162] }, // green
+        { p: 1.00, rgb: [255, 209, 102] }, // gold
+    ];
+    for (let i = 0; i < stops.length - 1; i++) {
+        const a = stops[i], b = stops[i + 1];
+        if (r >= a.p && r <= b.p) {
+            const t = (r - a.p) / (b.p - a.p);
+            const mix = (c1, c2) => Math.round(c1 + (c2 - c1) * t);
+            return `rgb(${mix(a.rgb[0], b.rgb[0])}, ${mix(a.rgb[1], b.rgb[1])}, ${mix(a.rgb[2], b.rgb[2])})`;
+        }
+    }
+    return `rgb(${stops[stops.length - 1].rgb.join(",")})`;
+}
+
+// Seltenheits-Berechnung: gibt die ungefähre 1-in-X Wahrscheinlichkeit für diesen
+// exakten Catch zurück (Rarity × Mutationen × kg-Quality, multiplikativ). Wird
+// als "1 / X" Popup unterhalb des Catch-Popups angezeigt — Roblox-Style Drop-Brag.
+//
+// Vereinfachte Wahrscheinlichkeiten (auf Catch-Basis, ohne Wetter-conditional):
+const _RARITY_BASE_P = { Common: 0.75, Uncommon: 0.22, Rare: 0.07, Epic: 0.02, Legendary: 0.005 };
+const _MUTATION_BASE_P = {
+    big: 0.065, huge: 0.025, shiny: 0.010,
+    sunny: 0.033, wet: 0.033, stormy: 0.033, misty: 0.033, nocturnal: 0.033,
+    abyssal: 0.0063, aurora: 0.015, ember: 0.0083, crimson: 0.005, haunted: 0.0025,
+};
+
+function catchRarityRatio(candidate) {
+    const fish = candidate.fish;
+    let p = _RARITY_BASE_P[fish.rarity] || 0.5;
+    // Mutations werden durch Glück sanft gebuffed → effektive Wahrscheinlichkeit sinkt mit Lvl.
+    const luckMult = 1 + (state?.upgrades?.luck || 0) * 0.08;
+    for (const id of (candidate.mutations || [])) {
+        const base = _MUTATION_BASE_P[id] || 0.01;
+        p *= Math.min(0.95, base * luckMult);
+    }
+    // kg-Quality: nur Bonus-Seltenheit ab 90% (sonst zählt's praktisch nicht)
+    if (fish.maxKg > 0) {
+        const ratio = Math.min(1, candidate.kg / fish.maxKg);
+        if (ratio >= 0.99) p *= 0.008;        // ~1/125 für 99%+
+        else if (ratio >= 0.95) p *= 0.05;    // ~1/20
+        else if (ratio >= 0.90) p *= 0.10;    // ~1/10
+    }
+    return p;
+}
+
+function formatRarityOdds(p) {
+    if (!p || p >= 1) return null;
+    const oneIn = 1 / p;
+    if (oneIn < 1000) return `1 / ${Math.round(oneIn)}`;
+    if (oneIn < 1000000) {
+        const k = oneIn / 1000;
+        return `1 / ${k < 10 ? k.toFixed(1) : Math.round(k)}k`;
+    }
+    if (oneIn < 1000000000) {
+        const m = oneIn / 1000000;
+        return `1 / ${m < 10 ? m.toFixed(1) : Math.round(m)}M`;
+    }
+    const b = oneIn / 1000000000;
+    return `1 / ${b < 10 ? b.toFixed(2) : b.toFixed(1)}B`;
+}
+
+function kgQualityDisplay(currentKg, maxKg) {
+    const cur = Number(currentKg) || 0;
+    const max = Number(maxKg) || 0;
+    if (max <= 0) return kg(cur);
+    const ratio = Math.min(1, cur / max);
+    const color = qualityColor(ratio);
+    const pct = Math.round(ratio * 100);
+    // Glow ab 99% — Trophy-Display feiert nahezu-perfekte Fische
+    const glow = ratio >= 0.99 ? " is-perfect" : "";
+    return `<span class="kg-quality${glow}" style="color:${color}">${kg(cur)} / ${kg(max)} <small>(${pct}%)</small></span>`;
+}
+
 function renderMutationBadges(candidate) {
     const ids = Array.isArray(candidate?.mutations) ? candidate.mutations : [];
     if (!ids.length) return "";
@@ -554,12 +642,21 @@ function showCatch(candidate, isNew = false) {
     popup.className = `catch-popup${isNew ? " is-new" : ""}${hasMutation ? " is-mutated" : ""}`;
     popup.style.setProperty("--rarity", RARITIES[candidate.fish.rarity]?.color || "#79d9f7");
     if (hasMutation) {
-        // Erste Mutation gibt die Akzentfarbe des Popups; letzte (meist Event) den Glow.
         const first = MUTATIONS_BY_ID[candidate.mutations[0]];
         const last = MUTATIONS_BY_ID[candidate.mutations[candidate.mutations.length - 1]];
         if (first) popup.style.setProperty("--mut-primary", first.color);
         if (last) popup.style.setProperty("--mut-glow", last.color);
     }
+    // Seltenheit berechnen — wenn der Fang besonders ist (Mutation / hohe kg-Quality /
+    // Epic+ Rarity) zeigen wir ein extra "1 / X"-Popup mit Bounce-Animation.
+    const rarityP = catchRarityRatio(candidate);
+    const odds = formatRarityOdds(rarityP);
+    const kgRatio = candidate.fish.maxKg > 0 ? candidate.kg / candidate.fish.maxKg : 0;
+    const showRarityPopup = hasMutation
+        || kgRatio >= 0.90
+        || candidate.fish.rarity === "Epic"
+        || candidate.fish.rarity === "Legendary";
+
     popup.innerHTML = `
         ${isNew ? `<span class="catch-new-badge">NEU im Index</span>` : ""}
         ${renderFishArt(candidate.fish)}
@@ -567,14 +664,39 @@ function showCatch(candidate, isNew = false) {
             ${renderMutationBadges(candidate)}
             ${isNew ? `<em class="catch-popup-kicker">Neuer Fisch entdeckt</em>` : ""}
             <strong>${candidate.fish.name}</strong>
-            <small>${candidate.fish.rarity} &middot; ${kg(candidate.kg)}</small>
+            <small>${candidate.fish.rarity} &middot; ${kgQualityDisplay(candidate.kg, candidate.fish.maxKg)}</small>
             <span>${coins(candidate.value)} Coins Verkaufswert</span>
         </div>
     `;
     elements.popups.append(popup);
-    // Mutationen länger sichtbar (Show-Off-Moment).
-    const dur = hasMutation ? 4800 : (isNew ? 4400 : 2800);
+    // Mutationen + seltene Fänge länger sichtbar (Show-Off-Moment).
+    const dur = showRarityPopup ? 5600 : (isNew ? 4400 : 2800);
     window.setTimeout(() => popup.remove(), dur);
+
+    // Roblox-Style: zusätzliches Seltenheits-Popup das nochmal hochpoppt
+    if (showRarityPopup && odds) {
+        showRarityOddsPopup(candidate, odds);
+    }
+}
+
+function showRarityOddsPopup(candidate, odds) {
+    // Verzögert öffnen damit's NACH dem Catch-Popup peaked
+    window.setTimeout(() => {
+        const odd = document.createElement("div");
+        odd.className = "rarity-odds-popup";
+        // Glow-Farbe: letzte Mutation > Rarity-Farbe
+        const lastMut = candidate.mutations?.length
+            ? MUTATIONS_BY_ID[candidate.mutations[candidate.mutations.length - 1]]
+            : null;
+        const accent = lastMut?.color || RARITIES[candidate.fish.rarity]?.color || "#ffd166";
+        odd.style.setProperty("--accent", accent);
+        odd.innerHTML = `
+            <span class="rarity-odds-kicker">Seltenheit</span>
+            <strong class="rarity-odds-value">${odds}</strong>
+        `;
+        elements.popups.append(odd);
+        window.setTimeout(() => odd.remove(), 3600);
+    }, 600);
 }
 
 function showCoinGain(amount, fishEl) {
@@ -724,7 +846,10 @@ function startFishing(forcedRarity = null) {
         };
     }
     const event = weatherEventSystem?.getEvent?.() || null;
-    let mutations = rollMutations(event);
+    // Mutationen kriegen sanften Glück-Bonus (+8 % chance pro Glück-Level, max 95 %).
+    // Roher state.upgrades.luck (0-5) — bewusst NICHT der bereits gebufte luckLevel,
+    // sonst würde Sonne (×2) auch Mutationen verdoppeln, was zu viel wäre.
+    let mutations = rollMutations(event, state.upgrades.luck);
     const devMuts = window.__dev?.consumeForcedMutations?.();
     if (devMuts) mutations = devMuts;
     const candidate = applyMutationsToCandidate(baseCandidate, mutations);
@@ -1158,6 +1283,20 @@ async function init() {
     if (user) {
         try {
             const profile = await fetchProfile(user.id);
+            // Ban-Enforcement: gleicher Block wie KaktusClicker. Save ist
+            // server-seitig schon geblockt (Trigger), aber ohne client-Check
+            // würde der User weiterspielen und nichts persistieren — verwirrend.
+            if (profile?.is_banned) {
+                const { getSupabase } = await import("/js/supabase-client.js");
+                const supabase = getSupabase();
+                if (supabase) {
+                    try { await supabase.auth.signOut(); } catch {}
+                }
+                setSaveStatus("Account gesperrt — Zugriff verweigert.");
+                try { window.alert("Dein Account wurde gesperrt."); } catch {}
+                window.location.replace("/login.html?banned=1");
+                return;
+            }
             if (profile?.username) {
                 playerName = profile.username;
             }
@@ -1180,7 +1319,10 @@ async function init() {
     }, 1000);
     bubbleSystem = new BubbleSystem(elements.water, {
         getState: () => state,
-        canSpawn: () => !activeWindow && elements.fishingOverlay.hidden && elements.areaTransition.hidden,
+        // Beim Angel-Minispiel weiter spawnen lassen — Spots erscheinen + verfallen
+        // im Hintergrund während der User den aktuellen Fisch fängt. Nur Shop/Stats
+        // (activeWindow) + Area-Transition pausieren.
+        canSpawn: () => !activeWindow && elements.areaTransition.hidden,
         onPick: startFishing,
         getSpawnMultiplier: () => weatherEventSystem?.getBuffs().spawnRate || 1,
         onSpawn(x, y) {
@@ -1190,7 +1332,8 @@ async function init() {
     });
     bubbleSystem.start();
     coinFishSystem = new CoinFishSystem(elements.water, {
-        canSpawn: () => !activeWindow && elements.fishingOverlay.hidden && elements.areaTransition.hidden,
+        // Auch Coin-Fische laufen im Hintergrund weiter während des Minispiels.
+        canSpawn: () => !activeWindow && elements.areaTransition.hidden,
         getSpawnMultiplier: () => weatherEventSystem?.getBuffs().spawnRate || 1,
         onTrail() {
             // Wellen-Trail bewusst entfernt — Timer-Fische schwimmen geräuschlos vorbei.

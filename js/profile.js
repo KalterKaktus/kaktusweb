@@ -33,17 +33,25 @@ export async function ensureProfile(userId) {
         return null;
     }
 
+    // WICHTIG: INSERT statt UPSERT — sonst würde bei jedem fetchProfile()-Fehler
+    // (Netzwerk, RLS-Glitch, etc.) der existing username mit einem frischen
+    // createKaktusUsername() überschrieben. INSERT failt mit 23505 wenn row
+    // schon existiert → wir refetchen einfach und ändern garantiert nichts.
     const { data, error } = await supabase
         .from("profiles")
-        .upsert({
+        .insert({
             id: userId,
-            username: existing?.username || createKaktusUsername(),
+            username: createKaktusUsername(),
             updated_at: new Date().toISOString(),
         })
         .select("id, username, is_banned, avatar_url, updated_at")
-        .single();
+        .maybeSingle();
 
     if (error) {
+        if (error.code === "23505") {
+            // Profile existiert schon — nur fetch zurückgeben, kein Overwrite
+            return await fetchProfile(userId);
+        }
         console.error("Profile anlegen fehlgeschlagen:", error.message);
         return null;
     }
@@ -51,9 +59,12 @@ export async function ensureProfile(userId) {
     return data;
 }
 
+// Default-Username für neue Accounts. Bewusst "User_xxxx" damit es nach
+// generischer Platzhalter aussieht — motiviert den Spieler den Namen aktiv
+// zu setzen statt den Default zu behalten.
 function createKaktusUsername() {
     const suffix = String(Math.floor(Math.random() * 10000)).padStart(4, "0");
-    return `Kaktus_${suffix}`;
+    return `User_${suffix}`;
 }
 
 export function getDisplayName(user, profile) {

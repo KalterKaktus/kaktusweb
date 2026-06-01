@@ -355,6 +355,24 @@ body::before {
     margin-top: 0.3rem;
 }
 .auth-form-actions .auth-btn { flex: 1; min-width: 9rem; }
+.auth-forgot-row {
+    margin-top: 0.5rem;
+    text-align: center;
+}
+.auth-link-button {
+    background: transparent;
+    border: 0;
+    color: var(--text-secondary, #88a);
+    font: inherit;
+    font-size: 0.82rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 0.2rem 0.4rem;
+}
+.auth-link-button:hover {
+    color: var(--green, #69f0ae);
+}
 .auth-btn.is-ghost {
     background: transparent;
     border: 1px solid var(--border);

@@ -37,8 +37,10 @@ const OFFLINE_MIN_SECONDS = 5 * 60;
 const OFFLINE_RATE = 0.5;
 const GOLDEN_REWARD_SECONDS = 300;
 const RED_REWARD_SECONDS = 1800;
-const GOLDEN_EVENT_DELAY = [3 * 60 * 1000, 7 * 60 * 1000];
-const RED_EVENT_DELAY = [20 * 60 * 1000, 40 * 60 * 1000];
+// Spawn-Intervalle: nach Removal des Auto-Collect höher getaktet damit
+// aktives Spielen sich lohnt. (Vorher: Golden 3-7min, Red 20-40min.)
+const GOLDEN_EVENT_DELAY = [90 * 1000, 3.5 * 60 * 1000];
+const RED_EVENT_DELAY = [10 * 60 * 1000, 22 * 60 * 1000];
 const ADMIN_GAME_EVENT_POLL_MS = 2500;
 const RANDOM_EVENT_CONFIG = {
   golden: { duration: 10000, rewardSeconds: GOLDEN_REWARD_SECONDS, label: "Goldkaktus" },
@@ -65,6 +67,7 @@ let soundEffectsUnlocked = false;
 // unabhängig vom Mute-Status. Vorher: cloned <audio> mit muted=true, was als "muted autoplay"
 // nicht als gültiger Unlock zählt → Goldkaktus-Sound kam bei Music=mute nicht.
 let audioCtx = null;
+
 
 const elements = {
   cactusCount: document.querySelector("#cactus-count"),
@@ -200,9 +203,17 @@ function playEventAppearSound() {
     return;
   }
 
-  const sound = eventAppearSound.cloneNode();
-  sound.volume = audioSettings.soundVolume;
-  sound.play().catch(() => {});
+  // WICHTIG: nicht cloneNode() — der Clone ist NICHT am audioCtx (MediaElementSource
+  // ist 1:1 zum Original gebunden). Auf iOS Safari + Music-mute hat der Browser
+  // keine aktive Audio-Session, und der Clone bleibt stumm. Das Original-Element
+  // läuft durch den audioCtx und respektiert ctx.resume() → klingt überall.
+  // Trade-off: schnell aufeinanderfolgende Spawns überlappen nicht (currentTime
+  // resettet jedes Mal). Für Goldkaktus/Rubinkaktus die nicht <1s spawnen ist das ok.
+  try {
+    eventAppearSound.currentTime = 0;
+  } catch {}
+  eventAppearSound.volume = audioSettings.soundVolume;
+  eventAppearSound.play().catch(() => {});
 }
 
 function initAudio() {
@@ -975,9 +986,11 @@ function spawnRandomEvent(kind, duration, rewardSeconds, label) {
     button.remove();
     scheduleNextRandomEvent(kind);
 
-    // AFK-friendly: auch ohne Klick gibt's den Reward (vorher: 10s Timeout = verloren).
-    // Sound + visueller Spawn passieren bereits am Anfang, der Klick ist nur noch
-    // ein "snel collect" — auto-collect bei Timeout liefert das gleiche Coin-Plus.
+    // Kein Auto-Collect mehr: nur bei aktivem Klick gibt's Reward + Hit-Count.
+    // Spawn-Häufigkeit ist im Gegenzug erhöht (GOLDEN_EVENT_DELAY / RED_EVENT_DELAY).
+    if (!caught) {
+      return;
+    }
     const reward = getAutomaticProduction(state, { includeEvent: false }) * rewardSeconds;
     addCactus(reward);
     if (kind === "golden") {
@@ -988,10 +1001,10 @@ function spawnRandomEvent(kind, duration, rewardSeconds, label) {
     spawnFloat(
       buttonRect.left + buttonRect.width / 2,
       buttonRect.top + buttonRect.height / 2,
-      `${label} ${caught ? "+" : "(auto) +"}${formatNumber(reward)}`,
+      `${label} +${formatNumber(reward)}`,
       `is-event-reward is-${kind}`
     );
-    elements.saveStatus.textContent = `${label}${caught ? "" : " (AFK auto)"}: +${formatNumber(reward)}`;
+    elements.saveStatus.textContent = `${label}: +${formatNumber(reward)}`;
     updateAchievements();
     render();
   };
@@ -1008,6 +1021,26 @@ function spawnRandomEvent(kind, duration, rewardSeconds, label) {
 
 function bindEvents() {
   elements.cactusButton.addEventListener("click", clickCactus);
+
+  // Keyboard: Leertaste = Cactus klicken. event.repeat ignorieren damit
+  // gehaltene Space nicht spammt (würde sonst die ganze Anti-Click-Frenzy
+  // Logik umgehen). Skip wenn fokus in input/textarea oder Modal offen.
+  window.addEventListener("keydown", (event) => {
+    if (event.code !== "Space" && event.key !== " ") return;
+    if (event.repeat) return;
+    const target = event.target;
+    const tag = target?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || target?.isContentEditable) return;
+    // Auch nicht klicken wenn ein modal/changelog overlay offen ist
+    if (document.querySelector(".game-modal-backdrop")) return;
+    event.preventDefault();
+    // spawnFloat braucht x/y — bei Keyboard nehmen wir das Zentrum des Buttons
+    const rect = elements.cactusButton.getBoundingClientRect();
+    clickCactus({
+      clientX: rect.left + rect.width / 2,
+      clientY: rect.top + rect.height / 2,
+    });
+  });
   elements.saveButton.addEventListener("click", () => saveState("Manuell gespeichert"));
   elements.musicToggle.addEventListener("click", () => {
     audioSettings.musicMuted = !audioSettings.musicMuted;

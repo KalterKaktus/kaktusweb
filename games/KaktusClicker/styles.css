@@ -1526,3 +1526,46 @@ h3 {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* === Skin-System === */
+
+.cactus-button {
+  position: relative;
+}
+/* Wrapper um die cactus-art. Inline-block + position: relative für die
+ * hardcodierte pink Blume die als Overlay leicht rechts vom Kopf sitzt. */
+.cactus-stage {
+  position: relative;
+  display: inline-block;
+}
+/* Pink Blume — Standard-Decor auf dem Kaktus-Kopf, leicht rechts versetzt. */
+.cactus-flower {
+  position: absolute;
+  top: -0.6em;
+  left: 53%;
+  width: 2.6em;
+  pointer-events: none;
+  color: #ff5ec8;
+  filter:
+    drop-shadow(0 0 4px currentColor)
+    drop-shadow(0 0 10px currentColor);
+  z-index: 2;
+}
+.cactus-flower svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

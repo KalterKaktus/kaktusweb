@@ -7,6 +7,9 @@ const refreshButton = document.getElementById("admin-refresh");
 const adminAbuseRoot = document.getElementById("admin-abuse");
 const adminAbuseGame = document.getElementById("admin-abuse-game");
 const loginGate = document.getElementById("admin-login-gate");
+const cheatFlagsRoot = document.getElementById("admin-cheat-flags");
+const cheatFlagsBody = document.getElementById("admin-cheat-flags-body");
+const cheatFlagsCount = document.getElementById("admin-cheat-flags-count");
 
 function setStatus(message, isError = false, showLogin = false) {
     status.textContent = message;
@@ -31,6 +34,7 @@ function setAdminContentVisible(visible) {
     adminAbuseRoot.hidden = !visible;
     usersRoot.hidden = !visible;
     refreshButton.hidden = !visible;
+    if (cheatFlagsRoot) cheatFlagsRoot.hidden = !visible;
 }
 
 function escapeHtml(value) {
@@ -248,6 +252,83 @@ function renderGamePanel(save, index) {
     `;
 }
 
+// ----- Cheat-Flag rendering ----------------------------------------------
+// Labels bewusst OHNE die exakten Anticheat-Schwellen. Die panel.js wird ohne
+// Auth ausgeliefert (statisches Asset) — ein Cheater könnte die Schwellen
+// sonst auslesen und gezielt knapp drunter bleiben. Genaue Zahlen kommen im
+// flag.details Feld (server-seitig) und nur Admins sehen die.
+const FLAG_TYPE_LABELS = {
+    profile_tamper: "Profil-Tampering (geschützte Spalte)",
+    vip_color_without_vip: "VIP-Farbe ohne VIP-Status",
+    badge_equip_without_owning: "Badge equippt ohne zu besitzen",
+    save_value_overflow: "Save: total_earned ungewöhnlich hoch",
+    save_spam: "Save-Spam",
+    save_jump_suspicious: "Save-Sprung verdächtig",
+    xp_oversize_call: "XP-Call zu groß",
+    xp_throttle_hit: "XP-Throttle erreicht",
+    catch_event_spam: "Catch-Spam",
+    catch_event_invalid_rarity: "Catch: ungültige Rarity",
+    catch_event_value_anomaly: "Catch: Wert-Anomalie",
+    catch_event_kg_anomaly: "Catch: Gewicht-Anomalie",
+};
+
+function flagLabel(type) {
+    return FLAG_TYPE_LABELS[type] || type;
+}
+
+function renderFlagDetails(details) {
+    if (!details || typeof details !== "object" || !Object.keys(details).length) {
+        return "";
+    }
+    return `<pre class="admin-flag-details">${escapeHtml(JSON.stringify(details, null, 2))}</pre>`;
+}
+
+function renderCheatFlags(groups) {
+    // Defensive: wenn das neue HTML noch nicht im Browser ist (z.B. CDN-Cache),
+    // einfach skippen statt mit TypeError den ganzen Loader zu blockieren.
+    if (!cheatFlagsBody || !cheatFlagsCount) return;
+
+    const total = groups.reduce((sum, g) => sum + g.count, 0);
+    cheatFlagsCount.textContent = String(total);
+    cheatFlagsCount.classList.toggle("is-critical", groups.some((g) => g.worstSeverity === "critical"));
+
+    if (!groups.length) {
+        cheatFlagsBody.innerHTML = `<p class="admin-empty">Keine offenen Flags. 🎉</p>`;
+        return;
+    }
+
+    cheatFlagsBody.innerHTML = groups.map((group) => `
+        <article class="admin-flag-group ${group.worstSeverity === "critical" ? "is-critical" : "is-warn"}" data-flag-user="${escapeAttr(group.user_id)}">
+            <header class="admin-flag-group-head">
+                <div>
+                    <h3>${escapeHtml(group.username)}${group.is_banned ? ` <span class="admin-flag-banned">gesperrt</span>` : ""}</h3>
+                    <p class="admin-user-meta">${group.count} offene Flag${group.count === 1 ? "" : "s"} &middot; <code>${escapeHtml(group.user_id)}</code></p>
+                </div>
+                <div class="admin-flag-group-actions">
+                    <button class="admin-button" data-flag-bulk="ignored" type="button">Alle ignorieren</button>
+                    <button class="admin-button is-danger" data-flag-bulk="banned" type="button">Bannen &amp; Markieren</button>
+                </div>
+            </header>
+            <ul class="admin-flag-list">
+                ${group.flags.map((flag) => `
+                    <li class="admin-flag-item is-${escapeAttr(flag.severity || "warn")}" data-flag-id="${escapeAttr(flag.id)}">
+                        <div class="admin-flag-item-head">
+                            <span class="admin-flag-type">${escapeHtml(flagLabel(flag.flag_type))}</span>
+                            <span class="admin-flag-severity">${escapeHtml(flag.severity || "warn")}</span>
+                            <time>${escapeHtml(formatDate(flag.created_at))}</time>
+                        </div>
+                        ${renderFlagDetails(flag.details)}
+                        <div class="admin-inline">
+                            <button class="admin-button" data-flag-action="ignored" type="button">Ignorieren</button>
+                            <button class="admin-button" data-flag-action="warned" type="button">Als gewarnt markieren</button>
+                        </div>
+                    </li>
+                `).join("")}
+            </ul>
+        </article>
+    `).join("");
+}
+
 function renderUsers(users) {
     if (!users.length) {
         usersRoot.innerHTML = `<p class="admin-empty">Keine User gefunden.</p>`;
@@ -259,13 +340,18 @@ function renderUsers(users) {
         const presence = user.presence || {};
         const userLevel = levelFromXp(user.total_xp);
         const userBadges = new Set(Array.isArray(user.badges) ? user.badges : []);
+        const articleClasses = ["admin-user"];
+        if (user.is_banned) articleClasses.push("is-banned");
+        if (user.auto_ban) articleClasses.push("is-auto-banned");
+        const banLog = Array.isArray(user.ban_log) ? user.ban_log : [];
         return `
-            <article class="admin-user" data-user-id="${escapeAttr(user.id)}">
+            <article class="${articleClasses.join(" ")}" data-user-id="${escapeAttr(user.id)}">
                 <div class="admin-user-head">
                     <div>
-                        <h2>${escapeHtml(user.username || "Ohne Name")} <span class="admin-user-level">Lvl ${userLevel}</span>${user.vip ? `<span class="admin-user-vip" title="VIP-Status">👑 VIP</span>` : ""}</h2>
+                        <h2>${escapeHtml(user.username || "Ohne Name")} <span class="admin-user-level">Lvl ${userLevel}</span>${user.vip ? `<span class="admin-user-vip" title="VIP-Status">👑 VIP</span>` : ""}${user.auto_ban ? `<span class="admin-user-autoban" title="Automatisch gesperrt — Trigger: ${escapeAttr(user.auto_ban.ban_trigger_flag || "unbekannt")}">🤖 AUTO-BAN</span>` : ""}</h2>
                         <p>${escapeHtml(user.id)}</p>
                         <p class="admin-user-meta">${formatNumber(user.total_xp || 0)} XP &middot; ${userBadges.size} Badges${user.referral_code ? ` &middot; Ref-Code <code>${escapeHtml(user.referral_code)}</code>` : ""}</p>
+                        ${user.auto_ban ? `<p class="admin-user-autoban-meta">Auto-gesperrt am ${escapeHtml(formatDate(user.auto_ban.banned_at))} wegen <strong>${escapeHtml(user.auto_ban.ban_trigger_flag || "unbekannt")}</strong> · ${user.auto_ban.auto_banned_flag_count || 0} Auto-Ban-Flag${user.auto_ban.auto_banned_flag_count === 1 ? "" : "s"} insgesamt</p>` : ""}
                     </div>
                     <div class="admin-user-flags">
                         <button class="admin-presence ${presence.online ? "is-online" : "is-offline"}" type="button" title="${escapeAttr(formatPresenceTitle(presence))}">
@@ -319,12 +405,93 @@ function renderUsers(users) {
                     </div>
                 </details>
 
-                <details class="admin-account-tools">
-                    <summary>Account-Werkzeuge</summary>
+                <details class="admin-account-tools"${user.auto_ban || user.is_banned ? " open" : ""}>
+                    <summary>Account-Werkzeuge${user.is_banned ? " — 🔒 GESPERRT" : ""}${user.auto_ban ? " (Auto-Ban)" : ""}</summary>
+
+                    <label class="admin-field admin-username-field">
+                        <span>Username (gameübergreifend)</span>
+                        <div class="admin-inline">
+                            <input class="admin-input" data-username-input type="text" minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]+" value="${escapeAttr(user.username || "")}" placeholder="3-24 Zeichen, a-Z 0-9 _">
+                            <button class="admin-button" data-action="save-username" type="button">Username speichern</button>
+                        </div>
+                    </label>
+
                     <div class="admin-inline">
                         <input class="admin-input is-message" data-message-input type="text" maxlength="500" placeholder="Nachricht an User">
                         <button class="admin-button" data-action="message" type="button">Nachricht schicken</button>
                         <button class="admin-button is-danger" data-action="ban" type="button">${user.is_banned ? "Entsperren" : "Sperren"}</button>
+                    </div>
+                    ${user.auto_ban ? `
+                    <div class="admin-inline admin-autoban-tools">
+                        ${user.auto_ban.restore_history_id ? `<button class="admin-button" data-action="restore-save" data-history-id="${escapeAttr(user.auto_ban.restore_history_id)}" type="button" title="Spielstand vor dem Auto-Ban aus History wiederherstellen">↺ Save vor Auto-Ban restoren</button>` : `<span class="admin-empty">Kein pre-ban History-Eintrag vorhanden — Save war beim Ban schon leer.</span>`}
+                    </div>
+                    ` : ""}
+
+                    ${banLog.length > 0 ? `
+                    <div class="admin-ban-log">
+                        <h4>Ban-Verlauf (${banLog.length} Einträge)</h4>
+                        <ul>
+                            ${banLog.slice(0, 10).map((entry) => {
+                                const isAuto = entry.resolution === "auto_banned";
+                                const label = flagLabel(entry.flag_type);
+                                return `
+                                    <li class="admin-ban-log-item is-${isAuto ? "auto" : "manual"}">
+                                        <div class="admin-ban-log-head">
+                                            <span class="admin-ban-log-tag">${isAuto ? "🤖 AUTO" : "👤 MANUELL"}</span>
+                                            <span class="admin-ban-log-type">${escapeHtml(label)}</span>
+                                            <time>${escapeHtml(formatDate(entry.resolved_at || entry.created_at))}</time>
+                                        </div>
+                                        ${entry.severity ? `<small class="admin-ban-log-sev is-${escapeAttr(entry.severity)}">${escapeHtml(entry.severity)}</small>` : ""}
+                                        ${renderFlagDetails(entry.details)}
+                                    </li>
+                                `;
+                            }).join("")}
+                        </ul>
+                    </div>
+                    ` : ""}
+
+                    <div class="admin-meta-grid admin-profile-editor" data-profile-editor>
+                        <label class="admin-field">
+                            <span>Total XP</span>
+                            <input class="admin-input" data-profile-field="total_xp" type="number" min="0" step="1" value="${escapeAttr(user.total_xp ?? 0)}">
+                        </label>
+                        <label class="admin-field">
+                            <span>VIP</span>
+                            <select class="admin-input" data-profile-field="vip">
+                                <option value="false" ${user.vip ? "" : "selected"}>nein</option>
+                                <option value="true" ${user.vip ? "selected" : ""}>ja</option>
+                            </select>
+                        </label>
+                        <label class="admin-field">
+                            <span>VIP-Farbe (Hex)</span>
+                            <input class="admin-input" data-profile-field="vip_color" type="text" maxlength="9" placeholder="#ff00aa" value="${escapeAttr(user.vip_color || "")}">
+                        </label>
+                        <label class="admin-field">
+                            <span>Equipped Badge</span>
+                            <select class="admin-input" data-profile-field="equipped_badge">
+                                <option value="" ${user.equipped_badge ? "" : "selected"}>— kein —</option>
+                                ${BADGE_ORDER.map((badgeId) => {
+                                    const b = BADGES[badgeId];
+                                    if (!b) return "";
+                                    return `<option value="${escapeAttr(badgeId)}" ${user.equipped_badge === badgeId ? "selected" : ""}>${escapeHtml(b.icon)} ${escapeHtml(b.name)}</option>`;
+                                }).join("")}
+                            </select>
+                        </label>
+                        <label class="admin-field">
+                            <span>Avatar URL</span>
+                            <input class="admin-input" data-profile-field="avatar_url" type="text" placeholder="https://…" value="${escapeAttr(user.avatar_url || "")}">
+                        </label>
+                        <label class="admin-field">
+                            <span>Spenden (Cent)</span>
+                            <input class="admin-input" data-profile-field="donation_total_cents" type="number" min="0" step="1" value="${escapeAttr(user.donation_total_cents ?? 0)}">
+                        </label>
+                        <label class="admin-field">
+                            <span>Spenden-Count</span>
+                            <input class="admin-input" data-profile-field="donation_count" type="number" min="0" step="1" value="${escapeAttr(user.donation_count ?? 0)}">
+                        </label>
+                    </div>
+                    <div class="admin-inline">
+                        <button class="admin-button" data-action="update-profile" type="button">Profil-Werte speichern</button>
                     </div>
                 </details>
             </article>
@@ -429,12 +596,23 @@ async function loadUsers() {
     try {
         setStatus("Adminzugriff wird geprüft...");
         setAdminContentVisible(false);
-        const { users } = await api("list");
+        const { users, cheatFlags } = await api("list");
         renderUsers(users || []);
+        renderCheatFlags(cheatFlags || []);
         setAdminContentVisible(true);
-        setStatus(`${users?.length || 0} User geladen.`);
+        const flagTotal = (cheatFlags || []).reduce((sum, g) => sum + g.count, 0);
+        const flagSuffix = flagTotal ? ` &middot; ${flagTotal} offene Flag${flagTotal === 1 ? "" : "s"}` : "";
+        status.innerHTML = `${users?.length || 0} User geladen.${flagSuffix}`;
+        status.classList.remove("is-error");
+        loginGate.hidden = true;
+        // Cheat-Flag-Panel automatisch aufklappen wenn was zu tun ist
+        if (flagTotal > 0 && cheatFlagsRoot && !cheatFlagsRoot.open) {
+            cheatFlagsRoot.open = true;
+        }
     } catch (error) {
         usersRoot.innerHTML = "";
+        if (cheatFlagsBody) cheatFlagsBody.innerHTML = "";
+        if (cheatFlagsCount) cheatFlagsCount.textContent = "0";
         setAdminContentVisible(false);
         setStatus(error.message, true, /einlogg/i.test(error.message));
     }
@@ -520,6 +698,44 @@ usersRoot.addEventListener("click", async (event) => {
             setStatus(vip ? "VIP-Status gesetzt." : "VIP-Status entfernt.");
         }
 
+        if (action === "save-username") {
+            const input = card.querySelector("[data-username-input]");
+            const newUsername = input?.value.trim();
+            if (!newUsername) {
+                throw new Error("Username darf nicht leer sein.");
+            }
+            await api("update-profile", { userId, updates: { username: newUsername } });
+            setStatus(`Username gesetzt: ${newUsername}.`);
+        }
+
+        if (action === "restore-save") {
+            const historyId = button.dataset.historyId;
+            if (!historyId) {
+                throw new Error("history-id fehlt.");
+            }
+            if (!window.confirm("Spielstand aus History wiederherstellen? Aktueller (leerer) State wird überschrieben.")) {
+                return;
+            }
+            await api("restore-save", { historyId });
+            setStatus("Spielstand wiederhergestellt aus History.");
+        }
+
+        if (action === "update-profile") {
+            const editor = card.querySelector("[data-profile-editor]");
+            const updates = {};
+            editor?.querySelectorAll("[data-profile-field]").forEach((field) => {
+                const key = field.dataset.profileField;
+                let value = field.value;
+                // <select> für booleans liefert String "true"/"false"
+                if (field.tagName === "SELECT" && (value === "true" || value === "false")) {
+                    value = value === "true";
+                }
+                updates[key] = value;
+            });
+            await api("update-profile", { userId, updates });
+            setStatus("Profil-Werte gespeichert.");
+        }
+
         await loadUsers();
     } catch (error) {
         setStatus(error.message, true);
@@ -529,6 +745,55 @@ usersRoot.addEventListener("click", async (event) => {
 });
 
 refreshButton.addEventListener("click", loadUsers);
+
+cheatFlagsRoot?.addEventListener("click", async (event) => {
+    // Per-Flag-Aktion (Ignorieren / Als gewarnt markieren)
+    const itemButton = event.target.closest("[data-flag-action]");
+    if (itemButton) {
+        const item = itemButton.closest("[data-flag-id]");
+        const flagId = item?.dataset.flagId;
+        const resolution = itemButton.dataset.flagAction;
+        if (!flagId) return;
+        itemButton.disabled = true;
+        try {
+            await api("resolve-cheat-flag", { flagId: Number(flagId), resolution });
+            setStatus(`Flag #${flagId} als '${resolution}' markiert.`);
+            await loadUsers();
+        } catch (error) {
+            setStatus(error.message, true);
+            itemButton.disabled = false;
+        }
+        return;
+    }
+
+    // Bulk-Aktion auf User-Ebene (alle Flags ignorieren / User bannen)
+    const bulkButton = event.target.closest("[data-flag-bulk]");
+    if (bulkButton) {
+        const group = bulkButton.closest("[data-flag-user]");
+        const userId = group?.dataset.flagUser;
+        const resolution = bulkButton.dataset.flagBulk;
+        if (!userId) return;
+        const confirmText = resolution === "banned"
+            ? "User sperren und alle offenen Flags als 'banned' markieren?"
+            : "Alle offenen Flags dieses Users als ignoriert markieren?";
+        if (!window.confirm(confirmText)) return;
+        bulkButton.disabled = true;
+        try {
+            if (resolution === "banned") {
+                await api("ban", { userId, isBanned: true });
+            }
+            await api("resolve-user-flags", { userId, resolution });
+            setStatus(resolution === "banned"
+                ? "User gesperrt und Flags als 'banned' markiert."
+                : "Alle Flags dieses Users ignoriert.");
+            await loadUsers();
+        } catch (error) {
+            setStatus(error.message, true);
+            bulkButton.disabled = false;
+        }
+    }
+});
+
 function showAbuseSection() {
     const selected = adminAbuseGame.value;
     adminAbuseRoot.querySelectorAll("[data-admin-abuse-game]").forEach((section) => {

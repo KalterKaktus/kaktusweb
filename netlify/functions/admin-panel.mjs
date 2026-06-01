@@ -131,11 +131,13 @@ async function supabase(path, options = {}, query = "") {
 }
 
 async function listUsers() {
-    const [profiles, saves, presenceRows, badges] = await Promise.all([
+    const [profiles, saves, presenceRows, badges, autoBans, banLogs] = await Promise.all([
         supabase("profiles", {}, "?select=id,username,is_banned,avatar_url,updated_at,total_xp,equipped_badge,vip,vip_color,referral_code,donation_total_cents,donation_count&order=updated_at.desc"),
         supabase("game_saves", {}, "?select=user_id,game_id,display_name,total_earned,season_id,payload,updated_at&order=updated_at.desc"),
         listPresence(),
         supabase("user_badges", {}, "?select=user_id,badge_id,awarded_at"),
+        listAutoBans(),
+        listBanLogs(),
     ]);
     const savesByUser = new Map();
     const presenceByUser = new Map((presenceRows || []).map((presence) => [presence.user_id, presence]));
@@ -152,12 +154,50 @@ async function listUsers() {
         savesByUser.set(save.user_id, userSaves);
     }
 
+    const autoBanByUser = new Map((autoBans || []).map((ab) => [ab.user_id, ab]));
+    const banLogByUser = new Map();
+    for (const entry of banLogs || []) {
+        const log = banLogByUser.get(entry.user_id) || [];
+        log.push(entry);
+        banLogByUser.set(entry.user_id, log);
+    }
+
     return (profiles || []).map((profile) => ({
         ...profile,
         saves: savesByUser.get(profile.id) || [],
         presence: formatPresence(presenceByUser.get(profile.id)),
         badges: badgesByUser.get(profile.id) || [],
+        auto_ban: autoBanByUser.get(profile.id) || null,
+        ban_log: banLogByUser.get(profile.id) || [],
     }));
+}
+
+// Liest die auto_banned_users View — enthält für jeden auto-banned User:
+// banned_at, ban_trigger_flag, auto_banned_flag_count, restore_history_id.
+async function listAutoBans() {
+    try {
+        return await supabase("auto_banned_users", {}, "?select=*");
+    } catch (error) {
+        // View existiert evtl. noch nicht (Migration nicht gelaufen) — soft-fail.
+        console.error("auto_banned_users View konnte nicht geladen werden:", error.message);
+        return [];
+    }
+}
+
+// Ban-History: alle cheat_flags die zu einem Ban geführt haben (manuell oder auto).
+// Zeigt im Adminpanel pro User: wann + warum + ob auto oder manuell.
+async function listBanLogs() {
+    try {
+        return await supabase("cheat_flags", {},
+            "?select=user_id,flag_type,severity,details,created_at,resolved_at,resolved_by,resolution" +
+            "&resolution=in.(auto_banned,banned)" +
+            "&order=resolved_at.desc" +
+            "&limit=500"
+        );
+    } catch (error) {
+        console.error("Ban-Logs konnten nicht geladen werden:", error.message);
+        return [];
+    }
 }
 
 async function listPresence() {
@@ -235,6 +275,20 @@ async function sendMessage(userId, message) {
         method: "POST",
         headers: { Prefer: "return=minimal" },
         body: JSON.stringify({ user_id: userId, message: value }),
+    });
+}
+
+// Restore eines einzelnen Spielstands aus der game_saves_history Tabelle.
+// Genutzt nach Unban von Auto-Banned Usern um den Pre-Ban-State wiederherzustellen.
+async function restoreSave(historyId) {
+    const id = Number(historyId);
+    if (!Number.isInteger(id) || id <= 0) {
+        throw httpError("history-id ungültig.", 400);
+    }
+    await supabase("rpc/restore_game_save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Prefer: "return=minimal" },
+        body: JSON.stringify({ history_id: id }),
     });
 }
 
@@ -317,6 +371,220 @@ async function revokeBadge(userId, badgeId) {
             },
             `?id=eq.${encodeURIComponent(userId)}`
         );
+    }
+}
+
+// ----- Cheat-Flags --------------------------------------------------------
+// Flags werden von Postgres-Triggern / SECURITY-DEFINER-RPCs via
+// public.log_cheat_flag(...) eingetragen. RLS auf cheat_flags ist enabled
+// ohne Policies → nur service_role kommt dran. Hier holen wir die offenen
+// (unresolved) Flags inkl. Username für die Anzeige im Adminpanel.
+const CHEAT_FLAG_LIMIT = 250;
+const RESOLUTION_VALUES = new Set(["ignored", "warned", "banned"]);
+
+async function listCheatFlags() {
+    const flags = await supabase(
+        "cheat_flags",
+        {},
+        `?select=id,user_id,flag_type,severity,details,created_at,resolved_at,resolved_by,resolution&resolved_at=is.null&order=created_at.desc&limit=${CHEAT_FLAG_LIMIT}`
+    );
+
+    const userIds = [...new Set((flags || []).map((flag) => flag.user_id).filter(Boolean))];
+    let profileLookup = new Map();
+    if (userIds.length) {
+        const inList = userIds.map((id) => `"${id}"`).join(",");
+        const profiles = await supabase(
+            "profiles",
+            {},
+            `?select=id,username,is_banned&id=in.(${encodeURIComponent(inList)})`
+        );
+        profileLookup = new Map((profiles || []).map((p) => [p.id, p]));
+    }
+
+    // Aggregat: pro User Counts + neueste Flags. Reihenfolge bleibt nach
+    // created_at desc damit jüngste User-Aktivität ganz oben steht.
+    const userMap = new Map();
+    for (const flag of flags || []) {
+        const userId = flag.user_id;
+        if (!userMap.has(userId)) {
+            const profile = profileLookup.get(userId);
+            userMap.set(userId, {
+                user_id: userId,
+                username: profile?.username || "(unbekannt)",
+                is_banned: Boolean(profile?.is_banned),
+                flags: [],
+                count: 0,
+                worstSeverity: "warn",
+            });
+        }
+        const entry = userMap.get(userId);
+        entry.flags.push(flag);
+        entry.count += 1;
+        if (flag.severity === "critical") entry.worstSeverity = "critical";
+    }
+
+    return [...userMap.values()];
+}
+
+async function resolveCheatFlag(flagId, resolution, adminUserId) {
+    const id = Number(flagId);
+    if (!Number.isInteger(id) || id <= 0) {
+        throw httpError("Flag-ID ungültig.", 400);
+    }
+    if (!RESOLUTION_VALUES.has(resolution)) {
+        throw httpError("Resolution muss ignored|warned|banned sein.", 400);
+    }
+    await supabase(
+        "cheat_flags",
+        {
+            method: "PATCH",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({
+                resolved_at: new Date().toISOString(),
+                resolved_by: adminUserId,
+                resolution,
+            }),
+        },
+        `?id=eq.${encodeURIComponent(id)}`
+    );
+}
+
+async function resolveAllUserFlags(userId, resolution, adminUserId) {
+    if (!RESOLUTION_VALUES.has(resolution)) {
+        throw httpError("Resolution muss ignored|warned|banned sein.", 400);
+    }
+    await supabase(
+        "cheat_flags",
+        {
+            method: "PATCH",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({
+                resolved_at: new Date().toISOString(),
+                resolved_by: adminUserId,
+                resolution,
+            }),
+        },
+        `?user_id=eq.${encodeURIComponent(userId)}&resolved_at=is.null`
+    );
+}
+
+// Whitelisted Profile-Felder die Admin direkt setzen kann. JEDES Feld kriegt
+// eine Normalize-Funktion die invalid Werte ablehnt — Service-Role bypassed
+// die DB-Trigger, daher muss die Validierung hier passieren.
+const PROFILE_EDITABLE_FIELDS = {
+    username: (value) => {
+        const s = String(value ?? "").trim();
+        if (!s) throw httpError("Username darf nicht leer sein.", 400);
+        if (s.length < 3 || s.length > 24) {
+            throw httpError("Username braucht 3-24 Zeichen.", 400);
+        }
+        if (!/^[a-zA-Z0-9_]+$/.test(s)) {
+            throw httpError("Username: nur Buchstaben, Zahlen, Unterstriche.", 400);
+        }
+        return s;
+    },
+    total_xp: (value) => {
+        const n = Math.floor(Number(value));
+        if (!Number.isFinite(n) || n < 0) {
+            throw httpError("total_xp muss eine nicht-negative Zahl sein.", 400);
+        }
+        return n;
+    },
+    vip: (value) => Boolean(value),
+    vip_color: (value) => {
+        const s = String(value ?? "").trim();
+        if (!s) return null;
+        if (!/^#[0-9a-fA-F]{3,8}$/.test(s)) {
+            throw httpError("vip_color: Hex-Color erwartet (z.B. #ff00aa).", 400);
+        }
+        return s;
+    },
+    equipped_badge: (value) => {
+        const s = String(value ?? "").trim();
+        if (!s) return null;
+        if (!KNOWN_BADGE_IDS.has(s)) {
+            throw httpError(`equipped_badge "${s}" ist nicht freigegeben.`, 400);
+        }
+        return s;
+    },
+    donation_total_cents: (value) => {
+        const n = Math.floor(Number(value));
+        if (!Number.isFinite(n) || n < 0) {
+            throw httpError("donation_total_cents muss >= 0 sein.", 400);
+        }
+        return n;
+    },
+    donation_count: (value) => {
+        const n = Math.floor(Number(value));
+        if (!Number.isFinite(n) || n < 0) {
+            throw httpError("donation_count muss >= 0 sein.", 400);
+        }
+        return n;
+    },
+    avatar_url: (value) => {
+        const s = String(value ?? "").trim();
+        if (!s) return null;
+        if (!/^https?:\/\/[^\s<>"']+$/i.test(s)) {
+            throw httpError("avatar_url: nur http(s)-URLs erlaubt.", 400);
+        }
+        return s;
+    },
+};
+
+async function updateProfileFields(userId, updates) {
+    if (!updates || typeof updates !== "object" || Array.isArray(updates)) {
+        throw httpError("updates muss ein Objekt sein.", 400);
+    }
+
+    const patch = { updated_at: new Date().toISOString() };
+    for (const [key, raw] of Object.entries(updates)) {
+        if (!Object.prototype.hasOwnProperty.call(PROFILE_EDITABLE_FIELDS, key)) {
+            // Unbekannte Felder still ignorieren (Frontend könnte mehr senden als hier whitelisted)
+            continue;
+        }
+        patch[key] = PROFILE_EDITABLE_FIELDS[key](raw);
+    }
+
+    if (Object.keys(patch).length === 1) {
+        throw httpError("Keine erlaubten Felder im Patch.", 400);
+    }
+
+    await supabase(
+        "profiles",
+        {
+            method: "PATCH",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify(patch),
+        },
+        `?id=eq.${encodeURIComponent(userId)}`
+    );
+
+    // Wenn equipped_badge gesetzt wurde aber der User das Badge gar nicht besitzt,
+    // ihn auto-grant — sonst sieht es im UI komisch aus (Badge equipped aber nicht
+    // in der Badge-Liste). KNOWN_BADGE_IDS oben validiert schon dass der Wert
+    // ein erlaubtes Badge ist.
+    if (patch.equipped_badge) {
+        await awardBadge(userId, patch.equipped_badge);
+    }
+    // Wenn username geändert: cascade auf alle game_saves.display_name, sodass
+    // Leaderboards sofort den neuen Namen zeigen. Der display_name-Trigger
+    // würde das beim nächsten Save sowieso forcen, aber per Admin-Edit wollen
+    // wir es immediat.
+    if (Object.prototype.hasOwnProperty.call(patch, "username")) {
+        await supabase("game_saves", {
+            method: "PATCH",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify({ display_name: patch.username, updated_at: new Date().toISOString() }),
+        }, `?user_id=eq.${encodeURIComponent(userId)}`);
+    }
+    // Wenn vip aktiviert via diesen Editor → auch das Badge konsistent halten
+    // (analog zu setVipStatus). Wenn vip auf false → vip-Badge entfernen.
+    if (Object.prototype.hasOwnProperty.call(patch, "vip")) {
+        if (patch.vip) {
+            await awardBadge(userId, "vip");
+        } else {
+            await revokeBadge(userId, "vip");
+        }
     }
 }
 
@@ -409,10 +677,20 @@ export default async (req) => {
     }
 
     try {
-        await requireAdmin(req);
+        const adminUser = await requireAdmin(req);
 
         if (req.method === "GET") {
-            return json({ users: await listUsers() });
+            // listCheatFlags ist optional — wenn PostgREST das neue Schema noch
+            // nicht kennt oder etwas schiefläuft, soll wenigstens die User-Liste
+            // funktionieren (Adminpanel sonst komplett tot).
+            const [users, cheatFlags] = await Promise.all([
+                listUsers(),
+                listCheatFlags().catch((error) => {
+                    console.error("Cheat-Flags konnten nicht geladen werden:", error.message);
+                    return [];
+                }),
+            ]);
+            return json({ users, cheatFlags });
         }
 
         if (req.method !== "POST") {
@@ -427,6 +705,19 @@ export default async (req) => {
 
         if (body.action === "trigger-cross-game-event") {
             await triggerCrossGameEvent(body.eventType, body.payload);
+            return json({ ok: true });
+        }
+
+        if (body.action === "resolve-cheat-flag") {
+            await resolveCheatFlag(body.flagId, body.resolution, adminUser?.id || null);
+            return json({ ok: true });
+        }
+
+        if (body.action === "resolve-user-flags") {
+            if (!body.userId) {
+                return json({ error: "User fehlt." }, 400);
+            }
+            await resolveAllUserFlags(body.userId, body.resolution, adminUser?.id || null);
             return json({ ok: true });
         }
 
@@ -450,6 +741,10 @@ export default async (req) => {
             await revokeBadge(body.userId, body.badgeId);
         } else if (body.action === "set-vip") {
             await setVipStatus(body.userId, body.vip);
+        } else if (body.action === "update-profile") {
+            await updateProfileFields(body.userId, body.updates);
+        } else if (body.action === "restore-save") {
+            await restoreSave(body.historyId);
         } else {
             return json({ error: "Aktion unbekannt." }, 400);
         }

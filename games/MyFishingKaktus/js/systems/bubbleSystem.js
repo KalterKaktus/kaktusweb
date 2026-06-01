@@ -124,18 +124,24 @@ export class BubbleSystem {
 
         const state = this.options.getState();
         const sonarLevel = Math.max(0, Number(state.upgrades.sonar) || 0);
-        // Jedes Köder-Level erlaubt einen weiteren Spot gleichzeitig (1 → 6 bei Maxlevel).
-        const maxSpots = 1 + sonarLevel;
-        // Lifetime: L0 = 4 s, +1.6 s pro Level → 4, 5.6, 7.2, 8.8, 10.4, 12 s. Cap bei 12 s.
-        const lifetimeSec = Math.min(12, 4 + sonarLevel * 1.6);
-        // Wartezeit zwischen Verschwinden und Erscheinen — L0 = 10 s („entspannt").
-        // Pro Level kürzer, L5 = ~0.4 s (fast nahtlos).
-        const waitSec = Math.max(0.4, 10 - sonarLevel * 1.92);
-        // Gesamtzyklus = Wartezeit + Lebenszeit (so wartet man am Anfang IMMER 10 s
-        // zwischen Spots, unabhängig davon wie lang der Fisch sichtbar war).
-        const spawnIntervalSec = waitSec + lifetimeSec;
+        // Handpicked-Tuning für klar spürbare Progression pro Level.
+        // spots = parallele Spots, lifetime = wie lange sichtbar, wait = zwischen
+        // Spawns. Wichtig: nextDelay nutzt NUR waitSec (nicht +lifetime), damit
+        // sich Spots tatsächlich überlappen und der maxSpots-Wert greift.
+        const SONAR_TUNING = [
+            { spots: 1, lifetime: 5,  wait: 6 },    // L0
+            { spots: 2, lifetime: 7,  wait: 5 },    // L1
+            { spots: 3, lifetime: 9,  wait: 4 },    // L2
+            { spots: 4, lifetime: 11, wait: 3 },    // L3
+            { spots: 5, lifetime: 13, wait: 2 },    // L4
+            { spots: 6, lifetime: 15, wait: 1 },    // L5
+        ];
+        const tuning = SONAR_TUNING[Math.min(SONAR_TUNING.length - 1, sonarLevel)];
+        const maxSpots = tuning.spots;
+        const lifetimeSec = tuning.lifetime;
+        const waitSec = tuning.wait;
         const spawnMultiplier = Math.max(0.1, Number(this.options.getSpawnMultiplier?.()) || 1);
-        const nextDelay = (spawnIntervalSec * 1000) / spawnMultiplier;
+        const nextDelay = (waitSec * 1000) / spawnMultiplier;
 
         if (!this.options.canSpawn() || this.root.querySelectorAll(".fish-spot").length >= maxSpots) {
             // Wenn nicht gespawnt werden kann (UI offen / Cap erreicht), entspannt
