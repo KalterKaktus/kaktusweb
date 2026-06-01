@@ -65,6 +65,7 @@ function toTopEntries(rows) {
         .sort((left, right) => Number(right.total_earned) - Number(left.total_earned))
         .slice(0, 3)
         .map((row) => ({
+            user_id: row.user_id || null,
             name: row.display_name || "Spieler",
             score: Number(row.total_earned) || 0,
             updatedAt: row.updated_at || null,
@@ -131,7 +132,7 @@ export async function ensureCurrentKaktusSeason() {
     const rows = await supabase(
         "game_saves",
         {},
-        `?select=season_id,display_name,total_earned,updated_at&game_id=eq.${GAME_ID}`
+        `?select=user_id,season_id,display_name,total_earned,updated_at&game_id=eq.${GAME_ID}`
     );
     const staleRows = (rows || []).filter((row) => row.season_id !== currentSeasonId);
     const staleBySeason = new Map();
