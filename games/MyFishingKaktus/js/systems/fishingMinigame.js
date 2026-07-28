@@ -1,4 +1,5 @@
 import { RARITIES } from "../data/rarities.js";
+import { t } from "/js/i18n.js";
 
 function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
@@ -171,7 +172,9 @@ export class FishingMinigame {
         };
 
         this.root.hidden = false;
-        this.rarityLabel.textContent = candidate.fish.rarity;
+        const rarityKey = `fishing.rarity_${String(candidate.fish.rarity || "").toLowerCase()}`;
+        const rarityLabel = t(rarityKey);
+        this.rarityLabel.textContent = rarityLabel === rarityKey ? candidate.fish.rarity : rarityLabel;
         this.rarityLabel.style.setProperty("--rarity", rarity.color);
         this.root.style.setProperty("--rarity", rarity.color);
         this.progress.style.width = "0%";
