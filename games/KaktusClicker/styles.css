@@ -1569,3 +1569,22 @@ h3 {
   white-space: nowrap;
   border: 0;
 }
+
+@media (pointer: coarse) {
+  body::before {
+    mix-blend-mode: normal;
+    opacity: 0.45;
+  }
+
+  .cactus-art {
+    text-shadow:
+      0 0 5px rgba(184, 255, 200, 0.65),
+      0 0 14px rgba(55, 255, 117, 0.35);
+  }
+
+  .cactus-button:hover,
+  .cactus-button:active,
+  .cactus-button.is-frenzy {
+    filter: none;
+  }
+}
