@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="KalterKaktus">
-    <title>Anmelden - KalterKaktus</title>
+    <title data-i18n="auth.page_title">Anmelden - KalterKaktus</title>
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
@@ -20,12 +20,12 @@
         <div class="nav-container">
             <a class="logo" href="/">KK</a>
             <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/steam-deals/" class="nav-link">Steam Deals</a>
-                <a href="/games/" class="nav-link">Games</a>
-                <a href="/wiki/" class="nav-link">Wiki</a>
+                <a href="/" class="nav-link" data-i18n="nav.home">Home</a>
+                <a href="/steam-deals/" class="nav-link" data-i18n="nav.steam_deals">Steam Deals</a>
+                <a href="/games/" class="nav-link" data-i18n="nav.games">Games</a>
+                <a href="/wiki/" class="nav-link" data-i18n="nav.wiki">Wiki</a>
                 <div id="auth-nav" class="auth-nav" aria-live="polite">
-                    <a class="nav-link auth-link" href="/login.html">Login</a>
+                    <a class="nav-link auth-link" href="/login.html" data-i18n="nav.login">Login</a>
                 </div>
             </div>
         </div>
@@ -38,8 +38,8 @@
         <div class="page-container auth-page">
             <header class="page-header">
                 <div>
-                    <div class="page-kicker">KalterKaktus Account</div>
-                    <h1 class="page-title">Anmelden</h1>
+                    <div class="page-kicker" data-i18n="auth.account_kicker">KalterKaktus Account</div>
+                    <h1 class="page-title" data-i18n="auth.login_title">Anmelden</h1>
                     <p class="page-subtitle">
 
                     </p>
@@ -48,30 +48,30 @@
 
             <section class="auth-card" aria-labelledby="oauth-title">
                 <div class="auth-oauth-buttons">
-                    <button class="auth-oauth-btn is-google" id="oauth-google" type="button">
+                    <button class="auth-oauth-btn is-google" id="oauth-google" type="button" data-i18n="auth.google_login">
                         Mit Google anmelden
                     </button>
                 </div>
 
                 <div class="auth-divider" aria-hidden="true">
-                    <span>oder</span>
+                    <span data-i18n="auth.or">oder</span>
                 </div>
 
                 <form id="auth-email-form" class="auth-email-form" autocomplete="on" method="post" action="#">
                     <label class="auth-field">
-                        <span>E-Mail</span>
+                        <span data-i18n="auth.email">E-Mail</span>
                         <input type="email" id="auth-email" name="email" autocomplete="email" required>
                     </label>
                     <label class="auth-field">
-                        <span>Passwort</span>
+                        <span data-i18n="auth.password">Passwort</span>
                         <input type="password" id="auth-password" name="password" autocomplete="current-password" required minlength="6">
                     </label>
                     <div class="auth-form-actions">
-                        <button class="auth-btn" type="submit" id="auth-email-signin">Anmelden</button>
-                        <button class="auth-btn is-ghost" type="button" id="auth-email-signup">Account erstellen</button>
+                        <button class="auth-btn" type="submit" id="auth-email-signin" data-i18n="auth.submit_login">Anmelden</button>
+                        <button class="auth-btn is-ghost" type="button" id="auth-email-signup" data-i18n="auth.submit_signup">Account erstellen</button>
                     </div>
                     <div class="auth-forgot-row">
-                        <button class="auth-link-button" type="button" id="auth-forgot-password">Passwort vergessen?</button>
+                        <button class="auth-link-button" type="button" id="auth-forgot-password" data-i18n="auth.forgot_password">Passwort vergessen?</button>
                     </div>
                 </form>
 
@@ -84,9 +84,9 @@
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-links">
-                <a href="/impressum.html">Impressum</a>
-                <a href="/datenschutz.html">Datenschutz</a>
-                <a href="/nutzungsbedingungen.html">Nutzungsbedingungen</a>
+                <a href="/impressum.html" data-i18n="footer.impressum">Impressum</a>
+                <a href="/datenschutz.html" data-i18n="footer.datenschutz">Datenschutz</a>
+                <a href="/nutzungsbedingungen.html" data-i18n="footer.terms">Nutzungsbedingungen</a>
             </div>
         </div>
     </footer>

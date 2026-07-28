@@ -8,8 +8,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="KalterKaktus">
-    <title>KalterKaktus - Games und Steam Deals</title>
-    <meta name="description" content="KalterKaktus bietet Browser-Games, Steam Deals und Accounts für Cloud-Spielstände und Ranglisten.">
+    <title data-i18n="home.meta_title">KalterKaktus - Games und Steam Deals</title>
+    <meta name="description" data-i18n-attr="content:home.meta_description" content="KalterKaktus bietet Browser-Games, Steam Deals und Accounts für Cloud-Spielstände und Ranglisten.">
 
     <!-- Favicon -->
     <link rel="manifest" href="/manifest.webmanifest">
@@ -26,12 +26,12 @@
     <div class="nav-container">
         <a class="logo" href="index.html">KK</a>
         <div class="nav-links">
-            <a href="/" class="nav-link">Home</a>
-            <a href="/steam-deals/" class="nav-link">Steam Deals</a>
-            <a href="games/" class="nav-link">Games</a>
-            <a href="/wiki/" class="nav-link">Wiki</a>
+            <a href="/" class="nav-link" data-i18n="nav.home">Home</a>
+            <a href="/steam-deals/" class="nav-link" data-i18n="nav.steam_deals">Steam Deals</a>
+            <a href="games/" class="nav-link" data-i18n="nav.games">Games</a>
+            <a href="/wiki/" class="nav-link" data-i18n="nav.wiki">Wiki</a>
             <div id="auth-nav" class="auth-nav" aria-live="polite">
-                <a class="nav-link auth-link" href="/login.html">Login</a>
+                <a class="nav-link auth-link" href="/login.html" data-i18n="nav.login">Login</a>
             </div>
         </div>
     </div>
@@ -44,14 +44,14 @@
     <section id="home" class="hero">
         <div class="hero-content">
             <div class="hero-copy">
-                <p class="hero-kicker">Stream // Games // Deals</p>
+                <p class="hero-kicker" data-i18n="home.hero_kicker">Stream // Games // Deals</p>
                 <h1 class="hero-title">
                     <span class="title-line">KalterKaktus</span>
                 </h1>
                 <div class="hero-actions">
-                    <a class="primary-link" href="/steam-deals/">Steam Deals ansehen</a>
+                    <a class="primary-link" href="/steam-deals/" data-i18n="home.hero_cta_steam">Steam Deals ansehen</a>
                 </div>
-                <p class="hero-purpose">
+                <p class="hero-purpose" data-i18n="home.hero_purpose">
                     KalterKaktus ist der Hub für Games, Steam Deals, Streams und neue Projekte rund um KalterKaktus.
                 </p>
             </div>
@@ -68,24 +68,24 @@
             <span>♛</span>
         </span>
         <span class="home-leaderboard-copy">
-            <span class="page-kicker">KaktusClicker Rangliste</span>
-            <strong id="home-leaderboard-title">Top Player of the Month</strong>
+            <span class="page-kicker" data-i18n="home.clicker_board_kicker">KaktusClicker Rangliste</span>
+            <strong id="home-leaderboard-title" data-i18n="home.clicker_board_title">Top Player of the Month</strong>
             <span class="home-leaderboard-grid" aria-live="polite">
                 <span>
-                    <small>Dieser Monat</small>
+                    <small data-i18n="home.clicker_this_month">Dieser Monat</small>
                     <ol class="home-leaderboard-players" id="home-monthly-players">
-                        <li>Wird geladen...</li>
+                        <li data-i18n="home.loading">Wird geladen...</li>
                     </ol>
                 </span>
                 <span>
-                    <small>Letzter Monat</small>
+                    <small data-i18n="home.clicker_last_month">Letzter Monat</small>
                     <ol class="home-leaderboard-players" id="home-last-month-players">
-                        <li>Wird geladen...</li>
+                        <li data-i18n="home.loading">Wird geladen...</li>
                     </ol>
                 </span>
             </span>
         </span>
-        <span class="home-leaderboard-cta">Zum Grind</span>
+        <span class="home-leaderboard-cta" data-i18n="home.clicker_cta">Zum Grind</span>
     </a>
 </section>
 
@@ -95,15 +95,15 @@
             <span class="fishing-wave-mark">≈</span>
         </span>
         <span class="home-leaderboard-copy">
-            <span class="page-kicker">My Fishing Kaktus Rangliste</span>
-            <strong id="home-fishing-leaderboard-title">Top 3 Angler</strong>
+            <span class="page-kicker" data-i18n="home.fishing_board_kicker">My Fishing Kaktus Rangliste</span>
+            <strong id="home-fishing-leaderboard-title" data-i18n="home.fishing_board_title">Top 3 Angler</strong>
             <span class="home-fishing-board" aria-live="polite">
                 <ol class="home-leaderboard-players" id="home-fishing-players">
-                    <li>Wird geladen...</li>
+                    <li data-i18n="home.loading">Wird geladen...</li>
                 </ol>
             </span>
         </span>
-        <span class="home-leaderboard-cta">Angeln gehen</span>
+        <span class="home-leaderboard-cta" data-i18n="home.fishing_cta">Angeln gehen</span>
     </a>
 </section>
 
@@ -111,27 +111,27 @@
     <a class="home-leaderboard-card is-xp" href="/profile/">
         <span class="home-leaderboard-badge is-xp" aria-hidden="true">★</span>
         <span class="home-leaderboard-copy">
-            <span class="page-kicker">Level Rangliste</span>
-            <strong id="home-xp-leaderboard-title">Top 3 Accounts</strong>
+            <span class="page-kicker" data-i18n="home.xp_board_kicker">Level Rangliste</span>
+            <strong id="home-xp-leaderboard-title" data-i18n="home.xp_board_title">Top 3 Accounts</strong>
             <span class="home-xp-board" aria-live="polite">
                 <ol class="home-leaderboard-players" id="home-xp-players">
-                    <li>Wird geladen...</li>
+                    <li data-i18n="home.loading">Wird geladen...</li>
                 </ol>
             </span>
         </span>
-        <span class="home-leaderboard-cta">Zum Profil</span>
+        <span class="home-leaderboard-cta" data-i18n="home.xp_cta">Zum Profil</span>
     </a>
 </section>
 
 <section class="app-purpose" aria-labelledby="app-purpose-title">
     <div class="app-purpose-inner">
-        <p class="page-kicker">KalterKaktus</p>
-        <h2 id="app-purpose-title">Games, Deals und KalterKaktus</h2>
-        <p>
+        <p class="page-kicker" data-i18n="home.purpose_kicker">KalterKaktus</p>
+        <h2 id="app-purpose-title" data-i18n="home.purpose_title">Games, Deals und KalterKaktus</h2>
+        <p data-i18n="home.purpose_p1">
             Auf KalterKaktus findest du Browser-Games, ausgewählte Steam Deals und alles, was den Hub
             nach und nach größer macht.
         </p>
-        <p>
+        <p data-i18n="home.purpose_p2">
             Mit einem Account nimmst du deine Fortschritte mit, tauchst in Ranglisten auf und bist bereit
             für kommende Games und Features.
         </p>
@@ -139,8 +139,8 @@
 </section>
 
 <section class="discord-card">
-  <div class="discord-title">Discord Status</div>
-  <div id="discord-status">Lädt...</div>
+  <div class="discord-title" data-i18n="home.discord_title">Discord Status</div>
+  <div id="discord-status" data-i18n="home.discord_loading">Lädt...</div>
   <div id="discord-activity"></div>
 </section>
 
@@ -148,28 +148,28 @@
 <section id="about" class="about">
     <div class="about-container">
         <div class="about-content">
-            <h2 class="section-title">Online seit 2026</h2>
+            <h2 class="section-title" data-i18n="home.online_since">Online seit 2026</h2>
 
             <!-- Live Timer -->
 <div class="live-timer">
     <div class="timer-block">
         <div class="timer-number" id="days">00</div>
-        <div class="timer-label">Tage</div>
+        <div class="timer-label" data-i18n="home.timer_days">Tage</div>
     </div>
     <div class="timer-separator">:</div>
     <div class="timer-block">
         <div class="timer-number" id="hours">00</div>
-        <div class="timer-label">Stunden</div>
+        <div class="timer-label" data-i18n="home.timer_hours">Stunden</div>
     </div>
     <div class="timer-separator">:</div>
     <div class="timer-block">
         <div class="timer-number" id="minutes">00</div>
-        <div class="timer-label">Minuten</div>
+        <div class="timer-label" data-i18n="home.timer_minutes">Minuten</div>
     </div>
     <div class="timer-separator">:</div>
     <div class="timer-block">
         <div class="timer-number" id="seconds">00</div>
-        <div class="timer-label">Sekunden</div>
+        <div class="timer-label" data-i18n="home.timer_seconds">Sekunden</div>
     </div>
 </div>
 
@@ -210,11 +210,11 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
-            <p>&copy; 2026 KalterKaktus. Work in Progress.</p>
+            <p data-i18n="footer.copyright">&copy; 2026 KalterKaktus. Work in Progress.</p>
             <div class="footer-links">
-                <a href="/impressum.html">Impressum</a>
-                <a href="/datenschutz.html">Datenschutz</a>
-                <a href="/nutzungsbedingungen.html">Nutzungsbedingungen</a>
+                <a href="/impressum.html" data-i18n="footer.impressum">Impressum</a>
+                <a href="/datenschutz.html" data-i18n="footer.datenschutz">Datenschutz</a>
+                <a href="/nutzungsbedingungen.html" data-i18n="footer.terms">Nutzungsbedingungen</a>
             </div>
         </div>
     </footer>
