@@ -669,7 +669,7 @@ export class WaterSystem {
     this._staticDone = false;
 
     const isMobile = window.matchMedia("(pointer: coarse)").matches;
-    const targetFps = isMobile ? 10 : 30;
+    const targetFps = isMobile ? 45 : 60;
     const frameInterval = 1000 / targetFps;
 
     if (!this._lastRenderedFrame) {
