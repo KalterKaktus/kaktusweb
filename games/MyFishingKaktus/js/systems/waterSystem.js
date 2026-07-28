@@ -647,43 +647,76 @@ export class WaterSystem {
        ============================================================ */
 
     _frame(now) {
-        if (this._stopped) return;
-        this._raf = requestAnimationFrame(this._frame);
+    if (this._stopped) return;
 
-        // Performance: skip rendering wenn Tab nicht sichtbar oder das Wasser komplett
-        // von einer UI verdeckt ist. Spart auf iPad/Safari massiv GPU.
-        if (document.hidden) return;
-        // Eine einzige querySelector-Abfrage pro Frame (~0.01 ms) für alle voll-deckenden
-        // Overlays: Shop/Inventory/Index/etc., Karl-Flow, Daily-Reward, Fang-Minispiel.
-        // WICHTIG: area-transition fehlt bewusst — das Wasser MUSS während Cloud-Sweep
-        // weiterrendern damit die neuen Area-Farben hinter den Wolken sichtbar werden.
-        if (document.querySelector(WaterSystem.COVERING_SELECTOR)) return;
+    this._raf = requestAnimationFrame(this._frame);
 
-        if (isMotionReduced()) {
-            if (!this._staticDone) {
-                this._draw(0, 0, 0);
-                this._staticDone = true;
-            }
-            return;
-        }
-        this._staticDone = false;
+    if (document.hidden) return;
 
-        const t = (now - this._t0) / 1000 * this.knobs.waterSpeed;
-        const dt = Math.max(0.001, (now - this._lastFrame) / 1000);
-        this._lastFrame = now;
-
-        // Geschwindigkeit aus rohem Delta lesen, dann dämpfen
-        const vx = this.mvx / dt;
-        const vy = this.mvy / dt;
-        const decay = Math.pow(0.001, dt);
-        this.mvx *= decay;
-        this.mvy *= decay;
-
-        if (this.holding) this.hold = Math.min(1, this.hold + dt * 1.2);
-        else this.hold = Math.max(0, this.hold - dt * 1.5);
-
-        this._draw(t, vx, vy);
+    if (document.querySelector(WaterSystem.COVERING_SELECTOR)) {
+        return;
     }
+
+    if (isMotionReduced()) {
+        if (!this._staticDone) {
+            this._draw(0, 0, 0);
+            this._staticDone = true;
+        }
+
+        return;
+    }
+
+    this._staticDone = false;
+
+    const isMobile = window.matchMedia("(pointer: coarse)").matches;
+    const targetFps = isMobile ? 10 : 30;
+    const frameInterval = 1000 / targetFps;
+
+    if (!this._lastRenderedFrame) {
+        this._lastRenderedFrame = now;
+    }
+
+    const elapsed = now - this._lastRenderedFrame;
+
+    if (elapsed < frameInterval) {
+        return;
+    }
+
+    this._lastRenderedFrame =
+        now - (elapsed % frameInterval);
+
+    const t =
+        ((now - this._t0) / 1000) *
+        this.knobs.waterSpeed;
+
+    const dt = Math.max(
+        0.001,
+        (now - this._lastFrame) / 1000
+    );
+
+    this._lastFrame = now;
+
+    const vx = this.mvx / dt;
+    const vy = this.mvy / dt;
+    const decay = Math.pow(0.001, dt);
+
+    this.mvx *= decay;
+    this.mvy *= decay;
+
+    if (this.holding) {
+        this.hold = Math.min(
+            1,
+            this.hold + dt * 1.2
+        );
+    } else {
+        this.hold = Math.max(
+            0,
+            this.hold - dt * 1.5
+        );
+    }
+
+    this._draw(t, vx, vy);
+}
 
     _draw(t, vx, vy) {
         const gl = this.gl;
