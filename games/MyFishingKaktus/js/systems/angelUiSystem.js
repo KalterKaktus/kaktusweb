@@ -14,18 +14,30 @@
 import { UPGRADES } from "../data/upgrades.js";
 import { getUpgradeCost, getUpgradeLevel } from "./upgradeSystem.js";
 import { composeRodSvg } from "./angel/composer.js";
+import { t } from "/js/i18n.js";
 
 // Reihenfolge im Selector — passt zur Anglerlogik (vorne nach hinten).
 const PART_ORDER = ["rod", "line", "hook", "bait", "luck"];
 
-// Anzeige-Labels pro Part.
-const PART_LABELS = {
-    rod: "Rute",
-    line: "Schnur",
-    hook: "Haken",
-    bait: "Köder",
-    luck: "Glück",
-};
+// Anzeige-Labels pro Part — via i18n, mit deutschem Fallback.
+function partLabel(part) {
+    const key = `fishing.parts.${part}`;
+    const value = t(key);
+    if (value !== key) return value;
+    return { rod: "Rute", line: "Schnur", hook: "Haken", bait: "Köder", luck: "Glück" }[part] || part;
+}
+
+function upgradeName(upgrade) {
+    const key = `fishing.upgrades.${upgrade.id}.name`;
+    const value = t(key);
+    return value === key ? upgrade.name : value;
+}
+
+function upgradeCopy(upgrade) {
+    const key = `fishing.upgrades.${upgrade.id}.copy`;
+    const value = t(key);
+    return value === key ? upgrade.copy : value;
+}
 
 // Welcher Upgrade-Key hinter welchem Part steckt (Köder = "sonar" intern).
 const PART_TO_UPGRADE = {
@@ -95,8 +107,8 @@ export class AngelUiSystem {
                         data-angel-part="${part}"
                         role="tab"
                         aria-selected="${isActive}">
-                    <span class="angel-part-tab-name">${PART_LABELS[part]}</span>
-                    <span class="angel-part-tab-level">Lvl ${lvl}/${max}</span>
+                    <span class="angel-part-tab-name">${partLabel(part)}</span>
+                    <span class="angel-part-tab-level">${t("fishing.level_short")} ${lvl}/${max}</span>
                 </button>
             `;
         }).join("");
@@ -120,23 +132,23 @@ export class AngelUiSystem {
         const formattedCost = formatCoins ? formatCoins(cost) : cost;
 
         const buttonHtml = isMaxed
-            ? `<button class="angel-buy is-maxed" type="button" disabled>Maximal-Level erreicht</button>`
+            ? `<button class="angel-buy is-maxed" type="button" disabled>${t("fishing.max_level_reached")}</button>`
             : `<button class="angel-buy ${canAfford ? "is-available" : "is-locked"}" type="button" data-angel-buy="${upgradeId}" ${canAfford ? "" : "disabled"}>
-                   ${canAfford ? `Upgraden – ${formattedCost} Coins` : `${formattedCost} Coins nötig`}
+                   ${canAfford ? t("fishing.upgrade_button", { cost: formattedCost }) : t("fishing.upgrade_button_locked", { cost: formattedCost })}
                </button>`;
 
         this.detail.innerHTML = `
             <header class="angel-detail-head">
                 <div>
-                    <p class="angel-detail-kicker">${PART_LABELS[partKey]}</p>
-                    <strong class="angel-detail-name">${upgrade.name}</strong>
+                    <p class="angel-detail-kicker">${partLabel(partKey)}</p>
+                    <strong class="angel-detail-name">${upgradeName(upgrade)}</strong>
                 </div>
-                <div class="angel-level-line" aria-label="Level ${lvl} von ${max}">${levelDots}</div>
+                <div class="angel-level-line" aria-label="${t("fishing.level_of", { lvl, max })}">${levelDots}</div>
             </header>
-            <p class="angel-detail-copy">${upgrade.copy}</p>
+            <p class="angel-detail-copy">${upgradeCopy(upgrade)}</p>
             ${buttonHtml}
         `;
     }
 }
 
-export { PART_ORDER, PART_LABELS, PART_TO_UPGRADE };
+export { PART_ORDER, partLabel, PART_TO_UPGRADE };

@@ -353,7 +353,26 @@
         "prestige_needed_lbl": "Noch nötig:",
         "prestige_need_coins": "{coins} Coins zur Hand haben",
         "prestige_need_upgrades": "alle Upgrades voll ausgebaut",
-        "new_run": "Neuer Pond-Run gestartet."
+        "new_run": "Neuer Pond-Run gestartet.",
+        "parts": {
+            "rod": "Rute",
+            "line": "Schnur",
+            "hook": "Haken",
+            "bait": "Köder",
+            "luck": "Glück"
+        },
+        "upgrades": {
+            "rod": {"name": "Rute", "copy": "Breitere Fangzone — leichter zu treffen."},
+            "line": {"name": "Schnur", "copy": "Reisst langsamer wenn der Fisch ausserhalb der Zone ist."},
+            "hook": {"name": "Haken", "copy": "Fang-Balken füllt sich schneller und die Schnur erholt sich besser."},
+            "luck": {"name": "Glück", "copy": "Höhere Chance auf seltene Fische."},
+            "sonar": {"name": "Köder", "copy": "Mehr Fischstellen gleichzeitig, sie bleiben länger und tauchen öfter auf."}
+        },
+        "level_short": "Lvl",
+        "level_of": "Level {lvl} von {max}",
+        "max_level_reached": "Maximal-Level erreicht",
+        "upgrade_button": "Upgraden – {cost} Coins",
+        "upgrade_button_locked": "{cost} Coins nötig"
     },
     "auth": {
         "page_title": "Anmelden - KalterKaktus",
