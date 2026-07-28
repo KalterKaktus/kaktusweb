@@ -72,22 +72,38 @@ function notify() {
 // data-i18n="key" → textContent = t(key)
 // data-i18n-attr="attr:key,attr2:key2" → element.setAttribute(attr, t(key))
 // data-i18n-html="key" → innerHTML = t(key) (VORSICHT: nur für vertrauenswürdige Übersetzungen)
+//
+// Für data-i18n-html snapshotten wir das Original-HTML beim ersten Apply damit
+// beim Zurück-Switchen auf die Fallback-Sprache (die den Key nicht kennt) das
+// Original wiederhergestellt wird, statt die andere Sprache stehen zu lassen.
+const originalHtmlCache = new WeakMap();
+
 export function applyTranslations(root = document) {
     root.querySelectorAll("[data-i18n]").forEach((el) => {
         const key = el.getAttribute("data-i18n");
         if (!key) return;
+        if (!originalHtmlCache.has(el)) {
+            originalHtmlCache.set(el, el.textContent);
+        }
         const value = lookup(key, state.lang);
         if (typeof value === "string") {
             el.textContent = value;
+        } else {
+            el.textContent = originalHtmlCache.get(el);
         }
     });
 
     root.querySelectorAll("[data-i18n-html]").forEach((el) => {
         const key = el.getAttribute("data-i18n-html");
         if (!key) return;
+        if (!originalHtmlCache.has(el)) {
+            originalHtmlCache.set(el, el.innerHTML);
+        }
         const value = lookup(key, state.lang);
         if (typeof value === "string") {
             el.innerHTML = value;
+        } else {
+            el.innerHTML = originalHtmlCache.get(el);
         }
     });
 

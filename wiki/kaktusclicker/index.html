@@ -28,44 +28,43 @@
     </nav>
 
     <main class="wiki-shell">
-        <aside class="wiki-rail" aria-label="Wiki Inhalte">
+        <aside class="wiki-rail" data-i18n-attr="aria-label:wiki.contents_label" aria-label="Wiki Inhalte">
             <section class="rail-block">
-                <p class="rail-label">Games</p>
+                <p class="rail-label" data-i18n="nav.games">Games</p>
                 <a class="rail-link is-active" href="./">KaktusClicker</a>
                 <a class="rail-link" href="../myfishingkaktus/">My Fishing Kaktus</a>
             </section>
 
             <section class="rail-block toc">
-                <p class="rail-label">Inhalt</p>
-                <a href="#overview">Übersicht</a>
-                <a href="#click">Klick-Mechanik</a>
-                <a href="#buildings">Gebäude</a>
-                <a href="#upgrades">Upgrades</a>
-                <a href="#multipliers">Multiplikator-Stack</a>
-                <a href="#achievements">Abzeichen</a>
-                <a href="#frenzy">Goldlauf</a>
-                <a href="#events">Random Events</a>
-                <a href="#offline">Offline-Ertrag</a>
-                <a href="#prestige">Prestige · Nopal</a>
-                <a href="#season">Saison</a>
-                <a href="#save">Save-Format</a>
-                <a href="#tools">Tools</a>
+                <p class="rail-label" data-i18n="wiki.toc">Inhalt</p>
+                <a href="#overview" data-i18n="wiki.clicker.toc_overview">Übersicht</a>
+                <a href="#click" data-i18n="wiki.clicker.toc_click">Klick-Mechanik</a>
+                <a href="#buildings" data-i18n="wiki.clicker.toc_buildings">Gebäude</a>
+                <a href="#upgrades" data-i18n="wiki.clicker.toc_upgrades">Upgrades</a>
+                <a href="#multipliers" data-i18n="wiki.clicker.toc_multipliers">Multiplikator-Stack</a>
+                <a href="#achievements" data-i18n="wiki.clicker.toc_achievements">Abzeichen</a>
+                <a href="#frenzy" data-i18n="wiki.clicker.toc_frenzy">Goldlauf</a>
+                <a href="#events" data-i18n="wiki.clicker.toc_events">Random Events</a>
+                <a href="#offline" data-i18n="wiki.clicker.toc_offline">Offline-Ertrag</a>
+                <a href="#prestige" data-i18n="wiki.clicker.toc_prestige">Prestige · Nopal</a>
+                <a href="#season" data-i18n="wiki.clicker.toc_season">Saison</a>
+                <a href="#save" data-i18n="wiki.clicker.toc_save">Save-Format</a>
+                <a href="#tools" data-i18n="wiki.clicker.toc_tools">Tools</a>
             </section>
         </aside>
 
         <article class="wiki-guide" data-wiki-searchable>
-            <p class="wiki-lang-note" data-i18n="wiki.detail_page_note" style="opacity:.7;font-size:.85rem;padding:.7rem 1rem;border-left:3px solid var(--accent-light,#69f0ae);background:rgba(105,240,174,.06);margin-bottom:1.2rem;">Detaillierte Guide-Inhalte sind aktuell nur auf Deutsch verfügbar.</p>
             <header class="guide-head" id="overview">
-                <p class="guide-path">Technische Referenz</p>
+                <p class="guide-path" data-i18n="wiki.tech_ref">Technische Referenz</p>
                 <h1>KaktusClicker</h1>
-                <p class="guide-lead">
+                <p class="guide-lead" data-i18n="wiki.clicker.lead">
                     Mechanik-Doku für alle Systeme im Spiel: Gebäude-Werte, Upgrade-Effekte,
                     Multiplikator-Formeln, Prestige-Mathematik und Saison-Logik.
                     Kein Spielratgeber — nur Fakten und Formeln.
                 </p>
                 <div class="guide-meta">
                     <span>Stand: 25.05.2026</span>
-                    <span>Saison-Balance V2</span>
+                    <span data-i18n="wiki.clicker.balance_ver">Saison-Balance V2</span>
                 </div>
             </header>
 
@@ -75,7 +74,7 @@
                 <span class="wiki-search-info" data-wiki-search-info></span>
             </div>
 
-            <section data-searchable>
+            <section data-searchable data-i18n-html="wiki.clicker.overview">
                 <h2>Übersicht</h2>
                 <p>
                     KaktusClicker ist ein saisonaler Idle-Clicker. Manuelle Klicks und automatische
@@ -91,7 +90,7 @@
                 </ul>
             </section>
 
-            <section data-searchable id="click">
+            <section data-searchable id="click" data-i18n-html="wiki.clicker.click">
                 <h2>Klick-Mechanik</h2>
                 <p>Jeder manuelle Klick produziert Kakteen nach dieser Formel:</p>
                 <pre><code>clickYield = clickMultiplier × coreMultiplier</code></pre>
@@ -110,7 +109,7 @@
                 </p>
             </section>
 
-            <section data-searchable id="buildings">
+            <section data-searchable id="buildings" data-i18n-html="wiki.clicker.buildings">
                 <h2>Gebäude</h2>
                 <p>Jedes Gebäude erzeugt automatisch Kakteen pro Sekunde (CPS).</p>
                 <pre><code>kaufPreis = ceil(baseCost × 1.15^owned)</code></pre>
@@ -167,7 +166,7 @@
                 </p>
             </section>
 
-            <section data-searchable id="upgrades">
+            <section data-searchable id="upgrades" data-i18n-html="wiki.clicker.upgrades">
                 <h2>Upgrades</h2>
                 <h3>Klick-Upgrades</h3>
                 <div class="table-wrap">
@@ -198,7 +197,7 @@
                 </p>
             </section>
 
-            <section data-searchable id="multipliers">
+            <section data-searchable id="multipliers" data-i18n-html="wiki.clicker.multipliers">
                 <h2>Multiplikator-Stack</h2>
                 <p>Die effektive Produktion und der Klick-Yield berechnen sich so:</p>
                 <pre><code>coreMultiplier = prestigeMultiplier × achievementMultiplier × eventMultiplier
@@ -214,7 +213,7 @@ klickYield = clickMultiplier × coreMultiplier</code></pre>
                 </p>
             </section>
 
-            <section data-searchable id="achievements">
+            <section data-searchable id="achievements" data-i18n-html="wiki.clicker.achievements">
                 <h2>Abzeichen</h2>
                 <p>
                     Jedes freigeschaltete Abzeichen erhöht den <code>achievementMultiplier</code> um
@@ -252,7 +251,7 @@ klickYield = clickMultiplier × coreMultiplier</code></pre>
                 </div>
             </section>
 
-            <section data-searchable id="frenzy">
+            <section data-searchable id="frenzy" data-i18n-html="wiki.clicker.frenzy">
                 <h2>Goldlauf (Klick-Frenzy)</h2>
                 <p>
                     Goldlauf wird ausgelöst sobald der Klick-Charge-Balken voll ist. Er gilt für
@@ -267,7 +266,7 @@ clickChargeThreshold = 1.000 manuelle Klicks</code></pre>
                 </p>
             </section>
 
-            <section data-searchable id="events">
+            <section data-searchable id="events" data-i18n-html="wiki.clicker.events">
                 <h2>Random Events: Gold-/Rubinkaktus</h2>
                 <p>
                     Während der Spieler aktiv ist (Tab sichtbar) können Goldkakteen oder Rubinkakteen
@@ -292,7 +291,7 @@ clickChargeThreshold = 1.000 manuelle Klicks</code></pre>
                 </p>
             </section>
 
-            <section data-searchable id="offline">
+            <section data-searchable id="offline" data-i18n-html="wiki.clicker.offline">
                 <h2>Offline-Ertrag</h2>
                 <p>
                     Wenn der Spieler den Tab schließt und später zurückkommt, wird ihm ein Teil
@@ -308,7 +307,7 @@ clickChargeThreshold = 1.000 manuelle Klicks</code></pre>
               × 0.5</code></pre>
             </section>
 
-            <section data-searchable id="prestige">
+            <section data-searchable id="prestige" data-i18n-html="wiki.clicker.prestige">
                 <h2>Prestige · Nopal</h2>
                 <p>
                     Prestige startet den aktuellen Run neu, lässt aber Nopal-Punkte als permanente
@@ -373,7 +372,7 @@ neuerNopal = verfügbarerNopalGesamtwert − bereitsErarbeiteterNopal</code></pr
                 </div>
             </section>
 
-            <section data-searchable id="season">
+            <section data-searchable id="season" data-i18n-html="wiki.clicker.season">
                 <h2>Saison</h2>
                 <p>
                     Saisonen laufen monatlich nach <strong>Europe/Berlin</strong>-Zeit. Saison-ID ist
@@ -388,7 +387,7 @@ neuerNopal = verfügbarerNopalGesamtwert − bereitsErarbeiteterNopal</code></pr
                 </ul>
             </section>
 
-            <section data-searchable id="save">
+            <section data-searchable id="save" data-i18n-html="wiki.clicker.save">
                 <h2>Save-Format (game_saves Tabelle)</h2>
                 <p>Im Supabase-Save (game_id = <code>kaktus-clicker</code>) wird gespeichert:</p>
                 <pre><code>{
@@ -415,7 +414,7 @@ neuerNopal = verfügbarerNopalGesamtwert − bereitsErarbeiteterNopal</code></pr
 }</code></pre>
             </section>
 
-            <section data-searchable id="tools">
+            <section data-searchable id="tools" data-i18n-html="wiki.clicker.tools">
                 <h2>Tools</h2>
                 <p>
                     Der <a href="../#optimizer-root">Kauf-Optimizer</a> (am Ende der
