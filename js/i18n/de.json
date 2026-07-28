@@ -54,6 +54,30 @@
         "board_prestige": "Prestige",
         "board_catches": "Fänge"
     },
+    "profile": {
+        "meta_title": "Profil - KalterKaktus",
+        "loading": "Profil wird geladen…"
+    },
+    "wiki": {
+        "meta_title": "KalterKaktus Wiki",
+        "meta_description": "Guides und Infos zu Games und Projekten von KalterKaktus.",
+        "subtitle": "Guides, Spielwissen und Progression-Hilfen für Games aus dem KalterKaktus Hub.",
+        "guides_list": "Wiki Guides",
+        "technical_data": "Technische Daten",
+        "platform": "Plattform",
+        "level_xp": "Level & XP",
+        "clicker_summary": "Gebäude-Werte, Upgrade-Formeln, Prestige-Mathe, Goldlauf, Save-Format.",
+        "fishing_summary": "Areas, Rarity-Wahrscheinlichkeiten, Minispiel-Formeln, Karl, Daily-Rewards.",
+        "level_summary": "Level-Formel, XP-Quellen, Badges, VIP, Referral-System, Cap.",
+        "more_coming": "Weitere Games und Wiki-Seiten kommen später dazu.",
+        "optimizer_kicker": "KaktusClicker · Tool",
+        "optimizer_title": "Kauf-Optimizer",
+        "optimizer_sub": "Berechnet aus deinem Cloud-Save die nächsten <b>10 besten Käufe</b> nach Refinanzierungs-Zeit (ROI). Liest deinen Spielstand nur — <strong>verändert nichts</strong>.",
+        "optimizer_init": "Initialisiere …",
+        "optimizer_reload": "Cloud-Save neu laden",
+        "optimizer_manual": "Manueller Modus",
+        "detail_page_note": "Detaillierte Guide-Inhalte sind aktuell nur auf Deutsch verfügbar."
+    },
     "deals": {
         "meta_title": "Steam Deals - KalterKaktus",
         "kicker": "Steam Angebote",

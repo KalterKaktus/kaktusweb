@@ -54,6 +54,30 @@
         "board_prestige": "Престиж",
         "board_catches": "поимок"
     },
+    "profile": {
+        "meta_title": "Профиль — KalterKaktus",
+        "loading": "Профиль загружается…"
+    },
+    "wiki": {
+        "meta_title": "Вики KalterKaktus",
+        "meta_description": "Гайды и информация об играх и проектах KalterKaktus.",
+        "subtitle": "Гайды, знание игры и помощь в прогрессии для игр из хаба KalterKaktus.",
+        "guides_list": "Гайды вики",
+        "technical_data": "Технические данные",
+        "platform": "Платформа",
+        "level_xp": "Уровень и XP",
+        "clicker_summary": "Значения зданий, формулы улучшений, математика престижа, Золотой бег, формат сохранения.",
+        "fishing_summary": "Области, вероятности редкости, формулы мини-игры, Карл, ежедневные награды.",
+        "level_summary": "Формула уровня, источники XP, значки, VIP, реферальная система, лимит.",
+        "more_coming": "Больше игр и страниц вики появится позже.",
+        "optimizer_kicker": "KaktusClicker · инструмент",
+        "optimizer_title": "Оптимизатор покупок",
+        "optimizer_sub": "Считает по твоему облачному сохранению следующие <b>10 лучших покупок</b> по времени окупаемости (ROI). Только читает сохранение — <strong>ничего не меняет</strong>.",
+        "optimizer_init": "Инициализация…",
+        "optimizer_reload": "Перезагрузить облачное сохранение",
+        "optimizer_manual": "Ручной режим",
+        "detail_page_note": "Подробные гайды пока доступны только на немецком."
+    },
     "deals": {
         "meta_title": "Скидки Steam — KalterKaktus",
         "kicker": "Предложения Steam",
