@@ -28,6 +28,24 @@ import { AngelUiSystem } from "./systems/angelUiSystem.js";
 import { FISHING_CHANGELOG } from "./data/changelog.js";
 import { fetchProfile } from "/js/profile.js";
 import { getSupabase, isConfigReady } from "/js/supabase-client.js";
+import { t, onLanguageChange } from "/js/i18n.js";
+
+function tArea(areaId) {
+    const key = `fishing.area_${areaId}`;
+    const value = t(key);
+    return value === key ? (AREAS[areaId]?.name || areaId) : value;
+}
+function tRarity(rarity) {
+    const key = `fishing.rarity_${String(rarity || "").toLowerCase()}`;
+    const value = t(key);
+    return value === key ? rarity : value;
+}
+function tMutation(mut) {
+    if (!mut) return "";
+    const key = `fishing.mutation_labels.${mut.id}`;
+    const value = t(key);
+    return value === key ? (mut.name || mut.id) : value;
+}
 
 const elements = {
     shell: document.querySelector(".fishing-shell"),
@@ -198,7 +216,7 @@ let areaTransitionCoverTimer = 0;
 function playAreaTransition(kicker, onCovered) {
     const el = elements.areaTransition;
     elements.areaTransitionKicker.textContent = kicker;
-    elements.areaTransitionName.textContent = AREAS[state.currentArea].name;
+    elements.areaTransitionName.textContent = tArea(state.currentArea);
     el.hidden = false;
     el.classList.remove("is-running");
     void el.offsetWidth;
@@ -257,7 +275,7 @@ function closeMenu() {
 
 function renderHud() {
     elements.coinCount.textContent = coins(state.coins);
-    elements.areaName.textContent = AREAS[state.currentArea].name;
+    elements.areaName.textContent = tArea(state.currentArea);
     elements.prestigeCount.textContent = `${state.prestige}/${PRESTIGE_CAP}`;
     elements.catchCount.textContent = coins(state.stats.totalCaught);
     elements.water.dataset.area = state.currentArea;
@@ -338,7 +356,7 @@ function renderIndex() {
                         <h3>${area.name}</h3>
                         <div class="index-area-meta">
                             <strong>${areaBlock.progress.caught}/${areaBlock.progress.total}</strong>
-                            <span class="area-lock">Noch nicht freigeschaltet</span>
+                            <span class="area-lock">${t("fishing.area_locked")}</span>
                         </div>
                     </div>
                 </section>
@@ -424,7 +442,7 @@ function renderAreas() {
                     <h3>${area.name}</h3>
                     <span class="area-lock">${unlocked ? `${progress.caught}/${progress.total}` : `Freischaltbar ab Prestige ${area.prestige}`}</span>
                 </div>
-                <p>${unlocked ? "Dieses Gewässer ist verfügbar." : "Noch nicht freigeschaltet."}</p>
+                <p>${unlocked ? t("fishing.water_available") : t("fishing.area_locked")}</p>
                 <button data-switch-area="${area.id}" type="button" ${!unlocked || state.currentArea === area.id ? "disabled" : ""}>
                     ${state.currentArea === area.id ? "Aktiv" : "Hier angeln"}
                 </button>
@@ -442,8 +460,8 @@ function renderAreas() {
             <h3>Nächstes Gewässer: ${AREAS[prestige.nextArea].name}</h3>
             <p>Beim Freischalten startest du mit frischen Coins, Upgrades und leerem Inventar. Dein Fish Index, alle bisherigen Fänge und freigeschalteten Areas bleiben dir erhalten.</p>
             <ul>
-                <li class="${prestige.coinsReady ? "is-ready" : ""}">${prestige.coinsReady ? "Bereit:" : "Noch nötig:"} ${coins(prestige.requiredCoins)} Coins zur Hand haben</li>
-                <li class="${prestige.upgradesReady ? "is-ready" : ""}">${prestige.upgradesReady ? "Bereit:" : "Noch nötig:"} alle Upgrades voll ausgebaut</li>
+                <li class="${prestige.coinsReady ? "is-ready" : ""}">${prestige.coinsReady ? t("fishing.prestige_ready_lbl") : t("fishing.prestige_needed_lbl")} ${t("fishing.prestige_need_coins", { coins: coins(prestige.requiredCoins) })}</li>
+                <li class="${prestige.upgradesReady ? "is-ready" : ""}">${prestige.upgradesReady ? t("fishing.prestige_ready_lbl") : t("fishing.prestige_needed_lbl")} ${t("fishing.prestige_need_upgrades")}</li>
                 <li class="is-open">Prestige ${state.prestige + 1} schaltet ${AREAS[prestige.nextArea].name} frei</li>
             </ul>
             <button id="prestige-now" type="button" ${prestige.canPrestige ? "" : "disabled"}>${AREAS[prestige.nextArea].name} freischalten</button>
@@ -720,7 +738,7 @@ async function saveNow() {
         setSaveStatus("Cloud nicht geladen. Bitte neu laden.", true);
         return;
     }
-    setSaveStatus(user ? "Cloud-Save läuft..." : "Lokal speichern...");
+    setSaveStatus(user ? t("fishing.saving_cloud") : t("fishing.saving_local"));
     const result = await saveState(state, user);
     if (result.error) {
         setSaveStatus("Cloud-Save fehlgeschlagen.", true);
@@ -761,16 +779,16 @@ async function loadLeaderboard() {
                 <small>Prestige ${entry.prestige} - ${coins(entry.totalCaught)} Fische</small>
             </article>
         `).join("")
-        : `<p class="empty-copy">Noch keine Fänge in der Rangliste.</p>`;
+        : `<p class="empty-copy">${t("fishing.leaderboard_empty")}</p>`;
 }
 
 const minigame = new FishingMinigame(elements.fishingOverlay, {
     onOpen() {
-        setHint("Halte die grüne Zone am Punkt. Der Fangfortschritt sinkt nur langsam, wenn du ihn verlierst.");
+        setHint(t("fishing.hint_hold_zone"));
     },
     onClose() {
         audio.pauseReel?.();
-        setHint("Tippe die nächste Fischstelle an.");
+        setHint(t("fishing.hint_next_spot"));
     },
     onHoldChange(held) {
         if (held) {
@@ -809,7 +827,7 @@ const minigame = new FishingMinigame(elements.fishingOverlay, {
     },
     onEscape(candidate) {
         audio.playEscape();
-        setHint(`${candidate.fish.rarity} entwischt. Die nächste Fischstelle kommt.`);
+        setHint(t("fishing.hint_escaped", { rarity: tRarity(candidate.fish.rarity) }));
     },
 });
 
@@ -866,7 +884,7 @@ function claimIndexReward(fishId) {
     state.coins += reward;
     state.stats.totalCoinsEarned += reward;
     audio.playSell?.();
-    showBroadcast(`📖 Fish-Index: +${coins(reward)} Coins für ${fish.name} eingesammelt!`);
+    showBroadcast(`📖 ${t("fishing.index_reward", { coins: coins(reward), name: fish.name })}`);
     renderIndex();
     renderHud();
     scheduleSave();
@@ -934,7 +952,7 @@ function renderMutationDetailGroup(title, mutations, ownedMuts) {
                         <div class="mutation-detail-card ${owned ? "is-owned" : "is-locked"}" style="--mut:${m.color}">
                             <span class="mutation-detail-mult">×${mult}</span>
                             <strong>${m.name}</strong>
-                            <small>${owned ? `${count}× gefangen` : "Noch nicht gefangen"}</small>
+                            <small>${owned ? t("fishing.caught_count", { count }) : t("fishing.not_caught_yet")}</small>
                         </div>
                     `;
                 }).join("")}
@@ -1008,7 +1026,7 @@ function bindUi() {
             return;
         }
         audio.playSell();
-        setHint(`${sold.count} Fische verkauft für ${coins(sold.value)} Coins.`);
+        setHint(t("fishing.sold_summary", { count: sold.count, coins: coins(sold.value) }));
         renderAll();
         scheduleSave();
     });
@@ -1036,7 +1054,7 @@ function bindUi() {
         }
         state.currentArea = areaId;
         closeWindows();
-        playAreaTransition("Gewässer gewechselt", () => {
+        playAreaTransition(t("fishing.area_changed"), () => {
             bubbleSystem.clear();
             setHint(`Du angelst jetzt im ${AREAS[areaId].name}.`);
             renderAll();
@@ -1098,7 +1116,7 @@ function bindUi() {
         loadLeaderboard();
     });
     elements.resetSave.addEventListener("click", () => {
-        const confirmed = window.confirm("Willst du deinen My Fishing Kaktus Spielstand wirklich zurücksetzen?");
+        const confirmed = window.confirm(t("fishing.reset_confirm"));
         if (!confirmed) {
             return;
         }
@@ -1108,7 +1126,7 @@ function bindUi() {
         applyMotionSetting();
         renderAll();
         scheduleSave();
-        setHint("Neuer Pond-Run gestartet.");
+        setHint(t("fishing.new_run"));
     });
 }
 
@@ -1175,7 +1193,7 @@ function handleAdminEvent(row) {
     }
 
     if (type === "force-reload") {
-        showBroadcast("⚙ Admin: Neue Version verfügbar — Spiel wird neu geladen…");
+        showBroadcast("⚙ " + t("fishing.admin_new_version"));
         window.setTimeout(() => location.reload(), 1500);
         return;
     }
@@ -1358,23 +1376,23 @@ async function init() {
         canSpawn: () => !activeWindow && elements.fishingOverlay.hidden && elements.areaTransition.hidden,
         getCurrentArea: () => state.currentArea,
         onSpawn() {
-            showBroadcast(`🐢 ${KARL_NAME} ist aufgetaucht — tippe ihn schnell an!`);
+            showBroadcast(`🐢 ${t("fishing.karl_spawn", { name: KARL_NAME })}`);
             audio.playCatch?.();
         },
         onEscape() {
-            showBroadcast(`🐢 ${KARL_NAME} ist wieder abgetaucht.`);
+            showBroadcast(`🐢 ${t("fishing.karl_dive", { name: KARL_NAME })}`);
         },
         onReward(reward) {
             if (reward.type === "coins-fixed") {
                 state.coins += reward.amount;
                 state.stats.totalCoinsEarned += reward.amount;
-                showBroadcast(`🐢 Karl: +${reward.amount} Coins!`);
+                showBroadcast(`🐢 Karl: +${reward.amount} ${t("fishing.coins_suffix_full")}!`);
                 audio.playSell?.();
                 renderAll();
                 scheduleSave();
             } else if (reward.type === "spawn" && reward.rarity) {
                 bubbleSystem?.spawnForced(reward.rarity);
-                showBroadcast(`🐢 Karl spawnt eine ${reward.rarity}-Fischstelle!`);
+                showBroadcast(`🐢 ${t("fishing.karl_spawn_spot", { rarity: tRarity(reward.rarity) })}`);
                 audio.playCatch?.();
             }
         },
@@ -1475,3 +1493,13 @@ function hideLoadingScreen() {
 }
 
 init();
+
+// Bei Sprachwechsel neu rendern — die meisten dynamischen Strings werden dabei
+// aktualisiert. Statische HTML-Texte handhabt i18n.js selbst über data-i18n.
+onLanguageChange(() => {
+    try {
+        if (typeof renderAll === "function") renderAll();
+    } catch (error) {
+        console.warn("Fishing re-render nach Sprachwechsel fehlgeschlagen:", error);
+    }
+});

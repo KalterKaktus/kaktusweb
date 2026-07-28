@@ -3,6 +3,7 @@ import { fetchLeaderboard as fetchFishingLeaderboard } from "/games/MyFishingKak
 import { formatNumber } from "/games/KaktusClicker/format.js";
 import { renderLevelTag, renderPlayerName } from "./progression.js";
 import { getSupabase, isConfigReady } from "./supabase-client.js";
+import { t, onLanguageChange } from "./i18n.js";
 
 const monthlyPlayers = document.getElementById("home-monthly-players");
 const lastMonthPlayers = document.getElementById("home-last-month-players");
@@ -16,13 +17,13 @@ async function renderHomeLeaderboard() {
 
     const { entries, previousTopThree, error } = await fetchLeaderboard(3);
     if (error) {
-        renderPlayers(monthlyPlayers, [], "Rangliste offline");
-        renderPlayers(lastMonthPlayers, [], "Kommt wieder");
+        renderPlayers(monthlyPlayers, [], t("home.board_offline"));
+        renderPlayers(lastMonthPlayers, [], t("home.board_come_back"));
         return;
     }
 
-    renderPlayers(monthlyPlayers, entries, "Platz 1 ist offen");
-    renderPlayers(lastMonthPlayers, previousTopThree || [], "Noch kein Abschluss");
+    renderPlayers(monthlyPlayers, entries, t("home.board_first_place_open"));
+    renderPlayers(lastMonthPlayers, previousTopThree || [], t("home.board_no_close"));
 }
 
 async function renderHomeFishingLeaderboard() {
@@ -32,11 +33,11 @@ async function renderHomeFishingLeaderboard() {
 
     const { entries, error } = await fetchFishingLeaderboard();
     if (error) {
-        renderPlayers(fishingPlayers, [], "Rangliste offline");
+        renderPlayers(fishingPlayers, [], t("home.board_offline"));
         return;
     }
 
-    renderFishingPlayers(fishingPlayers, entries.slice(0, 3), "Noch kein Angler");
+    renderFishingPlayers(fishingPlayers, entries.slice(0, 3), t("home.board_no_angler"));
 }
 
 function renderPlayers(root, entries, emptyText) {
@@ -57,7 +58,7 @@ function renderFishingPlayers(root, entries, emptyText) {
             <li>
                 <b>#${entry.rank || index + 1}</b>
                 <span>${renderLevelTag(entry.level || 0, entry.equippedBadge || null)}${renderPlayerName(escapeHtml(entry.name), { vip: entry.vip, vipColor: entry.vipColor })}</span>
-                <em>Prestige ${escapeHtml(entry.prestige)} · ${escapeHtml(formatNumber(entry.totalCaught))} Fänge</em>
+                <em>${escapeHtml(t("home.board_prestige"))} ${escapeHtml(entry.prestige)} · ${escapeHtml(formatNumber(entry.totalCaught))} ${escapeHtml(t("home.board_catches"))}</em>
             </li>
         `).join("")
         : `<li>${escapeHtml(emptyText)}</li>`;
@@ -93,7 +94,7 @@ async function renderHomeXpLeaderboard() {
         xpPlayers.innerHTML = `<li>Rangliste offline</li>`;
         return;
     }
-    renderXpPlayers(xpPlayers, data || [], "Noch keine Spieler mit XP");
+    renderXpPlayers(xpPlayers, data || [], t("home.board_no_xp"));
 }
 
 function renderXpPlayers(root, entries, emptyText) {
@@ -108,6 +109,13 @@ function renderXpPlayers(root, entries, emptyText) {
         : `<li>${escapeHtml(emptyText)}</li>`;
 }
 
-renderHomeLeaderboard();
-renderHomeFishingLeaderboard();
-renderHomeXpLeaderboard();
+function renderAll() {
+    renderHomeLeaderboard();
+    renderHomeFishingLeaderboard();
+    renderHomeXpLeaderboard();
+}
+
+renderAll();
+// Bei Sprach-Wechsel neu rendern damit fallback-Strings, "Prestige"/"Fänge" etc.
+// mit übersetzten Texten erscheinen.
+onLanguageChange(renderAll);

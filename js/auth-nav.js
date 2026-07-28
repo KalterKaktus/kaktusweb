@@ -2,6 +2,15 @@ import { getSupabase, isConfigReady } from "./supabase-client.js";
 import { ensureProfile, fetchProfile, getDisplayName } from "./profile.js";
 import { setXpUser } from "./xp-service.js";
 import { levelFromXp, renderLevelTag, renderPlayerName } from "./progression.js";
+import {
+    applyTranslations,
+    getLanguage,
+    getSupported,
+    onLanguageChange,
+    setLanguage,
+    t,
+    ready as i18nReady,
+} from "./i18n.js";
 
 const PRESENCE_HEARTBEAT_MS = 30000;
 const FORCE_RELOAD_MESSAGE = "Dein Spielstand wurde aktualisiert. Die Seite wird neu geladen.";
@@ -53,6 +62,49 @@ function blockTouchDoubleTapZoom() {
     }, { passive: false });
 }
 
+const FLAG_SVG = {
+    de: `<svg viewBox="0 0 5 3" aria-hidden="true"><rect width="5" height="1" y="0" fill="#000"/><rect width="5" height="1" y="1" fill="#dd0000"/><rect width="5" height="1" y="2" fill="#ffce00"/></svg>`,
+    ru: `<svg viewBox="0 0 5 3" aria-hidden="true"><rect width="5" height="1" y="0" fill="#fff"/><rect width="5" height="1" y="1" fill="#0039a6"/><rect width="5" height="1" y="2" fill="#d52b1e"/></svg>`,
+};
+
+function buildLanguageSwitcher() {
+    const wrap = document.createElement("div");
+    wrap.className = "lang-switch";
+    wrap.setAttribute("role", "group");
+    wrap.setAttribute("data-i18n-attr", "aria-label:nav.language");
+    wrap.setAttribute("aria-label", "Sprache");
+    getSupported().forEach((lang) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "lang-btn" + (getLanguage() === lang ? " is-active" : "");
+        btn.dataset.lang = lang;
+        btn.setAttribute("data-i18n-attr", `aria-label:nav.switch_to_${lang}`);
+        btn.setAttribute("aria-label", lang === "de" ? "Auf Deutsch umschalten" : "Auf Russisch umschalten");
+        btn.innerHTML = FLAG_SVG[lang];
+        btn.addEventListener("click", async () => {
+            await setLanguage(lang);
+            document.querySelectorAll(".lang-switch .lang-btn").forEach((b) => {
+                b.classList.toggle("is-active", b.dataset.lang === lang);
+            });
+            persistLanguageToProfile(lang).catch((error) => {
+                console.warn("Sprachpräferenz konnte nicht gespeichert werden:", error?.message);
+            });
+        });
+        wrap.append(btn);
+    });
+    return wrap;
+}
+
+async function persistLanguageToProfile(lang) {
+    const supabase = getSupabase();
+    if (!supabase) return;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return;
+    await supabase.from("profiles")
+        .update({ preferred_language: lang })
+        .eq("id", session.user.id);
+}
+
 function setupSiteNav() {
     document.querySelectorAll(".nav").forEach((nav, index) => {
         const container = nav.querySelector(".nav-container");
@@ -77,12 +129,29 @@ function setupSiteNav() {
         `;
         container.insertBefore(toggle, links);
 
+        // Language-Switcher in die Nav-Links einfügen (vor auth-nav).
+        // Auf Desktop nebeneinander mit Links, auf Mobile im Sandwich-Menü.
+        const langSwitch = buildLanguageSwitcher();
+        const authNode = links.querySelector("#auth-nav");
+        if (authNode) {
+            links.insertBefore(langSwitch, authNode);
+        } else {
+            links.append(langSwitch);
+        }
+
+        const updateToggleLabel = (open) => {
+            toggle.setAttribute("aria-label", open ? t("nav.close_menu") : t("nav.open_menu"));
+        };
+
         const setOpen = (open) => {
             nav.classList.toggle("is-menu-open", open);
             toggle.setAttribute("aria-expanded", String(open));
-            toggle.setAttribute("aria-label", open ? "Navigation schließen" : "Navigation öffnen");
+            updateToggleLabel(open);
             document.body.classList.toggle("nav-menu-open", open);
         };
+
+        onLanguageChange(() => updateToggleLabel(nav.classList.contains("is-menu-open")));
+        i18nReady.then(() => updateToggleLabel(nav.classList.contains("is-menu-open")));
 
         toggle.addEventListener("click", () => {
             setOpen(!nav.classList.contains("is-menu-open"));
@@ -115,7 +184,8 @@ function setupSiteNav() {
 }
 
 function renderLoggedOut(container) {
-    container.innerHTML = `<a class="nav-link auth-link" href="${loginHref()}">Login</a>`;
+    container.innerHTML = `<a class="nav-link auth-link" data-i18n="nav.login" href="${loginHref()}">Login</a>`;
+    applyTranslations(container);
 }
 
 function renderConfigMissing(container) {
@@ -329,8 +399,9 @@ function renderLoggedIn(container, user, profile) {
 
     container.innerHTML = `
         <a class="nav-link auth-profile-link" href="${profileHref()}" title="${escapeAttr(title)}">${levelTag}${styledName}</a>
-        <button type="button" class="auth-btn" id="auth-sign-out-btn">Logout</button>
+        <button type="button" class="auth-btn" id="auth-sign-out-btn" data-i18n="nav.logout">Logout</button>
     `;
+    applyTranslations(container);
 
     const signOutButton = container.querySelector("#auth-sign-out-btn");
     signOutButton?.addEventListener("click", async () => {
@@ -370,6 +441,19 @@ async function renderSession(container, session) {
     if (profile?.is_banned) {
         await handleBannedSession(container);
         return;
+    }
+
+    // Sprachpräferenz aus Profil — überschreibt localStorage-Wahl NICHT, sondern
+    // wird nur genutzt wenn der User auf diesem Gerät noch nichts gewählt hat.
+    // Wenn Profil-Sprache ≠ aktuelle Sprache UND localStorage explizit gesetzt,
+    // gewinnt localStorage (das Gerät ist "leader").
+    if (profile?.preferred_language
+        && getSupported().includes(profile.preferred_language)
+        && !window.localStorage.getItem("kk-lang")) {
+        await setLanguage(profile.preferred_language);
+        document.querySelectorAll(".lang-switch .lang-btn").forEach((b) => {
+            b.classList.toggle("is-active", b.dataset.lang === profile.preferred_language);
+        });
     }
 
     renderLoggedIn(container, session.user, profile);

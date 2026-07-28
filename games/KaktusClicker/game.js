@@ -27,6 +27,48 @@ import {
 } from "./economy.js";
 import { formatDuration, formatNumber } from "./format.js";
 import { createInitialState, normalizeLoadedState, resetRunForPrestige } from "./state.js";
+import { t, onLanguageChange } from "/js/i18n.js";
+
+function tName(item, category) {
+    const key = `clicker.${category}.${item.id}.name`;
+    const value = t(key);
+    if (value !== key) return value;
+    // Building-Core Upgrades: dynamisch aus Building-Name zusammensetzen
+    if (category === "upgrades" && item.buildingId) {
+        const bKey = `clicker.buildings.${item.buildingId}.name`;
+        const bValue = t(bKey);
+        if (bValue !== bKey) return t("clicker.upgrade_core_suffix", { name: bValue });
+    }
+    return item.name;
+}
+function tDesc(item, category) {
+    const key = `clicker.${category}.${item.id}.description`;
+    const value = t(key);
+    if (value !== key) return value;
+    if (category === "upgrades" && item.buildingId) {
+        const bKey = `clicker.buildings.${item.buildingId}.name`;
+        const bValue = t(bKey);
+        if (bValue !== bKey) return t("clicker.upgrade_prod_x2", { name: bValue });
+    }
+    return item.description || item.goal || "";
+}
+function tGoal(item) {
+    const key = `clicker.achievements.${item.id}.goal`;
+    const value = t(key);
+    return value === key ? (item.goal || "") : value;
+}
+function tSaveLabel(label) {
+    const map = {
+        "Gespeichert": "clicker.save_saved",
+        "Zurückgesetzt": "clicker.save_reset",
+        "Prestige gespeichert": "clicker.save_prestige",
+        "Offline Fortschritt eingesammelt": "clicker.save_offline",
+        "Goldlauf aktiv": "clicker.frenzy_active",
+        "Monatssaison resettet": "clicker.save_season_reset",
+    };
+    const key = map[label];
+    return key ? t(key) : label;
+}
 
 const STORAGE_KEY = "kaktus-clicker-save-v1";
 const AUDIO_STORAGE_KEY = "kaktus-clicker-audio-v1";
@@ -276,7 +318,7 @@ function tryLockPortraitOrientation() {
 }
 
 function getIdleSaveLabel() {
-  return cloudSync.enabled ? "Speicherstatus: Cloud aktiv" : "Speicherstatus: Lokal gespeichert";
+  return cloudSync.enabled ? t("clicker.save_status_cloud") : t("clicker.save_status_local");
 }
 
 function scheduleCloudSave() {
@@ -304,7 +346,8 @@ function saveState(label = "Gespeichert") {
   const now = Date.now();
   state.lastSavedAt = now;
   state.lastOnlineTimestamp = now;
-  elements.saveStatus.textContent = label;
+  const translated = tSaveLabel(label);
+  elements.saveStatus.textContent = translated;
 
   if (cloudSync.enabled) {
     scheduleCloudSave();
@@ -313,7 +356,7 @@ function saveState(label = "Gespeichert") {
   }
 
   window.setTimeout(() => {
-    if (elements.saveStatus.textContent === label) {
+    if (elements.saveStatus.textContent === translated) {
       elements.saveStatus.textContent = getIdleSaveLabel();
     }
   }, 1300);
@@ -349,7 +392,7 @@ function showGameModal({ title, message = "", bodyHtml = "", buttonLabel = "Okay
 
 function showChangelog() {
   showGameModal({
-    title: "Changelog",
+    title: t("clicker.changelog_title"),
     bodyHtml: `
       <div class="changelog-entries">
         ${changelogEntries.map((entry) => `
@@ -418,7 +461,7 @@ function chargeClickFrenzy() {
   state.events.clickCharge = 0;
   state.events.frenzyUntil = Date.now() + CLICK_FRENZY_MS;
   state.events.frenzies += 1;
-  elements.saveStatus.textContent = "Goldlauf aktiv";
+  elements.saveStatus.textContent = t("clicker.frenzy_active");
   startFrenzyMeterLoop();
 }
 
@@ -468,7 +511,7 @@ function performPrestige() {
   }
 
   const confirmed = window.confirm(
-    `Prestige setzt deinen aktuellen Run zurück und gibt dir ${formatNumber(newNopal)} Nopal. Fortfahren?`
+    t("clicker.prestige_confirm_body", { nopal: formatNumber(newNopal) })
   );
   if (!confirmed) {
     return;
@@ -495,9 +538,9 @@ function renderShop() {
       <button class="shop-item" type="button" data-building="${building.id}" ${disabled}>
         <span class="item-icon" aria-hidden="true">${escapeHtml(building.icon)}</span>
         <span>
-          <span class="item-name">${escapeHtml(building.name)}</span>
-          <span class="item-description">${escapeHtml(building.description)}</span>
-          <span class="item-meta">${formatNumber(getBuildingProduction(state, building))}/Sek. - Besitz: ${formatNumber(owned)}</span>
+          <span class="item-name">${escapeHtml(tName(building, "buildings"))}</span>
+          <span class="item-description">${escapeHtml(tDesc(building, "buildings"))}</span>
+          <span class="item-meta">${formatNumber(getBuildingProduction(state, building))}${escapeHtml(t("clicker.per_sec_short"))} - ${escapeHtml(t("clicker.owned_short"))}: ${formatNumber(owned)}</span>
         </span>
         <span class="item-price">${formatNumber(cost)}</span>
       </button>
@@ -514,14 +557,14 @@ function renderUpgrades() {
         <button class="shop-item" type="button" data-upgrade="${upgrade.id}" ${disabled}>
           <span class="item-icon" aria-hidden="true">${escapeHtml(upgrade.icon)}</span>
           <span>
-            <span class="item-name">${escapeHtml(upgrade.name)}</span>
-            <span class="item-description">${escapeHtml(upgrade.description)}</span>
+            <span class="item-name">${escapeHtml(tName(upgrade, "upgrades"))}</span>
+            <span class="item-description">${escapeHtml(tDesc(upgrade, "upgrades"))}</span>
           </span>
           <span class="item-price">${formatNumber(upgrade.cost)}</span>
         </button>
       `;
     }).join("")
-    : `<p class="item-description">Alle Upgrades gekauft. Deine Produktion läuft auf Anschlag.</p>`;
+    : `<p class="item-description">${escapeHtml(t("clicker.all_upgrades_bought"))}</p>`;
 }
 
 function syncPurchaseAffordability() {
@@ -546,10 +589,10 @@ function renderAchievements() {
     return `
       <div class="achievement ${unlocked ? "is-unlocked" : ""}">
         <span class="achievement-copy">
-          <strong>${escapeHtml(achievement.name)}</strong>
-          <small>${escapeHtml(achievement.goal)}</small>
+          <strong>${escapeHtml(tName(achievement, "achievements"))}</strong>
+          <small>${escapeHtml(tGoal(achievement))}</small>
         </span>
-        <span>${unlocked ? "+0,1x" : "Offen"}</span>
+        <span>${unlocked ? "+0,1x" : escapeHtml(t("clicker.achievement_open"))}</span>
       </div>
     `;
   }).join("");
@@ -593,7 +636,7 @@ function renderEventMeter(now = Date.now()) {
     : (state.events.clickCharge / CLICK_FRENZY_TARGET) * 100;
 
   elements.eventMeterFill.style.width = `${Math.min(100, Math.max(0, fill))}%`;
-  elements.eventMeterLabel.textContent = active ? "Goldlauf aktiv" : "Goldlauf lädt";
+  elements.eventMeterLabel.textContent = active ? t("clicker.frenzy_active") : t("clicker.frenzy_charging");
   elements.eventMeterValue.textContent = active
     ? `${formatDuration(remainingMs / 1000)} x2`
     : `${formatNumber(state.events.clickCharge)} / ${formatNumber(CLICK_FRENZY_TARGET)} Klicks`;
@@ -677,8 +720,9 @@ function updateLeaderboardResetCountdown() {
     render();
   }
 
-  elements.leaderboardReset.textContent =
-    `Reset am 01. des nächsten Monats · noch ${formatLeaderboardCountdown(period.nextResetAt.getTime() - Date.now())}`;
+  elements.leaderboardReset.textContent = t("clicker.leaderboard_reset_countdown", {
+    countdown: formatLeaderboardCountdown(period.nextResetAt.getTime() - Date.now()),
+  });
 }
 
 async function renderLeaderboard(force = false) {
@@ -686,22 +730,22 @@ async function renderLeaderboard(force = false) {
     return;
   }
 
-  elements.leaderboardList.innerHTML = `<p class="item-description">Rangliste wird geladen...</p>`;
-  elements.leaderboardLastMonthList.innerHTML = `<p class="item-description">Letzter Monat wird geladen...</p>`;
+  elements.leaderboardList.innerHTML = `<p class="item-description">${escapeHtml(t("clicker.leaderboard_loading"))}</p>`;
+  elements.leaderboardLastMonthList.innerHTML = `<p class="item-description">${escapeHtml(t("clicker.leaderboard_last_month_loading"))}</p>`;
 
   const { entries, previousTopThree, error } = await fetchLeaderboard();
   if (error) {
     elements.leaderboardList.innerHTML = `<p class="item-description">${escapeHtml(error.message)}</p>`;
-    elements.leaderboardLastMonthList.innerHTML = `<p class="item-description">Monatsabschluss gerade nicht verfügbar.</p>`;
+    elements.leaderboardLastMonthList.innerHTML = `<p class="item-description">${escapeHtml(t("clicker.leaderboard_offline"))}</p>`;
     return;
   }
 
   leaderboardLoaded = true;
-  renderLeaderboardRows(elements.leaderboardLastMonthList, previousTopThree || [], "Noch kein Monatsabschluss gespeichert.");
-  renderLeaderboardRows(elements.leaderboardList, entries || [], "Noch keine Einträge. Sei der Erste.");
+  renderLeaderboardRows(elements.leaderboardLastMonthList, previousTopThree || [], t("clicker.leaderboard_no_archive"));
+  renderLeaderboardRows(elements.leaderboardList, entries || [], t("clicker.leaderboard_empty"));
   elements.leaderboardHint.textContent = cloudSync.enabled
-    ? "Sortiert nach Kakteen, die in der laufenden Monatssaison geerntet wurden."
-    : "Melde dich an, um deinen Saison-Score in der Rangliste zu speichern.";
+    ? t("clicker.leaderboard_hint_signed")
+    : t("clicker.leaderboard_hint_anon");
 }
 
 function renderLeaderboardRows(root, rows, emptyText) {
@@ -735,26 +779,26 @@ function computeOfflineReward(now = Date.now()) {
 
 function showOfflineReward(reward) {
   showGameModal({
-    title: "Offline Fortschritt",
+    title: t("clicker.offline_title"),
     tone: "is-offline",
     bodyHtml: `
-      <p class="offline-note">Offline-Ertrag zahlt 50% deiner normalen Auto-Produktion.</p>
+      <p class="offline-note">${escapeHtml(t("clicker.offline_note"))}</p>
       <dl class="offline-reward">
         <div>
-          <dt>Offline Zeit</dt>
+          <dt>${escapeHtml(t("clicker.offline_time"))}</dt>
           <dd>${escapeHtml(formatDuration(reward.seconds))}</dd>
         </div>
         <div>
-          <dt>Verdiente Kakteen mit 50%</dt>
+          <dt>${escapeHtml(t("clicker.offline_reward"))}</dt>
           <dd>${escapeHtml(formatNumber(reward.reward))}</dd>
         </div>
         <div>
-          <dt>Bei aktivem Spiel</dt>
+          <dt>${escapeHtml(t("clicker.offline_full"))}</dt>
           <dd>${escapeHtml(formatNumber(reward.fullOnlineReward))}</dd>
         </div>
       </dl>
     `,
-    buttonLabel: "Einsammeln",
+    buttonLabel: t("clicker.offline_claim"),
     onConfirm: () => {
       addCactus(reward.reward);
       updateAchievements();
@@ -855,16 +899,16 @@ function handleAdminGameEvent(row) {
 
   if (row.event_type === "spawn-goldkaktus") {
     spawnConfiguredRandomEvent("golden");
-    showAdminToast("⚙ Admin spawnt einen Goldkaktus");
+    showAdminToast("⚙ " + t("clicker.golden_admin_hint"));
   }
 
   if (row.event_type === "spawn-rubinkaktus") {
     spawnConfiguredRandomEvent("red");
-    showAdminToast("⚙ Admin spawnt einen Rubinkaktus");
+    showAdminToast("⚙ " + t("clicker.red_admin_hint"));
   }
 
   if (row.event_type === "force-reload") {
-    showAdminToast("⚙ Neue Version verfügbar — Spiel wird neu geladen…");
+    showAdminToast("⚙ " + t("clicker.new_version"));
     window.setTimeout(() => location.reload(), 1500);
   }
 }
@@ -1102,7 +1146,7 @@ function bindEvents() {
   });
 
   elements.resetButton.addEventListener("click", () => {
-    const confirmed = window.confirm("Willst du deinen kompletten KaktusClicker-Spielstand inklusive Prestige wirklich löschen?");
+    const confirmed = window.confirm(t("clicker.reset_confirm_full"));
     if (!confirmed) {
       return;
     }
@@ -1193,3 +1237,19 @@ async function initGame() {
 }
 
 initGame();
+
+// Bei Sprachwechsel alles neu rendern damit Buildings/Upgrades/Achievements
+// mit übersetzten Namen erscheinen.
+onLanguageChange(() => {
+    try {
+        render();
+        elements.saveStatus.textContent = getIdleSaveLabel();
+        updateLeaderboardResetCountdown();
+        if (leaderboardLoaded) {
+            leaderboardLoaded = false;
+            renderLeaderboard(true);
+        }
+    } catch (error) {
+        console.warn("Re-render nach Sprachwechsel fehlgeschlagen:", error);
+    }
+});

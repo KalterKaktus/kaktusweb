@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#07120c">
-    <title>KalterKaktus Wiki</title>
+    <title data-i18n="wiki.meta_title">KalterKaktus Wiki</title>
     <meta
         name="description"
+        data-i18n-attr="content:wiki.meta_description"
         content="Guides und Infos zu Games und Projekten von KalterKaktus."
     >
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -19,12 +20,12 @@
         <div class="nav-container">
             <a class="logo" href="/">KK</a>
             <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/steam-deals/" class="nav-link">Steam Deals</a>
-                <a href="/games/" class="nav-link">Games</a>
-                <a href="/wiki/" class="nav-link">Wiki</a>
+                <a href="/" class="nav-link" data-i18n="nav.home">Home</a>
+                <a href="/steam-deals/" class="nav-link" data-i18n="nav.steam_deals">Steam Deals</a>
+                <a href="/games/" class="nav-link" data-i18n="nav.games">Games</a>
+                <a href="/wiki/" class="nav-link" data-i18n="nav.wiki">Wiki</a>
                 <div id="auth-nav" class="auth-nav" aria-live="polite">
-                    <a class="nav-link auth-link" href="/login.html?next=%2Fwiki%2F">Login</a>
+                    <a class="nav-link auth-link" href="/login.html?next=%2Fwiki%2F" data-i18n="nav.login">Login</a>
                 </div>
             </div>
         </div>
@@ -33,48 +34,48 @@
     <main class="wiki-home">
         <header class="wiki-home-head">
             <p class="guide-path">KalterKaktus</p>
-            <h1>Wiki</h1>
-            <p>
+            <h1 data-i18n="nav.wiki">Wiki</h1>
+            <p data-i18n="wiki.subtitle">
                 Guides, Spielwissen und Progression-Hilfen für Games aus dem KalterKaktus Hub.
             </p>
         </header>
 
-        <section class="wiki-home-list" aria-label="Wiki Guides">
+        <section class="wiki-home-list" data-i18n-attr="aria-label:wiki.guides_list" aria-label="Wiki Guides">
             <a class="wiki-home-entry" href="./kaktusclicker/">
-                <span>Technische Daten</span>
+                <span data-i18n="wiki.technical_data">Technische Daten</span>
                 <strong>KaktusClicker</strong>
-                <small>Gebäude-Werte, Upgrade-Formeln, Prestige-Mathe, Goldlauf, Save-Format.</small>
+                <small data-i18n="wiki.clicker_summary">Gebäude-Werte, Upgrade-Formeln, Prestige-Mathe, Goldlauf, Save-Format.</small>
             </a>
             <a class="wiki-home-entry" href="./myfishingkaktus/">
-                <span>Technische Daten</span>
+                <span data-i18n="wiki.technical_data">Technische Daten</span>
                 <strong>My Fishing Kaktus</strong>
-                <small>Areas, Rarity-Wahrscheinlichkeiten, Minispiel-Formeln, Karl, Daily-Rewards.</small>
+                <small data-i18n="wiki.fishing_summary">Areas, Rarity-Wahrscheinlichkeiten, Minispiel-Formeln, Karl, Daily-Rewards.</small>
             </a>
             <a class="wiki-home-entry" href="./levelsystem/">
-                <span>Plattform</span>
-                <strong>Level &amp; XP</strong>
-                <small>Level-Formel, XP-Quellen, Badges, VIP, Referral-System, Cap.</small>
+                <span data-i18n="wiki.platform">Plattform</span>
+                <strong data-i18n="wiki.level_xp">Level &amp; XP</strong>
+                <small data-i18n="wiki.level_summary">Level-Formel, XP-Quellen, Badges, VIP, Referral-System, Cap.</small>
             </a>
-            <div class="wiki-home-empty">
+            <div class="wiki-home-empty" data-i18n="wiki.more_coming">
                 Weitere Games und Wiki-Seiten kommen später dazu.
             </div>
         </section>
 
         <section class="wiki-optimizer" id="optimizer-root" aria-labelledby="optimizer-title">
             <header class="opt-head">
-                <p class="opt-kicker">KaktusClicker · Tool</p>
-                <h2 id="optimizer-title">Kauf-Optimizer</h2>
-                <p class="opt-sub">
+                <p class="opt-kicker" data-i18n="wiki.optimizer_kicker">KaktusClicker · Tool</p>
+                <h2 id="optimizer-title" data-i18n="wiki.optimizer_title">Kauf-Optimizer</h2>
+                <p class="opt-sub" data-i18n-html="wiki.optimizer_sub">
                     Berechnet aus deinem Cloud-Save die nächsten <b>10 besten Käufe</b> nach Refinanzierungs-Zeit (ROI).
                     Liest deinen Spielstand nur — <strong>verändert nichts</strong>.
                 </p>
             </header>
 
-            <p class="opt-status" id="optimizer-status" data-type="info">Initialisiere …</p>
+            <p class="opt-status" id="optimizer-status" data-type="info" data-i18n="wiki.optimizer_init">Initialisiere …</p>
 
             <div class="opt-actions">
-                <button type="button" class="opt-recompute" id="optimizer-recompute" hidden>Cloud-Save neu laden</button>
-                <button type="button" class="opt-toggle" id="optimizer-toggle-manual" hidden>Manueller Modus</button>
+                <button type="button" class="opt-recompute" id="optimizer-recompute" hidden data-i18n="wiki.optimizer_reload">Cloud-Save neu laden</button>
+                <button type="button" class="opt-toggle" id="optimizer-toggle-manual" hidden data-i18n="wiki.optimizer_manual">Manueller Modus</button>
             </div>
 
             <div class="opt-result" id="optimizer-result"></div>
@@ -84,9 +85,9 @@
     </main>
 
     <footer class="wiki-footer">
-        <a href="/impressum">Impressum</a>
-        <a href="/datenschutz">Datenschutz</a>
-        <a href="/nutzungsbedingungen">Nutzungsbedingungen</a>
+        <a href="/impressum" data-i18n="footer.impressum">Impressum</a>
+        <a href="/datenschutz" data-i18n="footer.datenschutz">Datenschutz</a>
+        <a href="/nutzungsbedingungen" data-i18n="footer.terms">Nutzungsbedingungen</a>
     </footer>
     <script src="/js/config.js"></script>
     <script src="./wiki.js"></script>

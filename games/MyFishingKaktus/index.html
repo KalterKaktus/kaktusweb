@@ -93,23 +93,23 @@
     <div id="fishing-loading" aria-live="polite" aria-busy="true">
       <div class="fl-card">
         <p class="fl-kicker">My Fishing Kaktus</p>
-        <h1 class="fl-title">Der Ozean wartet</h1>
+        <h1 class="fl-title" data-i18n="fishing.loading_title">Der Ozean wartet</h1>
         <div class="fl-waves" aria-hidden="true">
           <span></span><span></span><span></span>
         </div>
-        <p class="fl-hint">Lädt Spielstand und Wasser…</p>
+        <p class="fl-hint" data-i18n="fishing.loading_hint">Lädt Spielstand und Wasser…</p>
       </div>
     </div>
     <nav class="nav fishing-site-nav">
       <div class="nav-container">
         <a class="logo" href="/">KK</a>
         <div class="nav-links">
-          <a href="/" class="nav-link">Home</a>
-          <a href="/steam-deals/" class="nav-link">Steam Deals</a>
-          <a href="/games/" class="nav-link">Games</a>
-          <a href="/wiki/" class="nav-link">Wiki</a>
+          <a href="/" class="nav-link" data-i18n="nav.home">Home</a>
+          <a href="/steam-deals/" class="nav-link" data-i18n="nav.steam_deals">Steam Deals</a>
+          <a href="/games/" class="nav-link" data-i18n="nav.games">Games</a>
+          <a href="/wiki/" class="nav-link" data-i18n="nav.wiki">Wiki</a>
           <div id="auth-nav" class="auth-nav" aria-live="polite">
-            <a class="nav-link auth-link" href="/login.html">Login</a>
+            <a class="nav-link auth-link" href="/login.html" data-i18n="nav.login">Login</a>
           </div>
         </div>
       </div>
@@ -118,59 +118,59 @@
     <main class="fishing-shell" aria-label="My Fishing Kaktus Spiel">
       <header class="fishing-hud">
         <div class="fishing-title">
-          <p>Der Ozean zahlt immer.</p>
+          <p data-i18n="fishing.hero_sub">Der Ozean zahlt immer.</p>
           <h1>My Fishing Kaktus</h1>
         </div>
         <div class="hud-values">
           <div>
-            <span>Coins</span>
+            <span data-i18n="fishing.coins">Coins</span>
             <strong id="coin-count">0</strong>
           </div>
           <div>
-            <span>Area</span>
+            <span data-i18n="fishing.area">Area</span>
             <strong id="area-name">Pond</strong>
           </div>
           <div>
-            <span>Prestige</span>
+            <span data-i18n="fishing.prestige">Prestige</span>
             <strong id="prestige-count">0</strong>
           </div>
           <div>
-            <span>Fänge</span>
+            <span data-i18n="fishing.catches">Fänge</span>
             <strong id="catch-count">0</strong>
           </div>
         </div>
         <button class="game-menu-toggle" id="game-menu-toggle" type="button" aria-expanded="false" aria-controls="game-menu">
           <span></span><span></span><span></span>
-          <span class="sr-only">Game-Menü öffnen</span>
+          <span class="sr-only" data-i18n="fishing.menu_open">Game-Menü öffnen</span>
         </button>
       </header>
 
-      <nav class="game-actions" aria-label="Spielbereiche">
-        <button type="button" data-open-window="shop">Angel</button>
-        <button type="button" data-open-window="index">Fish Index</button>
-        <button type="button" data-open-window="inventory">Inventar</button>
-        <button type="button" data-open-window="areas">Areas</button>
-        <button type="button" data-open-window="stats">Stats</button>
-        <button type="button" data-open-window="settings">Settings</button>
-        <button type="button" data-open-window="changelog">Changelog</button>
+      <nav class="game-actions" data-i18n-attr="aria-label:fishing.areas_nav" aria-label="Spielbereiche">
+        <button type="button" data-open-window="shop" data-i18n="fishing.tab_rod">Angel</button>
+        <button type="button" data-open-window="index" data-i18n="fishing.tab_index">Fish Index</button>
+        <button type="button" data-open-window="inventory" data-i18n="fishing.tab_inventory">Inventar</button>
+        <button type="button" data-open-window="areas" data-i18n="fishing.tab_areas">Areas</button>
+        <button type="button" data-open-window="stats" data-i18n="fishing.tab_stats">Stats</button>
+        <button type="button" data-open-window="settings" data-i18n="fishing.tab_settings">Settings</button>
+        <button type="button" data-open-window="changelog" data-i18n="fishing.tab_changelog">Changelog</button>
       </nav>
 
       <aside class="game-menu" id="game-menu" hidden>
         <div class="game-menu-head">
           <strong>My Fishing Kaktus</strong>
-          <button type="button" data-close-menu aria-label="Menü schließen">x</button>
+          <button type="button" data-close-menu data-i18n-attr="aria-label:fishing.menu_close" aria-label="Menü schließen">x</button>
         </div>
-        <button type="button" data-open-window="shop">Angel</button>
-        <button type="button" data-open-window="index">Fish Index</button>
-        <button type="button" data-open-window="inventory">Inventar</button>
-        <button type="button" data-open-window="areas">Areas</button>
-        <button type="button" data-open-window="stats">Stats</button>
-        <button type="button" data-open-window="settings">Settings</button>
-        <button type="button" data-open-window="changelog">Changelog</button>
+        <button type="button" data-open-window="shop" data-i18n="fishing.tab_rod">Angel</button>
+        <button type="button" data-open-window="index" data-i18n="fishing.tab_index">Fish Index</button>
+        <button type="button" data-open-window="inventory" data-i18n="fishing.tab_inventory">Inventar</button>
+        <button type="button" data-open-window="areas" data-i18n="fishing.tab_areas">Areas</button>
+        <button type="button" data-open-window="stats" data-i18n="fishing.tab_stats">Stats</button>
+        <button type="button" data-open-window="settings" data-i18n="fishing.tab_settings">Settings</button>
+        <button type="button" data-open-window="changelog" data-i18n="fishing.tab_changelog">Changelog</button>
       </aside>
 
-      <section class="water-stage" id="water-stage" aria-label="Wasserfläche mit Fischstellen">
-        <p class="stage-hint" id="stage-hint">Tippe eine Fischstelle an und halte im Fangfenster die Zone am Punkt.</p>
+      <section class="water-stage" id="water-stage" data-i18n-attr="aria-label:fishing.water_stage" aria-label="Wasserfläche mit Fischstellen">
+        <p class="stage-hint" id="stage-hint" data-i18n="fishing.stage_hint">Tippe eine Fischstelle an und halte im Fangfenster die Zone am Punkt.</p>
         <div class="weather-banner" id="weather-banner" aria-live="polite" hidden></div>
         <p class="broadcast-feed" id="broadcast-feed" aria-live="polite" hidden></p>
         <div class="catch-popups" id="catch-popups" aria-live="polite"></div>
@@ -179,10 +179,10 @@
       <section class="game-window angel-window" data-window="shop" hidden aria-labelledby="shop-title">
         <header>
           <div>
-            <p>Ausrüstung</p>
-            <h2 id="shop-title">Deine Angel</h2>
+            <p data-i18n="fishing.equipment">Ausrüstung</p>
+            <h2 id="shop-title" data-i18n="fishing.your_rod">Deine Angel</h2>
           </div>
-          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+          <button type="button" data-close-window data-i18n-attr="aria-label:fishing.window_close" aria-label="Fenster schließen">x</button>
         </header>
         <div class="window-body angel-body" id="angel-body">
           <div class="angel-stage" id="angel-stage" aria-hidden="true"></div>
@@ -194,10 +194,10 @@
       <section class="game-window index-window" data-window="index" hidden aria-labelledby="index-title">
         <header>
           <div>
-            <p>Sammlung</p>
-            <h2 id="index-title">Fish Index</h2>
+            <p data-i18n="fishing.collection">Sammlung</p>
+            <h2 id="index-title" data-i18n="fishing.tab_index">Fish Index</h2>
           </div>
-          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+          <button type="button" data-close-window data-i18n-attr="aria-label:fishing.window_close" aria-label="Fenster schließen">x</button>
         </header>
         <div class="window-body fish-index" id="fish-index"></div>
       </section>
@@ -205,14 +205,14 @@
       <section class="game-window" data-window="inventory" hidden aria-labelledby="inventory-title">
         <header>
           <div>
-            <p>Fänge</p>
-            <h2 id="inventory-title">Inventar</h2>
+            <p data-i18n="fishing.catches">Fänge</p>
+            <h2 id="inventory-title" data-i18n="fishing.tab_inventory">Inventar</h2>
           </div>
-          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+          <button type="button" data-close-window data-i18n-attr="aria-label:fishing.window_close" aria-label="Fenster schließen">x</button>
         </header>
         <div class="window-toolbar">
           <span id="inventory-value">0 Coins</span>
-          <button class="sell-button" id="sell-all" type="button">Alles verkaufen</button>
+          <button class="sell-button" id="sell-all" type="button" data-i18n="fishing.sell_all">Alles verkaufen</button>
         </div>
         <div class="window-body inventory-list" id="inventory-list"></div>
       </section>
@@ -220,10 +220,10 @@
       <section class="game-window" data-window="areas" hidden aria-labelledby="areas-title">
         <header>
           <div>
-            <p>Fortschritt</p>
-            <h2 id="areas-title">Areas & Prestige</h2>
+            <p data-i18n="fishing.progress">Fortschritt</p>
+            <h2 id="areas-title" data-i18n="fishing.areas_and_prestige">Areas & Prestige</h2>
           </div>
-          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+          <button type="button" data-close-window data-i18n-attr="aria-label:fishing.window_close" aria-label="Fenster schließen">x</button>
         </header>
         <div class="window-body">
           <div class="area-grid" id="area-list"></div>
@@ -234,19 +234,19 @@
       <section class="game-window" data-window="stats" hidden aria-labelledby="stats-title">
         <header>
           <div>
-            <p>Grind</p>
-            <h2 id="stats-title">Stats & Rangliste</h2>
+            <p data-i18n="fishing.grind">Grind</p>
+            <h2 id="stats-title" data-i18n="fishing.stats_and_leaderboard">Stats & Rangliste</h2>
           </div>
-          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+          <button type="button" data-close-window data-i18n-attr="aria-label:fishing.window_close" aria-label="Fenster schließen">x</button>
         </header>
         <div class="window-body stats-body">
           <dl class="stats-grid" id="stats-grid"></dl>
           <section class="leaderboard-card">
             <div class="leaderboard-head">
-              <h3>Rangliste</h3>
-              <button id="reload-leaderboard" type="button">Aktualisieren</button>
+              <h3 data-i18n="fishing.leaderboard">Rangliste</h3>
+              <button id="reload-leaderboard" type="button" data-i18n="fishing.reload">Aktualisieren</button>
             </div>
-            <p>Sortiert nach Prestige, danach nach gefangenen Fischen.</p>
+            <p data-i18n="fishing.sorted_by">Sortiert nach Prestige, danach nach gefangenen Fischen.</p>
             <div class="fishing-leaderboard" id="leaderboard-list"></div>
           </section>
         </div>
@@ -255,63 +255,63 @@
       <section class="game-window" data-window="settings" hidden aria-labelledby="settings-title">
         <header>
           <div>
-            <p>Optionen</p>
-            <h2 id="settings-title">Settings</h2>
+            <p data-i18n="fishing.options">Optionen</p>
+            <h2 id="settings-title" data-i18n="fishing.tab_settings">Settings</h2>
           </div>
-          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+          <button type="button" data-close-window data-i18n-attr="aria-label:fishing.window_close" aria-label="Fenster schließen">x</button>
         </header>
         <div class="window-body settings-list">
-          <p class="save-status" id="save-status">Spielstand wird geladen.</p>
+          <p class="save-status" id="save-status" data-i18n="fishing.save_loading">Spielstand wird geladen.</p>
           <label>
             <input id="reduced-motion" type="checkbox" />
-            Weniger Bewegung
+            <span data-i18n="fishing.reduce_motion">Weniger Bewegung</span>
           </label>
           <label>
             <input id="music-toggle" type="checkbox" />
-            Musik
+            <span data-i18n="fishing.music">Musik</span>
           </label>
           <label class="settings-slider">
-            <span>Musik-Lautstärke</span>
+            <span data-i18n="fishing.music_volume">Musik-Lautstärke</span>
             <input id="music-volume" type="range" min="0" max="100" step="1" />
           </label>
           <label>
             <input id="sfx-toggle" type="checkbox" />
-            Soundeffekte
+            <span data-i18n="fishing.sfx">Soundeffekte</span>
           </label>
           <label class="settings-slider">
-            <span>SFX-Lautstärke</span>
+            <span data-i18n="fishing.sfx_volume">SFX-Lautstärke</span>
             <input id="sfx-volume" type="range" min="0" max="100" step="1" />
           </label>
-          <button id="save-now" type="button">Jetzt speichern</button>
-          <button class="danger-button" id="reset-save" type="button">Spielstand zurücksetzen</button>
+          <button id="save-now" type="button" data-i18n="fishing.save_now">Jetzt speichern</button>
+          <button class="danger-button" id="reset-save" type="button" data-i18n="fishing.reset_save">Spielstand zurücksetzen</button>
         </div>
       </section>
 
       <section class="game-window" data-window="changelog" hidden aria-labelledby="changelog-title">
         <header>
           <div>
-            <p>News</p>
-            <h2 id="changelog-title">Changelog</h2>
+            <p data-i18n="fishing.news">News</p>
+            <h2 id="changelog-title" data-i18n="fishing.tab_changelog">Changelog</h2>
           </div>
-          <button type="button" data-close-window aria-label="Fenster schließen">x</button>
+          <button type="button" data-close-window data-i18n-attr="aria-label:fishing.window_close" aria-label="Fenster schließen">x</button>
         </header>
         <div class="window-body fishing-changelog" id="fishing-changelog"></div>
       </section>
 
     </main>
 
-    <section class="fishing-overlay" id="fishing-overlay" hidden aria-label="Fang-Minispiel">
+    <section class="fishing-overlay" id="fishing-overlay" hidden data-i18n-attr="aria-label:fishing.minigame" aria-label="Fang-Minispiel">
       <div class="fishing-overlay-card">
         <div class="fishing-overlay-glow" aria-hidden="true"></div>
         <header>
           <div>
-            <p>Fang läuft</p>
+            <p data-i18n="fishing.catch_running">Fang läuft</p>
             <strong data-fishing-rarity>Common</strong>
           </div>
-          <button type="button" class="fishing-abort" data-fishing-cancel>Abbrechen</button>
+          <button type="button" class="fishing-abort" data-fishing-cancel data-i18n="fishing.cancel">Abbrechen</button>
         </header>
         <div class="fishing-arena">
-          <p class="fishing-tip">Halte gedrückt — die grüne Zone wandert zum leuchtenden Punkt. Beim Loslassen gleitet sie zurück.</p>
+          <p class="fishing-tip" data-i18n="fishing.tip_hold">Halte gedrückt — die grüne Zone wandert zum leuchtenden Punkt. Beim Loslassen gleitet sie zurück.</p>
           <div class="fishing-track" data-fishing-hold>
             <span class="catch-zone" data-fishing-zone></span>
             <span class="fish-marker" data-fishing-fish></span>
@@ -319,16 +319,16 @@
         </div>
         <div class="fishing-progress">
           <div class="fishing-progress-top">
-            <span>Fangfortschritt</span>
+            <span data-i18n="fishing.catch_progress">Fangfortschritt</span>
           </div>
-          <div class="catch-progress" aria-label="Fangfortschritt">
+          <div class="catch-progress" data-i18n-attr="aria-label:fishing.catch_progress" aria-label="Fangfortschritt">
             <span data-fishing-progress></span>
           </div>
           <div class="fishing-progress-top fishing-progress-tension">
-            <span>Schnur-Spannung</span>
-            <small data-fishing-tension-hint>Halt ihn in der Zone!</small>
+            <span data-i18n="fishing.line_tension">Schnur-Spannung</span>
+            <small data-fishing-tension-hint data-i18n="fishing.keep_in_zone">Halt ihn in der Zone!</small>
           </div>
-          <div class="tension-bar" aria-label="Schnur-Spannung">
+          <div class="tension-bar" data-i18n-attr="aria-label:fishing.line_tension" aria-label="Schnur-Spannung">
             <span data-fishing-tension></span>
           </div>
         </div>
@@ -339,7 +339,7 @@
       <div class="area-clouds area-clouds--back"></div>
       <div class="area-clouds area-clouds--front"></div>
       <div class="area-transition-text">
-        <p id="area-transition-kicker">Neue Area freigeschaltet</p>
+        <p id="area-transition-kicker" data-i18n="fishing.new_area_unlocked">Neue Area freigeschaltet</p>
         <strong id="area-transition-name">Lake</strong>
       </div>
     </div>

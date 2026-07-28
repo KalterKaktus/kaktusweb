@@ -20,12 +20,12 @@
       <div class="nav-container">
         <a class="logo" href="/">KK</a>
         <div class="nav-links">
-          <a href="/" class="nav-link">Home</a>
-          <a href="/steam-deals/" class="nav-link">Steam Deals</a>
-          <a href="/games/" class="nav-link">Games</a>
-          <a href="/wiki/" class="nav-link">Wiki</a>
+          <a href="/" class="nav-link" data-i18n="nav.home">Home</a>
+          <a href="/steam-deals/" class="nav-link" data-i18n="nav.steam_deals">Steam Deals</a>
+          <a href="/games/" class="nav-link" data-i18n="nav.games">Games</a>
+          <a href="/wiki/" class="nav-link" data-i18n="nav.wiki">Wiki</a>
           <div id="auth-nav" class="auth-nav" aria-live="polite">
-            <a class="nav-link auth-link" href="/login.html">Login</a>
+            <a class="nav-link auth-link" href="/login.html" data-i18n="nav.login">Login</a>
           </div>
         </div>
       </div>
@@ -40,14 +40,14 @@
               <span>Clicker</span>
             </h1>
             <p class="tagline">
-              <span>Klicken.</span>
-              <span>Produktion bauen.</span>
-              <span>Rangliste jagen.</span>
+              <span data-i18n="clicker.tagline_click">Klicken.</span>
+              <span data-i18n="clicker.tagline_build">Produktion bauen.</span>
+              <span data-i18n="clicker.tagline_rank">Rangliste jagen.</span>
             </p>
           </div>
           <div class="brand-tools">
             <div class="brand-actions">
-              <button class="icon-button" id="save-button" type="button" title="Jetzt speichern" aria-label="Jetzt speichern">
+              <button class="icon-button" id="save-button" type="button" data-i18n-attr="title:clicker.save_now,aria-label:clicker.save_now" title="Jetzt speichern" aria-label="Jetzt speichern">
                 <svg class="save-icon" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M5 4h12l2 2v14H5V4Zm3 1.8v5h8v-5H8Zm0 9.2v3h8v-3H8Z"/>
                 </svg>
@@ -55,24 +55,24 @@
             </div>
             <div class="audio-tools" aria-label="Audio">
               <div class="audio-control">
-                <button class="icon-button audio-button" id="music-toggle" type="button" title="Musik stummschalten" aria-label="Musik stummschalten">
+                <button class="icon-button audio-button" id="music-toggle" type="button" data-i18n-attr="title:clicker.music_mute,aria-label:clicker.music_mute" title="Musik stummschalten" aria-label="Musik stummschalten">
                   <svg class="audio-icon" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M19 3v13.2a3.6 3.6 0 1 1-2-3.2V7.2l-7 1.5v9.5a3.6 3.6 0 1 1-2-3.2V7.1L19 4.7V3Z"/>
                   </svg>
                 </button>
                 <label class="audio-slider" for="music-volume">
-                  <span>Musik</span>
+                  <span data-i18n="clicker.music">Musik</span>
                   <input id="music-volume" type="range" min="0" max="100" step="1" value="24" />
                 </label>
               </div>
               <div class="audio-control">
-                <button class="icon-button audio-button" id="sound-toggle" type="button" title="Sound stummschalten" aria-label="Sound stummschalten">
+                <button class="icon-button audio-button" id="sound-toggle" type="button" data-i18n-attr="title:clicker.sound_mute,aria-label:clicker.sound_mute" title="Sound stummschalten" aria-label="Sound stummschalten">
                   <svg class="audio-icon" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M5 9h3l4-4v14l-4-4H5V9Zm10.4-.6a1 1 0 0 1 1.4 0 5 5 0 0 1 0 7.2 1 1 0 1 1-1.4-1.4 3 3 0 0 0 0-4.4 1 1 0 0 1 0-1.4Zm3-3a1 1 0 0 1 1.4 0 9.1 9.1 0 0 1 0 13.2 1 1 0 1 1-1.4-1.4 7.1 7.1 0 0 0 0-10.4 1 1 0 0 1 0-1.4Z"/>
                   </svg>
                 </button>
                 <label class="audio-slider" for="sound-volume">
-                  <span>Sound</span>
+                  <span data-i18n="clicker.sound">Sound</span>
                   <input id="sound-volume" type="range" min="0" max="100" step="1" value="62" />
                 </label>
               </div>
@@ -81,21 +81,21 @@
         </header>
 
         <div class="score-card">
-          <p class="score-label">Kakteen</p>
+          <p class="score-label" data-i18n="clicker.score_label">Kakteen</p>
           <p class="score" id="cactus-count">0</p>
-          <p class="rate"><span id="cactus-rate">0</span> pro Sekunde</p>
-          <p class="click-rate">+<strong id="click-power">1</strong> pro Klick</p>
-          <div class="score-multipliers" aria-label="Aktive Multiplikatoren">
-            <span class="score-multiplier is-achievement">Abzeichen <strong id="achievement-multiplier">x1</strong></span>
-            <span class="score-multiplier is-prestige">Prestige <strong id="score-prestige-multiplier">x1</strong></span>
-            <span class="score-multiplier is-frenzy" id="score-frenzy-multiplier" hidden>Goldlauf <strong>x2</strong></span>
+          <p class="rate"><span id="cactus-rate">0</span> <span data-i18n="clicker.per_second">pro Sekunde</span></p>
+          <p class="click-rate">+<strong id="click-power">1</strong> <span data-i18n="clicker.per_click">pro Klick</span></p>
+          <div class="score-multipliers" data-i18n-attr="aria-label:clicker.mult_active" aria-label="Aktive Multiplikatoren">
+            <span class="score-multiplier is-achievement"><span data-i18n="clicker.mult_badge">Abzeichen</span> <strong id="achievement-multiplier">x1</strong></span>
+            <span class="score-multiplier is-prestige"><span data-i18n="clicker.mult_prestige">Prestige</span> <strong id="score-prestige-multiplier">x1</strong></span>
+            <span class="score-multiplier is-frenzy" id="score-frenzy-multiplier" hidden><span data-i18n="clicker.mult_frenzy">Goldlauf</span> <strong>x2</strong></span>
           </div>
-          <strong class="frenzy-badge" id="frenzy-badge" hidden>x2 Goldlauf</strong>
+          <strong class="frenzy-badge" id="frenzy-badge" hidden data-i18n="clicker.frenzy_badge">x2 Goldlauf</strong>
         </div>
 
         <div class="event-meter" id="event-meter" aria-live="polite">
           <div class="event-meter-copy">
-            <span id="event-meter-label">Goldlauf lädt</span>
+            <span id="event-meter-label" data-i18n="clicker.frenzy_charging">Goldlauf lädt</span>
             <strong id="event-meter-value">0 / 1.000 Klicks</strong>
           </div>
           <div class="event-meter-track" aria-hidden="true">
@@ -103,7 +103,7 @@
           </div>
         </div>
 
-        <button class="cactus-button" id="cactus-button" type="button" aria-label="Kaktus ernten">
+        <button class="cactus-button" id="cactus-button" type="button" data-i18n-attr="aria-label:clicker.harvest_cactus" aria-label="Kaktus ernten">
           <div class="cactus-stage">
           <pre class="cactus-art" aria-hidden="true">⠀⠀⠀⠀⠀⠀⠀⠀⠰⣱⣷⣼⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⢀⣹⣿⢼⡻⣍⠀⠀⠀⠀⠀⠀⠀⠀
@@ -137,60 +137,60 @@
           </div>
         </button>
 
-        <p class="offline-hint">Offline-Ertrag: ab 5 Minuten 50% deiner normalen Auto-Produktion, bis zu 12 Stunden.</p>
+        <p class="offline-hint" data-i18n="clicker.offline_hint">Offline-Ertrag: ab 5 Minuten 50% deiner normalen Auto-Produktion, bis zu 12 Stunden.</p>
       </section>
 
-      <aside class="panel" aria-label="Gebäude und Fortschritt">
-        <nav class="tabs" aria-label="Bereiche">
-          <button class="tab is-active" data-tab="shop" type="button">Gebäude</button>
-          <button class="tab" data-tab="upgrades" type="button">Upgrades</button>
-          <button class="tab" data-tab="stats" type="button">Stats</button>
-          <button class="tab prestige-tab" data-tab="prestige" type="button">Prestige</button>
-          <button class="tab" data-tab="leaderboard" type="button">Rangliste</button>
+      <aside class="panel" data-i18n-attr="aria-label:clicker.panel_label" aria-label="Gebäude und Fortschritt">
+        <nav class="tabs" data-i18n-attr="aria-label:clicker.tabs_label" aria-label="Bereiche">
+          <button class="tab is-active" data-tab="shop" type="button" data-i18n="clicker.tab_buildings">Gebäude</button>
+          <button class="tab" data-tab="upgrades" type="button" data-i18n="clicker.tab_upgrades">Upgrades</button>
+          <button class="tab" data-tab="stats" type="button" data-i18n="clicker.tab_stats">Stats</button>
+          <button class="tab prestige-tab" data-tab="prestige" type="button" data-i18n="clicker.tab_prestige">Prestige</button>
+          <button class="tab" data-tab="leaderboard" type="button" data-i18n="clicker.tab_leaderboard">Rangliste</button>
         </nav>
 
         <section class="tab-panel is-active" id="shop-panel">
           <div class="section-title">
-            <h2>Gebäude</h2>
-            <p>Automatische Ernte ausbauen</p>
+            <h2 data-i18n="clicker.tab_buildings">Gebäude</h2>
+            <p data-i18n="clicker.buildings_sub">Automatische Ernte ausbauen</p>
           </div>
           <div class="item-list" id="building-list"></div>
         </section>
 
         <section class="tab-panel" id="upgrades-panel">
           <div class="section-title">
-            <h2>Upgrades</h2>
-            <p>Klicks und Produktion verstärken</p>
+            <h2 data-i18n="clicker.tab_upgrades">Upgrades</h2>
+            <p data-i18n="clicker.upgrades_sub">Klicks und Produktion verstärken</p>
           </div>
           <div class="item-list" id="upgrade-list"></div>
         </section>
 
         <section class="tab-panel" id="stats-panel">
           <div class="section-title">
-            <h2>Fortschritt</h2>
-            <p>Deine Wüstenbilanz</p>
+            <h2 data-i18n="clicker.progress_title">Fortschritt</h2>
+            <p data-i18n="clicker.progress_sub">Deine Wüstenbilanz</p>
           </div>
           <dl class="stats-grid">
             <div>
-              <dt>Gesamt geerntet</dt>
+              <dt data-i18n="clicker.stats_total_earned">Gesamt geerntet</dt>
               <dd id="total-earned">0</dd>
             </div>
             <div>
-              <dt>Klicks</dt>
+              <dt data-i18n="clicker.stats_clicks">Klicks</dt>
               <dd id="total-clicks">0</dd>
             </div>
             <div>
-              <dt>Gebäude</dt>
+              <dt data-i18n="clicker.stats_buildings">Gebäude</dt>
               <dd id="total-buildings">0</dd>
             </div>
             <div>
-              <dt>Upgrades</dt>
+              <dt data-i18n="clicker.stats_upgrades">Upgrades</dt>
               <dd id="total-upgrades">0</dd>
             </div>
           </dl>
 
           <div class="achievements">
-            <h3>Abzeichen</h3>
+            <h3 data-i18n="clicker.achievements_title">Abzeichen</h3>
             <div id="achievement-list" class="achievement-list"></div>
           </div>
 
@@ -198,49 +198,49 @@
 
         <section class="tab-panel prestige-panel" id="prestige-panel">
           <div class="section-title">
-            <h2>Prestige</h2>
-            <p>Nopal für schnellere Runs</p>
+            <h2 data-i18n="clicker.tab_prestige">Prestige</h2>
+            <p data-i18n="clicker.prestige_sub">Nopal für schnellere Runs</p>
           </div>
-          <p class="prestige-copy">
+          <p class="prestige-copy" data-i18n="clicker.prestige_copy">
             Prestige setzt deinen aktuellen Run zurück. Dafür erhältst du Nopal, der deine Produktion in der laufenden Saison dauerhaft erhöht.
           </p>
           <dl class="prestige-grid">
             <div>
-              <dt>Nopal</dt>
+              <dt data-i18n="clicker.prestige_nopal">Nopal</dt>
               <dd id="prestige-nopal">0</dd>
             </div>
             <div>
-              <dt>Produktionsbonus</dt>
+              <dt data-i18n="clicker.prestige_bonus">Produktionsbonus</dt>
               <dd id="prestige-bonus">x1</dd>
             </div>
             <div>
-              <dt>Nopal-Verdienst</dt>
+              <dt data-i18n="clicker.prestige_new_nopal">Nopal-Verdienst</dt>
               <dd id="prestige-new-nopal">0</dd>
             </div>
             <div>
-              <dt>Bonus nach Prestige</dt>
+              <dt data-i18n="clicker.prestige_next_bonus">Bonus nach Prestige</dt>
               <dd id="prestige-next-bonus">x1</dd>
             </div>
             <div>
-              <dt>Bis zum nächsten Nopal</dt>
+              <dt data-i18n="clicker.prestige_gap">Bis zum nächsten Nopal</dt>
               <dd id="prestige-gap">0</dd>
             </div>
             <div>
-              <dt>Prestiges</dt>
+              <dt data-i18n="clicker.prestige_count">Prestiges</dt>
               <dd id="prestige-count">0</dd>
             </div>
           </dl>
-          <button class="prestige-button" id="prestige-button" type="button">Prestige durchführen</button>
+          <button class="prestige-button" id="prestige-button" type="button" data-i18n="clicker.prestige_button">Prestige durchführen</button>
         </section>
 
         <section class="tab-panel" id="leaderboard-panel">
           <div class="section-title">
-            <h2>Rangliste</h2>
-            <p>Live im aktuellen Monat</p>
+            <h2 data-i18n="clicker.tab_leaderboard">Rangliste</h2>
+            <p data-i18n="clicker.leaderboard_sub">Live im aktuellen Monat</p>
           </div>
           <p id="leaderboard-reset" class="leaderboard-reset" aria-live="polite"></p>
           <section class="leaderboard-history" aria-labelledby="leaderboard-last-month-title">
-            <h3 id="leaderboard-last-month-title">Top 3 letzter Monat</h3>
+            <h3 id="leaderboard-last-month-title" data-i18n="clicker.leaderboard_last_month">Top 3 letzter Monat</h3>
             <div id="leaderboard-last-month-list" class="leaderboard-list" aria-live="polite"></div>
           </section>
           <div id="leaderboard-list" class="leaderboard-list" aria-live="polite"></div>
@@ -248,10 +248,10 @@
         </section>
 
         <details class="extra-menu">
-          <summary>Zusatzmenü</summary>
-          <p class="extra-save-status" id="save-status">Speicherstatus wird geladen</p>
-          <button class="extra-menu-button" id="changelog-button" type="button">Changelog</button>
-          <button class="danger-button extra-reset-button" id="reset-button" type="button">Spielstand zurücksetzen</button>
+          <summary data-i18n="clicker.extra_menu">Zusatzmenü</summary>
+          <p class="extra-save-status" id="save-status" data-i18n="clicker.save_status_loading">Speicherstatus wird geladen</p>
+          <button class="extra-menu-button" id="changelog-button" type="button" data-i18n="clicker.changelog_button">Changelog</button>
+          <button class="danger-button extra-reset-button" id="reset-button" type="button" data-i18n="clicker.reset_button">Spielstand zurücksetzen</button>
         </details>
       </aside>
     </main>

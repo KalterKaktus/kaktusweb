@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="KalterKaktus">
-    <title>Steam Deals - KalterKaktus</title>
+    <title data-i18n="deals.meta_title">Steam Deals - KalterKaktus</title>
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -241,12 +241,12 @@
         <div class="nav-container">
             <a class="logo" href="/">KK</a>
             <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/steam-deals/" class="nav-link">Steam Deals</a>
-                <a href="/games/" class="nav-link">Games</a>
-                <a href="/wiki/" class="nav-link">Wiki</a>
+                <a href="/" class="nav-link" data-i18n="nav.home">Home</a>
+                <a href="/steam-deals/" class="nav-link" data-i18n="nav.steam_deals">Steam Deals</a>
+                <a href="/games/" class="nav-link" data-i18n="nav.games">Games</a>
+                <a href="/wiki/" class="nav-link" data-i18n="nav.wiki">Wiki</a>
                 <div id="auth-nav" class="auth-nav" aria-live="polite">
-                    <a class="nav-link auth-link" href="/login.html">Login</a>
+                    <a class="nav-link auth-link" href="/login.html" data-i18n="nav.login">Login</a>
                 </div>
             </div>
         </div>
@@ -259,28 +259,29 @@
         <div class="games-container">
             <header class="games-header">
                 <div>
-                    <div class="games-kicker">Steam Angebote</div>
-                    <h1 class="games-title">Steam Deals</h1>
-                    <p class="games-subtitle">
+                    <div class="games-kicker" data-i18n="deals.kicker">Steam Angebote</div>
+                    <h1 class="games-title" data-i18n="deals.title">Steam Deals</h1>
+                    <p class="games-subtitle" data-i18n="deals.subtitle">
                         Kostenlose Steam-Spiele und beliebte Deals ab 70% Rabatt.
                     </p>
                 </div>
-                <a class="back-link" href="/">Zurück</a>
+                <a class="back-link" href="/" data-i18n="deals.back">Zurück</a>
             </header>
 
             <div class="games-toolbar">
-                <div id="gamesMeta">Lade Angebote...</div>
-                <button class="refresh-btn" id="refreshGames" type="button">Aktualisieren</button>
+                <div id="gamesMeta" data-i18n="deals.loading">Lade Angebote...</div>
+                <button class="refresh-btn" id="refreshGames" type="button" data-i18n="deals.refresh">Aktualisieren</button>
             </div>
 
             <section id="gamesApp" class="state-box">
                 <div class="loader"></div>
-                <div>Steam-Angebote werden geladen...</div>
+                <div data-i18n="deals.loading_full">Steam-Angebote werden geladen...</div>
             </section>
         </div>
     </main>
 
-    <script>
+    <script type="module">
+        import { t, onLanguageChange } from '/js/i18n.js';
         const app = document.getElementById('gamesApp');
         const meta = document.getElementById('gamesMeta');
         const refreshButton = document.getElementById('refreshGames');
@@ -299,13 +300,13 @@
             const image = escapeHtml(game.image);
             const url = escapeHtml(game.url);
             const oldPrice = game.normalPrice ? escapeHtml(game.normalPrice) : 'Steam';
-            const salePrice = game.salePrice ? `<span class="game-price">jetzt ${escapeHtml(game.salePrice)}</span>` : '';
+            const salePrice = game.salePrice ? `<span class="game-price">${escapeHtml(t('deals.now'))} ${escapeHtml(game.salePrice)}</span>` : '';
             const releaseDate = game.releaseDate ? `<span class="game-price">${escapeHtml(game.releaseDate)}</span>` : '';
             const reviewCount = Number(game.reviewCount) || 0;
             const reviewInfo = reviewCount
-                ? `<span class="game-price">${escapeHtml(game.reviewPercent)}% positiv · ${reviewCount.toLocaleString('de-DE')} Reviews</span>`
+                ? `<span class="game-price">${escapeHtml(t('deals.reviews_info', { percent: game.reviewPercent, count: reviewCount.toLocaleString('de-DE') }))}</span>`
                 : '';
-            const badgeLabel = options.badgeLabel || 'Kostenlos';
+            const badgeLabel = options.badgeLabel || t('deals.badge_free');
             const badgeClass = options.badgeClass || '';
 
             return `
@@ -315,7 +316,7 @@
                         <h2 class="game-card-title">${title}</h2>
                         <div class="game-card-meta">
                             <span class="game-badge ${badgeClass}">${escapeHtml(badgeLabel)}</span>
-                            <span class="game-price">statt ${oldPrice}</span>
+                            <span class="game-price">${escapeHtml(t('deals.instead_of'))} ${oldPrice}</span>
                             ${salePrice}
                             ${reviewInfo}
                             ${releaseDate}
@@ -333,7 +334,7 @@
                             <h2>${escapeHtml(title)}</h2>
                             <span>${escapeHtml(subtitle)}</span>
                         </div>
-                        <div class="state-box">${escapeHtml(options.emptyText || 'Keine Angebote gefunden.')}</div>
+                        <div class="state-box">${escapeHtml(options.emptyText || t('deals.empty_generic'))}</div>
                     </section>
                 `;
             }
@@ -342,7 +343,7 @@
                 <section class="offer-section">
                     <div class="offer-section-title">
                         <h2>${escapeHtml(title)}</h2>
-                        <span>${offers.length} gefunden</span>
+                        <span>${offers.length} ${escapeHtml(t('deals.found'))}</span>
                     </div>
                     <div class="games-grid">
                         ${offers.map((offer) => renderGame(offer, options)).join('')}
@@ -353,8 +354,8 @@
 
         async function loadGames() {
             app.className = 'state-box';
-            app.innerHTML = '<div class="loader"></div><div>Steam-Angebote werden geladen...</div>';
-            meta.textContent = 'Lade Angebote...';
+            app.innerHTML = `<div class="loader"></div><div>${escapeHtml(t('deals.loading_full'))}</div>`;
+            meta.textContent = t('deals.loading');
             refreshButton.disabled = true;
 
             try {
@@ -373,25 +374,26 @@
 
                 app.className = '';
                 app.innerHTML = [
-                    renderSection('Kostenlos', '100% Rabatt', games, {
-                        badgeLabel: 'Kostenlos',
-                        emptyText: 'Gerade wurden keine kostenlosen Steam-Angebote gefunden.',
+                    renderSection(t('deals.section_free'), t('deals.section_free_sub'), games, {
+                        badgeLabel: t('deals.badge_free'),
+                        emptyText: t('deals.empty_free'),
                     }),
-                    renderSection('Beliebte Deals', 'ab 70% Rabatt', discounted, {
-                        badgeLabel: 'Deal',
+                    renderSection(t('deals.section_popular'), t('deals.section_popular_sub'), discounted, {
+                        badgeLabel: t('deals.badge_deal'),
                         badgeClass: 'deal',
-                        emptyText: 'Gerade wurden keine beliebten Steam-Deals ab 70% gefunden.',
+                        emptyText: t('deals.empty_popular'),
                     }),
                 ].join('');
 
+                const locale = document.documentElement.lang === 'ru' ? 'ru-RU' : 'de-DE';
                 const time = data.fetchedAt
-                    ? new Date(data.fetchedAt).toLocaleString('de-DE')
-                    : new Date().toLocaleString('de-DE');
-                meta.innerHTML = `${games.length} kostenlose Spiele, ${discounted.length} beliebte Deals ab 70%. Zuletzt aktualisiert: ${time}. Quelle: <a class="source-link" href="https://store.steampowered.com/search/?specials=1" target="_blank" rel="noopener noreferrer">Steam Store</a>`;
+                    ? new Date(data.fetchedAt).toLocaleString(locale)
+                    : new Date().toLocaleString(locale);
+                meta.innerHTML = `${t('deals.meta_summary', { free: games.length, deals: discounted.length, time })} <a class="source-link" href="https://store.steampowered.com/search/?specials=1" target="_blank" rel="noopener noreferrer">Steam Store</a>`;
             } catch (error) {
                 app.className = 'state-box';
-                app.innerHTML = `Fehler beim Laden der Steam-Angebote.<br>${escapeHtml(error.message)}`;
-                meta.textContent = 'Keine Daten geladen.';
+                app.innerHTML = `${escapeHtml(t('deals.error_load'))}<br>${escapeHtml(error.message)}`;
+                meta.textContent = t('deals.error_meta');
             } finally {
                 refreshButton.disabled = false;
             }
@@ -399,15 +401,16 @@
 
         refreshButton.addEventListener('click', loadGames);
         loadGames();
+        onLanguageChange(loadGames);
     </script>
     <script src="/js/config.js"></script>
     <script type="module" src="/js/auth-nav.js"></script>
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-links">
-                <a href="/impressum.html">Impressum</a>
-                <a href="/datenschutz.html">Datenschutz</a>
-                <a href="/nutzungsbedingungen.html">Nutzungsbedingungen</a>
+                <a href="/impressum.html" data-i18n="footer.impressum">Impressum</a>
+                <a href="/datenschutz.html" data-i18n="footer.datenschutz">Datenschutz</a>
+                <a href="/nutzungsbedingungen.html" data-i18n="footer.terms">Nutzungsbedingungen</a>
             </div>
         </div>
     </footer>
