@@ -367,7 +367,6 @@ export class WaterSystem {
         this.mvx = 0;
         this.mvy = 0;
         this.hold = 0;
-        this.holding = false;
 
         // Splash-Ringpuffer.
         // Wichtig: jede Slot-Zeit (z) auf -1000 vorinitialisieren, sonst rendert
@@ -562,12 +561,12 @@ export class WaterSystem {
 
     _bindEvents() {
         const r = this.root;
-        // PointerEvents kommen via Bubbling auch durch, wenn .fish-spot etc. zuerst getroffen wurden.
+        // Klicks erzeugen KEINE Wellen mehr — das war reine Optik und hat pro Tap
+        // einen zusätzlichen Splash-Ring durch den Shader geschickt. Wellen gibt
+        // es weiterhin für Fisch-Events (pulseAt) und die Idle-Ambience.
+        // pointermove bleibt: u_mouse speist noch den Sonnen-/Halo-Term.
         r.addEventListener("pointermove", (e) => this._onPointerMove(e), { passive: true });
-        r.addEventListener("pointerdown", (e) => this._onPointerDown(e), { passive: true });
-        r.addEventListener("pointerup", () => this._onPointerUp(), { passive: true });
         r.addEventListener("pointerleave", () => this._onPointerLeave(), { passive: true });
-        r.addEventListener("pointercancel", () => this._onPointerUp(), { passive: true });
 
         if (typeof ResizeObserver !== "undefined") {
             this._ro = new ResizeObserver(() => this._resize());
@@ -599,19 +598,8 @@ export class WaterSystem {
         this.lastInteract = performance.now();
     }
 
-    _onPointerDown(event) {
-        this._onPointerMove(event);
-        this.holding = true;
-        this._addSplash();
-    }
-
-    _onPointerUp() {
-        this.holding = false;
-    }
-
     _onPointerLeave() {
-        this.holding = false;
-        // Maus „weit weg" parken, damit das Hover-Ripple (exp(-mr * …)) auf 0 abklingt.
+        // Maus „weit weg" parken, damit der mausabhängige Term auf 0 abklingt.
         this.mx = -100000;
         this.my = -100000;
         this.mvx = 0;
@@ -703,17 +691,8 @@ export class WaterSystem {
     this.mvx *= decay;
     this.mvy *= decay;
 
-    if (this.holding) {
-        this.hold = Math.min(
-            1,
-            this.hold + dt * 1.2
-        );
-    } else {
-        this.hold = Math.max(
-            0,
-            this.hold - dt * 1.5
-        );
-    }
+    // this.hold bleibt 0: der Hold-Zustand kam nur vom Klick-Ripple und u_hold
+    // wird im Shader ohnehin in keiner Berechnung verwendet.
 
     this._draw(t, vx, vy);
 }

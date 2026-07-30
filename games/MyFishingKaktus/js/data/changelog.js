@@ -2,6 +2,25 @@
 // fehlt sie, rendert game.js den deutschen Text als Fallback.
 export const FISHING_CHANGELOG = [
     {
+        date: "30.07.2026",
+        title: "🇷🇺 Russisch + ruhigeres Wasser",
+        items: [
+            "Das ganze Spiel gibt es jetzt auf Russisch — inklusive aller 132 Fischnamen, Karl, Glücksrad, Daily-Belohnungen und Wetter-Events.",
+            "Sprache umschalten über die Flaggen oben im Menü. Eingeloggt wird die Wahl im Account gespeichert.",
+            "Klicks auf das Wasser erzeugen keine Wellen mehr — das spart Leistung. Wellen kommen weiter bei Fischen und von selbst.",
+            "Angel-Upgrades: die Beschriftungen bleiben auf dem Handy jetzt sauber im Button.",
+        ],
+        ru: {
+            title: "🇷🇺 Русский язык + спокойнее вода",
+            items: [
+                "Вся игра теперь доступна на русском — включая все 132 названия рыб, Карла, колесо фортуны, ежедневные награды и погодные события.",
+                "Язык переключается флагами в меню сверху. Если ты вошёл, выбор сохраняется в аккаунте.",
+                "Клики по воде больше не создают волны — это экономит производительность. Волны по-прежнему появляются от рыбы и сами по себе.",
+                "Улучшения удочки: подписи на телефоне теперь аккуратно помещаются в кнопку.",
+            ],
+        },
+    },
+    {
         date: "25.05.2026",
         title: "🍀 Glück wirkt jetzt auch auf Mutationen",
         items: [

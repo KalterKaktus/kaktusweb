@@ -88,6 +88,25 @@ export const achievements = [
 // fehlt sie, rendert game.js den deutschen Text als Fallback.
 export const changelogEntries = [
   {
+    date: "30.07.2026",
+    title: "🇷🇺 Russisch verfügbar",
+    items: [
+      "Das ganze Spiel gibt es jetzt auf Russisch — Gebäude, Upgrades, Abzeichen, Prestige und Rangliste.",
+      "Sprache umschalten über die Flaggen oben im Menü. Eingeloggt wird die Wahl im Account gespeichert.",
+      "Große Zahlen und Zeiten werden im Format der gewählten Sprache angezeigt.",
+      "Rangliste „Letzter Monat“: Name, Level, Abzeichen und Farbe sind jetzt aktuell — Platz und Punktzahl bleiben vom Monatsabschluss.",
+    ],
+    ru: {
+      title: "🇷🇺 Доступен русский язык",
+      items: [
+        "Вся игра теперь на русском — здания, улучшения, значки, престиж и таблица лидеров.",
+        "Язык переключается флагами в меню сверху. Если ты вошёл, выбор сохраняется в аккаунте.",
+        "Большие числа и время отображаются в формате выбранного языка.",
+        "Таблица «Прошлый месяц»: имя, уровень, значок и цвет теперь актуальные — место и счёт остаются с итогов месяца.",
+      ],
+    },
+  },
+  {
     date: "27.05.2026",
     title: "Keyboard-Klick + Spawn-Tuning",
     items: [
