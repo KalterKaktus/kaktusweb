@@ -174,3 +174,162 @@
 
   color-scheme: dark;
 }
+
+
+/* ============================================================================
+   THEME: COZY  —  clean, creamy, lime, soft
+   ============================================================================
+   Aktivieren mit <body class="theme-cozy">. Überschreibt nur Werte, nie Namen.
+
+   Grundsätzlicher Unterschied zum Default: helle Fläche, dunkle Schrift. Alles
+   was im dunklen Theme "leuchtet" (Glow, Neon-Linien) wird hier zu weichem
+   Schatten und sanften Kanten — Glow auf Creme sieht schmutzig aus.
+
+   Die fünf semantischen Akzente bleiben klar unterscheidbar, sind aber
+   abgedunkelt: Pastelltöne, die auf Dunkel funktionieren, verschwinden auf
+   Creme. Für Text- und Rahmenfarben zählt Kontrast, nicht Zartheit.
+   ========================================================================= */
+
+.theme-cozy {
+  /* ---------- Flächen ---------- */
+  --bg: #fdf7ec;
+  --bg-rgb: 253 247 236;
+  --bg-soft: #f6ecd9;
+  --bg-soft-rgb: 246 236 217;
+
+  --panel-base: #fffdf8;
+  --panel-base-rgb: 255 253 248;
+  --panel-strong-base: #fffefb;
+  --panel-strong-base-rgb: 255 254 251;
+  --panel: rgb(var(--panel-base-rgb) / 0.96);
+  --panel-strong: rgb(var(--panel-strong-base-rgb) / 0.99);
+
+  /* ---------- Linien ---------- */
+  --line-base: #e3d5b8;
+  --line-base-rgb: 227 213 184;
+  --line: rgb(var(--line-base-rgb) / 0.9);
+  --line-hot-base: #c8b48c;
+  --line-hot-base-rgb: 200 180 140;
+  --line-hot: rgb(var(--line-hot-base-rgb) / 0.95);
+
+  /* ---------- Text ---------- */
+  --text: #4f4334;
+  --text-rgb: 79 67 52;
+  --muted: #93826b;
+  --muted-rgb: 147 130 107;
+
+  /* ---------- Primärakzent (Lime) ---------- */
+  --green: #7cb342;
+  --green-rgb: 124 179 66;
+  --green-hot: #5d8f2c;      /* dunkler als --green: auf Creme ist "hot" = kräftiger */
+  --green-hot-rgb: 93 143 44;
+  --green-dark: #47701f;
+  --green-dark-rgb: 71 112 31;
+  --green-dim: #a8d275;
+  --green-dim-rgb: 168 210 117;
+
+  /* ---------- Semantische Akzente ---------- */
+  --prestige: #9163d6;
+  --prestige-rgb: 145 99 214;
+  --prestige-hot: #6f43b0;
+  --prestige-hot-rgb: 111 67 176;
+  --prestige-deep: #ede2ff;
+  --prestige-deep-rgb: 237 226 255;
+  --prestige-shadow: #dcc9f7;
+  --prestige-shadow-rgb: 220 201 247;
+  --prestige-ink: #3a1f63;
+
+  --achievement: #3d9bd4;
+  --achievement-rgb: 61 155 212;
+  --achievement-hot: #2076a8;
+  --achievement-hot-rgb: 32 118 168;
+  --achievement-deep: #ddf0fb;
+  --achievement-deep-rgb: 221 240 251;
+
+  --building: #e08033;
+  --building-rgb: 224 128 51;
+  --building-hot: #b8600f;
+  --building-hot-rgb: 184 96 15;
+  --building-line: rgb(var(--building-rgb) / 0.42);
+  --building-deep: #fde9d6;
+  --building-deep-rgb: 253 233 214;
+  --building-deeper: #fbdfc4;
+  --building-deeper-rgb: 251 223 196;
+
+  --gold: #e0a92b;
+  --gold-rgb: 224 169 43;
+  --gold-hot: #b8860b;
+  --gold-hot-rgb: 184 134 11;
+  --gold-pale: #fdf0cd;
+  --gold-pale-rgb: 253 240 205;
+  --gold-sand: #f7e4ab;
+  --gold-sand-rgb: 247 228 171;
+  --gold-bright: #f0b429;
+  --gold-bright-rgb: 240 180 41;
+  --gold-amber: #e39c1c;
+  --gold-amber-rgb: 227 156 28;
+  --gold-deep: #8a6410;
+  --gold-deep-rgb: 138 100 16;
+  --gold-shadow: #fbeec8;
+  --gold-shadow-rgb: 251 238 200;
+  --gold-umber: #6b4e0c;
+  --gold-umber-rgb: 107 78 12;
+  --gold-ink: #493403;
+
+  --red-event: #e05252;
+  --red-event-rgb: 224 82 82;
+  --red-event-hot: #c03535;
+  --red-event-hot-rgb: 192 53 53;
+  --red-event-bright: #ef4444;
+  --red-event-bright-rgb: 239 68 68;
+  --red-event-pale: #fde0e0;
+  --red-event-pale-rgb: 253 224 224;
+  --red-event-blush: #f9c9c9;
+  --red-event-blush-rgb: 249 201 201;
+  --red-event-rose: #fdeaea;
+  --red-event-rose-rgb: 253 234 234;
+  --red-event-ink: #6b1d1d;
+
+  --danger: #c03535;
+  --danger-rgb: 192 53 53;
+  --pink: #d9569f;
+  --pink-rgb: 217 86 159;
+
+  /* ---------- "Ink" = Text auf farbigen Buttons ----------
+     Im dunklen Theme fast schwarz. Hier bleibt es dunkel, aber warm getönt,
+     damit es auf Lime/Gold nicht hart wirkt. */
+  --ink-deep: #ffffff;
+  --ink-deep-rgb: 255 255 255;
+  --ink-black: #ffffff00;
+  --ink-1: #fffdf8;
+  --ink-1-rgb: 255 253 248;
+  --ink-2: #f6ecd9;
+  --ink-2-rgb: 246 236 217;
+  --ink-3: #ffffff;
+  --ink-3-rgb: 255 255 255;
+  --ink-warm-1: #fdf0cd;
+  --ink-warm-1-rgb: 253 240 205;
+  --ink-warm-2: #f7e4ab;
+  --ink-warm-2-rgb: 247 228 171;
+  --ink-warm-3: #fbeec8;
+  --ink-warm-3-rgb: 251 238 200;
+  --ink-warm-4: #f3e0b0;
+  --ink-warm-4-rgb: 243 224 176;
+  --ink-warm-5: #f8ead0;
+  --ink-warm-5-rgb: 248 234 208;
+
+  /* ---------- Schatten: weich und tief statt Glow ---------- */
+  --shadow-rgb: 120 96 60;
+  --shadow: 0 6px 18px rgb(var(--shadow-rgb) / 0.10),
+            0 1px 3px rgb(var(--shadow-rgb) / 0.07);
+
+  /* ---------- Form: deutlich runder ---------- */
+  --radius-sm: 12px;
+  --radius: 18px;
+  --radius-lg: 26px;
+  --radius-pill: 999px;
+
+  --font-game: "Nunito", ui-rounded, "Segoe UI", system-ui, sans-serif;
+
+  color-scheme: light;
+}
