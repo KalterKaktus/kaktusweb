@@ -56,7 +56,50 @@
     },
     "profile": {
         "meta_title": "Profil - KalterKaktus",
-        "loading": "Profil wird geladen…"
+        "loading": "Profil wird geladen…",
+        "account_kicker": "Kalterkaktus-Account",
+        "change_name_color": "Namensfarbe ändern",
+        "level": "Level",
+        "next_level_hint": "Nächstes Level in — XP",
+        "next_level_in": "Nächstes Level in {xp} XP",
+        "max_level": "Maximales Level erreicht",
+        "xp_total": "{xp} XP gesamt",
+        "total_xp": "Gesamt-XP",
+        "badges": "Badges",
+        "vip_active": "Aktiv ✨",
+        "username_kicker": "Benutzername",
+        "username_title": "Wie sollen wir dich nennen?",
+        "username_lead": "Wird in der Navigation, auf Leaderboards und in Broadcasts angezeigt. 2–24 Zeichen, nur Buchstaben, Zahlen und Unterstriche.",
+        "username_placeholder": "z. B. KalterKaktus",
+        "save": "Speichern",
+        "saving": "Speichern…",
+        "username_same": "Das ist schon dein aktueller Name.",
+        "username_saved": "Username gespeichert. Wird in der Nav + auf Leaderboards verwendet.",
+        "badge_kicker": "Badge",
+        "badge_title": "Wähle dein angezeigtes Badge",
+        "no_badge": "Kein Badge",
+        "badge_lead": "Nur ein Badge gleichzeitig sichtbar — wird auf Leaderboards neben deinem Level gezeigt.",
+        "how_to_get": "So bekommst du es:",
+        "referral_kicker": "Freunde werben",
+        "referral_title": "Dein Werbe-Link",
+        "referral_lead": "Teile diesen Link. Sobald ein geworbener Freund <strong>Level 5</strong> erreicht, zählt er als qualifiziert und du bekommst das <strong>❤️ Werber-Badge</strong>.",
+        "copy": "Kopieren",
+        "copied": "Kopiert",
+        "copy_manual": "Manuell kopieren (Strg+C)",
+        "not_qualified_yet": "noch nicht qualifiziert",
+        "qualified": "qualifiziert",
+        "vip_kicker": "VIP & Unterstützer",
+        "vip_title": "Auf Anfrage per Discord",
+        "vip_lead": "<strong>🌹 Unterstützer</strong> — sichtbares Badge, freischaltbar im Profil.<br><strong>👑 VIP</strong> — eigene Namensfarbe und <strong>+20 % XP-Boost</strong> auf alles.",
+        "stats_kicker": "Stats",
+        "quick_info": "Quick-Info",
+        "please_login": "Bitte einloggen",
+        "player_fallback": "Spieler",
+        "cloud_not_configured": "Cloud-Verbindung nicht konfiguriert.",
+        "load_error": "Etwas ist schiefgelaufen beim Laden des Profils.",
+        "close": "Schließen",
+        "preview": "Vorschau",
+        "your_name": "Dein Name"
     },
     "wiki": {
         "meta_title": "KalterKaktus Wiki",
@@ -76,7 +119,57 @@
         "optimizer_init": "Initialisiere …",
         "optimizer_reload": "Cloud-Save neu laden",
         "optimizer_manual": "Manueller Modus",
-        "detail_page_note": "Detaillierte Guide-Inhalte sind aktuell nur auf Deutsch verfügbar."
+        "contents_label": "Wiki Inhalte",
+        "tech_ref": "Technische Referenz",
+        "toc": "Inhalt",
+        "clicker": {
+            "lead": "Mechanik-Doku für alle Systeme im Spiel: Gebäude-Werte, Upgrade-Effekte, Multiplikator-Formeln, Prestige-Mathematik und Saison-Logik. Kein Spielratgeber — nur Fakten und Formeln.",
+            "balance_ver": "Saison-Balance V2",
+            "toc_overview": "Übersicht",
+            "toc_click": "Klick-Mechanik",
+            "toc_buildings": "Gebäude",
+            "toc_upgrades": "Upgrades",
+            "toc_multipliers": "Multiplikator-Stack",
+            "toc_achievements": "Abzeichen",
+            "toc_frenzy": "Goldlauf",
+            "toc_events": "Random Events",
+            "toc_offline": "Offline-Ertrag",
+            "toc_prestige": "Prestige · Nopal",
+            "toc_season": "Saison",
+            "toc_save": "Save-Format",
+            "toc_tools": "Tools"
+        },
+        "fishing": {
+            "lead": "Mechanik-Doku für alle Systeme: Area-Werte, Rarity-Wahrscheinlichkeiten, Upgrade-Formeln, Wetter-Buffs, Karl-Rewards, Daily-Schedule, Save-Format. Kein Spielratgeber — nur Fakten und Formeln.",
+            "version": "V1.x Active Fishing",
+            "toc_overview": "Übersicht",
+            "toc_areas": "Areas",
+            "toc_rarities": "Raritäten",
+            "toc_fish": "Fisch-Index",
+            "toc_upgrades": "Upgrades",
+            "toc_minigame": "Fang-Minispiel",
+            "toc_coinfish": "Coin-Fische",
+            "toc_weather": "Wetter-Events",
+            "toc_mutations": "Mutationen",
+            "toc_karl": "Karl",
+            "toc_daily": "Daily Rewards",
+            "toc_admin": "Admin-Events",
+            "toc_prestige": "Prestige",
+            "toc_save": "Save-Format"
+        },
+        "level": {
+            "h1": "Level & XP System",
+            "lead": "Das Account-weite Progressions-System auf kalterkaktus.de. Jeder eingeloggte Spieler sammelt XP über alle Spiele hinweg, schaltet Level-Milestones frei und kann Badges einem Profil zuweisen die auf Leaderboards sichtbar sind.",
+            "cap": "Level-Cap: 9.999",
+            "toc_overview": "Übersicht",
+            "toc_formula": "Level-Formel",
+            "toc_sources": "XP-Quellen",
+            "toc_milestones": "Level-Beispiele",
+            "toc_badges": "Badges",
+            "toc_vip": "VIP & Unterstützer",
+            "toc_referral": "Referral",
+            "toc_anti_cheat": "Anti-Cheat / Limits"
+        }
     },
     "deals": {
         "meta_title": "Steam Deals - KalterKaktus",
@@ -235,7 +328,345 @@
         "save_season_reset": "Monatssaison resettet",
         "frenzy_active": "Goldlauf aktiv",
         "upgrade_core_suffix": "{name} Kern",
-        "upgrade_prod_x2": "{name} Produktion x2."
+        "upgrade_prod_x2": "{name} Produktion x2.",
+        "buildings": {
+            "seedling": {
+                "name": "Mini-Kaktus",
+                "description": "Kleine Produktion für den Anfang."
+            },
+            "greenhouse": {
+                "name": "Gewächshaus",
+                "description": "Mehr Kakteen aus kontrolliertem Anbau."
+            },
+            "ranch": {
+                "name": "Kaktus-Ranch",
+                "description": "Reihenweise Kakteen für den nächsten Schub."
+            },
+            "oasis": {
+                "name": "Oasenpumpe",
+                "description": "Stabile Ernte auch im trockenen Boden."
+            },
+            "factory": {
+                "name": "Stachelwerk",
+                "description": "Industrielle Produktion für große Zahlen."
+            },
+            "harvest-drone": {
+                "name": "Erntedrohne",
+                "description": "Automatisiert die schnelle Ernte."
+            },
+            "lab": {
+                "name": "Kaktuslabor",
+                "description": "Züchtet stärkere Produktionslinien."
+            },
+            "server-farm": {
+                "name": "Wüstenserver",
+                "description": "Optimiert jeden Produktionszyklus."
+            },
+            "orbital-greenhouse": {
+                "name": "Orbit-Gewächshaus",
+                "description": "Kakteenproduktion ohne Tageslimit."
+            },
+            "monsoon-rig": {
+                "name": "Monsun-Rig",
+                "description": "Zieht Feuchtigkeit aus jedem Sturm."
+            },
+            "canyon-refinery": {
+                "name": "Canyon-Raffinerie",
+                "description": "Presst jeden Tropfen in Wachstum."
+            },
+            "plasma-irrigation": {
+                "name": "Plasma-Bewässerung",
+                "description": "Lädt Wurzeln mit Neonenergie."
+            },
+            "lunar-nursery": {
+                "name": "Mondgärtnerei",
+                "description": "Pflegt Kakteen unter kaltem Licht."
+            },
+            "asteroid-hacienda": {
+                "name": "Asteroiden-Hacienda",
+                "description": "Erntet zwischen schwebenden Felsen."
+            },
+            "solar-silo": {
+                "name": "Solarsilo",
+                "description": "Speichert Glut für endlose Ernten."
+            },
+            "quantum-spine": {
+                "name": "Quantenstachel",
+                "description": "Verdoppelt Ernten in Nebenpfaden."
+            },
+            "nebula-pipeline": {
+                "name": "Nebula-Pipeline",
+                "description": "Schickt Kaktussaft durch Sternennebel."
+            },
+            "rift-garden": {
+                "name": "Rissgarten",
+                "description": "Lässt Dornen aus Parallelräumen wachsen."
+            },
+            "prism-foundry": {
+                "name": "Prisma-Gießerei",
+                "description": "Gießt Licht in neue Pflanzenformen."
+            },
+            "void-terrace": {
+                "name": "Void-Terrasse",
+                "description": "Blüht dort, wo sonst nichts lebt."
+            },
+            "starloom": {
+                "name": "Sternwebstuhl",
+                "description": "Webt Ernteketten aus Sternenstaub."
+            },
+            "thorn-reactor": {
+                "name": "Dornenreaktor",
+                "description": "Hält die Wüste dauerhaft kritisch."
+            },
+            "chrono-orchard": {
+                "name": "Chrono-Orchard",
+                "description": "Erntet mehrere Sekunden zugleich."
+            },
+            "singularity-nursery": {
+                "name": "Singularitätsgarten",
+                "description": "Zieht Wachstum in einen grünen Kern."
+            },
+            "galaxy-vault": {
+                "name": "Galaxie-Tresor",
+                "description": "Lagert Ernten über ganze Spiralen."
+            },
+            "mythic-desert": {
+                "name": "Mythische Wüste",
+                "description": "Macht Legenden zu Produktion."
+            },
+            "cactus-matrix": {
+                "name": "Kaktus-Matrix",
+                "description": "Berechnet Wachstum vor dem Klick."
+            },
+            "nopal-ark": {
+                "name": "Nopal-Arche",
+                "description": "Trägt Dornen durch jede Saison."
+            },
+            "cosmic-root": {
+                "name": "Kosmische Wurzel",
+                "description": "Verankert Ernte in tiefem Raum."
+            },
+            "endless-bloom": {
+                "name": "Endlosblüte",
+                "description": "Wächst weiter, wenn Zahlen verschwimmen."
+            }
+        },
+        "upgrades": {
+            "gloves": {
+                "name": "Dicke Handschuhe",
+                "description": "Klick-Ertrag x2."
+            },
+            "soft-gloves": {
+                "name": "Weiche Handschuhe",
+                "description": "Klick-Ertrag x2."
+            },
+            "sun-map": {
+                "name": "Doppelte Zange",
+                "description": "Klick-Ertrag x2."
+            },
+            "seedling-pots": {
+                "name": "Stabile Töpfe",
+                "description": "Mini-Kaktus Produktion x2."
+            },
+            "greenhouse-glass": {
+                "name": "Klares Glas",
+                "description": "Gewächshaus Produktion x2."
+            },
+            "ranch-irrigation": {
+                "name": "Ranch-Bewässerung",
+                "description": "Kaktus-Ranch Produktion x2."
+            },
+            "oasis-pressure": {
+                "name": "Hochdruckpumpe",
+                "description": "Oasenpumpe Produktion x2."
+            },
+            "factory-lines": {
+                "name": "Doppelschicht",
+                "description": "Stachelwerk Produktion x2."
+            },
+            "drone-bay": {
+                "name": "Drohnenhangar",
+                "description": "Erntedrohne Produktion x2."
+            },
+            "lab-culture": {
+                "name": "Schnellkultur",
+                "description": "Kaktuslabor Produktion x2."
+            },
+            "server-cluster": {
+                "name": "Servercluster",
+                "description": "Wüstenserver Produktion x2."
+            },
+            "orbital-cycle": {
+                "name": "Orbit-Zyklus",
+                "description": "Orbit-Gewächshaus Produktion x2."
+            },
+            "monsoon-rig-core": {
+                "name": "Monsun-Rig Kern",
+                "description": "Monsun-Rig Produktion x2."
+            },
+            "canyon-refinery-core": {
+                "name": "Canyon-Raffinerie Kern",
+                "description": "Canyon-Raffinerie Produktion x2."
+            },
+            "plasma-irrigation-core": {
+                "name": "Plasma-Bewässerung Kern",
+                "description": "Plasma-Bewässerung Produktion x2."
+            },
+            "lunar-nursery-core": {
+                "name": "Mondgärtnerei Kern",
+                "description": "Mondgärtnerei Produktion x2."
+            },
+            "asteroid-hacienda-core": {
+                "name": "Asteroiden-Hacienda Kern",
+                "description": "Asteroiden-Hacienda Produktion x2."
+            },
+            "solar-silo-core": {
+                "name": "Solarsilo Kern",
+                "description": "Solarsilo Produktion x2."
+            },
+            "quantum-spine-core": {
+                "name": "Quantenstachel Kern",
+                "description": "Quantenstachel Produktion x2."
+            },
+            "nebula-pipeline-core": {
+                "name": "Nebula-Pipeline Kern",
+                "description": "Nebula-Pipeline Produktion x2."
+            },
+            "rift-garden-core": {
+                "name": "Rissgarten Kern",
+                "description": "Rissgarten Produktion x2."
+            },
+            "prism-foundry-core": {
+                "name": "Prisma-Gießerei Kern",
+                "description": "Prisma-Gießerei Produktion x2."
+            },
+            "void-terrace-core": {
+                "name": "Void-Terrasse Kern",
+                "description": "Void-Terrasse Produktion x2."
+            },
+            "starloom-core": {
+                "name": "Sternwebstuhl Kern",
+                "description": "Sternwebstuhl Produktion x2."
+            },
+            "thorn-reactor-core": {
+                "name": "Dornenreaktor Kern",
+                "description": "Dornenreaktor Produktion x2."
+            },
+            "chrono-orchard-core": {
+                "name": "Chrono-Orchard Kern",
+                "description": "Chrono-Orchard Produktion x2."
+            },
+            "singularity-nursery-core": {
+                "name": "Singularitätsgarten Kern",
+                "description": "Singularitätsgarten Produktion x2."
+            },
+            "galaxy-vault-core": {
+                "name": "Galaxie-Tresor Kern",
+                "description": "Galaxie-Tresor Produktion x2."
+            },
+            "mythic-desert-core": {
+                "name": "Mythische Wüste Kern",
+                "description": "Mythische Wüste Produktion x2."
+            },
+            "cactus-matrix-core": {
+                "name": "Kaktus-Matrix Kern",
+                "description": "Kaktus-Matrix Produktion x2."
+            },
+            "nopal-ark-core": {
+                "name": "Nopal-Arche Kern",
+                "description": "Nopal-Arche Produktion x2."
+            },
+            "cosmic-root-core": {
+                "name": "Kosmische Wurzel Kern",
+                "description": "Kosmische Wurzel Produktion x2."
+            },
+            "endless-bloom-core": {
+                "name": "Endlosblüte Kern",
+                "description": "Endlosblüte Produktion x2."
+            }
+        },
+        "achievements": {
+            "first-click": {
+                "name": "Erster Stich",
+                "goal": "Ernte deinen ersten Kaktus."
+            },
+            "hundred-clicks": {
+                "name": "Klickroutine",
+                "goal": "Klicke 100 Mal manuell."
+            },
+            "thousand-clicks": {
+                "name": "Goldfinger",
+                "goal": "Klicke 1.000 Mal manuell."
+            },
+            "five-thousand-clicks": {
+                "name": "Handarbeit",
+                "goal": "Klicke 5.000 Mal manuell."
+            },
+            "twenty-five-thousand-clicks": {
+                "name": "Dornenmaschine",
+                "goal": "Klicke 25.000 Mal manuell."
+            },
+            "hundred-thousand-clicks": {
+                "name": "Klicklegende",
+                "goal": "Klicke 100.000 Mal manuell."
+            },
+            "hundred-earned": {
+                "name": "Kleiner Garten",
+                "goal": "Ernte insgesamt 100 Kakteen."
+            },
+            "thousand-earned": {
+                "name": "Grüne Welle",
+                "goal": "Ernte insgesamt 1.000 Kakteen."
+            },
+            "million-earned": {
+                "name": "Millionenernte",
+                "goal": "Ernte insgesamt 1 Mio. Kakteen."
+            },
+            "billion-earned": {
+                "name": "Milliardenfeld",
+                "goal": "Ernte insgesamt 1 Mrd. Kakteen."
+            },
+            "trillion-earned": {
+                "name": "Billionenblüte",
+                "goal": "Ernte insgesamt 1 Bio. Kakteen."
+            },
+            "quintillion-earned": {
+                "name": "Trillionenwüste",
+                "goal": "Ernte insgesamt 1 Trio. Kakteen."
+            },
+            "quintilliarde-earned": {
+                "name": "Quintillionengrün",
+                "goal": "Ernte insgesamt 1 Quinto. Kakteen."
+            },
+            "first-prestige": {
+                "name": "Erste Nopal-Ernte",
+                "goal": "Führe dein erstes Prestige durch."
+            },
+            "ten-nopal": {
+                "name": "Nopal-Puffer",
+                "goal": "Sammle 10 Nopal in dieser Saison."
+            },
+            "ten-prestiges": {
+                "name": "Saisonschleife",
+                "goal": "Führe 10 Prestiges durch."
+            },
+            "first-frenzy": {
+                "name": "Goldener Lauf",
+                "goal": "Fülle den Klick-Balken einmal."
+            },
+            "golden-hit": {
+                "name": "Goldkaktus",
+                "goal": "Fange einen Goldkaktus."
+            },
+            "golden-hunter": {
+                "name": "Goldjäger",
+                "goal": "Fange 10 Goldkakteen."
+            },
+            "red-hit": {
+                "name": "Rubinkaktus",
+                "goal": "Fange einen Rubinkaktus."
+            }
+        }
     },
     "fishing": {
         "loading_title": "Der Ozean wartet",
@@ -362,17 +793,92 @@
             "luck": "Glück"
         },
         "upgrades": {
-            "rod": {"name": "Rute", "copy": "Breitere Fangzone — leichter zu treffen."},
-            "line": {"name": "Schnur", "copy": "Reisst langsamer wenn der Fisch ausserhalb der Zone ist."},
-            "hook": {"name": "Haken", "copy": "Fang-Balken füllt sich schneller und die Schnur erholt sich besser."},
-            "luck": {"name": "Glück", "copy": "Höhere Chance auf seltene Fische."},
-            "sonar": {"name": "Köder", "copy": "Mehr Fischstellen gleichzeitig, sie bleiben länger und tauchen öfter auf."}
+            "rod": {
+                "name": "Rute",
+                "copy": "Breitere Fangzone — leichter zu treffen."
+            },
+            "line": {
+                "name": "Schnur",
+                "copy": "Reisst langsamer wenn der Fisch ausserhalb der Zone ist."
+            },
+            "hook": {
+                "name": "Haken",
+                "copy": "Fang-Balken füllt sich schneller und die Schnur erholt sich besser."
+            },
+            "luck": {
+                "name": "Glück",
+                "copy": "Höhere Chance auf seltene Fische."
+            },
+            "sonar": {
+                "name": "Köder",
+                "copy": "Mehr Fischstellen gleichzeitig, sie bleiben länger und tauchen öfter auf."
+            }
         },
         "level_short": "Lvl",
         "level_of": "Level {lvl} von {max}",
         "max_level_reached": "Maximal-Level erreicht",
         "upgrade_button": "Upgraden – {cost} Coins",
-        "upgrade_button_locked": "{cost} Coins nötig"
+        "upgrade_button_locked": "{cost} Coins nötig",
+        "active": "Aktiv",
+        "admin_force_spawn": "Admin: {rarity}-Fischstelle aufgetaucht!",
+        "admin_spawns": "Admin spawnt: {label}",
+        "admin_started_event": "Admin hat Event gestartet: {label}",
+        "broadcast_catch": "{name} hat einen {mutation}{rarity} {fish} gefangen!!!",
+        "close": "Schließen",
+        "collect_coins": "Coins sammeln",
+        "daily_bonus": "Daily-Bonus (Tag {day}): {parts}",
+        "daily_spawn_part": "{count}{rarity}-Fischstelle",
+        "fish_here": "Hier angeln",
+        "fish_plural": "Fische",
+        "leaderboard_loading": "Rangliste wird geladen...",
+        "leaderboard_signin": "Melde dich an, um die Rangliste zu sehen und deinen Fortschritt einzutragen.",
+        "mut_group_rare": "Rare-Wetter-Mutationen",
+        "mut_group_standard": "Standard-Mutationen",
+        "mut_group_weather": "Wetter-Mutationen (Standard)",
+        "mut_total_catches": "{count} Mutations-Catches total",
+        "mut_variants_found": "{count} / 13 verschiedene gefunden",
+        "mutation_collection": "Mutations-Sammlung",
+        "mutations_tooltip": "Klick für Mutations-Übersicht",
+        "new_fish_found": "Neuer Fisch entdeckt",
+        "new_in_index": "NEU im Index",
+        "next_water": "Nächstes Gewässer: {area}",
+        "prestige_cap_body": "Du hast alle V1-Areas geöffnet. Neue Gewässer kommen mit späteren Updates.",
+        "prestige_cap_title": "Prestige-Cap erreicht",
+        "prestige_explain": "Beim Freischalten startest du mit frischen Coins, Upgrades und leerem Inventar. Dein Fish Index, alle bisherigen Fänge und freigeschalteten Areas bleiben dir erhalten.",
+        "prestige_unlocks": "Prestige {n} schaltet {area} frei",
+        "rarity_label": "Seltenheit",
+        "sell_value": "{coins} Coins Verkaufswert",
+        "some_angler": "Ein Angler",
+        "stat_coins_earned": "Coins verdient",
+        "stat_fish_index": "Fish Index",
+        "stat_fish_sold": "Verkaufte Fische",
+        "stat_heaviest": "Schwerster Fang",
+        "stat_most_valuable": "Wertvollster Fang",
+        "stat_total_caught": "Gefangen insgesamt",
+        "switch_to_area": "Wechsel zu {area} um die Fische zu sehen",
+        "unknown_fish_label": "Unbekannter Fisch",
+        "unlock_area": "{area} freischalten",
+        "unlockable_at_prestige": "Freischaltbar ab Prestige {prestige}",
+        "weather_over": "Wetter-Event vorbei.",
+        "admin_weather": {
+            "sunny": "Sonniges Wetter",
+            "rain": "Regen",
+            "storm": "Sturm",
+            "fog": "Nebel",
+            "night": "Nacht",
+            "abyss": "🌌 Abyss",
+            "polarlicht": "🌠 Polarlicht",
+            "glutsturm": "🔥 Glutsturm",
+            "blutmond": "🌑 Blutmond",
+            "geistermeer": "👻 Geistermeer",
+            "clear": "Wetter-Reset"
+        },
+        "admin_fish": {
+            "small": "Kleiner Fisch",
+            "big": "Großer Fisch",
+            "sword": "Schwertfisch",
+            "shark": "Hai"
+        }
     },
     "auth": {
         "page_title": "Anmelden - KalterKaktus",
@@ -389,7 +895,7 @@
         "submit_signup": "Account erstellen",
         "forgot_password": "Passwort vergessen?",
         "reset_password": "Passwort zurücksetzen",
-        "back_to_login": "Zurück zum Login",
+        "back_to_login": "Zurück zur Anmeldung",
         "no_account": "Noch kein Konto?",
         "have_account": "Bereits registriert?",
         "signup_link": "Konto erstellen",
@@ -397,6 +903,53 @@
         "loading": "Wird verarbeitet...",
         "or_continue_with": "oder weiter mit",
         "google_login": "Mit Google anmelden",
-        "check_email": "Bitte prüfe deine E-Mail, um dein Konto zu bestätigen."
+        "check_email": "Bitte prüfe deine E-Mail, um dein Konto zu bestätigen.",
+        "callback_title": "Login - KalterKaktus",
+        "reset_page_title": "Passwort zurücksetzen - KalterKaktus",
+        "new_password": "Neues Passwort",
+        "repeat_password": "Passwort wiederholen",
+        "save_password": "Passwort speichern"
+    },
+    "badges": {
+        "lvl_25": {
+            "name": "Level 25",
+            "desc": "Erreiche Level 25"
+        },
+        "lvl_50": {
+            "name": "Level 50",
+            "desc": "Erreiche Level 50"
+        },
+        "lvl_75": {
+            "name": "Level 75",
+            "desc": "Erreiche Level 75"
+        },
+        "lvl_100": {
+            "name": "Level 100",
+            "desc": "Erreiche Level 100 — das Maximum"
+        },
+        "tester": {
+            "name": "Tester",
+            "desc": "Pre-Release Spieler — vom Admin verliehen"
+        },
+        "vip": {
+            "name": "VIP",
+            "desc": "VIP-Status mit +20 % XP-Boost und eigener Namensfarbe — auf Discord-Anfrage vergeben"
+        },
+        "supporter": {
+            "name": "Unterstützer",
+            "desc": "Hat die Seite unterstützt — auf Discord-Anfrage vergeben"
+        },
+        "haunted_catch": {
+            "name": "Geisterjäger",
+            "desc": "Fange einen Fisch mit der HAUNTED-Mutation"
+        },
+        "daily_streak_7": {
+            "name": "Wochen-Pilger",
+            "desc": "Sammle 7 Tage Daily-Login-Streak"
+        },
+        "referrer": {
+            "name": "Werber",
+            "desc": "Wirb 1 Freund der Level 5 erreicht"
+        }
     }
 }

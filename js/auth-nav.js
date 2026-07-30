@@ -4,8 +4,8 @@ import { setXpUser } from "./xp-service.js";
 import { levelFromXp, renderLevelTag, renderPlayerName } from "./progression.js";
 import {
     applyTranslations,
-    getLanguage,
     getSupported,
+    mountLanguageSwitchers,
     onLanguageChange,
     setLanguage,
     t,
@@ -62,39 +62,9 @@ function blockTouchDoubleTapZoom() {
     }, { passive: false });
 }
 
-const FLAG_SVG = {
-    de: `<svg viewBox="0 0 5 3" aria-hidden="true"><rect width="5" height="1" y="0" fill="#000"/><rect width="5" height="1" y="1" fill="#dd0000"/><rect width="5" height="1" y="2" fill="#ffce00"/></svg>`,
-    ru: `<svg viewBox="0 0 5 3" aria-hidden="true"><rect width="5" height="1" y="0" fill="#fff"/><rect width="5" height="1" y="1" fill="#0039a6"/><rect width="5" height="1" y="2" fill="#d52b1e"/></svg>`,
-};
-
-function buildLanguageSwitcher() {
-    const wrap = document.createElement("div");
-    wrap.className = "lang-switch";
-    wrap.setAttribute("role", "group");
-    wrap.setAttribute("data-i18n-attr", "aria-label:nav.language");
-    wrap.setAttribute("aria-label", "Sprache");
-    getSupported().forEach((lang) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "lang-btn" + (getLanguage() === lang ? " is-active" : "");
-        btn.dataset.lang = lang;
-        btn.setAttribute("data-i18n-attr", `aria-label:nav.switch_to_${lang}`);
-        btn.setAttribute("aria-label", lang === "de" ? "Auf Deutsch umschalten" : "Auf Russisch umschalten");
-        btn.innerHTML = FLAG_SVG[lang];
-        btn.addEventListener("click", async () => {
-            await setLanguage(lang);
-            document.querySelectorAll(".lang-switch .lang-btn").forEach((b) => {
-                b.classList.toggle("is-active", b.dataset.lang === lang);
-            });
-            persistLanguageToProfile(lang).catch((error) => {
-                console.warn("Sprachpräferenz konnte nicht gespeichert werden:", error?.message);
-            });
-        });
-        wrap.append(btn);
-    });
-    return wrap;
-}
-
+// Die Flaggen-Buttons selbst baut i18n.js (keine Supabase-Abhängigkeit, damit
+// sie auch erscheinen wenn das esm.sh-CDN klemmt). Hier hängen wir nur das
+// Speichern der Wahl im Profil dran — das braucht Supabase.
 async function persistLanguageToProfile(lang) {
     const supabase = getSupabase();
     if (!supabase) return;
@@ -104,6 +74,12 @@ async function persistLanguageToProfile(lang) {
         .update({ preferred_language: lang })
         .eq("id", session.user.id);
 }
+
+onLanguageChange((lang) => {
+    persistLanguageToProfile(lang).catch((error) => {
+        console.warn("Sprachpräferenz konnte nicht gespeichert werden:", error?.message);
+    });
+});
 
 function setupSiteNav() {
     document.querySelectorAll(".nav").forEach((nav, index) => {
@@ -129,15 +105,10 @@ function setupSiteNav() {
         `;
         container.insertBefore(toggle, links);
 
-        // Language-Switcher in die Nav-Links einfügen (vor auth-nav).
-        // Auf Desktop nebeneinander mit Links, auf Mobile im Sandwich-Menü.
-        const langSwitch = buildLanguageSwitcher();
-        const authNode = links.querySelector("#auth-nav");
-        if (authNode) {
-            links.insertBefore(langSwitch, authNode);
-        } else {
-            links.append(langSwitch);
-        }
+        // Flaggen einfügen falls i18n.js noch nicht dran war (Reihenfolge der
+        // Modul-Evaluierung ist nicht garantiert). mountLanguageSwitchers() ist
+        // idempotent — ein zweiter Aufruf fügt nichts doppelt ein.
+        mountLanguageSwitchers();
 
         const updateToggleLabel = (open) => {
             toggle.setAttribute("aria-label", open ? t("nav.close_menu") : t("nav.open_menu"));

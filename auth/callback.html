@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="KalterKaktus">
-    <title>Login - KalterKaktus</title>
+    <title data-i18n="auth.callback_title">Login - KalterKaktus</title>
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="stylesheet" href="/styles.css">
@@ -21,13 +21,15 @@
                 <h1 class="auth-card-title">Login wird abgeschlossen…</h1>
                 <p id="callback-status" class="auth-status">Bitte warten.</p>
                 <p class="auth-hint">
-                    <a class="source-link" href="/login.html">Zurück zur Anmeldung</a>
+                    <a class="source-link" href="/login.html" data-i18n="auth.back_to_login">Zurück zur Anmeldung</a>
                 </p>
             </section>
         </div>
     </main>
 
     <script src="/js/config.js"></script>
+    <!-- i18n direkt laden: diese Seite hat keine Nav, also kein auth-nav.js das es mitzieht. -->
+    <script type="module" src="/js/i18n.js"></script>
     <script type="module" src="/js/auth-callback.js"></script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 import { getSupabase, isConfigReady } from "/js/supabase-client.js";
 import { fetchProfile, getDisplayName, normalizeUsername, saveUsername, validateUsername } from "/js/profile.js";
-import { BADGE_ORDER, BADGES, xpProgress } from "/js/progression.js";
+import { BADGE_ORDER, BADGES, badgeDesc, badgeName, xpProgress } from "/js/progression.js";
+import { t, getLanguage } from "/js/i18n.js";
 
 const els = {
     status: document.getElementById("profile-status"),
@@ -40,7 +41,7 @@ const VIP_COLOR_PRESETS = [
     "#ff9966", "#c8f5ff", "#ffffff",
 ];
 
-const fmtNumber = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
+const fmtNumber = new Intl.NumberFormat(getLanguage() === "ru" ? "ru-RU" : "de-DE", { maximumFractionDigits: 0 });
 
 let session = null;
 let myUserId = null;
@@ -61,7 +62,7 @@ function showLoginGate() {
 }
 
 function renderHeader(profile, user) {
-    const name = getDisplayName(user, profile) || "Spieler";
+    const name = getDisplayName(user, profile) || t("profile.player_fallback");
     const initial = (name[0] || "?").toUpperCase();
     els.avatar.textContent = initial;
     els.name.textContent = name;
@@ -76,13 +77,13 @@ function renderHeader(profile, user) {
     const xp = Number(profile?.total_xp || 0);
     const prog = xpProgress(xp);
     els.level.textContent = String(prog.level);
-    els.xpCurrent.textContent = `${fmtNumber.format(xp)} XP gesamt`;
+    els.xpCurrent.textContent = t("profile.xp_total", { xp: fmtNumber.format(xp) });
     els.xpNext.textContent = `${fmtNumber.format(prog.gained)} / ${fmtNumber.format(prog.needed)}`;
     els.xpFill.style.width = `${prog.percent}%`;
     const remaining = Math.max(0, prog.needed - prog.gained);
     els.xpHint.textContent = prog.capped
         ? `Level-Cap 9999 erreicht — du bist der absolute King.`
-        : `Nächstes Level in ${fmtNumber.format(remaining)} XP`;
+        : t("profile.next_level_in", { xp: fmtNumber.format(remaining) });
 
     els.header.hidden = false;
 }
@@ -100,12 +101,12 @@ function renderBadges() {
         if (equipped) classes.push("is-equipped");
         if (locked) classes.push("is-locked");
         const lockHint = locked
-            ? `<p class="badge-card-desc"><strong>So bekommst du es:</strong> ${b.desc}</p>`
-            : `<p class="badge-card-desc">${b.desc}</p>`;
+            ? `<p class="badge-card-desc"><strong>${t("profile.how_to_get")}</strong> ${badgeDesc(b)}</p>`
+            : `<p class="badge-card-desc">${badgeDesc(b)}</p>`;
         return `
             <button type="button" class="${classes.join(" ")}" data-badge-id="${id}" style="--badge-c:${b.color}"${locked ? " disabled" : ""}>
                 <div class="badge-card-icon">${b.icon}</div>
-                <h3 class="badge-card-name">${b.name}</h3>
+                <h3 class="badge-card-name">${badgeName(b)}</h3>
                 ${lockHint}
             </button>
         `;
@@ -120,10 +121,10 @@ function renderStats() {
     const ownedCount = myBadges.size;
     const allCount = BADGE_ORDER.length;
     const stats = [
-        { label: "Level", value: prog.level },
-        { label: "Gesamt-XP", value: fmtNumber.format(xp) },
-        { label: "Badges", value: `${ownedCount}/${allCount}` },
-        { label: "VIP", value: myProfile?.vip ? "Aktiv ✨" : "—" },
+        { label: t("profile.level"), value: prog.level },
+        { label: t("profile.total_xp"), value: fmtNumber.format(xp) },
+        { label: t("profile.badges"), value: `${ownedCount}/${allCount}` },
+        { label: "VIP", value: myProfile?.vip ? t("profile.vip_active") : "—" },
     ];
     els.statsGrid.innerHTML = stats.map((s) =>
         `<div><dt>${s.label}</dt><dd>${s.value}</dd></div>`
@@ -180,7 +181,7 @@ function renderReferralStats(stats) {
 
 async function loadEverything() {
     if (!isConfigReady()) {
-        setStatus("Cloud-Verbindung nicht konfiguriert.", true);
+        setStatus(t("profile.cloud_not_configured"), true);
         return;
     }
     const supabase = getSupabase();
@@ -237,7 +238,7 @@ function showVipLockedDialog() {
     overlay.className = "color-modal-overlay";
     overlay.innerHTML = `
         <div class="color-modal color-modal--locked">
-            <button class="color-modal-close" type="button" aria-label="Schliessen">×</button>
+            <button class="color-modal-close" type="button" aria-label="${t('profile.close')}">×</button>
             <div class="color-modal-locked-icon">🔒</div>
             <h3>Nur für VIP</h3>
             <p>
@@ -276,10 +277,10 @@ function openColorPicker() {
     overlay.className = "color-modal-overlay";
     overlay.innerHTML = `
         <div class="color-modal">
-            <button class="color-modal-close" type="button" aria-label="Schliessen">×</button>
+            <button class="color-modal-close" type="button" aria-label="${t('profile.close')}">×</button>
             <h3>👑 Namensfarbe wählen</h3>
             <p class="color-modal-preview-row">
-                Vorschau: <span class="color-modal-preview" id="color-preview" style="color:${currentColor}">${els.name.textContent || "Dein Name"}</span>
+                ${t("profile.preview")}: <span class="color-modal-preview" id="color-preview" style="color:${currentColor}">${els.name.textContent || t("profile.your_name")}</span>
             </p>
             <div class="color-modal-presets">
                 ${VIP_COLOR_PRESETS.map((c) => `<button type="button" class="color-preset ${c.toLowerCase() === currentColor.toLowerCase() ? "is-active" : ""}" data-color="${c}" style="--c:${c}" aria-label="${c}"></button>`).join("")}
@@ -363,11 +364,11 @@ els.usernameForm?.addEventListener("submit", async (event) => {
         return;
     }
     if (value === myProfile?.username) {
-        setUsernameStatus("Das ist schon dein aktueller Name.", "error");
+        setUsernameStatus(t("profile.username_same"), "error");
         return;
     }
     els.usernameSubmit.disabled = true;
-    setUsernameStatus("Speichern…");
+    setUsernameStatus(t("profile.saving"));
     const { data, error } = await saveUsername(myUserId, value);
     if (error) {
         setUsernameStatus(error.message, "error");
@@ -375,7 +376,7 @@ els.usernameForm?.addEventListener("submit", async (event) => {
         return;
     }
     myProfile.username = data?.username || value;
-    setUsernameStatus("✓ Username gespeichert. Wird in der Nav + auf Leaderboards verwendet.", "ok");
+    setUsernameStatus("✓ " + t("profile.username_saved"), "ok");
     renderHeader(myProfile, session.user);
     els.usernameSubmit.disabled = false;
 });
@@ -386,17 +387,17 @@ els.referralCopy?.addEventListener("click", async () => {
     if (!link) return;
     try {
         await navigator.clipboard.writeText(link);
-        els.referralCopy.textContent = "✓ Kopiert";
-        setTimeout(() => { els.referralCopy.textContent = "Kopieren"; }, 1600);
+        els.referralCopy.textContent = "✓ " + t("profile.copied");
+        setTimeout(() => { els.referralCopy.textContent = t("profile.copy"); }, 1600);
     } catch {
         // Fallback: Input selektieren damit User Cmd+C drücken kann
         els.referralLink.select();
-        els.referralCopy.textContent = "Manuell kopieren (Strg+C)";
+        els.referralCopy.textContent = t("profile.copy_manual");
     }
 });
 
 bindBadgeClicks();
 loadEverything().catch((err) => {
     console.error(err);
-    setStatus("Etwas ist schiefgelaufen beim Laden des Profils.", true);
+    setStatus(t("profile.load_error"), true);
 });

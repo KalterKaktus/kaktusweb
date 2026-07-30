@@ -28,43 +28,42 @@
     </nav>
 
     <main class="wiki-shell">
-        <aside class="wiki-rail" aria-label="Wiki Inhalte">
+        <aside class="wiki-rail" data-i18n-attr="aria-label:wiki.contents_label" aria-label="Wiki Inhalte">
             <section class="rail-block">
-                <p class="rail-label">Plattform</p>
-                <a class="rail-link is-active" href="./">Level &amp; XP</a>
+                <p class="rail-label" data-i18n="wiki.platform">Plattform</p>
+                <a class="rail-link is-active" href="./" data-i18n="wiki.level_xp">Level &amp; XP</a>
             </section>
             <section class="rail-block">
-                <p class="rail-label">Games</p>
+                <p class="rail-label" data-i18n="nav.games">Games</p>
                 <a class="rail-link" href="../kaktusclicker/">KaktusClicker</a>
                 <a class="rail-link" href="../myfishingkaktus/">My Fishing Kaktus</a>
             </section>
 
             <section class="rail-block toc">
-                <p class="rail-label">Inhalt</p>
-                <a href="#overview">Übersicht</a>
-                <a href="#formula">Level-Formel</a>
-                <a href="#sources">XP-Quellen</a>
-                <a href="#milestones">Level-Beispiele</a>
-                <a href="#badges">Badges</a>
-                <a href="#vip">VIP &amp; Unterstützer</a>
-                <a href="#referral">Referral</a>
-                <a href="#anti-cheat">Anti-Cheat / Limits</a>
+                <p class="rail-label" data-i18n="wiki.toc">Inhalt</p>
+                <a href="#overview" data-i18n="wiki.level.toc_overview">Übersicht</a>
+                <a href="#formula" data-i18n="wiki.level.toc_formula">Level-Formel</a>
+                <a href="#sources" data-i18n="wiki.level.toc_sources">XP-Quellen</a>
+                <a href="#milestones" data-i18n="wiki.level.toc_milestones">Level-Beispiele</a>
+                <a href="#badges" data-i18n="wiki.level.toc_badges">Badges</a>
+                <a href="#vip" data-i18n="wiki.level.toc_vip">VIP &amp; Unterstützer</a>
+                <a href="#referral" data-i18n="wiki.level.toc_referral">Referral</a>
+                <a href="#anti-cheat" data-i18n="wiki.level.toc_anti_cheat">Anti-Cheat / Limits</a>
             </section>
         </aside>
 
         <article class="wiki-guide" data-wiki-searchable>
-            <p class="wiki-lang-note" data-i18n="wiki.detail_page_note" style="opacity:.7;font-size:.85rem;padding:.7rem 1rem;border-left:3px solid var(--accent-light,#69f0ae);background:rgba(105,240,174,.06);margin-bottom:1.2rem;">Detaillierte Guide-Inhalte sind aktuell nur auf Deutsch verfügbar.</p>
             <header class="guide-head" id="overview">
-                <p class="guide-path">Technische Referenz</p>
-                <h1>Level &amp; XP System</h1>
-                <p class="guide-lead">
+                <p class="guide-path" data-i18n="wiki.tech_ref">Technische Referenz</p>
+                <h1 data-i18n="wiki.level.h1">Level &amp; XP System</h1>
+                <p class="guide-lead" data-i18n="wiki.level.lead">
                     Das Account-weite Progressions-System auf kalterkaktus.de. Jeder eingeloggte
                     Spieler sammelt XP über alle Spiele hinweg, schaltet Level-Milestones frei
                     und kann Badges einem Profil zuweisen die auf Leaderboards sichtbar sind.
                 </p>
                 <div class="guide-meta">
                     <span>Stand: 25.05.2026</span>
-                    <span>Level-Cap: 9.999</span>
+                    <span data-i18n="wiki.level.cap">Level-Cap: 9.999</span>
                 </div>
             </header>
 
@@ -74,7 +73,7 @@
                 <span class="wiki-search-info" data-wiki-search-info></span>
             </div>
 
-            <section data-searchable>
+            <section data-searchable data-i18n-html="wiki.level.overview">
                 <h2>Übersicht</h2>
                 <ul>
                     <li><strong>1 Account, 1 Level</strong> — XP über alle Spiele hinweg gemeinsam.</li>
@@ -86,7 +85,7 @@
                 </ul>
             </section>
 
-            <section data-searchable id="formula">
+            <section data-searchable id="formula" data-i18n-html="wiki.level.formula">
                 <h2>Level-Formel</h2>
                 <pre><code>XP_to_reach(N) = N² × 8
 level(xp)      = floor(sqrt(xp / 8))
@@ -117,7 +116,7 @@ LEVEL_CAP      = 9999</code></pre>
                 </div>
             </section>
 
-            <section data-searchable id="sources">
+            <section data-searchable id="sources" data-i18n-html="wiki.level.sources">
                 <h2>XP-Quellen</h2>
                 <p>Alle Werte gelten ohne VIP-Boost. VIP multipliziert jede Quelle mit <strong>×1,2</strong>.</p>
 
@@ -186,7 +185,7 @@ LEVEL_CAP      = 9999</code></pre>
                 </p>
             </section>
 
-            <section data-searchable id="milestones">
+            <section data-searchable id="milestones" data-i18n-html="wiki.level.milestones">
                 <h2>Realistische Spielzeit zu Level X</h2>
                 <p>
                     Grobe Schätzung mit unterschiedlichen Spielprofilen. Annahme: ein paar Catches
@@ -207,7 +206,7 @@ LEVEL_CAP      = 9999</code></pre>
                 </p>
             </section>
 
-            <section data-searchable id="badges">
+            <section data-searchable id="badges" data-i18n-html="wiki.level.badges">
                 <h2>Badges</h2>
                 <p>
                     Jeder User kann jederzeit <strong>genau ein Badge</strong> als „angezeigt" wählen
@@ -236,7 +235,7 @@ LEVEL_CAP      = 9999</code></pre>
                 </p>
             </section>
 
-            <section data-searchable id="vip">
+            <section data-searchable id="vip" data-i18n-html="wiki.level.vip">
                 <h2>VIP &amp; Unterstützer</h2>
                 <p>
                     Beide Statusse werden auf Discord-Anfrage manuell vergeben. Wenn du die Seite unterstützen
@@ -261,7 +260,7 @@ LEVEL_CAP      = 9999</code></pre>
                 </p>
             </section>
 
-            <section data-searchable id="referral">
+            <section data-searchable id="referral" data-i18n-html="wiki.level.referral">
                 <h2>Referral-System</h2>
                 <p>
                     Jeder eingeloggte User hat einen einzigartigen Referral-Code (auto-generiert bei
@@ -286,7 +285,7 @@ LEVEL_CAP      = 9999</code></pre>
                 </ul>
             </section>
 
-            <section data-searchable id="anti-cheat">
+            <section data-searchable id="anti-cheat" data-i18n-html="wiki.level.anti_cheat">
                 <h2>Anti-Cheat &amp; Limits</h2>
                 <p>
                     XP-Vergabe läuft serverseitig über die <code>add_xp(amount, reason)</code> RPC mit folgenden Limits:
@@ -312,6 +311,7 @@ LEVEL_CAP      = 9999</code></pre>
     </footer>
     <script src="/js/config.js"></script>
     <script src="../wiki.js"></script>
+    <script type="module" src="/js/i18n.js"></script>
     <script type="module" src="/js/auth-nav.js"></script>
 </body>
 </html>

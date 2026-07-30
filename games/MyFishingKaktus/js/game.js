@@ -28,7 +28,16 @@ import { AngelUiSystem } from "./systems/angelUiSystem.js";
 import { FISHING_CHANGELOG } from "./data/changelog.js";
 import { fetchProfile } from "/js/profile.js";
 import { getSupabase, isConfigReady } from "/js/supabase-client.js";
-import { t, onLanguageChange } from "/js/i18n.js";
+import { t, onLanguageChange, getLanguage } from "/js/i18n.js";
+import { FISH_NAMES_RU } from "./data/fishNames.ru.js";
+
+// Fischname in aktueller Sprache. Fällt auf den englischen Originalnamen
+// zurück wenn keine Übersetzung existiert.
+function tFish(fish) {
+    if (!fish) return "";
+    if (getLanguage() === "ru") return FISH_NAMES_RU[fish.name] || fish.name;
+    return fish.name;
+}
 
 function tArea(areaId) {
     const key = `fishing.area_${areaId}`;
@@ -159,7 +168,7 @@ function handleWeatherChange(event, previous) {
         audio.playSell();
         showBroadcast(`Wetter-Event: ${event.name} — ${event.buffLabel} (2,5 Min.)`);
     } else if (previous) {
-        showBroadcast("Wetter-Event vorbei.");
+        showBroadcast(t("fishing.weather_over"));
     }
 }
 
@@ -169,11 +178,22 @@ const broadcast = new BroadcastSystem((payload) => {
         return;
     }
     const mutPrefix = payload.mutationLabel ? `${payload.mutationLabel} ` : "";
-    showBroadcast(`${payload.name || "Ein Angler"} hat einen ${mutPrefix}${adjective} ${payload.fish} gefangen!!!`);
+    // Fischname im Broadcast kommt als String vom Sender — für RU über die
+    // Namens-Map auflösen (Fallback: Original).
+    const fishName = getLanguage() === "ru" ? (FISH_NAMES_RU[payload.fish] || payload.fish) : payload.fish;
+    showBroadcast(t("fishing.broadcast_catch", {
+        name: payload.name || t("fishing.some_angler"),
+        rarity: getLanguage() === "ru" ? tRarity(payload.rarity) : adjective,
+        mutation: mutPrefix,
+        fish: fishName,
+    }));
 });
 
-const coinFormat = new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 });
-const kgFormat = new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+function numberLocale() {
+    return getLanguage() === "ru" ? "ru-RU" : "de-DE";
+}
+let coinFormat = new Intl.NumberFormat(numberLocale(), { maximumFractionDigits: 0 });
+let kgFormat = new Intl.NumberFormat(numberLocale(), { minimumFractionDigits: 2, maximumFractionDigits: 3 });
 let state = createInitialState();
 let user = null;
 let saveTimer = 0;
@@ -300,7 +320,7 @@ function renderMutationChips(mutationsMap) {
     return `<div class="inv-mut-row">${entries.map((e) => {
         const glow = e.def.glow ? " is-glow" : "";
         const mult = e.def.mult % 1 === 0 ? e.def.mult : e.def.mult.toFixed(1);
-        return `<span class="inv-mut-chip${glow}" style="--mut:${e.def.color}" title="${e.def.name} ×${mult} — ${e.count}× gefangen">×${mult} <b>${e.count}</b></span>`;
+        return `<span class="inv-mut-chip${glow}" style="--mut:${e.def.color}" title="${tMutation(e.def)} ×${mult} — ${t("fishing.caught_count", { count: e.count })}">×${mult} <b>${e.count}</b></span>`;
     }).join("")}</div>`;
 }
 
@@ -325,19 +345,19 @@ function renderInventory() {
             <article class="inventory-row">
                 ${renderFishArt(entry.fish)}
                 <div class="inventory-info">
-                    <strong>${entry.fish.name}</strong>
-                    <small>${entry.fish.rarity} &middot; ${entry.count}x gefangen</small>
-                    <small>Gesamt ${kg(entry.totalKg)} &middot; Bestes ${kgQualityDisplay(entry.bestKg, entry.fish.maxKg)}</small>
-                    <small class="inv-base">${coins(basePerKg)} Coins/kg</small>
+                    <strong>${tFish(entry.fish)}</strong>
+                    <small>${tRarity(entry.fish.rarity)} &middot; ${t("fishing.caught_count", { count: entry.count })}</small>
+                    <small>${t("fishing.total")} ${kg(entry.totalKg)} &middot; ${t("fishing.best")} ${kgQualityDisplay(entry.bestKg, entry.fish.maxKg)}</small>
+                    <small class="inv-base">${coins(basePerKg)} ${t("fishing.coins_per_kg")}</small>
                     ${renderMutationChips(entry.mutations)}
                 </div>
                 <div class="inventory-value">
                     <b>${coins(entry.totalValue)}</b>
-                    <span>Coins</span>
+                    <span>${t("fishing.coins_suffix_full")}</span>
                 </div>
             </article>
         `}).join("")
-        : `<p class="empty-copy">Dein Inventar ist leer. Tippe eine Fischstelle an, um zu angeln.</p>`;
+        : `<p class="empty-copy">${t("fishing.empty_inventory")}</p>`;
 }
 
 function renderIndex() {
@@ -353,7 +373,7 @@ function renderIndex() {
             return `
                 <section class="index-area is-locked is-collapsed">
                     <div class="index-area-head">
-                        <h3>${area.name}</h3>
+                        <h3>${tArea(area.id)}</h3>
                         <div class="index-area-meta">
                             <strong>${areaBlock.progress.caught}/${areaBlock.progress.total}</strong>
                             <span class="area-lock">${t("fishing.area_locked")}</span>
@@ -367,10 +387,10 @@ function renderIndex() {
             return `
                 <section class="index-area is-collapsed">
                     <div class="index-area-head">
-                        <h3>${area.name}</h3>
+                        <h3>${tArea(area.id)}</h3>
                         <div class="index-area-meta">
                             <strong>${areaBlock.progress.caught}/${areaBlock.progress.total}</strong>
-                            <span class="area-hint">Wechsel zu ${area.name} um die Fische zu sehen</span>
+                            <span class="area-hint">${t("fishing.switch_to_area", { area: tArea(area.id) })}</span>
                         </div>
                     </div>
                 </section>
@@ -382,7 +402,7 @@ function renderIndex() {
         return `
             <section class="index-area is-current">
                 <div class="index-area-head">
-                    <h3>${area.name}</h3>
+                    <h3>${tArea(area.id)}</h3>
                     <strong>${areaBlock.progress.caught}/${areaBlock.progress.total}</strong>
                 </div>
                 ${areaBlock.groups.map((group) => `
@@ -407,18 +427,18 @@ function renderIndex() {
                                 // Mutations-Counter X/13 — sichtbarer Hinweis dass Card anklickbar ist
                                 const mutCount = owned && entry.mutations ? Object.keys(entry.mutations).filter((id) => entry.mutations[id] > 0).length : 0;
                                 const mutBadge = owned && !unclaimed
-                                    ? `<span class="index-mut-badge" title="Klick für Mutations-Übersicht">${mutCount}/13 🧬</span>`
+                                    ? `<span class="index-mut-badge" title="${t("fishing.mutations_tooltip")}">${mutCount}/13 🧬</span>`
                                     : "";
                                 return `
                                     <article class="${classes.join(" ")}" data-fish-id="${fish.id}" ${owned && !unclaimed ? `data-action="open-mutations"` : ""}>
                                         ${mutBadge}
                                         ${renderFishArt(fish, { silhouette: !owned })}
-                                        <strong>${owned ? fish.name : "Unbekannter Fisch"}</strong>
-                                        <small>${owned ? `${entry.count}x &middot; ${kgQualityDisplay(entry.bestKg, fish.maxKg)}` : "Noch nicht gefangen"}</small>
+                                        <strong>${owned ? tFish(fish) : t("fishing.unknown_fish_label")}</strong>
+                                        <small>${owned ? `${entry.count}x &middot; ${kgQualityDisplay(entry.bestKg, fish.maxKg)}` : t("fishing.not_caught_yet")}</small>
                                         ${unclaimed ? `
                                             <button class="index-claim-overlay" type="button" data-action="claim-index" data-fish-id="${fish.id}">
                                                 <span class="index-claim-coin">+${coins(reward)}</span>
-                                                <span class="index-claim-label">Coins sammeln</span>
+                                                <span class="index-claim-label">${t("fishing.collect_coins")}</span>
                                             </button>
                                         ` : ""}
                                     </article>
@@ -439,12 +459,12 @@ function renderAreas() {
         return `
             <article class="area-card ${state.currentArea === area.id ? "is-active" : ""}">
                 <div class="area-card-head">
-                    <h3>${area.name}</h3>
-                    <span class="area-lock">${unlocked ? `${progress.caught}/${progress.total}` : `Freischaltbar ab Prestige ${area.prestige}`}</span>
+                    <h3>${tArea(area.id)}</h3>
+                    <span class="area-lock">${unlocked ? `${progress.caught}/${progress.total}` : t("fishing.unlockable_at_prestige", { prestige: area.prestige })}</span>
                 </div>
                 <p>${unlocked ? t("fishing.water_available") : t("fishing.area_locked")}</p>
                 <button data-switch-area="${area.id}" type="button" ${!unlocked || state.currentArea === area.id ? "disabled" : ""}>
-                    ${state.currentArea === area.id ? "Aktiv" : "Hier angeln"}
+                    ${state.currentArea === area.id ? t("fishing.active") : t("fishing.fish_here")}
                 </button>
             </article>
         `;
@@ -453,18 +473,18 @@ function renderAreas() {
     const prestige = getPrestigeState(state);
     elements.prestige.innerHTML = prestige.capped
         ? `
-            <h3>Prestige-Cap erreicht</h3>
-            <p>Du hast alle V1-Areas geöffnet. Neue Gewässer kommen mit späteren Updates.</p>
+            <h3>${t("fishing.prestige_cap_title")}</h3>
+            <p>${t("fishing.prestige_cap_body")}</p>
         `
         : `
-            <h3>Nächstes Gewässer: ${AREAS[prestige.nextArea].name}</h3>
-            <p>Beim Freischalten startest du mit frischen Coins, Upgrades und leerem Inventar. Dein Fish Index, alle bisherigen Fänge und freigeschalteten Areas bleiben dir erhalten.</p>
+            <h3>${t("fishing.next_water", { area: tArea(prestige.nextArea) })}</h3>
+            <p>${t("fishing.prestige_explain")}</p>
             <ul>
                 <li class="${prestige.coinsReady ? "is-ready" : ""}">${prestige.coinsReady ? t("fishing.prestige_ready_lbl") : t("fishing.prestige_needed_lbl")} ${t("fishing.prestige_need_coins", { coins: coins(prestige.requiredCoins) })}</li>
                 <li class="${prestige.upgradesReady ? "is-ready" : ""}">${prestige.upgradesReady ? t("fishing.prestige_ready_lbl") : t("fishing.prestige_needed_lbl")} ${t("fishing.prestige_need_upgrades")}</li>
-                <li class="is-open">Prestige ${state.prestige + 1} schaltet ${AREAS[prestige.nextArea].name} frei</li>
+                <li class="is-open">${t("fishing.prestige_unlocks", { n: state.prestige + 1, area: tArea(prestige.nextArea) })}</li>
             </ul>
-            <button id="prestige-now" type="button" ${prestige.canPrestige ? "" : "disabled"}>${AREAS[prestige.nextArea].name} freischalten</button>
+            <button id="prestige-now" type="button" ${prestige.canPrestige ? "" : "disabled"}>${t("fishing.unlock_area", { area: tArea(prestige.nextArea) })}</button>
         `;
 }
 
@@ -477,13 +497,13 @@ function renderStats() {
         }), { caught: 0, total: 0 });
 
     elements.stats.innerHTML = [
-        ["Total Caught", coins(state.stats.totalCaught)],
-        ["Fish Index", `${completion.caught}/${completion.total}`],
-        ["Prestige", `${state.prestige}/${PRESTIGE_CAP}`],
-        ["Coins verdient", coins(state.stats.totalCoinsEarned)],
-        ["Verkaufte Fische", coins(state.stats.totalSold)],
-        ["Schwerster Fang", kg(state.stats.bestWeightKg)],
-        ["Wertvollster Fang", `${coins(state.stats.bestCatchValue)} Coins`],
+        [t("fishing.stat_total_caught"), coins(state.stats.totalCaught)],
+        [t("fishing.stat_fish_index"), `${completion.caught}/${completion.total}`],
+        [t("fishing.prestige"), `${state.prestige}/${PRESTIGE_CAP}`],
+        [t("fishing.stat_coins_earned"), coins(state.stats.totalCoinsEarned)],
+        [t("fishing.stat_fish_sold"), coins(state.stats.totalSold)],
+        [t("fishing.stat_heaviest"), kg(state.stats.bestWeightKg)],
+        [t("fishing.stat_most_valuable"), `${coins(state.stats.bestCatchValue)} ${t("fishing.coins_suffix_full")}`],
     ].map(([label, value]) => `<div><dt>${label}</dt><dd>${value}</dd></div>`).join("");
 }
 
@@ -532,18 +552,23 @@ function escapeHtmlSimple(value) {
         .replace(/"/g, "&quot;");
 }
 function renderChangelog() {
-    if (changelogRendered) return;
     const root = document.getElementById("fishing-changelog");
     if (!root) return;
-    root.innerHTML = FISHING_CHANGELOG.map((entry) => `
+    // Sprach-Variante: entry.ru trägt title/items auf Russisch. Fehlt sie,
+    // fällt der Eintrag auf Deutsch zurück (nichts bleibt leer).
+    const ru = getLanguage() === "ru";
+    root.innerHTML = FISHING_CHANGELOG.map((entry) => {
+        const view = ru && entry.ru ? entry.ru : entry;
+        return `
         <section class="changelog-entry">
             <p class="changelog-date">${escapeHtmlSimple(entry.date)}</p>
-            <h3>${escapeHtmlSimple(entry.title)}</h3>
+            <h3>${escapeHtmlSimple(view.title)}</h3>
             <ul class="changelog-list">
-                ${entry.items.map((item) => `<li>${escapeHtmlSimple(item)}</li>`).join("")}
+                ${view.items.map((item) => `<li>${escapeHtmlSimple(item)}</li>`).join("")}
             </ul>
         </section>
-    `).join("");
+    `;
+    }).join("");
     changelogRendered = true;
 }
 
@@ -676,14 +701,14 @@ function showCatch(candidate, isNew = false) {
         || candidate.fish.rarity === "Legendary";
 
     popup.innerHTML = `
-        ${isNew ? `<span class="catch-new-badge">NEU im Index</span>` : ""}
+        ${isNew ? `<span class="catch-new-badge">${t("fishing.new_in_index")}</span>` : ""}
         ${renderFishArt(candidate.fish)}
         <div class="catch-popup-info">
             ${renderMutationBadges(candidate)}
-            ${isNew ? `<em class="catch-popup-kicker">Neuer Fisch entdeckt</em>` : ""}
-            <strong>${candidate.fish.name}</strong>
-            <small>${candidate.fish.rarity} &middot; ${kgQualityDisplay(candidate.kg, candidate.fish.maxKg)}</small>
-            <span>${coins(candidate.value)} Coins Verkaufswert</span>
+            ${isNew ? `<em class="catch-popup-kicker">${t("fishing.new_fish_found")}</em>` : ""}
+            <strong>${tFish(candidate.fish)}</strong>
+            <small>${tRarity(candidate.fish.rarity)} &middot; ${kgQualityDisplay(candidate.kg, candidate.fish.maxKg)}</small>
+            <span>${t("fishing.sell_value", { coins: coins(candidate.value) })}</span>
         </div>
     `;
     elements.popups.append(popup);
@@ -709,7 +734,7 @@ function showRarityOddsPopup(candidate, odds) {
         const accent = lastMut?.color || RARITIES[candidate.fish.rarity]?.color || "#ffd166";
         odd.style.setProperty("--accent", accent);
         odd.innerHTML = `
-            <span class="rarity-odds-kicker">Seltenheit</span>
+            <span class="rarity-odds-kicker">${t("fishing.rarity_label")}</span>
             <strong class="rarity-odds-value">${odds}</strong>
         `;
         elements.popups.append(odd);
@@ -759,11 +784,11 @@ function scheduleSave() {
 async function loadLeaderboard() {
     if (!user) {
         leaderboardLoaded = true;
-        elements.leaderboard.innerHTML = `<p class="empty-copy">Melde dich an, um die Rangliste zu sehen und deinen Fortschritt einzutragen.</p>`;
+        elements.leaderboard.innerHTML = `<p class="empty-copy">${t("fishing.leaderboard_signin")}</p>`;
         return;
     }
 
-    elements.leaderboard.innerHTML = `<p class="empty-copy">Rangliste wird geladen...</p>`;
+    elements.leaderboard.innerHTML = `<p class="empty-copy">${t("fishing.leaderboard_loading")}</p>`;
     const { entries, error } = await fetchLeaderboard();
     leaderboardLoaded = true;
     if (error) {
@@ -776,7 +801,7 @@ async function loadLeaderboard() {
             <article class="leaderboard-row ${entry.rank <= 3 ? "is-top" : ""}">
                 <b>#${entry.rank}</b>
                 <strong>${renderLevelTag(entry.level, entry.equippedBadge)}${renderPlayerName(escapeHtml(entry.name), { vip: entry.vip, vipColor: entry.vipColor })}</strong>
-                <small>Prestige ${entry.prestige} - ${coins(entry.totalCaught)} Fische</small>
+                <small>${t("fishing.prestige")} ${entry.prestige} - ${coins(entry.totalCaught)} ${t("fishing.fish_plural")}</small>
             </article>
         `).join("")
         : `<p class="empty-copy">${t("fishing.leaderboard_empty")}</p>`;
@@ -884,7 +909,7 @@ function claimIndexReward(fishId) {
     state.coins += reward;
     state.stats.totalCoinsEarned += reward;
     audio.playSell?.();
-    showBroadcast(`📖 ${t("fishing.index_reward", { coins: coins(reward), name: fish.name })}`);
+    showBroadcast(`📖 ${t("fishing.index_reward", { coins: coins(reward), name: tFish(fish) })}`);
     renderIndex();
     renderHud();
     scheduleSave();
@@ -902,23 +927,23 @@ function openMutationDetail(fishId) {
     overlay.className = "mutation-detail-overlay";
     overlay.innerHTML = `
         <div class="mutation-detail-panel" style="--rarity:${RARITIES[fish.rarity].color}">
-            <button class="mutation-detail-close" type="button" aria-label="Schliessen">×</button>
+            <button class="mutation-detail-close" type="button" aria-label="${t("fishing.close")}">×</button>
             <header class="mutation-detail-head">
                 <div class="mutation-detail-art">${renderFishArt(fish)}</div>
                 <div>
-                    <p class="mutation-detail-kicker">Mutations-Sammlung</p>
-                    <h2>${fish.name}</h2>
-                    <small>${fish.rarity} &middot; ${entry.count}× gefangen</small>
+                    <p class="mutation-detail-kicker">${t("fishing.mutation_collection")}</p>
+                    <h2>${tFish(fish)}</h2>
+                    <small>${tRarity(fish.rarity)} &middot; ${t("fishing.caught_count", { count: entry.count })}</small>
                 </div>
             </header>
             <div class="mutation-detail-body">
-                ${renderMutationDetailGroup("Standard-Mutationen", STANDARD_MUTATIONS, ownedMuts)}
-                ${renderMutationDetailGroup("Wetter-Mutationen (Standard)", ["sunny","wet","stormy","misty","nocturnal"].map(id => EVENT_MUTATIONS[id]), ownedMuts)}
-                ${renderMutationDetailGroup("Rare-Wetter-Mutationen", ["abyssal","aurora","ember","crimson","haunted"].map(id => EVENT_MUTATIONS[id]), ownedMuts)}
+                ${renderMutationDetailGroup(t("fishing.mut_group_standard"), STANDARD_MUTATIONS, ownedMuts)}
+                ${renderMutationDetailGroup(t("fishing.mut_group_weather"), ["sunny","wet","stormy","misty","nocturnal"].map(id => EVENT_MUTATIONS[id]), ownedMuts)}
+                ${renderMutationDetailGroup(t("fishing.mut_group_rare"), ["abyssal","aurora","ember","crimson","haunted"].map(id => EVENT_MUTATIONS[id]), ownedMuts)}
             </div>
             <footer class="mutation-detail-foot">
-                <span>${Object.values(ownedMuts).reduce((s, v) => s + v, 0)} Mutations-Catches total</span>
-                <span>${Object.keys(ownedMuts).length} / 13 verschiedene gefunden</span>
+                <span>${t("fishing.mut_total_catches", { count: Object.values(ownedMuts).reduce((s, v) => s + v, 0) })}</span>
+                <span>${t("fishing.mut_variants_found", { count: Object.keys(ownedMuts).length })}</span>
             </footer>
         </div>
     `;
@@ -1135,25 +1160,24 @@ const seenAdminEventIds = new Set();
 let adminEventPollTimer = 0;
 let adminEventsPrimed = false;
 
-const ADMIN_WEATHER_LABELS = {
-    sunny: "Sonniges Wetter",
-    rain: "Regen",
-    storm: "Sturm",
-    fog: "Nebel",
-    night: "Nacht",
-    abyss: "🌌 Abyss",
-    polarlicht: "🌠 Polarlicht",
-    glutsturm: "🔥 Glutsturm",
-    blutmond: "🌑 Blutmond",
-    geistermeer: "👻 Geistermeer",
-    clear: "Wetter-Reset",
-};
-const ADMIN_FISH_LABELS = {
-    small: "Kleiner Fisch",
-    big: "Großer Fisch",
-    sword: "Schwertfisch",
-    shark: "Hai",
-};
+// Admin-Labels via i18n (Fallback = deutsches Original).
+function adminWeatherLabel(subtype) {
+    const key = `fishing.admin_weather.${subtype}`;
+    const value = t(key);
+    if (value !== key) return value;
+    return {
+        sunny: "Sonniges Wetter", rain: "Regen", storm: "Sturm", fog: "Nebel",
+        night: "Nacht", abyss: "🌌 Abyss", polarlicht: "🌠 Polarlicht",
+        glutsturm: "🔥 Glutsturm", blutmond: "🌑 Blutmond",
+        geistermeer: "👻 Geistermeer", clear: "Wetter-Reset",
+    }[subtype] || subtype;
+}
+function adminFishLabel(tier) {
+    const key = `fishing.admin_fish.${tier}`;
+    const value = t(key);
+    if (value !== key) return value;
+    return { small: "Kleiner Fisch", big: "Großer Fisch", sword: "Schwertfisch", shark: "Hai" }[tier] || tier;
+}
 
 function handleAdminEvent(row) {
     if (!row || !row.id) return;
@@ -1166,20 +1190,20 @@ function handleAdminEvent(row) {
 
     if (type.startsWith("weather-")) {
         const subtype = type.slice(8);
-        const label = ADMIN_WEATHER_LABELS[subtype] || subtype;
+        const label = adminWeatherLabel(subtype);
         if (subtype === "clear") {
             weatherEventSystem?.forceEvent(null);
         } else {
             weatherEventSystem?.forceEvent(subtype);
         }
-        showBroadcast(`⚙ Admin hat Event gestartet: ${label}`);
+        showBroadcast(`⚙ ${t("fishing.admin_started_event", { label })}`);
         return;
     }
 
     if (type.startsWith("spawn-fish-")) {
         const tier = type.slice(11);
         coinFishSystem?.spawnTier(tier);
-        showBroadcast(`⚙ Admin spawnt: ${ADMIN_FISH_LABELS[tier] || tier}`);
+        showBroadcast(`⚙ ${t("fishing.admin_spawns", { label: adminFishLabel(tier) })}`);
         return;
     }
 
@@ -1203,7 +1227,7 @@ function handleAdminEvent(row) {
         // Erste Buchstabe groß, Rest klein, damit z.B. "epic" → "Epic" wird (matched RARITIES keys).
         const niceRarity = rarity.charAt(0).toUpperCase() + rarity.slice(1).toLowerCase();
         bubbleSystem?.spawnForced(niceRarity);
-        showBroadcast(`⚙ Admin: ${niceRarity}-Fischstelle aufgetaucht!`);
+        showBroadcast(`⚙ ${t("fishing.admin_force_spawn", { rarity: tRarity(niceRarity) })}`);
         audio.playCatch?.();
         return;
     }
@@ -1423,11 +1447,14 @@ async function init() {
                 }
             }
             const parts = [];
-            if (reward.coins > 0) parts.push(`+${reward.coins.toLocaleString("de-DE")} Coins`);
+            if (reward.coins > 0) parts.push(`+${reward.coins.toLocaleString(numberLocale())} ${t("fishing.coins_suffix_full")}`);
             if (reward.spawn) {
-                parts.push(`${reward.spawn.count > 1 ? reward.spawn.count + "× " : ""}${reward.spawn.rarity}-Fischstelle`);
+                parts.push(t("fishing.daily_spawn_part", {
+                    count: reward.spawn.count > 1 ? reward.spawn.count + "× " : "",
+                    rarity: tRarity(reward.spawn.rarity),
+                }));
             }
-            if (parts.length) showBroadcast(`📅 Daily-Bonus (Tag ${reward.streakDay}): ${parts.join(" + ")}`);
+            if (parts.length) showBroadcast(`📅 ${t("fishing.daily_bonus", { day: reward.streakDay, parts: parts.join(" + ") })}`);
             audio.playSell?.();
             renderAll();
             scheduleSave();

@@ -84,6 +84,8 @@ export const achievements = [
   { id: "red-hit", name: "Rubinkaktus", goal: "Fange einen Rubinkaktus.", test: (state) => state.events.redHits >= 1 },
 ];
 
+// Changelog-Einträge. `ru` trägt die russische Variante von title/items;
+// fehlt sie, rendert game.js den deutschen Text als Fallback.
 export const changelogEntries = [
   {
     date: "27.05.2026",
@@ -95,6 +97,16 @@ export const changelogEntries = [
       "Pinke Standard-Blume sitzt oben rechts auf dem Kaktus.",
       "Sound-Effekte spielen jetzt zuverlässig auch wenn die Musik stummgeschaltet ist (Mobile-Fix).",
     ],
+    ru: {
+      title: "Клик с клавиатуры + настройка спавна",
+      items: [
+        "Пробел кликает по кактусу — клик мышью больше не нужен.",
+        "Золотые и рубиновые кактусы спавнятся чаще (Золотой 1,5–3,5 мин, Рубиновый 10–22 мин).",
+        "Больше нет авто-сбора: считается только активный тап, зато события приходят заметно чаще.",
+        "Розовый стандартный цветок сидит справа сверху на кактусе.",
+        "Звуковые эффекты теперь надёжно играют, даже если музыка выключена (фикс для мобильных).",
+      ],
+    },
   },
   {
     date: "23.05.2026",
@@ -103,6 +115,13 @@ export const changelogEntries = [
       "Gold- und Rubinkaktus-Belohnungen werden jetzt viel größer und länger eingeblendet — du siehst genau wie viel du eingesammelt hast.",
       "Live-Hinweis im Spiel, wenn ein Admin einen Gold- oder Rubinkaktus auslöst.",
     ],
+    ru: {
+      title: "Награды с большим WOW",
+      items: [
+        "Награды за Золотой и Рубиновый кактус теперь показываются намного крупнее и дольше — ты точно видишь, сколько собрал.",
+        "Живое уведомление в игре, когда админ запускает Золотой или Рубиновый кактус.",
+      ],
+    },
   },
   {
     date: "22.05.2026",
@@ -115,6 +134,17 @@ export const changelogEntries = [
       "Gold- und Rubinkakteen verschwinden zuverlässig nach kurzer Zeit.",
       "Mobile Webapp-Layout und Touch-Verhalten verbessert.",
     ],
+    ru: {
+      title: "Аудио и полировка",
+      items: [
+        "Мелкие исправления багов и улучшения интерфейса.",
+        "Добавлены звуковые эффекты и музыка.",
+        "Звуковые эффекты остаются активными даже при выключенной музыке.",
+        "Золотые и рубиновые кактусы реагируют только на активное время игры.",
+        "Золотые и рубиновые кактусы надёжно исчезают через короткое время.",
+        "Улучшены мобильная вёрстка веб-приложения и поведение при касании.",
+      ],
+    },
   },
   {
     date: "22.05.2026",
@@ -127,5 +157,16 @@ export const changelogEntries = [
       "Die Rangliste läuft jetzt monatlich und zeigt den letzten Monatsabschluss.",
       "Große Zahlen werden im deutschen Format mit lesbaren Abkürzungen angezeigt.",
     ],
+    ru: {
+      title: "Обновление престижа",
+      items: [
+        "Нопаль-престиж ускоряет новые заходы внутри текущего сезона.",
+        "Золотой бег, Золотые кактусы и редкие Рубиновые кактусы награждают активную игру.",
+        "Оффлайн-прогресс собирает с 5 минут и до 12 часов половину автоматического производства.",
+        "Новые здания, новые улучшения и 20 значков расширяют гринд вверх.",
+        "Таблица лидеров теперь идёт ежемесячно и показывает итоги прошлого месяца.",
+        "Большие числа отображаются с читаемыми сокращениями.",
+      ],
+    },
   },
 ];

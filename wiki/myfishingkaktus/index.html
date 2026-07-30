@@ -28,45 +28,44 @@
     </nav>
 
     <main class="wiki-shell">
-        <aside class="wiki-rail" aria-label="Wiki Inhalte">
+        <aside class="wiki-rail" data-i18n-attr="aria-label:wiki.contents_label" aria-label="Wiki Inhalte">
             <section class="rail-block">
-                <p class="rail-label">Games</p>
+                <p class="rail-label" data-i18n="nav.games">Games</p>
                 <a class="rail-link" href="../kaktusclicker/">KaktusClicker</a>
                 <a class="rail-link is-active" href="./">My Fishing Kaktus</a>
             </section>
 
             <section class="rail-block toc">
-                <p class="rail-label">Inhalt</p>
-                <a href="#overview">Übersicht</a>
-                <a href="#areas">Areas</a>
-                <a href="#rarities">Raritäten</a>
-                <a href="#fish">Fisch-Index</a>
-                <a href="#upgrades">Upgrades</a>
-                <a href="#minigame">Fang-Minispiel</a>
-                <a href="#coinfish">Coin-Fische</a>
-                <a href="#weather">Wetter-Events</a>
-                <a href="#mutations">Mutationen</a>
-                <a href="#karl">Karl</a>
-                <a href="#daily">Daily Rewards</a>
-                <a href="#admin">Admin-Events</a>
-                <a href="#prestige">Prestige</a>
-                <a href="#save">Save-Format</a>
+                <p class="rail-label" data-i18n="wiki.toc">Inhalt</p>
+                <a href="#overview" data-i18n="wiki.fishing.toc_overview">Übersicht</a>
+                <a href="#areas" data-i18n="wiki.fishing.toc_areas">Areas</a>
+                <a href="#rarities" data-i18n="wiki.fishing.toc_rarities">Raritäten</a>
+                <a href="#fish" data-i18n="wiki.fishing.toc_fish">Fisch-Index</a>
+                <a href="#upgrades" data-i18n="wiki.fishing.toc_upgrades">Upgrades</a>
+                <a href="#minigame" data-i18n="wiki.fishing.toc_minigame">Fang-Minispiel</a>
+                <a href="#coinfish" data-i18n="wiki.fishing.toc_coinfish">Coin-Fische</a>
+                <a href="#weather" data-i18n="wiki.fishing.toc_weather">Wetter-Events</a>
+                <a href="#mutations" data-i18n="wiki.fishing.toc_mutations">Mutationen</a>
+                <a href="#karl" data-i18n="wiki.fishing.toc_karl">Karl</a>
+                <a href="#daily" data-i18n="wiki.fishing.toc_daily">Daily Rewards</a>
+                <a href="#admin" data-i18n="wiki.fishing.toc_admin">Admin-Events</a>
+                <a href="#prestige" data-i18n="wiki.fishing.toc_prestige">Prestige</a>
+                <a href="#save" data-i18n="wiki.fishing.toc_save">Save-Format</a>
             </section>
         </aside>
 
         <article class="wiki-guide" data-wiki-searchable>
-            <p class="wiki-lang-note" data-i18n="wiki.detail_page_note" style="opacity:.7;font-size:.85rem;padding:.7rem 1rem;border-left:3px solid var(--accent-light,#69f0ae);background:rgba(105,240,174,.06);margin-bottom:1.2rem;">Detaillierte Guide-Inhalte sind aktuell nur auf Deutsch verfügbar.</p>
             <header class="guide-head" id="overview">
-                <p class="guide-path">Technische Referenz</p>
+                <p class="guide-path" data-i18n="wiki.tech_ref">Technische Referenz</p>
                 <h1>My Fishing Kaktus</h1>
-                <p class="guide-lead">
+                <p class="guide-lead" data-i18n="wiki.fishing.lead">
                     Mechanik-Doku für alle Systeme: Area-Werte, Rarity-Wahrscheinlichkeiten,
                     Upgrade-Formeln, Wetter-Buffs, Karl-Rewards, Daily-Schedule, Save-Format.
                     Kein Spielratgeber — nur Fakten und Formeln.
                 </p>
                 <div class="guide-meta">
                     <span>Stand: 25.05.2026</span>
-                    <span>V1.x Active Fishing</span>
+                    <span data-i18n="wiki.fishing.version">V1.x Active Fishing</span>
                 </div>
             </header>
 
@@ -76,7 +75,7 @@
                 <span class="wiki-search-info" data-wiki-search-info></span>
             </div>
 
-            <section data-searchable>
+            <section data-searchable data-i18n-html="wiki.fishing.overview">
                 <h2>Übersicht</h2>
                 <p>
                     My Fishing Kaktus ist ein aktives Sammel-Fischspiel. Spieler tippen auf
@@ -94,7 +93,7 @@
                 </ul>
             </section>
 
-            <section data-searchable id="areas">
+            <section data-searchable id="areas" data-i18n-html="wiki.fishing.areas">
                 <h2>Areas</h2>
                 <p>
                     Jede Area hat eigene Rarity-Gewichte, Gewichtsbereiche und Wert-Multiplikatoren.
@@ -158,7 +157,7 @@ gewicht(rarity) = baseGewicht × luckPower ^ rarity.luckImpact</code></pre>
                 </div>
             </section>
 
-            <section data-searchable id="rarities">
+            <section data-searchable id="rarities" data-i18n-html="wiki.fishing.rarities">
                 <h2>Raritäten</h2>
                 <p>5 Stufen, global definiert. Beeinflussen Wert, Glück-Shift und Fang-Schwierigkeit:</p>
                 <div class="table-wrap">
@@ -182,7 +181,7 @@ gewicht(rarity) = baseGewicht × luckPower ^ rarity.luckImpact</code></pre>
                 </p>
             </section>
 
-            <section data-searchable id="fish">
+            <section data-searchable id="fish" data-i18n-html="wiki.fishing.fish">
                 <h2>Fisch-Index</h2>
                 <p>
                     Pond hat 36 Fische, Lake 44, Ocean 52 — total 132. Aufteilung nach Rarity:
@@ -206,7 +205,7 @@ gewicht(rarity) = baseGewicht × luckPower ^ rarity.luckImpact</code></pre>
                 <p>Vollständige Fisch-Namen siehe <a href="https://github.com/KalterKaktus/kaktusweb/blob/main/games/MyFishingKaktus/js/data/fish.js">js/data/fish.js</a> im Code.</p>
             </section>
 
-            <section data-searchable id="upgrades">
+            <section data-searchable id="upgrades" data-i18n-html="wiki.fishing.upgrades">
                 <h2>Upgrades</h2>
                 <p>
                     5 Upgrade-Pfade mit max Level 5. Kostensteigerung pro Level: <code>1,62</code>
@@ -274,7 +273,7 @@ rodTurnMult  = 1 + rodLevel × 0.08              // L0=1.0 ... L5=1.40</code></p
                 </p>
             </section>
 
-            <section data-searchable id="minigame">
+            <section data-searchable id="minigame" data-i18n-html="wiki.fishing.minigame">
                 <h2>Fang-Minispiel</h2>
                 <p>
                     Beim Antippen einer Fischstelle öffnet sich das Minispiel mit zwei Bars:
@@ -328,7 +327,7 @@ tensionRefill = 0.36 × (1 + hookLevel × 0.35)</code></pre>
                 </div>
             </section>
 
-            <section data-searchable id="coinfish">
+            <section data-searchable id="coinfish" data-i18n-html="wiki.fishing.coinfish">
                 <h2>Coin-Fische (Timer-Fische)</h2>
                 <p>
                     Schwimmen ab und zu durchs Wasser. Klick = direkter Coin-Reward.
@@ -346,7 +345,7 @@ tensionRefill = 0.36 × (1 + hookLevel × 0.35)</code></pre>
                 </div>
             </section>
 
-            <section data-searchable id="weather">
+            <section data-searchable id="weather" data-i18n-html="wiki.fishing.weather">
                 <h2>Wetter-Events</h2>
                 <p>
                     Global synchron für alle Spieler. Slot = 15 Minuten, davon 2,5 Minuten aktiv. Buff
@@ -390,7 +389,7 @@ tensionRefill = 0.36 × (1 + hookLevel × 0.35)</code></pre>
                 </p>
             </section>
 
-            <section data-searchable id="mutations">
+            <section data-searchable id="mutations" data-i18n-html="wiki.fishing.mutations">
                 <h2>Mutationen</h2>
                 <p>
                     Bei jedem Fang werden unabhängig zwei Würfe gemacht: <strong>Standard-Mutation</strong>
@@ -480,7 +479,7 @@ Pool (gewichtet): BIG 65 / HUGE 25 / SHINY 10</code></pre>
                 </p>
             </section>
 
-            <section data-searchable id="karl">
+            <section data-searchable id="karl" data-i18n-html="wiki.fishing.karl">
                 <h2>Karl die Schildkröte</h2>
                 <p>
                     Bonus-Event. Karl taucht <strong>maximal 1× pro Stunde</strong> auf, zu einer
@@ -513,7 +512,7 @@ appearOffset = hash(slotIndex) → zwischen 60s und (SLOT_MS − VISIBLE_MS − 
                 </div>
             </section>
 
-            <section data-searchable id="daily">
+            <section data-searchable id="daily" data-i18n-html="wiki.fishing.daily">
                 <h2>Daily Rewards</h2>
                 <p>
                     Streak-System. Pro täglichem Login wird belohnt; ein verpasster Tag resettet
@@ -560,7 +559,7 @@ coins = round(baseCoins × dayMultipliers[dayInWeek − 1])</code></pre>
                 </p>
             </section>
 
-            <section data-searchable id="admin">
+            <section data-searchable id="admin" data-i18n-html="wiki.fishing.admin">
                 <h2>Admin-Events (Live-Push)</h2>
                 <p>
                     Admins können globale Events an alle Online-Spieler pushen. Events laufen über
@@ -581,7 +580,7 @@ coins = round(baseCoins × dayMultipliers[dayInWeek − 1])</code></pre>
                 </div>
             </section>
 
-            <section data-searchable id="prestige">
+            <section data-searchable id="prestige" data-i18n-html="wiki.fishing.prestige">
                 <h2>Prestige</h2>
                 <p>
                     Spieler prestigen sich in die nächste Area. Cap aktuell bei <strong>Prestige 2</strong>
@@ -615,7 +614,7 @@ coins = round(baseCoins × dayMultipliers[dayInWeek − 1])</code></pre>
                 </div>
             </section>
 
-            <section data-searchable id="save">
+            <section data-searchable id="save" data-i18n-html="wiki.fishing.save">
                 <h2>Save-Format (game_saves Tabelle)</h2>
                 <p>Im Supabase-Save (game_id = <code>my-fishing-kaktus</code>) wird gespeichert:</p>
                 <pre><code>{
@@ -657,6 +656,7 @@ coins = round(baseCoins × dayMultipliers[dayInWeek − 1])</code></pre>
     </footer>
     <script src="/js/config.js"></script>
     <script src="../wiki.js"></script>
+    <script type="module" src="/js/i18n.js"></script>
     <script type="module" src="/js/auth-nav.js"></script>
 </body>
 </html>

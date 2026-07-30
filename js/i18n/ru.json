@@ -56,7 +56,50 @@
     },
     "profile": {
         "meta_title": "Профиль — KalterKaktus",
-        "loading": "Профиль загружается…"
+        "loading": "Профиль загружается…",
+        "account_kicker": "Аккаунт KalterKaktus",
+        "change_name_color": "Изменить цвет имени",
+        "level": "Уровень",
+        "next_level_hint": "До следующего уровня — XP",
+        "next_level_in": "До следующего уровня {xp} XP",
+        "max_level": "Максимальный уровень достигнут",
+        "xp_total": "Всего {xp} XP",
+        "total_xp": "Всего XP",
+        "badges": "Значки",
+        "vip_active": "Активен ✨",
+        "username_kicker": "Имя пользователя",
+        "username_title": "Как тебя называть?",
+        "username_lead": "Отображается в навигации, в таблицах лидеров и в трансляциях. 2–24 символа, только латинские буквы, цифры и подчёркивания.",
+        "username_placeholder": "напр. KalterKaktus",
+        "save": "Сохранить",
+        "saving": "Сохранение…",
+        "username_same": "Это уже твоё текущее имя.",
+        "username_saved": "Имя сохранено. Используется в навигации и в таблицах лидеров.",
+        "badge_kicker": "Значок",
+        "badge_title": "Выбери отображаемый значок",
+        "no_badge": "Без значка",
+        "badge_lead": "Виден только один значок одновременно — показывается в таблицах лидеров рядом с твоим уровнем.",
+        "how_to_get": "Как получить:",
+        "referral_kicker": "Пригласить друзей",
+        "referral_title": "Твоя реферальная ссылка",
+        "referral_lead": "Поделись этой ссылкой. Как только приглашённый друг достигнет <strong>уровня 5</strong>, он считается квалифицированным, и ты получаешь <strong>❤️ значок Реферера</strong>.",
+        "copy": "Копировать",
+        "copied": "Скопировано",
+        "copy_manual": "Скопировать вручную (Ctrl+C)",
+        "not_qualified_yet": "ещё не квалифицированы",
+        "qualified": "квалифицированы",
+        "vip_kicker": "VIP и поддержка",
+        "vip_title": "По запросу в Discord",
+        "vip_lead": "<strong>🌹 Поддержка</strong> — видимый значок, открывается в профиле.<br><strong>👑 VIP</strong> — собственный цвет имени и <strong>+20 % XP-буст</strong> на всё.",
+        "stats_kicker": "Статистика",
+        "quick_info": "Кратко",
+        "please_login": "Пожалуйста, войди",
+        "player_fallback": "Игрок",
+        "cloud_not_configured": "Облачное подключение не настроено.",
+        "load_error": "Что-то пошло не так при загрузке профиля.",
+        "close": "Закрыть",
+        "preview": "Предпросмотр",
+        "your_name": "Твоё имя"
     },
     "wiki": {
         "meta_title": "Вики KalterKaktus",
@@ -76,7 +119,6 @@
         "optimizer_init": "Инициализация…",
         "optimizer_reload": "Перезагрузить облачное сохранение",
         "optimizer_manual": "Ручной режим",
-        "detail_page_note": "Подробные гайды пока доступны только на немецком.",
         "contents_label": "Содержание вики",
         "tech_ref": "Технический справочник",
         "toc": "Содержание",
@@ -109,6 +151,59 @@
             "season": "<h2>Сезон</h2><p>Сезоны идут <strong>ежемесячно</strong> в часовом поясе <strong>Europe/Berlin</strong>. Сброс 1-го числа каждого месяца в 00:00 по Берлину.</p><ul><li><code>totalEarned</code> — сезонный счёт, релевантный для таблицы лидеров.</li><li>При сбросе сезона: сохраняется топ-3 в архив (<code>game_season_archives</code>), новый сезон стартует с чистого листа.</li><li>Значки сохраняются между сезонами (это глобальный прогресс аккаунта).</li><li>Нопаль/престиж <strong>сохраняется</strong> внутри сезона, при переходе на новый сезон сохранение сбрасывается сервером.</li></ul><p>Отсчёт до сброса виден на вкладке «Таблица лидеров».</p>",
             "save": "<h2>Формат сохранения</h2><p>Игровое состояние сериализуется как JSON. Локально: <code>localStorage[\"kaktus-clicker-save-v1\"]</code>. В облаке: <code>game_saves.payload</code> jsonb в Supabase.</p><pre><code>{\n  \"version\": 2,\n  \"season\": { \"id\": \"YYYY-MM\" },\n  \"cactus\": 0,\n  \"totalEarned\": 0,\n  \"totalClicks\": 0,\n  \"buildings\": { \"seedling\": 0, ... },\n  \"upgrades\": [ \"gloves\", ... ],\n  \"achievements\": [ \"first-click\", ... ],\n  \"prestige\": { \"nopal\": 0, \"totalNopalEarned\": 0, \"prestiges\": 0 },\n  \"events\": { \"frenzies\": 0, \"goldenHits\": 0, \"redHits\": 0 },\n  \"lastSavedAt\": 0,\n  \"lastOnlineTimestamp\": 0\n}</code></pre><p>Облачное сохранение проходит через триггер Supabase, который принудительно ставит <code>display_name = profiles.username</code> (защита от подмены).</p>",
             "tools": "<h2>Инструменты</h2><p>На главной странице вики есть <strong>Оптимизатор покупок</strong>. Он читает твоё облачное сохранение и вычисляет 10 следующих лучших покупок по времени окупаемости (ROI). Ничего не меняет — только читает.</p><p>Также есть ручной режим, где ты вводишь текущее состояние вручную (полезно, если ты не залогинен).</p>"
+        },
+        "fishing": {
+            "lead": "Механическая документация всех систем: значения областей, вероятности редкости, формулы улучшений, погодные бонусы, награды Карла, ежедневный график, формат сохранения. Не гайд — только факты и формулы.",
+            "version": "V1.x Активная рыбалка",
+            "toc_overview": "Обзор",
+            "toc_areas": "Области",
+            "toc_rarities": "Редкости",
+            "toc_fish": "Каталог рыб",
+            "toc_upgrades": "Улучшения",
+            "toc_minigame": "Мини-игра ловли",
+            "toc_coinfish": "Монетные рыбы",
+            "toc_weather": "Погодные события",
+            "toc_mutations": "Мутации",
+            "toc_karl": "Карл",
+            "toc_daily": "Ежедневные награды",
+            "toc_admin": "Админ-события",
+            "toc_prestige": "Престиж",
+            "toc_save": "Формат сохранения",
+            "overview": "<h2>Обзор</h2><p>My Fishing Kaktus — активная коллекционная рыбалка. Игроки тапают по местам клёва, запускают мини-игру ловли, собирают рыбу в каталог, продают за монеты, покупают улучшения и переходят в более глубокие области через престиж.</p><ul><li><strong>3 области</strong>: Pond (старт), Lake (престиж 1), Ocean (престиж 2).</li><li><strong>132 рыбы</strong> всего, разделённые по редкости в каждой области.</li><li><strong>5 улучшений</strong>: Удилище, Леска, Крючок, Приманка, Удача (макс. уровень 5).</li><li><strong>10 погодных событий</strong> (5 стандартных с бонусами, Abyss + 4 мутационных) — слоты по 15 мин, активных 2,5 мин.</li><li><strong>Мутации</strong>: стандартные (BIG/HUGE/SHINY, 10 %) + событийные (ABYSSAL → HAUNTED ×4–×10) — стек мультипликативно.</li><li><strong>Карл</strong>: бонус-событие с мини-игрой очистки и колесом фортуны.</li><li><strong>Ежедневные награды</strong> со стрик-системой (день 7 = Epic, с 3-й недели = Legendary).</li></ul>",
+            "areas": "<h2>Области</h2><p>У каждой области свои веса редкости, диапазоны веса и множители ценности. Игрок стартует в Pond. Lake открывается через престиж 1, Ocean — через престиж 2.</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Область</th><th>Престиж</th><th>valueMult</th><th>upgradeMult</th><th>Интервал спавна</th><th>Порог монет престижа</th></tr></thead><tbody><tr><td>Pond</td><td>0</td><td>×1,05</td><td>×1</td><td>30–52 с (база)</td><td>24 000</td></tr><tr><td>Lake</td><td>1</td><td>×0,46</td><td>×6</td><td>26–46 с (база)</td><td>750 000</td></tr><tr><td>Ocean</td><td>2</td><td>×0,60</td><td>×10</td><td>22–40 с (база)</td><td>—</td></tr></tbody></table></div><p><code>valueMult</code> влияет на расчёт стоимости при продаже, <code>upgradeMult</code> делает улучшения дороже в высших областях (удилище Lv0 в Pond = 80 монет, Lake = 480, Ocean = 800).</p><p>Интервал спавна — базовое время ожидания до улучшения приманки. Приманка сокращает его на уровень.</p><h3>Веса редкости (вероятности выпадения)</h3><p>Внутри области при ловле редкость определяется взвешенным случайным выбором. Улучшение «Удача» сдвигает распределение к более редким:</p><pre><code>luckPower = 1 + уровеньУдачи × 0.26\nвес(редкость) = базовыйВес × luckPower ^ rarity.luckImpact</code></pre><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Область</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr></thead><tbody><tr><td>Pond</td><td>80</td><td>15</td><td>4,5</td><td>0,5</td><td>—</td></tr><tr><td>Lake</td><td>68</td><td>22</td><td>8</td><td>1,8</td><td>0,2</td></tr><tr><td>Ocean</td><td>55</td><td>26</td><td>14</td><td>4,3</td><td>0,7</td></tr></tbody></table></div><h3>Диапазоны веса (кг за поимку)</h3><p>Для каждой редкости в области есть диапазон кг. <code>rollWeight</code> выбирает из этого диапазона; с шансом 4 % бросается <strong>Trophy-Roll</strong> (верхние 25 % диапазона).</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Область / Редкость</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th></tr></thead><tbody><tr><td>Pond</td><td>0,05–0,5</td><td>0,12–0,9</td><td>0,25–1,8</td><td>0,6–3,5</td><td>—</td></tr><tr><td>Lake</td><td>0,2–1,5</td><td>0,5–3,2</td><td>1–7</td><td>2,5–16</td><td>6–38</td></tr><tr><td>Ocean</td><td>0,8–4,5</td><td>2–11</td><td>5–32</td><td>12–85</td><td>30–220</td></tr></tbody></table></div>",
+            "rarities": "<h2>Редкости</h2><p>5 уровней, определены глобально. Влияют на стоимость, сдвиг удачи и сложность ловли:</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Редкость</th><th>Цвет</th><th>valuePerKg</th><th>luckImpact</th><th>difficulty</th></tr></thead><tbody><tr><td>Common</td><td>#79d9f7 (циан)</td><td>8</td><td>−0,4</td><td>0,92</td></tr><tr><td>Uncommon</td><td>#65e2a2 (зелёный)</td><td>20</td><td>+0,2</td><td>1,00</td></tr><tr><td>Rare</td><td>#9f9dff (фиолетовый)</td><td>55</td><td>+0,7</td><td>1,12</td></tr><tr><td>Epic</td><td>#d58cff (маджента)</td><td>150</td><td>+1,3</td><td>1,28</td></tr><tr><td>Legendary</td><td>#ffc86c (золото)</td><td>500</td><td>+1,8</td><td>1,46</td></tr></tbody></table></div><h3>Формула стоимости в монетах</h3><pre><code>coinValue = max(1, round(kg × valuePerKg × fish.valueMultiplier × area.valueMultiplier))</code></pre><p><code>fish.valueMultiplier</code> слегка разный для каждой рыбы (см. Fish-Pool-Weights в коде, зависит от размера пула редкости в этой области).</p>",
+            "fish": "<h2>Каталог рыб</h2><p>Pond содержит 36 рыб, Lake — 44, Ocean — 52; всего 132. Разделение по редкости:</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Область</th><th>Common</th><th>Uncommon</th><th>Rare</th><th>Epic</th><th>Legendary</th><th>Всего</th></tr></thead><tbody><tr><td>Pond</td><td>14</td><td>10</td><td>8</td><td>4</td><td>—</td><td>36</td></tr><tr><td>Lake</td><td>10</td><td>12</td><td>12</td><td>8</td><td>2</td><td>44</td></tr><tr><td>Ocean</td><td>6</td><td>12</td><td>16</td><td>12</td><td>6</td><td>52</td></tr></tbody></table></div><p>При ловле случайная рыба выбирается из пула области-редкости взвешенным выбором (веса пула см. <code>FISH_POOL_WEIGHTS</code>). В каталоге отображается только текущая область с полным SVG-списком; другие области показывают только счётчик (для производительности).</p><p>Полный список имён рыб см. <a href=\"https://github.com/KalterKaktus/kaktusweb/blob/main/games/MyFishingKaktus/js/data/fish.js\">js/data/fish.js</a> в коде.</p>",
+            "upgrades": "<h2>Улучшения</h2><p>5 путей улучшения с макс. уровнем 5. Рост стоимости за уровень: множитель <code>1,62</code>–<code>1,72</code> (слегка варьируется). Масштабируется с <code>area.upgradeMultiplier</code>.</p><pre><code>цена = round(baseCost × area.upgradeMultiplier × costGrowth^level)</code></pre><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Улучшение</th><th>baseCost</th><th>costGrowth</th><th>Эффект</th></tr></thead><tbody><tr><td>Удилище</td><td>80</td><td>1,62</td><td>Шире зона ловли (+0,035 за уровень), снижает скорость рыбы до 35 %</td></tr><tr><td>Леска</td><td>110</td><td>1,64</td><td>Уменьшает Tension-Drain на 12 % за уровень (до 60 %)</td></tr><tr><td>Крючок</td><td>150</td><td>1,66</td><td>+15 % к скорости заполнения полосы ловли за уровень, +35 % к восстановлению натяжения за уровень</td></tr><tr><td>Удача</td><td>240</td><td>1,72</td><td>luckPower +0,26 за уровень → редкая рыба чаще</td></tr><tr><td>Приманка</td><td>180</td><td>1,65</td><td>+1 к макс. спотам за уровень, +2 с к времени жизни за уровень, −1 с к ожиданию спавна за уровень</td></tr></tbody></table></div><h3>Удилище (модификатор скорости рыбы)</h3><pre><code>rodSpeedMult = max(0.65, 1 − rodLevel × 0.06)   // L0=1.0 ... L5=0.70 (cap)\nrodTurnMult  = 1 + rodLevel × 0.08              // L0=1.0 ... L5=1.40</code></pre><h3>Приманка (спавн + время жизни спота)</h3><p>Ручная настройка для чёткой прогрессии за уровень. Таблица:</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Уровень</th><th>Макс. спотов параллельно</th><th>Время жизни</th><th>Ожидание спавна</th></tr></thead><tbody><tr><td>L0</td><td>1</td><td>5 с</td><td>6 с</td></tr><tr><td>L1</td><td>2</td><td>7 с</td><td>5 с</td></tr><tr><td>L2</td><td>3</td><td>9 с</td><td>4 с</td></tr><tr><td>L3</td><td>4</td><td>11 с</td><td>3 с</td></tr><tr><td>L4</td><td>5</td><td>13 с</td><td>2 с</td></tr><tr><td>L5</td><td>6</td><td>15 с</td><td>1 с</td></tr></tbody></table></div><p><code>nextDelay = waitSec / spawnMultiplier</code> — без <code>+ lifetimeSec</code>, поэтому споты перекрываются и cap <code>maxSpots</code> действительно работает. На L5 спот появляется каждую секунду, каждый живёт 15 с → до 6 одновременно.</p><h3>Визуальные темы удочки по областям</h3><p>В UI удочки (магазин) рендерится SVG-удочка, чей вид меняется по области и уровням улучшений. Архитектура в <code>js/systems/angel/</code> (Composer + Themes + Shapes).</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Область</th><th>Rod</th><th>Grip</th><th>Reel</th><th>Hook</th><th>Bait</th><th>Aura</th></tr></thead><tbody><tr><td>Pond</td><td>classic</td><td>cork</td><td>spinning</td><td>j</td><td>spinner</td><td>none</td></tr><tr><td>Lake</td><td>driftwood</td><td>wrap</td><td>fly</td><td>barbed</td><td>fly</td><td>leaves</td></tr><tr><td>Ocean</td><td>tactical</td><td>rubber</td><td>baitcaster</td><td>treble</td><td>jig</td><td>bubbles</td></tr></tbody></table></div><p>Новым областям нужен только блок данных в <code>themes.js</code> — без новой логики рендера. Shape-Slots: rod/grip/reel/eyelet/hook/bait/aura, у каждого 2–5 вариантов; дополнительные auras (<code>embers</code>, <code>runes</code>) уже готовы для будущих областей (Volcano, Cosmic).</p>",
+            "minigame": "<h2>Мини-игра ловли</h2><p>При тапе по месту клёва открывается мини-игра с двумя полосами: <strong>Прогресс ловли</strong> (сверху, зелёно/синяя/золотая) и <strong>Натяжение лески</strong> (снизу, красная).</p><h3>Прогресс ловли</h3><p>Растёт, когда рыба в зелёной зоне поимки, иначе падает. При 100 % — рыба поймана.</p><pre><code>catchSpeed = (0.3 + hookLevel × 0.045) / rarity.difficulty\nlossSpeed  = max(0.035, 0.13 × rarity.difficulty × (1 − lineLevel × 0.11))\nzoneWidth  = min(0.44, 0.19 + rodLevel × 0.035)</code></pre><h3>Натяжение лески</h3><p>Стартует с 1.0. Снижается, когда рыба вне зоны; восполняется, когда внутри. При 0 — поимка потеряна.</p><pre><code>tensionDrain = max(0.04, TENSION_DRAIN[rarity] × (1 − lineLevel × 0.12))\ntensionRefill = 0.36 × (1 + hookLevel × 0.35)</code></pre><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Редкость</th><th>Drain/с (L0)</th><th>~сек. до обрыва (L0)</th><th>~сек. до обрыва (Line L5)</th></tr></thead><tbody><tr><td>Common</td><td>0,167</td><td>6,0 с</td><td>15,0 с</td></tr><tr><td>Uncommon</td><td>0,21</td><td>4,8 с</td><td>11,9 с</td></tr><tr><td>Rare</td><td>0,27</td><td>3,7 с</td><td>9,3 с</td></tr><tr><td>Epic</td><td>0,34</td><td>2,9 с</td><td>7,4 с</td></tr><tr><td>Legendary</td><td>0,42</td><td>2,4 с</td><td>6,0 с</td></tr></tbody></table></div><h3>Движение рыбы по редкости</h3><pre><code>// Speed = (baseSpeed + rand × speedVariance) × rodSpeedMult\n// TurnIn = (minTurn + rand × (maxTurn − minTurn)) × rodTurnMult\n// При Turn: flipChance = вероятность смены направления</code></pre><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Редкость</th><th>baseSpeed</th><th>speedVariance</th><th>minTurn (с)</th><th>maxTurn (с)</th><th>flipChance</th></tr></thead><tbody><tr><td>Common</td><td>0,10</td><td>0,06</td><td>0,70</td><td>1,60</td><td>45 %</td></tr><tr><td>Uncommon</td><td>0,14</td><td>0,10</td><td>0,55</td><td>1,35</td><td>55 %</td></tr><tr><td>Rare</td><td>0,22</td><td>0,14</td><td>0,40</td><td>1,05</td><td>65 %</td></tr><tr><td>Epic</td><td>0,30</td><td>0,18</td><td>0,28</td><td>0,85</td><td>72 %</td></tr><tr><td>Legendary</td><td>0,42</td><td>0,22</td><td>0,20</td><td>0,68</td><td>78 %</td></tr></tbody></table></div>",
+            "coinfish": "<h2>Монетные рыбы (таймер-рыбы)</h2><p>Время от времени проплывают через воду. Клик = мгновенная награда в монетах. Четыре уровня (small / big / sword / shark) с разными таблицами наград по областям:</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Область / Уровень</th><th>small</th><th>big</th><th>sword</th><th>shark</th></tr></thead><tbody><tr><td>Pond</td><td>8</td><td>23</td><td>50</td><td>107</td></tr><tr><td>Lake</td><td>46</td><td>138</td><td>300</td><td>632</td></tr><tr><td>Ocean</td><td>1 300</td><td>3 900</td><td>8 600</td><td>18 000</td></tr></tbody></table></div>",
+            "weather": "<h2>Погодные события</h2><p>Синхронизированы глобально для всех игроков. Слот = 15 минут, из них 2,5 минуты активно. Бонус применяется мультипликативно к соответствующему стату. Выбор слота определяется детерминированным хэшем от индекса эпохи.</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Событие</th><th>Вес</th><th>Шанс</th><th>Эффект</th><th>Вид воды</th></tr></thead><tbody><tr><td>☀ Солнечно</td><td>20</td><td>16,7 %</td><td>luck ×2 · мутация SUNNY ×2 (20 %)</td><td>Calm-пресет, яркий свет</td></tr><tr><td>🌧 Дождь</td><td>20</td><td>16,7 %</td><td>spawnRate ×2 · мутация WET ×2 (20 %)</td><td>Дождь в шейдере</td></tr><tr><td>⛈ Шторм</td><td>20</td><td>16,7 %</td><td>hook ×2 · мутация STORMY ×2 (20 %)</td><td>Storm-пресет, штормовые волны + дождь</td></tr><tr><td>🌫 Туман</td><td>20</td><td>16,7 %</td><td>rod ×2 · мутация MISTY ×2 (20 %)</td><td>Белый туманный оверлей</td></tr><tr><td>🌙 Ночная рыбалка</td><td>20</td><td>16,7 %</td><td>line ×2 · мутация NOCTURNAL ×2 (20 %)</td><td>Deepsea-пресет, ночная вуаль</td></tr><tr><td>🌌 <strong>Abyss</strong></td><td>5</td><td>4,2 %</td><td>Epic+ ×2 · мутация ABYSSAL ×4 (15 %)</td><td>Глубокий синий Veil + неоновые частицы</td></tr><tr><td>🌠 Северное сияние</td><td>6</td><td>5,0 %</td><td>мутация AURORA ×3 (30 %)</td><td>Зелёно-фиолетовый шлейф + дрейфующие wisps</td></tr><tr><td>🔥 Огненная буря</td><td>4</td><td>3,3 %</td><td>мутация EMBER ×5 (25 %)</td><td>Storm + оранжевые угольные искры</td></tr><tr><td>🌑 Кровавая луна</td><td>3</td><td>2,5 %</td><td>мутация CRIMSON ×7 (20 %)</td><td>Deepsea + глубокий красный шлейф</td></tr><tr><td>👻 <strong>Море призраков</strong></td><td>2</td><td><strong>1,7 %</strong></td><td><strong>мутация HAUNTED ×10 (15 %)</strong></td><td>Deepsea + циановые призрачные wisps сверху</td></tr></tbody></table></div><p>Выбор события: <code>hash(slotIndex) % totalWeight</code> (total = 120), затем взвешенный маппинг. Новое редкое событие просто добавить с малым <code>weight</code> в <code>WEATHER_EVENTS</code>.</p><p><strong>Особенность Abyss:</strong> вместо бонуса к стату мини-игры, напрямую умножает вероятность выпадения Epic и Legendary (логика в <code>weatherEventSystem.getRarityMultipliers()</code>). Плюс шанс на мутацию ABYSSAL.</p><p><strong>События только с мутациями:</strong> Северное сияние / Огненная буря / Кровавая луна / Море призраков не дают стат-бонуса — единственный эффект соответствующая событийная мутация во время 5-минутной фазы. Чем реже событие, тем выше множитель (Северное сияние ×3 → Море призраков ×10). Подробнее см. <a href=\"#mutations\">Мутации</a>.</p><p>Бонусы напрямую попадают в расчёт бонусов мини-игры — например «Шторм» удваивает эффективный уровень крючка, что ускоряет и ловлю, и восстановление натяжения.</p>",
+            "mutations": "<h2>Мутации</h2><p>При каждой поимке независимо бросаются два ролла: <strong>стандартная мутация</strong> (всегда, 10 %) и <strong>событийная мутация</strong> (только при подходящем погодном событии). Оба могут выпасть одновременно → мультипликативный стек. Финальная стоимость: <code>base × prod(mutations.mult)</code>.</p><h3>Стандартные мутации (всегда бросаются)</h3><pre><code>P(standard) = 10 % × (1 + Удача × 0.08)\nПул (взвешенный): BIG 65 / HUGE 25 / SHINY 10</code></pre><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>ID</th><th>Название</th><th>Множитель</th><th>Доля пула</th><th>Шанс Удача Lv0</th><th>Шанс Удача Lv5</th></tr></thead><tbody><tr><td>big</td><td>BIG</td><td>×1,5</td><td>65 %</td><td>6,5 %</td><td>9,1 %</td></tr><tr><td>huge</td><td>HUGE</td><td>×2,0</td><td>25 %</td><td>2,5 %</td><td>3,5 %</td></tr><tr><td>shiny</td><td><strong>SHINY</strong> 🌟</td><td><strong>×3,0</strong></td><td>10 %</td><td>1,0 %</td><td>1,4 %</td></tr></tbody></table></div><p><strong>Бонус Удачи:</strong> каждый уровень Удачи (макс 5) повышает вероятности всех мутаций на +8 %. На Lv5: <code>×1,40</code> ко всем мутациям.</p><h3>Событийные мутации (только при активном событии)</h3><p>У каждого из 10 погодных событий своя мутация. Стандартные 5 ×2 (дополнительно к стат-бонусу), редкие 5 ×3 до ×10. In-Event-Chance — вероятность за поимку во время события, «Над всем шансом» учитывает частоту слотов.</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Событие</th><th>Мутация</th><th>Множитель</th><th>Шанс в событии</th><th>Общий шанс</th></tr></thead><tbody><tr><td>☀ Солнечно</td><td>SUNNY</td><td>×2</td><td>20 %</td><td>~3,3 %</td></tr><tr><td>🌧 Дождь</td><td>WET</td><td>×2</td><td>20 %</td><td>~3,3 %</td></tr><tr><td>⛈ Шторм</td><td>STORMY</td><td>×2</td><td>20 %</td><td>~3,3 %</td></tr><tr><td>🌫 Туман</td><td>MISTY</td><td>×2</td><td>20 %</td><td>~3,3 %</td></tr><tr><td>🌙 Ночная рыбалка</td><td>NOCTURNAL</td><td>×2</td><td>20 %</td><td>~3,3 %</td></tr><tr><td>🌌 Abyss</td><td>ABYSSAL</td><td>×4</td><td>15 %</td><td>~0,63 %</td></tr><tr><td>🌠 Северное сияние</td><td>AURORA</td><td>×3</td><td>30 %</td><td>~1,5 %</td></tr><tr><td>🔥 Огненная буря</td><td>EMBER</td><td>×5</td><td>25 %</td><td>~0,83 %</td></tr><tr><td>🌑 Кровавая луна</td><td>CRIMSON</td><td>×7</td><td>20 %</td><td>~0,5 %</td></tr><tr><td>👻 Море призраков</td><td><strong>HAUNTED</strong></td><td><strong>×10</strong></td><td>15 %</td><td><strong>~0,25 %</strong></td></tr></tbody></table></div><p><strong>Пример стека:</strong> ты ловишь Common-рыбу (10 монет базово) во время Моря призраков (1,7 % слот). Выпал SHINY (×3) И HAUNTED (×10) → финал <code>10 × 3 × 10 = 300 монет</code>. Самые редкие поимки в игре.</p><p><strong>Масштабирование событийных мутаций Удачей</strong> (аналогично стандартным): соответствующий in-event-chance × (1 + Удача × 0,08). На Lv5: шанс HAUNTED растёт с 15 % до 21 % внутри Моря призраков.</p><h3>Что самая редкая комбо поимки?</h3><p>Теоретический оптимум: <strong>Legendary + SHINY + HAUNTED + ≥99 % кг</strong> во время активного Моря призраков.</p><ul><li>P(Legendary) без Удачи: 0,5 %, с Удачей Lv5 (Luck-Boost на редкость): ~2,3 %</li><li>P(SHINY): 1 % (Lv0) / 1,4 % (Lv5)</li><li>P(HAUNTED): 0,25 % (Lv0) / 0,35 % (Lv5)</li><li>P(кг ≥ 99 %): ~0,8 %</li></ul><p><strong>Комбо без Удачи: ~1 к 1 миллиарду (1 / 1 000 000 000).</strong> С Удачей Lv5 на бонусы редкости и мутации вместе: ~<strong>1 к 110 миллионам</strong>. Это был бы абсолютный трофей — практически недостижимо без принудительного гринда всех Морей призраков.</p><p><strong>P(SHINY HAUNTED) детально:</strong> за поимку во время Моря призраков 1 % × 15 % = 0,15 %. За окно из 15 поимок ~2,2 %. Море призраков триггерится ~0,8 раза/день → при активном гринде всех событий ожидается один SHINY HAUNTED через ~3 недели, 95 % через ~170 дней.</p><p>Реализация: <code>rollMutations(event)</code> в <code>data/mutations.js</code> вызывается при касте в <code>startFishing()</code>, результат вливается в <code>candidate.value</code> через <code>applyMutationsToCandidate</code>. Отображение как значки (Glow для SHINY + всех событийных мутаций) над именем рыбы, плюс broadcast всем игрокам при событийных мутациях и SHINY.</p>",
+            "karl": "<h2>Карл-черепаха</h2><p>Бонус-событие. Карл появляется <strong>максимум 1 раз в час</strong>, в детерминированно-случайную секунду внутри часа (глобально синхронизировано). Виден 30 секунд — кто не тапнет, тот пропустил.</p><pre><code>KARL_SLOT_MS = 3 600 000   // 1 час\nKARL_VISIBLE_MS = 30 000   // 30 секунд\nappearOffset = hash(slotIndex) → между 60с и (SLOT_MS − VISIBLE_MS − 60с)</code></pre><h3>Мини-игра очистки</h3><ul><li>Панцирь Карла покрыт коричнево-зелёной грязью (силуэт Карла как маска).</li><li>Игрок вытирает мышью/пальцем → destination-out Erase на канвасе.</li><li>Радиус кисти: <code>5.5 %</code> от ширины канваса.</li><li>Порог: <strong>93 % чистоты</strong> → очистка завершена.</li></ul><h3>Награды колеса фортуны</h3><p>Разная таблица наград по областям. Веса = частота:</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Область</th><th>Награды (вес: награда)</th></tr></thead><tbody><tr><td>Pond</td><td>30: +10 · 25: +25 · 20: +50 · 15: +100 · 7: +250 · 3: ★ Epic-спот</td></tr><tr><td>Lake</td><td>25: +50 · 25: +150 · 20: +400 · 15: +800 · 10: +1 500 · 5: ★ Epic-спот</td></tr><tr><td>Ocean</td><td>22: +200 · 22: +600 · 20: +1 500 · 15: +4 000 · 10: +10 000 · 8: ★ Epic · 3: ★ Legendary</td></tr></tbody></table></div>",
+            "daily": "<h2>Ежедневные награды</h2><p>Система стриков. За каждый ежедневный вход даётся награда; пропущенный день сбрасывает стрик. Основа — локальная дата (часовой пояс игрока, не UTC).</p><h3>Формула награды</h3><pre><code>dayInWeek = ((streakDay − 1) mod 7) + 1   // 1..7\nweekNum = ceil(streakDay / 7)              // 1, 2, 3, ...\n\ndayMultipliers = [1, 1.5, 2.2, 3.2, 4.5, 6.0, 8.0]   // День 1..7\n\nbaseCoins(week 1) = 50\nbaseCoins(week 2) = 90\nbaseCoins(week 3) = 140\nbaseCoins(week 4+) = min(2500, 140 × 1.12^(weekNum − 3))\n\ncoins = round(baseCoins × dayMultipliers[dayInWeek − 1])</code></pre><h3>Специальный день 7</h3><ul><li><strong>Неделя 1</strong>: 1× Epic-место клёва</li><li><strong>Неделя 2</strong>: 2× Epic-место клёва</li><li><strong>Неделя 3+</strong>: 1× Legendary-место клёва</li></ul><h3>Пример значений</h3><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>День</th><th>Неделя</th><th>Монеты</th><th>Спецналагрд.</th></tr></thead><tbody><tr><td>1</td><td>1</td><td>50</td><td>—</td></tr><tr><td>7</td><td>1</td><td>400</td><td>Epic-спот</td></tr><tr><td>14</td><td>2</td><td>720</td><td>2× Epic-спот</td></tr><tr><td>21</td><td>3</td><td>1 120</td><td>Legendary-спот</td></tr><tr><td>70</td><td>10</td><td>~2 475</td><td>Legendary-спот</td></tr><tr><td>105</td><td>15</td><td>~4 360</td><td>Legendary-спот</td></tr></tbody></table></div><p>Ежедневные места клёва видны <strong>90 секунд</strong> (вместо 12 с у обычных force-спавнов), чтобы никто не пропустил свою награду.</p>",
+            "admin": "<h2>Админ-события (Live-Push)</h2><p>Админы могут пушить глобальные события всем онлайн-игрокам. События идут через таблицу Supabase <code>admin_game_events</code>, авто-удаление через 60 с.</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Событие</th><th>Эффект</th></tr></thead><tbody><tr><td>weather-{sunny,rain,storm,fog,night,abyss,polarlicht,glutsturm,blutmond,geistermeer,clear}</td><td>Форсирует погодное событие</td></tr><tr><td>spawn-fish-{small,big,sword,shark}</td><td>Спавнит монетную рыбу этого уровня</td></tr><tr><td>broadcast</td><td>Собственный текст в фиде трансляции (макс 200 символов)</td></tr><tr><td>force-spawn-{epic,legendary}</td><td>Гарантированное место клёва этой редкости (видно 12 с)</td></tr><tr><td>spawn-karl</td><td>Спавнит Карла-черепаху</td></tr><tr><td>force-reload</td><td>Все клиенты перезагружаются через 1,5 с (cross-game)</td></tr></tbody></table></div>",
+            "prestige": "<h2>Престиж</h2><p>Игроки переходят в следующую область через престиж. Текущий кап на <strong>престиже 2</strong> (Ocean = последняя область). Пороги «Можно делать престиж»:</p><ul><li>Pond → Lake: возможно с <strong>24 000 монет</strong> totalEarned</li><li>Lake → Ocean: возможно с <strong>750 000 монет</strong> totalEarned</li></ul><h3>Что сохраняется / сбрасывается</h3><div class=\"reset-grid\"><div><h4>Сохраняется</h4><ul><li>Каталог рыб (все пойманные)</li><li>Статистика (totalCaught, bestCatchValue, bestWeightKg)</li><li>Счётчик престижей</li><li>Открытые области</li><li>Дневной стрик</li></ul></div><div><h4>Сбрасывается</h4><ul><li>Монеты (на 0)</li><li>Все 5 улучшений (на уровень 0)</li><li>Инвентарь (продан / выброшен)</li></ul></div></div>",
+            "save": "<h2>Формат сохранения (таблица game_saves)</h2><p>В сохранении Supabase (game_id = <code>my-fishing-kaktus</code>) хранится:</p><pre><code>{\n  version: 1,\n  coins: 0,\n  currentArea: \"pond\",\n  unlockedAreas: [\"pond\"],\n  prestige: 0,\n  upgrades: { rod: 0, line: 0, hook: 0, luck: 0, sonar: 0 },  // sonar = приманка внутренне\n  inventory: { [fishId]: { count, totalKg, totalValue, bestKg } },\n  index: { [fishId]: { count, bestKg } },\n  stats: {\n    totalCaught: 0,\n    totalSold: 0,\n    totalCoinsEarned: 0,\n    bestCatchValue: 0,\n    bestWeightKg: 0\n  },\n  settings: { reducedMotion: false },\n  daily: {\n    streak: 0,\n    lastClaimedDay: null,    // \"YYYY-MM-DD\" (локально)\n    totalClaimed: 0,\n    bestStreak: 0\n  }\n}</code></pre><p>Колонка <code>total_earned</code> в таблице синхронизируется с <code>stats.totalCaught</code> (для сортировки таблицы лидеров как вторичный ключ после престижа).</p>"
+        },
+        "level": {
+            "h1": "Система уровней и XP",
+            "lead": "Система прогрессии на уровне аккаунта на kalterkaktus.de. Каждый залогиненный игрок собирает XP из всех игр вместе, открывает уровневые вехи и может назначить в профиль значок, который виден в таблицах лидеров.",
+            "cap": "Кап уровня: 9 999",
+            "toc_overview": "Обзор",
+            "toc_formula": "Формула уровня",
+            "toc_sources": "Источники XP",
+            "toc_milestones": "Примеры уровней",
+            "toc_badges": "Значки",
+            "toc_vip": "VIP и поддержка",
+            "toc_referral": "Реферал",
+            "toc_anti_cheat": "Анти-чит / лимиты",
+            "overview": "<h2>Обзор</h2><ul><li><strong>1 аккаунт, 1 уровень</strong> — XP суммируется по всем играм.</li><li><strong>Кап на уровне 9 999</strong> — Lv100 это только веха, а не конец.</li><li><strong>10 значков</strong> — 4 авто-награды за уровень плюс ручные/специальные триггеры.</li><li><strong>1 значок виден одновременно</strong> — выбирается в профиле, появляется рядом с именем в таблицах лидеров + в навигации.</li><li><strong>VIP-бонус</strong> +20 % к XP, собственный цвет имени.</li><li><strong>Реферал-система</strong> награждает приглашающего, как только приглашённый достигает Lv5.</li></ul>",
+            "formula": "<h2>Формула уровня</h2><pre><code>XP_to_reach(N) = N² × 8\nlevel(xp)      = floor(sqrt(xp / 8))\nLEVEL_CAP      = 9999</code></pre><p>Квадратичная шкала — ранние уровни идут быстро, поздние требуют экспоненциально больше усилий. Сервер (Supabase RPC <code>add_xp</code>) пишет сырой XP, клиент и view <code>profiles_public</code> капируют уровень при чтении до 9 999.</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Уровень</th><th>Всего XP</th><th>Разница с предыдущим</th></tr></thead><tbody><tr><td>1</td><td>8</td><td>8</td></tr><tr><td>5</td><td>200</td><td>72</td></tr><tr><td>10</td><td>800</td><td>152</td></tr><tr><td>25</td><td>5 000</td><td>392</td></tr><tr><td>50</td><td>20 000</td><td>792</td></tr><tr><td>75</td><td>45 000</td><td>1 192</td></tr><tr><td>100</td><td>80 000</td><td>1 592</td></tr><tr><td>250</td><td>500 000</td><td>3 992</td></tr><tr><td>500</td><td>2 000 000</td><td>7 992</td></tr><tr><td>1 000</td><td>8 000 000</td><td>15 992</td></tr><tr><td>5 000</td><td>200 000 000</td><td>79 992</td></tr><tr><td><strong>9 999</strong></td><td><strong>799 840 008</strong></td><td>159 984</td></tr></tbody></table></div>",
+            "sources": "<h2>Источники XP</h2><p>Все значения без VIP-бонуса. VIP умножает каждый источник на <strong>×1,2</strong>.</p><h3>My Fishing Kaktus — XP за поимку</h3><p>За каждую пойманную рыбу по редкости плюс бонус за мутацию.</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Редкость</th><th>Базовый XP</th></tr></thead><tbody><tr><td>Common</td><td>1</td></tr><tr><td>Uncommon</td><td>3</td></tr><tr><td>Rare</td><td>10</td></tr><tr><td>Epic</td><td>30</td></tr><tr><td>Legendary</td><td>100</td></tr></tbody></table></div><h3>Бонус за мутацию (сверху)</h3><p>Только мутации от ×3 дают бонус XP — стандартные погодные мутации (SUNNY/WET/STORMY/MISTY/NOCTURNAL ×2) и BIG/HUGE не считаются.</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Мутация</th><th>Бонус XP</th></tr></thead><tbody><tr><td>🌟 SHINY</td><td>+10</td></tr><tr><td>🌠 AURORA</td><td>+15</td></tr><tr><td>🌌 ABYSSAL</td><td>+20</td></tr><tr><td>🔥 EMBER</td><td>+25</td></tr><tr><td>🌑 CRIMSON</td><td>+35</td></tr><tr><td>👻 HAUNTED</td><td>+50</td></tr></tbody></table></div><p><strong>Пример:</strong> <em>SHINY HAUNTED Common</em> во время Моря призраков даёт <code>1 (Common) + 10 (SHINY) + 50 (HAUNTED) = 61 XP</code>.</p><h3>KaktusClicker — клики и престиж</h3><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Действие</th><th>XP</th></tr></thead><tbody><tr><td>За 100 кликов по кактусу</td><td>+1</td></tr><tr><td>За престиж</td><td>100 + min(900, полученные_нопали × 5)</td></tr></tbody></table></div><p>XP за престиж масштабируется от размера захода. Малый престиж (1 нопаль): 105 XP. Крупный престиж (180+ нопалей): макс 1 000 XP.</p><h3>Активное время на сайте (Heartbeat)</h3><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Условие</th><th>XP</th></tr></thead><tbody><tr><td>Вкладка видима И последнее взаимодействие &lt; 2 мин назад</td><td>+2 XP/мин (макс 120/ч)</td></tr><tr><td>Вкладка в фоне или AFK &gt;2 мин</td><td>0</td></tr></tbody></table></div><p>Серверный throttle: макс 1 heartbeat в 50 секунд, макс 2 XP на вызов. Защищает от AFK-фарма и бот-манипуляций.</p>",
+            "milestones": "<h2>Реальное время игры до уровня X</h2><p>Грубая оценка для разных профилей. Условие: несколько поимок в минуту, изредка престиж, вкладка чаще всего активна.</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Профиль</th><th>XP/день (оценка)</th><th>Lv5</th><th>Lv25</th><th>Lv100</th><th>Lv1 000</th></tr></thead><tbody><tr><td>Casual (15 мин/день)</td><td>~50</td><td>4 дня</td><td>100 дней</td><td>~4,5 года</td><td>—</td></tr><tr><td>Regular (1 ч/день)</td><td>~250</td><td>1 день</td><td>20 дней</td><td>~11 месяцев</td><td>~88 лет</td></tr><tr><td>Hardcore (4 ч/день)</td><td>~1 000</td><td>&lt; 1 ч</td><td>5 дней</td><td>~80 дней</td><td>~22 года</td></tr></tbody></table></div><p>Lv9 999 (800 млн XP) при нормальных темпах XP практически недостижим — специально спроектирован как «никогда-не-конец».</p>",
+            "badges": "<h2>Значки</h2><p>Каждый пользователь может в любой момент выбрать <strong>ровно один значок</strong> как «отображаемый» (на странице профиля). Этот значок появляется во всех таблицах лидеров + в навигации.</p><div class=\"table-wrap\"><table class=\"wiki-table\"><thead><tr><th>Значок</th><th>Триггер</th><th>Как открыть</th></tr></thead><tbody><tr><td>⚡ Уровень 25</td><td>авто</td><td>Достичь уровня 25 (5 000 XP)</td></tr><tr><td>💎 Уровень 50</td><td>авто</td><td>Достичь уровня 50 (20 000 XP)</td></tr><tr><td>🏆 Уровень 75</td><td>авто</td><td>Достичь уровня 75 (45 000 XP)</td></tr><tr><td>🎖 Уровень 100</td><td>авто</td><td>Достичь уровня 100 (80 000 XP)</td></tr><tr><td>❤️ Реферер</td><td>авто (реферал)</td><td>Пригласи друга, который достигнет Lv5 — детали ниже</td></tr><tr><td>👻 Охотник за призраками</td><td>авто (поимка)</td><td>Поймай рыбу с мутацией HAUNTED (My Fishing Kaktus)</td></tr><tr><td>📅 Недельный паломник</td><td>авто (daily)</td><td>7 дней daily-стрик в My Fishing Kaktus</td></tr><tr><td>🧪 Тестер</td><td>вручную</td><td>Выдаётся админом (pre-release игроки)</td></tr><tr><td>🌹 Поддержка</td><td>вручную</td><td>Выдаётся по запросу в Discord</td></tr><tr><td>👑 VIP</td><td>вручную</td><td>Выдаётся по запросу в Discord — вкл. XP-буст и цвет имени</td></tr></tbody></table></div><p>Авто-награды идут через Postgres-функцию <code>check_level_badges()</code>, которая выполняется после каждого вызова <code>add_xp</code>. Идемпотентна — выдаёт каждый значок только раз.</p>",
+            "vip": "<h2>VIP и поддержка</h2><p>Оба статуса выдаются вручную по запросу в Discord. Если хочешь поддержать сайт — напиши.</p><h3>🌹 Поддержка</h3><ul><li>Видимый значок в сетке выбора в профиле</li><li>Никаких игромеханических преимуществ</li></ul><h3>👑 VIP</h3><ul><li>Все преимущества поддержки</li><li><strong>+20 % XP-буст</strong> на каждый источник XP (серверно в <code>add_xp</code>)</li><li><strong>Собственный цвет имени</strong>, выбирается в профиле — колесо цветов + 11 пресетов</li><li>Цвет имени виден во всех таблицах лидеров + в навигации</li></ul><p>Преимущества VIP действуют, <strong>если <code>profiles.vip = true</code></strong>, независимо от того, выбран ли VIP-значок как «отображаемый».</p>",
+            "referral": "<h2>Реферальная система</h2><p>У каждого залогиненного пользователя есть уникальный реферальный код (генерируется автоматически при создании аккаунта). Реф-ссылку можно скопировать в профиле.</p><pre><code>https://kalterkaktus.de/login.html?ref=ТВОЙКОД</code></pre><h3>Процесс</h3><ol><li>Ты делишься реф-ссылкой.</li><li>Друг кликает → <code>?ref=</code> сохраняется в <code>localStorage</code>.</li><li>Друг регистрируется (Google OAuth или Email).</li><li>При первом успешном логине вызывается <code>claim_referral(code)</code> → реферал помечается как <strong>pending</strong>.</li><li>Как только друг достигает <strong>уровня 5</strong> (200 XP, ~30-60 мин игры) → реферал становится <strong>qualified</strong>, ты автоматически получаешь <strong>❤️ значок Реферера</strong>.</li></ol><h3>Правила анти-чита</h3><ul><li>Нельзя пригласить самого себя (свой код отклоняется).</li><li>Каждый пользователь может быть приглашён только один раз (UNIQUE-Constraint).</li><li>Lv5 требует ~30 мин реальной игры — фейковые аккаунты с 0 XP не квалифицируются.</li></ul>",
+            "anti_cheat": "<h2>Анти-чит и лимиты</h2><p>Выдача XP идёт серверно через RPC <code>add_xp(amount, reason)</code> со следующими лимитами:</p><ul><li><strong>Макс 1 000 XP за один вызов</strong> — safety-cap против массовой манипуляции</li><li><strong>Throttle heartbeat</strong>: макс 1 вызов в 50 с, макс 2 XP на вызов</li><li><strong>Только аутентифицированные пользователи</strong> могут получать XP (RLS-политика + проверка <code>auth.uid()</code>)</li><li><strong>Никакого localStorage → cloud save</strong>: локально изменённые сохранения НЕ загружаются в облако</li></ul><p>Поимки/клики отправляются пачками (каждые 30 с) — клиент теоретически может врать про количество, но cap предотвращает крайние злоупотребления.</p>"
         }
     },
     "deals": {
@@ -270,72 +365,258 @@
         "upgrade_core_suffix": "Ядро {name}",
         "upgrade_prod_x2": "Производство {name} x2.",
         "buildings": {
-            "seedling": {"name": "Мини-кактус", "description": "Небольшое производство для старта."},
-            "greenhouse": {"name": "Теплица", "description": "Больше кактусов в контролируемых условиях."},
-            "ranch": {"name": "Кактус-ранчо", "description": "Ряды кактусов для следующего рывка."},
-            "oasis": {"name": "Насос оазиса", "description": "Стабильный сбор даже в сухой земле."},
-            "factory": {"name": "Колючий завод", "description": "Промышленное производство для больших чисел."},
-            "harvest-drone": {"name": "Дрон-жнец", "description": "Автоматизирует быстрый сбор."},
-            "lab": {"name": "Кактусовая лаборатория", "description": "Выводит более сильные линии производства."},
-            "server-farm": {"name": "Пустынный сервер", "description": "Оптимизирует каждый цикл производства."},
-            "orbital-greenhouse": {"name": "Орбитальная теплица", "description": "Производство кактусов без ограничений дня."},
-            "monsoon-rig": {"name": "Муссонная платформа", "description": "Собирает влагу из каждой бури."},
-            "canyon-refinery": {"name": "Каньон-НПЗ", "description": "Выжимает каждую каплю в рост."},
-            "plasma-irrigation": {"name": "Плазменный полив", "description": "Заряжает корни неоновой энергией."},
-            "lunar-nursery": {"name": "Лунный питомник", "description": "Ухаживает за кактусами под холодным светом."},
-            "asteroid-hacienda": {"name": "Астероидная гасиенда", "description": "Собирает урожай среди парящих скал."},
-            "solar-silo": {"name": "Солнечный элеватор", "description": "Хранит жар для бесконечных урожаев."},
-            "quantum-spine": {"name": "Квантовая колючка", "description": "Удваивает урожаи в параллельных путях."},
-            "nebula-pipeline": {"name": "Небула-трубопровод", "description": "Гонит кактусовый сок сквозь звёздные туманности."},
-            "rift-garden": {"name": "Разломный сад", "description": "Выращивает шипы из параллельных пространств."},
-            "prism-foundry": {"name": "Призменная литейная", "description": "Отливает свет в новые растительные формы."},
-            "void-terrace": {"name": "Терраса пустоты", "description": "Цветёт там, где больше ничего не живёт."},
-            "starloom": {"name": "Звёздный ткацкий станок", "description": "Плетёт цепочки урожая из звёздной пыли."},
-            "thorn-reactor": {"name": "Колючий реактор", "description": "Держит пустыню в постоянной критической точке."},
-            "chrono-orchard": {"name": "Хроно-сад", "description": "Собирает урожай сразу за несколько секунд."},
-            "singularity-nursery": {"name": "Сингулярный сад", "description": "Стягивает рост в зелёное ядро."},
-            "galaxy-vault": {"name": "Галактическое хранилище", "description": "Хранит урожаи в масштабах спиралей."},
-            "mythic-desert": {"name": "Мифическая пустыня", "description": "Превращает легенды в производство."},
-            "cactus-matrix": {"name": "Матрица кактусов", "description": "Вычисляет рост до клика."},
-            "nopal-ark": {"name": "Нопаль-ковчег", "description": "Проносит шипы сквозь любой сезон."},
-            "cosmic-root": {"name": "Космический корень", "description": "Укореняет урожай в глубоком космосе."},
-            "endless-bloom": {"name": "Бесконечный цвет", "description": "Растёт дальше, когда числа расплываются."}
+            "seedling": {
+                "name": "Мини-кактус",
+                "description": "Небольшое производство для старта."
+            },
+            "greenhouse": {
+                "name": "Теплица",
+                "description": "Больше кактусов в контролируемых условиях."
+            },
+            "ranch": {
+                "name": "Кактус-ранчо",
+                "description": "Ряды кактусов для следующего рывка."
+            },
+            "oasis": {
+                "name": "Насос оазиса",
+                "description": "Стабильный сбор даже в сухой земле."
+            },
+            "factory": {
+                "name": "Колючий завод",
+                "description": "Промышленное производство для больших чисел."
+            },
+            "harvest-drone": {
+                "name": "Дрон-жнец",
+                "description": "Автоматизирует быстрый сбор."
+            },
+            "lab": {
+                "name": "Кактусовая лаборатория",
+                "description": "Выводит более сильные линии производства."
+            },
+            "server-farm": {
+                "name": "Пустынный сервер",
+                "description": "Оптимизирует каждый цикл производства."
+            },
+            "orbital-greenhouse": {
+                "name": "Орбитальная теплица",
+                "description": "Производство кактусов без ограничений дня."
+            },
+            "monsoon-rig": {
+                "name": "Муссонная платформа",
+                "description": "Собирает влагу из каждой бури."
+            },
+            "canyon-refinery": {
+                "name": "Каньон-НПЗ",
+                "description": "Выжимает каждую каплю в рост."
+            },
+            "plasma-irrigation": {
+                "name": "Плазменный полив",
+                "description": "Заряжает корни неоновой энергией."
+            },
+            "lunar-nursery": {
+                "name": "Лунный питомник",
+                "description": "Ухаживает за кактусами под холодным светом."
+            },
+            "asteroid-hacienda": {
+                "name": "Астероидная гасиенда",
+                "description": "Собирает урожай среди парящих скал."
+            },
+            "solar-silo": {
+                "name": "Солнечный элеватор",
+                "description": "Хранит жар для бесконечных урожаев."
+            },
+            "quantum-spine": {
+                "name": "Квантовая колючка",
+                "description": "Удваивает урожаи в параллельных путях."
+            },
+            "nebula-pipeline": {
+                "name": "Небула-трубопровод",
+                "description": "Гонит кактусовый сок сквозь звёздные туманности."
+            },
+            "rift-garden": {
+                "name": "Разломный сад",
+                "description": "Выращивает шипы из параллельных пространств."
+            },
+            "prism-foundry": {
+                "name": "Призменная литейная",
+                "description": "Отливает свет в новые растительные формы."
+            },
+            "void-terrace": {
+                "name": "Терраса пустоты",
+                "description": "Цветёт там, где больше ничего не живёт."
+            },
+            "starloom": {
+                "name": "Звёздный ткацкий станок",
+                "description": "Плетёт цепочки урожая из звёздной пыли."
+            },
+            "thorn-reactor": {
+                "name": "Колючий реактор",
+                "description": "Держит пустыню в постоянной критической точке."
+            },
+            "chrono-orchard": {
+                "name": "Хроно-сад",
+                "description": "Собирает урожай сразу за несколько секунд."
+            },
+            "singularity-nursery": {
+                "name": "Сингулярный сад",
+                "description": "Стягивает рост в зелёное ядро."
+            },
+            "galaxy-vault": {
+                "name": "Галактическое хранилище",
+                "description": "Хранит урожаи в масштабах спиралей."
+            },
+            "mythic-desert": {
+                "name": "Мифическая пустыня",
+                "description": "Превращает легенды в производство."
+            },
+            "cactus-matrix": {
+                "name": "Матрица кактусов",
+                "description": "Вычисляет рост до клика."
+            },
+            "nopal-ark": {
+                "name": "Нопаль-ковчег",
+                "description": "Проносит шипы сквозь любой сезон."
+            },
+            "cosmic-root": {
+                "name": "Космический корень",
+                "description": "Укореняет урожай в глубоком космосе."
+            },
+            "endless-bloom": {
+                "name": "Бесконечный цвет",
+                "description": "Растёт дальше, когда числа расплываются."
+            }
         },
         "upgrades": {
-            "gloves": {"name": "Толстые перчатки", "description": "Клик-доход x2."},
-            "soft-gloves": {"name": "Мягкие перчатки", "description": "Клик-доход x2."},
-            "sun-map": {"name": "Двойные щипцы", "description": "Клик-доход x2."},
-            "seedling-pots": {"name": "Стабильные горшки", "description": "Производство Мини-кактуса x2."},
-            "greenhouse-glass": {"name": "Чистое стекло", "description": "Производство Теплицы x2."},
-            "ranch-irrigation": {"name": "Полив ранчо", "description": "Производство Кактус-ранчо x2."},
-            "oasis-pressure": {"name": "Высоконапорный насос", "description": "Производство Насоса оазиса x2."},
-            "factory-lines": {"name": "Двойная смена", "description": "Производство Колючего завода x2."},
-            "drone-bay": {"name": "Ангар дронов", "description": "Производство Дрона-жнеца x2."},
-            "lab-culture": {"name": "Быстрая культура", "description": "Производство Лаборатории x2."},
-            "server-cluster": {"name": "Кластер серверов", "description": "Производство Пустынного сервера x2."},
-            "orbital-cycle": {"name": "Орбитальный цикл", "description": "Производство Орбитальной теплицы x2."}
+            "gloves": {
+                "name": "Толстые перчатки",
+                "description": "Клик-доход x2."
+            },
+            "soft-gloves": {
+                "name": "Мягкие перчатки",
+                "description": "Клик-доход x2."
+            },
+            "sun-map": {
+                "name": "Двойные щипцы",
+                "description": "Клик-доход x2."
+            },
+            "seedling-pots": {
+                "name": "Стабильные горшки",
+                "description": "Производство Мини-кактуса x2."
+            },
+            "greenhouse-glass": {
+                "name": "Чистое стекло",
+                "description": "Производство Теплицы x2."
+            },
+            "ranch-irrigation": {
+                "name": "Полив ранчо",
+                "description": "Производство Кактус-ранчо x2."
+            },
+            "oasis-pressure": {
+                "name": "Высоконапорный насос",
+                "description": "Производство Насоса оазиса x2."
+            },
+            "factory-lines": {
+                "name": "Двойная смена",
+                "description": "Производство Колючего завода x2."
+            },
+            "drone-bay": {
+                "name": "Ангар дронов",
+                "description": "Производство Дрона-жнеца x2."
+            },
+            "lab-culture": {
+                "name": "Быстрая культура",
+                "description": "Производство Лаборатории x2."
+            },
+            "server-cluster": {
+                "name": "Кластер серверов",
+                "description": "Производство Пустынного сервера x2."
+            },
+            "orbital-cycle": {
+                "name": "Орбитальный цикл",
+                "description": "Производство Орбитальной теплицы x2."
+            }
         },
         "achievements": {
-            "first-click": {"name": "Первый укол", "goal": "Собери свой первый кактус."},
-            "hundred-clicks": {"name": "Клик-рутина", "goal": "Кликни 100 раз вручную."},
-            "thousand-clicks": {"name": "Золотой палец", "goal": "Кликни 1 000 раз вручную."},
-            "five-thousand-clicks": {"name": "Ручная работа", "goal": "Кликни 5 000 раз вручную."},
-            "twenty-five-thousand-clicks": {"name": "Колючий станок", "goal": "Кликни 25 000 раз вручную."},
-            "hundred-thousand-clicks": {"name": "Легенда кликов", "goal": "Кликни 100 000 раз вручную."},
-            "hundred-earned": {"name": "Маленький сад", "goal": "Собери всего 100 кактусов."},
-            "thousand-earned": {"name": "Зелёная волна", "goal": "Собери всего 1 000 кактусов."},
-            "million-earned": {"name": "Миллионный урожай", "goal": "Собери всего 1 млн кактусов."},
-            "billion-earned": {"name": "Миллиардное поле", "goal": "Собери всего 1 млрд кактусов."},
-            "trillion-earned": {"name": "Триллионный цвет", "goal": "Собери всего 1 трлн кактусов."},
-            "quintillion-earned": {"name": "Пустыня триллионов", "goal": "Собери всего 1 квинтиллион кактусов."},
-            "quintilliarde-earned": {"name": "Квинтиллионная зелень", "goal": "Собери всего 1 квинтиллиард кактусов."},
-            "first-prestige": {"name": "Первый сбор Нопаля", "goal": "Выполни свой первый престиж."},
-            "ten-nopal": {"name": "Нопаль-буфер", "goal": "Собери 10 Нопаля в этом сезоне."},
-            "ten-prestiges": {"name": "Сезонный цикл", "goal": "Выполни 10 престижей."},
-            "first-frenzy": {"name": "Золотой забег", "goal": "Заполни клик-шкалу один раз."},
-            "golden-hit": {"name": "Золотой кактус", "goal": "Поймай Золотой кактус."},
-            "golden-hunter": {"name": "Золотой охотник", "goal": "Поймай 10 Золотых кактусов."},
-            "red-hit": {"name": "Рубиновый кактус", "goal": "Поймай Рубиновый кактус."}
+            "first-click": {
+                "name": "Первый укол",
+                "goal": "Собери свой первый кактус."
+            },
+            "hundred-clicks": {
+                "name": "Клик-рутина",
+                "goal": "Кликни 100 раз вручную."
+            },
+            "thousand-clicks": {
+                "name": "Золотой палец",
+                "goal": "Кликни 1 000 раз вручную."
+            },
+            "five-thousand-clicks": {
+                "name": "Ручная работа",
+                "goal": "Кликни 5 000 раз вручную."
+            },
+            "twenty-five-thousand-clicks": {
+                "name": "Колючий станок",
+                "goal": "Кликни 25 000 раз вручную."
+            },
+            "hundred-thousand-clicks": {
+                "name": "Легенда кликов",
+                "goal": "Кликни 100 000 раз вручную."
+            },
+            "hundred-earned": {
+                "name": "Маленький сад",
+                "goal": "Собери всего 100 кактусов."
+            },
+            "thousand-earned": {
+                "name": "Зелёная волна",
+                "goal": "Собери всего 1 000 кактусов."
+            },
+            "million-earned": {
+                "name": "Миллионный урожай",
+                "goal": "Собери всего 1 млн кактусов."
+            },
+            "billion-earned": {
+                "name": "Миллиардное поле",
+                "goal": "Собери всего 1 млрд кактусов."
+            },
+            "trillion-earned": {
+                "name": "Триллионный цвет",
+                "goal": "Собери всего 1 трлн кактусов."
+            },
+            "quintillion-earned": {
+                "name": "Пустыня триллионов",
+                "goal": "Собери всего 1 квинтиллион кактусов."
+            },
+            "quintilliarde-earned": {
+                "name": "Квинтиллионная зелень",
+                "goal": "Собери всего 1 квинтиллиард кактусов."
+            },
+            "first-prestige": {
+                "name": "Первый сбор Нопаля",
+                "goal": "Выполни свой первый престиж."
+            },
+            "ten-nopal": {
+                "name": "Нопаль-буфер",
+                "goal": "Собери 10 Нопаля в этом сезоне."
+            },
+            "ten-prestiges": {
+                "name": "Сезонный цикл",
+                "goal": "Выполни 10 престижей."
+            },
+            "first-frenzy": {
+                "name": "Золотой забег",
+                "goal": "Заполни клик-шкалу один раз."
+            },
+            "golden-hit": {
+                "name": "Золотой кактус",
+                "goal": "Поймай Золотой кактус."
+            },
+            "golden-hunter": {
+                "name": "Золотой охотник",
+                "goal": "Поймай 10 Золотых кактусов."
+            },
+            "red-hit": {
+                "name": "Рубиновый кактус",
+                "goal": "Поймай Рубиновый кактус."
+            }
         }
     },
     "fishing": {
@@ -463,17 +744,92 @@
             "luck": "Удача"
         },
         "upgrades": {
-            "rod": {"name": "Удилище", "copy": "Шире зона поимки — легче попасть."},
-            "line": {"name": "Леска", "copy": "Медленнее рвётся, когда рыба вне зоны."},
-            "hook": {"name": "Крючок", "copy": "Полоса поимки заполняется быстрее, леска восстанавливается лучше."},
-            "luck": {"name": "Удача", "copy": "Выше шанс редкой рыбы."},
-            "sonar": {"name": "Приманка", "copy": "Больше мест клёва одновременно, дольше остаются и чаще появляются."}
+            "rod": {
+                "name": "Удилище",
+                "copy": "Шире зона поимки — легче попасть."
+            },
+            "line": {
+                "name": "Леска",
+                "copy": "Медленнее рвётся, когда рыба вне зоны."
+            },
+            "hook": {
+                "name": "Крючок",
+                "copy": "Полоса поимки заполняется быстрее, леска восстанавливается лучше."
+            },
+            "luck": {
+                "name": "Удача",
+                "copy": "Выше шанс редкой рыбы."
+            },
+            "sonar": {
+                "name": "Приманка",
+                "copy": "Больше мест клёва одновременно, дольше остаются и чаще появляются."
+            }
         },
         "level_short": "Ур.",
         "level_of": "Уровень {lvl} из {max}",
         "max_level_reached": "Максимальный уровень достигнут",
         "upgrade_button": "Улучшить — {cost} монет",
-        "upgrade_button_locked": "Нужно {cost} монет"
+        "upgrade_button_locked": "Нужно {cost} монет",
+        "active": "Активна",
+        "admin_force_spawn": "Админ: появилось место клёва редкости {rarity}!",
+        "admin_spawns": "Админ спавнит: {label}",
+        "admin_started_event": "Админ запустил событие: {label}",
+        "broadcast_catch": "{name} поймал {mutation}{rarity} {fish}!!!",
+        "close": "Закрыть",
+        "collect_coins": "Собрать монеты",
+        "daily_bonus": "Ежедневный бонус (день {day}): {parts}",
+        "daily_spawn_part": "{count}место клёва {rarity}",
+        "fish_here": "Ловить здесь",
+        "fish_plural": "рыб",
+        "leaderboard_loading": "Загрузка таблицы лидеров...",
+        "leaderboard_signin": "Войди, чтобы видеть таблицу лидеров и записывать свой прогресс.",
+        "mut_group_rare": "Редкие погодные мутации",
+        "mut_group_standard": "Стандартные мутации",
+        "mut_group_weather": "Погодные мутации (стандартные)",
+        "mut_total_catches": "Всего поимок с мутациями: {count}",
+        "mut_variants_found": "Найдено {count} / 13 разных",
+        "mutation_collection": "Коллекция мутаций",
+        "mutations_tooltip": "Нажми для обзора мутаций",
+        "new_fish_found": "Открыта новая рыба",
+        "new_in_index": "НОВОЕ в каталоге",
+        "next_water": "Следующий водоём: {area}",
+        "prestige_cap_body": "Ты открыл все области V1. Новые водоёмы придут с будущими обновлениями.",
+        "prestige_cap_title": "Достигнут кап престижа",
+        "prestige_explain": "При открытии ты начинаешь с нуля по монетам, улучшениям и с пустым инвентарём. Каталог рыб, все прежние поимки и открытые области сохраняются.",
+        "prestige_unlocks": "Престиж {n} открывает {area}",
+        "rarity_label": "Редкость",
+        "sell_value": "Цена продажи: {coins} монет",
+        "some_angler": "Какой-то рыболов",
+        "stat_coins_earned": "Заработано монет",
+        "stat_fish_index": "Каталог рыб",
+        "stat_fish_sold": "Продано рыбы",
+        "stat_heaviest": "Самая тяжёлая поимка",
+        "stat_most_valuable": "Самая дорогая поимка",
+        "stat_total_caught": "Поймано всего",
+        "switch_to_area": "Перейди в {area}, чтобы увидеть рыбу",
+        "unknown_fish_label": "Неизвестная рыба",
+        "unlock_area": "Открыть {area}",
+        "unlockable_at_prestige": "Открывается с престижа {prestige}",
+        "weather_over": "Погодное событие закончилось.",
+        "admin_weather": {
+            "sunny": "Солнечно",
+            "rain": "Дождь",
+            "storm": "Шторм",
+            "fog": "Туман",
+            "night": "Ночь",
+            "abyss": "🌌 Abyss",
+            "polarlicht": "🌠 Северное сияние",
+            "glutsturm": "🔥 Огненная буря",
+            "blutmond": "🌑 Кровавая луна",
+            "geistermeer": "👻 Море призраков",
+            "clear": "Сброс погоды"
+        },
+        "admin_fish": {
+            "small": "Мелкая рыба",
+            "big": "Крупная рыба",
+            "sword": "Меч-рыба",
+            "shark": "Акула"
+        }
     },
     "auth": {
         "page_title": "Войти — KalterKaktus",
@@ -498,6 +854,53 @@
         "loading": "Обработка...",
         "or_continue_with": "или продолжить с",
         "google_login": "Войти через Google",
-        "check_email": "Пожалуйста, проверь свою почту, чтобы подтвердить аккаунт."
+        "check_email": "Пожалуйста, проверь свою почту, чтобы подтвердить аккаунт.",
+        "callback_title": "Вход — KalterKaktus",
+        "reset_page_title": "Сброс пароля — KalterKaktus",
+        "new_password": "Новый пароль",
+        "repeat_password": "Повторите пароль",
+        "save_password": "Сохранить пароль"
+    },
+    "badges": {
+        "lvl_25": {
+            "name": "Уровень 25",
+            "desc": "Достигни уровня 25"
+        },
+        "lvl_50": {
+            "name": "Уровень 50",
+            "desc": "Достигни уровня 50"
+        },
+        "lvl_75": {
+            "name": "Уровень 75",
+            "desc": "Достигни уровня 75"
+        },
+        "lvl_100": {
+            "name": "Уровень 100",
+            "desc": "Достигни уровня 100 — максимум"
+        },
+        "tester": {
+            "name": "Тестер",
+            "desc": "Pre-release игрок — выдано админом"
+        },
+        "vip": {
+            "name": "VIP",
+            "desc": "VIP-статус с +20 % XP-бустом и собственным цветом имени — выдаётся по запросу в Discord"
+        },
+        "supporter": {
+            "name": "Поддержка",
+            "desc": "Поддержал сайт — выдаётся по запросу в Discord"
+        },
+        "haunted_catch": {
+            "name": "Охотник за призраками",
+            "desc": "Поймай рыбу с мутацией HAUNTED"
+        },
+        "daily_streak_7": {
+            "name": "Недельный паломник",
+            "desc": "Собери 7-дневный daily-стрик"
+        },
+        "referrer": {
+            "name": "Реферер",
+            "desc": "Пригласи 1 друга, который достигнет уровня 5"
+        }
     }
 }

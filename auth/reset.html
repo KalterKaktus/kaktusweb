@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#69f0ae">
     <meta name="robots" content="noindex, nofollow">
-    <title>Passwort zurücksetzen - KalterKaktus</title>
+    <title data-i18n="auth.reset_page_title">Passwort zurücksetzen - KalterKaktus</title>
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="stylesheet" href="/styles.css">
@@ -34,7 +34,7 @@
             <header class="page-header">
                 <div>
                     <p class="page-kicker">KalterKaktus Account</p>
-                    <h1 class="page-title">Passwort zurücksetzen</h1>
+                    <h1 class="page-title" data-i18n="auth.reset_password">Passwort zurücksetzen</h1>
                 </div>
             </header>
 
@@ -43,15 +43,15 @@
 
                 <form id="reset-form" class="auth-email-form" hidden autocomplete="on">
                     <label class="auth-field">
-                        <span>Neues Passwort</span>
+                        <span data-i18n="auth.new_password">Neues Passwort</span>
                         <input type="password" id="reset-password" autocomplete="new-password" required minlength="6">
                     </label>
                     <label class="auth-field">
-                        <span>Passwort wiederholen</span>
+                        <span data-i18n="auth.repeat_password">Passwort wiederholen</span>
                         <input type="password" id="reset-password-confirm" autocomplete="new-password" required minlength="6">
                     </label>
                     <div class="auth-form-actions">
-                        <button class="auth-btn" type="submit" id="reset-submit">Passwort speichern</button>
+                        <button class="auth-btn" type="submit" id="reset-submit" data-i18n="auth.save_password">Passwort speichern</button>
                     </div>
                 </form>
 
@@ -71,6 +71,7 @@
     </footer>
 
     <script src="/js/config.js"></script>
+    <script type="module" src="/js/i18n.js"></script>
     <script type="module" src="/js/auth-nav.js"></script>
     <script type="module" src="/js/auth-reset.js"></script>
 </body>

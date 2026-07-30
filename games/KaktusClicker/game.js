@@ -27,7 +27,7 @@ import {
 } from "./economy.js";
 import { formatDuration, formatNumber } from "./format.js";
 import { createInitialState, normalizeLoadedState, resetRunForPrestige } from "./state.js";
-import { t, onLanguageChange } from "/js/i18n.js";
+import { t, onLanguageChange, getLanguage } from "/js/i18n.js";
 
 function tName(item, category) {
     const key = `clicker.${category}.${item.id}.name`;
@@ -395,15 +395,19 @@ function showChangelog() {
     title: t("clicker.changelog_title"),
     bodyHtml: `
       <div class="changelog-entries">
-        ${changelogEntries.map((entry) => `
+        ${changelogEntries.map((entry) => {
+          // entry.ru trägt die russische Variante; fehlt sie → deutscher Fallback.
+          const view = getLanguage() === "ru" && entry.ru ? entry.ru : entry;
+          return `
           <section class="changelog-entry">
             <p class="changelog-date">${escapeHtml(entry.date)}</p>
-            <h3>${escapeHtml(entry.title)}</h3>
+            <h3>${escapeHtml(view.title)}</h3>
             <ul class="changelog-list">
-              ${entry.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+              ${view.items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
             </ul>
           </section>
-        `).join("")}
+        `;
+        }).join("")}
       </div>
     `,
   });
@@ -420,12 +424,12 @@ function updateAchievements() {
   for (const achievement of achievements) {
     if (!state.achievements.includes(achievement.id) && achievement.test(state)) {
       state.achievements.push(achievement.id);
-      unlocked.push(achievement.name);
+      unlocked.push(tName(achievement, "achievements"));
     }
   }
 
   if (unlocked.length) {
-    elements.saveStatus.textContent = `Abzeichen: ${unlocked.at(-1)}`;
+    elements.saveStatus.textContent = t("clicker.achievement_toast", { name: unlocked.at(-1) });
   }
 
   return unlocked.length > 0;
@@ -703,7 +707,9 @@ function formatLeaderboardCountdown(ms) {
   const hours = Math.floor((totalSeconds % 86400) / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  return `${days}T ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
+  const ru = getLanguage() === "ru";
+  const [d, h, m, s] = ru ? ["д", "ч", "м", "с"] : ["T", "h", "m", "s"];
+  return `${days}${d} ${String(hours).padStart(2, "0")}${h} ${String(minutes).padStart(2, "0")}${m} ${String(seconds).padStart(2, "0")}${s}`;
 }
 
 function updateLeaderboardResetCountdown() {

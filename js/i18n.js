@@ -66,6 +66,13 @@ function notify() {
     state.listeners.forEach((cb) => {
         try { cb(state.lang); } catch (error) { console.error("i18n listener error:", error); }
     });
+    // Zusätzlich als DOM-Event, damit klassische (nicht-Modul) Scripts wie
+    // wiki/wiki.js reagieren können — die können onLanguageChange nicht importieren.
+    try {
+        document.dispatchEvent(new CustomEvent("kk:languagechange", { detail: { lang: state.lang } }));
+    } catch (error) {
+        console.error("i18n event dispatch failed:", error);
+    }
 }
 
 // Wendet alle data-i18n-Attribute unter `root` an. Default: gesamtes document.
@@ -147,6 +154,70 @@ export function formatDate(value, opts = { dateStyle: "medium" }) {
     return new Intl.DateTimeFormat(state.lang === "ru" ? "ru-RU" : "de-DE", opts).format(value);
 }
 
+// ---------------------------------------------------------------------------
+// Language-Switcher (Flaggen-Buttons)
+// ---------------------------------------------------------------------------
+// Lebt bewusst HIER und nicht in auth-nav.js: auth-nav.js hängt über
+// supabase-client.js an einem statischen Import von https://esm.sh/. Ist das
+// CDN langsam oder blockiert, wird auth-nav.js nie evaluiert — der Switcher
+// wäre dann unsichtbar. i18n.js hat keine externen Abhängigkeiten, also
+// erscheinen die Flaggen immer.
+//
+// Das Speichern der Sprache im Profil (braucht Supabase) registriert
+// auth-nav.js separat über onLanguageChange().
+
+const FLAG_SVG = {
+    de: `<svg viewBox="0 0 5 3" aria-hidden="true"><rect width="5" height="1" y="0" fill="#000"/><rect width="5" height="1" y="1" fill="#dd0000"/><rect width="5" height="1" y="2" fill="#ffce00"/></svg>`,
+    ru: `<svg viewBox="0 0 5 3" aria-hidden="true"><rect width="5" height="1" y="0" fill="#fff"/><rect width="5" height="1" y="1" fill="#0039a6"/><rect width="5" height="1" y="2" fill="#d52b1e"/></svg>`,
+};
+
+function syncSwitcherActiveState() {
+    document.querySelectorAll(".lang-switch .lang-btn").forEach((btn) => {
+        const isActive = btn.dataset.lang === state.lang;
+        btn.classList.toggle("is-active", isActive);
+        btn.setAttribute("aria-pressed", String(isActive));
+    });
+}
+
+function buildLanguageSwitcher() {
+    const wrap = document.createElement("div");
+    wrap.className = "lang-switch";
+    wrap.setAttribute("role", "group");
+    wrap.setAttribute("data-i18n-attr", "aria-label:nav.language");
+    wrap.setAttribute("aria-label", "Sprache");
+    SUPPORTED.forEach((lang) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "lang-btn" + (state.lang === lang ? " is-active" : "");
+        btn.dataset.lang = lang;
+        btn.setAttribute("aria-pressed", String(state.lang === lang));
+        btn.setAttribute("data-i18n-attr", `aria-label:nav.switch_to_${lang}`);
+        btn.setAttribute("aria-label", lang === "de" ? "Auf Deutsch umschalten" : "Auf Russisch umschalten");
+        btn.innerHTML = FLAG_SVG[lang];
+        btn.addEventListener("click", () => {
+            setLanguage(lang).catch((error) => console.error("setLanguage failed:", error));
+        });
+        wrap.append(btn);
+    });
+    return wrap;
+}
+
+export function mountLanguageSwitchers() {
+    document.querySelectorAll(".nav").forEach((nav) => {
+        const links = nav.querySelector(".nav-links");
+        if (!links || links.querySelector(".lang-switch")) return;
+        const switcher = buildLanguageSwitcher();
+        const authNode = links.querySelector("#auth-nav");
+        if (authNode) links.insertBefore(switcher, authNode);
+        else links.append(switcher);
+        applyTranslations(switcher);
+    });
+    syncSwitcherActiveState();
+}
+
+// Aktiv-Zustand der Flaggen nachziehen, egal wer setLanguage() aufgerufen hat.
+onLanguageChange(syncSwitcherActiveState);
+
 // Startup: Sprache detecten, beide Dicts laden (parallel), DOM anwenden.
 // Muss vor DOMContentLoaded fertig sein damit Flash of German Content minimal ist.
 const initialLang = detectInitialLanguage();
@@ -154,10 +225,14 @@ state.lang = initialLang;
 
 export const ready = Promise.all([loadDict("de"), loadDict("ru")]).then(() => {
     state.loaded = true;
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", () => applyTranslations(), { once: true });
-    } else {
+    const boot = () => {
         applyTranslations();
+        mountLanguageSwitchers();
+    };
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", boot, { once: true });
+    } else {
+        boot();
     }
     document.documentElement.lang = state.lang;
 });

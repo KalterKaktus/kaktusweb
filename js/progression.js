@@ -1,3 +1,4 @@
+import { t } from "/js/i18n.js";
 // Progression — Shared Level-Math + Badge-Definitionen.
 //
 // Eine zentrale Quelle für: Level-Formel, Badge-Liste, Badge-Rendering.
@@ -54,6 +55,21 @@ export function xpProgress(xp) {
 // Badges — id ist die Datenbank-Referenz (siehe user_badges.badge_id).
 // Locked-Beschreibung steht beim Spieler im Profil wenn er das Badge noch nicht hat.
 // Emojis sind bewusst alle unique — keine Dopplungen mit Mutationen / Wetter.
+// Badge-Name/-Beschreibung in aktueller Sprache. Fallback = deutsches Original
+// aus dem BADGES-Objekt, damit nichts leer bleibt wenn ein Key fehlt.
+export function badgeName(badge) {
+    if (!badge) return "";
+    const key = `badges.${badge.id}.name`;
+    const value = t(key);
+    return value === key ? badge.name : value;
+}
+export function badgeDesc(badge) {
+    if (!badge) return "";
+    const key = `badges.${badge.id}.desc`;
+    const value = t(key);
+    return value === key ? badge.desc : value;
+}
+
 export const BADGES = {
     // === Auto-Award durch DB-Trigger (check_level_badges) ===
     lvl_25: {
@@ -123,7 +139,7 @@ export function getBadge(id) {
 export function renderBadgePill(badgeId) {
     const b = getBadge(badgeId);
     if (!b) return "";
-    return `<span class="badge-pill" style="--badge-c:${b.color}" title="${b.name} — ${b.desc}">${b.icon}</span>`;
+    return `<span class="badge-pill" style="--badge-c:${b.color}" title="${badgeName(b)} — ${badgeDesc(b)}">${b.icon}</span>`;
 }
 
 /**

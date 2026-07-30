@@ -21,8 +21,22 @@ function setupWikiSearch() {
 
     function escapeRegex(str) { return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
 
-    // Original-HTML pro Section cachen damit Highlights sauber entfernt werden können
-    sections.forEach((sec) => { sec.dataset.originalHtml = sec.innerHTML; });
+    // Original-HTML pro Section cachen damit Highlights sauber entfernt werden können.
+    function snapshotSections() {
+        sections.forEach((sec) => { sec.dataset.originalHtml = sec.innerHTML; });
+    }
+    snapshotSections();
+
+    // WICHTIG: i18n schreibt die Sections per data-i18n-html neu. Dieses Script
+    // läuft als klassisches Script VOR den Modulen, der erste Snapshot wäre also
+    // immer Deutsch. Nach jedem Sprachwechsel (und nach dem initialen Apply) neu
+    // snapshotten — sonst würde die Suche auf RU deutschen Text wiederherstellen.
+    document.addEventListener("kk:languagechange", () => {
+        snapshotSections();
+        if (input.value.trim()) applyFilter(input.value);
+    });
+    // Initiales Apply von i18n passiert nach diesem Script → einmal nachziehen.
+    window.setTimeout(snapshotSections, 0);
 
     function applyFilter(query) {
         const q = query.trim().toLowerCase();
