@@ -255,21 +255,64 @@ bewusst öffentliche Werte ab.
 
 ---
 
-## Design-Richtung
+## Design-System
 
-**Bestehend (Rest der Site):** dunkel, Matrix-inspiriert. Toxic-Green-Akzente,
-dezentes Grid, glasige dunkle Cards mit grünen Borders und Glow, 8 px Radius.
+### Grundregel
+**Keine Hex- oder `rgba()`-Literale in Seiten- oder Game-CSS.** Farben, Radien
+und Typo kommen aus Tokens. Fehlt ein Wert, kommt er ins Token-File — nicht ins
+konsumierende CSS.
 
-**MyFishingKaktus** weicht thematisch ab: ozeanische Blautöne, weiches Wasser,
+### Zwei Token-Ebenen
+
+**1. Site-Tokens** — `styles.css` unter `:root`. Gelten für Landing, Wiki,
+Profil, Login, Steam Deals, Adminpanel.
+
+| Token | Zweck |
+|---|---|
+| `--bg-primary`, `--bg-secondary` | Flächen |
+| `--card-bg`, `--card-hover` | Karten |
+| `--text-primary`, `--text-secondary` | Text |
+| `--accent`, `--accent-light`, `--accent-hot` | Akzente |
+| `--border` | Rahmen |
+
+**2. Game-Tokens** — `css/game-tokens.css`. Wird von einem Spiel **vor** dem
+eigenen Stylesheet eingebunden. Umfangreicher als die Site-Tokens, weil Spiele
+mehr semantische Farben brauchen.
+
+Jede Basisfarbe liegt doppelt vor: `--x` als fertige Farbe und `--x-rgb` als
+Kanal-Tripel. Grund: `rgba(var(--x), 0.24)` funktioniert **nicht** — die
+Komma-Syntax akzeptiert keine Variable. Mit Alpha also immer:
+```css
+border-color: rgb(var(--green-rgb) / 0.24);
+```
+
+Die fünf **semantischen Akzente** müssen in jedem Theme klar unterscheidbar
+bleiben, Spieler lesen daran das System ab:
+`--prestige` (violett) · `--achievement` (blau) · `--building` (orange) ·
+`--gold` · `--red-event` (rot)
+
+### Aktuelle Looks
+
+**Rest der Site:** dunkel, Matrix-inspiriert. Toxic-Green-Akzente, dezentes
+Grid, glasige dunkle Cards mit grünen Borders und Glow, 8 px Radius. Kein
+Light-Mode, keine generischen Partikel, kein Matrix-Regen.
+
+**MyFishingKaktus:** weicht thematisch ab — ozeanische Blautöne, weiches Wasser,
 warme Gelb-/Goldtöne für Highlights. Die globale Nav bleibt im grünen System.
 
-**KaktusClicker wird umgebaut** (Stand Ende Juli 2026, in Arbeit): weg vom
-dunklen Matrix-Look, hin zu **clean, modern, creamy, lime, soft, cozy** —
-helle Cremeflächen, große Radien, weiche tiefe Schatten statt Glow, runde
-Schrift. Nur der Clicker, der Rest der Site bleibt dunkel.
+**KaktusClicker:** wird auf **clean, modern, creamy, lime, soft, cozy**
+umgestellt (Stand Ende Juli 2026, in Arbeit). Helle Cremeflächen, große Radien
+(16–28 px), weiche tiefe Schatten statt Glow, runde Schrift, Pastell-Varianten
+der semantischen Akzente. Umsetzung als zweites Wertesatz-Theme im Game-Token-File,
+aktiviert per Klasse auf `<body>` — die Token-*Namen* bleiben identisch.
 
-Dazu entsteht eine Token-Datei als Grundlage für weitere Spiele im selben Look.
-**Regel:** keine Hex-Werte in Game-CSS, alles über `var(--token)`.
+Das „kein Beige/Creme"-Verbot gilt also **nur noch für den Rest der Site**, nicht
+für den Clicker und nicht für künftige Spiele, die den Cozy-Look übernehmen.
+
+### Neues Spiel im Cozy-Look anlegen
+1. `css/game-tokens.css` vor dem eigenen Stylesheet einbinden
+2. `<body class="theme-cozy">` setzen
+3. Im eigenen CSS ausschließlich `var(--…)` verwenden
 
 ---
 

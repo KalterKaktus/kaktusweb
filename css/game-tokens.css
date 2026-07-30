@@ -1,0 +1,176 @@
+/* ============================================================================
+   Game Design Tokens
+   ============================================================================
+   Gemeinsame Design-Tokens für alle Spiele. Ein Spiel bindet diese Datei VOR
+   seinem eigenen Stylesheet ein und benutzt danach ausschließlich `var(--…)`.
+
+   REGEL: Keine Hex- oder rgba()-Literale in Game-CSS. Wenn ein Wert fehlt,
+   kommt er hier rein — nicht ins Game-CSS.
+
+   ---------------------------------------------------------------------------
+   Warum es zu jeder Farbe ein `--*-rgb` gibt
+   ---------------------------------------------------------------------------
+   `rgba(var(--green), 0.24)` funktioniert NICHT — die klassische Komma-Syntax
+   akzeptiert keine Variable für die Kanäle. Deshalb liegt jede Basisfarbe
+   zusätzlich als Kanal-Tripel vor, das mit der modernen Schrägstrich-Syntax
+   beliebige Deckkraft erlaubt:
+
+       border-color: rgb(var(--green-rgb) / 0.24);
+       box-shadow: 0 0 24px rgb(var(--green-rgb) / 0.24);
+
+   Das `--x` (fertige Farbe) benutzt man für volle Deckkraft, das `--x-rgb` wenn
+   Alpha gebraucht wird. Beide zeigen immer auf denselben Farbwert.
+
+   ---------------------------------------------------------------------------
+   Themes
+   ---------------------------------------------------------------------------
+   `:root` trägt das dunkle Standard-Theme (Matrix-Look). Weitere Themes werden
+   als Klasse auf <body> ergänzt und überschreiben nur die Werte, nie die Namen.
+   ========================================================================= */
+
+:root {
+  /* ---------- Flächen ---------- */
+  --bg: #020704;
+  --bg-rgb: 2 7 4;
+  --bg-soft: #06120b;
+  --bg-soft-rgb: 6 18 11;
+
+  /* Panel-Basis: wird meist mit Alpha verwendet, daher beide Formen */
+  --panel-base: #04160c;
+  --panel-base-rgb: 4 22 12;
+  --panel-strong-base: #062312;
+  --panel-strong-base-rgb: 6 35 18;
+  --panel: rgb(var(--panel-base-rgb) / 0.82);
+  --panel-strong: rgb(var(--panel-strong-base-rgb) / 0.92);
+
+  /* ---------- Linien ---------- */
+  --line-base: #4aff7c;
+  --line-base-rgb: 74 255 124;
+  --line: rgb(var(--line-base-rgb) / 0.38);
+  --line-hot-base: #91ffa8;
+  --line-hot-base-rgb: 145 255 168;
+  --line-hot: rgb(var(--line-hot-base-rgb) / 0.82);
+
+  /* ---------- Text ---------- */
+  --text: #d9ffe2;
+  --text-rgb: 217 255 226;
+  --muted: #77c98b;
+  --muted-rgb: 119 201 139;
+
+  /* ---------- Primärakzent (Grün) ---------- */
+  --green: #37ff75;
+  --green-rgb: 55 255 117;
+  --green-hot: #b8ffc8;
+  --green-hot-rgb: 184 255 200;
+  --green-dark: #0d7f3a;
+  --green-dark-rgb: 13 127 58;
+  --green-dim: #0a7f3a;
+  --green-dim-rgb: 10 127 58;
+
+  /* ---------- Semantische Akzente ----------
+     Diese fünf müssen in JEDEM Theme klar voneinander unterscheidbar bleiben —
+     Spieler lesen daran ab, um welches System es geht. */
+  --prestige: #d197ff;
+  --prestige-rgb: 209 151 255;
+  --prestige-hot: #f1d5ff;
+  --prestige-hot-rgb: 241 213 255;
+  --prestige-deep: #341046;
+  --prestige-deep-rgb: 52 16 70;
+  --prestige-shadow: #260d35;
+  --prestige-shadow-rgb: 38 13 53;
+  --prestige-ink: #14061b;
+
+  --achievement: #7dd3ff;
+  --achievement-rgb: 125 211 255;
+  --achievement-hot: #d7f3ff;
+  --achievement-hot-rgb: 215 243 255;
+  --achievement-deep: #14435f;
+  --achievement-deep-rgb: 20 67 95;
+
+  --building: #ff8f45;
+  --building-rgb: 255 143 69;
+  --building-hot: #ffc18a;
+  --building-hot-rgb: 255 193 138;
+  --building-line: rgb(var(--building-rgb) / 0.46);
+  --building-deep: #421d08;
+  --building-deep-rgb: 66 29 8;
+  --building-deeper: #3f1c08;
+  --building-deeper-rgb: 63 28 8;
+
+  --gold: #ffd95a;
+  --gold-rgb: 255 217 90;
+  --gold-hot: #fff3ac;
+  --gold-hot-rgb: 255 243 172;
+  --gold-pale: #fff0a6;
+  --gold-pale-rgb: 255 240 166;
+  --gold-sand: #f4ea8d;
+  --gold-sand-rgb: 244 234 141;
+  --gold-bright: #ffc83c;
+  --gold-bright-rgb: 255 200 60;
+  --gold-amber: #ffc33c;
+  --gold-amber-rgb: 255 195 60;
+  --gold-deep: #9e7f05;
+  --gold-deep-rgb: 158 127 5;
+  --gold-shadow: #434802;
+  --gold-shadow-rgb: 67 72 2;
+  --gold-umber: #433002;
+  --gold-umber-rgb: 67 48 2;
+  --gold-ink: #171000;
+  --gold-ink-rgb: 23 16 0;
+
+  --red-event: #ff536d;
+  --red-event-rgb: 255 83 109;
+  --red-event-hot: #ff4f72;
+  --red-event-hot-rgb: 255 79 114;
+  --red-event-bright: #ff3c60;
+  --red-event-bright-rgb: 255 60 96;
+  --red-event-pale: #ffc8d0;
+  --red-event-pale-rgb: 255 200 208;
+  --red-event-blush: #ffb0bb;
+  --red-event-blush-rgb: 255 176 187;
+  --red-event-rose: #ffd7df;
+  --red-event-rose-rgb: 255 215 223;
+  --red-event-ink: #24030a;
+  --red-event-ink-rgb: 36 3 10;
+
+  --danger: #ff4f72;
+  --danger-rgb: 255 79 114;
+  --pink: #ff5ec8;
+  --pink-rgb: 255 94 200;
+
+  /* ---------- Dunkle Ink-Töne (Text auf hellen Buttons, Gradient-Enden) ---------- */
+  --ink-deep: #020a06;
+  --ink-deep-rgb: 2 10 6;
+  --ink-black: #01100800;
+  --ink-1: #010905;
+  --ink-1-rgb: 1 9 5;
+  --ink-2: #011008;
+  --ink-2-rgb: 1 16 8;
+  --ink-3: #000402;
+  --ink-3-rgb: 0 4 2;
+  --ink-warm-1: #140c00;
+  --ink-warm-1-rgb: 20 12 0;
+  --ink-warm-2: #100f07;
+  --ink-warm-2-rgb: 16 15 7;
+  --ink-warm-3: #100b02;
+  --ink-warm-3-rgb: 16 11 2;
+  --ink-warm-4: #1d1905;
+  --ink-warm-4-rgb: 29 25 5;
+  --ink-warm-5: #1a1404;
+  --ink-warm-5-rgb: 26 20 4;
+
+  /* ---------- Schatten ---------- */
+  --shadow-rgb: 0 0 0;
+  --shadow: 0 0 24px rgb(var(--green-rgb) / 0.24),
+            inset 0 0 26px rgb(var(--green-rgb) / 0.06);
+
+  /* ---------- Form & Typo ---------- */
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  --font-game: "Cascadia Mono", "Consolas", "SFMono-Regular", ui-monospace, monospace;
+
+  color-scheme: dark;
+}
