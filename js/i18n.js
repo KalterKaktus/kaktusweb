@@ -228,6 +228,11 @@ export const ready = Promise.all([loadDict("de"), loadDict("ru")]).then(() => {
     const boot = () => {
         applyTranslations();
         mountLanguageSwitchers();
+        // WICHTIG: Scripts die schon vor dem Laden der Dictionaries gerendert
+        // haben, zeigen dort noch rohe Keys (t() kann ohne Dict nichts
+        // auflösen). Ein notify() lässt alle onLanguageChange-Listener neu
+        // rendern — dieselbe Logik wie beim echten Sprachwechsel.
+        notify();
     };
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", boot, { once: true });

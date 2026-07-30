@@ -20,12 +20,12 @@
         <div class="nav-container">
             <a class="logo" href="/">KK</a>
             <div class="nav-links">
-                <a href="/" class="nav-link">Home</a>
-                <a href="/steam-deals/" class="nav-link">Steam Deals</a>
-                <a href="/games/" class="nav-link">Games</a>
-                <a href="/wiki/" class="nav-link">Wiki</a>
+                <a href="/" class="nav-link" data-i18n="nav.home">Home</a>
+                <a href="/steam-deals/" class="nav-link" data-i18n="nav.steam_deals">Steam Deals</a>
+                <a href="/games/" class="nav-link" data-i18n="nav.games">Games</a>
+                <a href="/wiki/" class="nav-link" data-i18n="nav.wiki">Wiki</a>
                 <div id="auth-nav" class="auth-nav" aria-live="polite">
-                    <a class="nav-link auth-link" href="/login.html?next=%2Fadminpanel%2F">Login</a>
+                    <a class="nav-link auth-link" href="/login.html?next=%2Fadminpanel%2F" data-i18n="nav.login">Login</a>
                 </div>
             </div>
         </div>
@@ -120,6 +120,7 @@
     </main>
 
     <script src="/js/config.js"></script>
+    <script type="module" src="/js/i18n.js"></script>
     <script type="module" src="/js/auth-nav.js"></script>
     <script type="module" src="/adminpanel/panel.js"></script>
 </body>

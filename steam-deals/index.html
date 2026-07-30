@@ -281,7 +281,7 @@
     </main>
 
     <script type="module">
-        import { t, onLanguageChange } from '/js/i18n.js';
+        import { t, onLanguageChange, ready as i18nReady } from '/js/i18n.js';
         const app = document.getElementById('gamesApp');
         const meta = document.getElementById('gamesMeta');
         const refreshButton = document.getElementById('refreshGames');
@@ -400,7 +400,9 @@
         }
 
         refreshButton.addEventListener('click', loadGames);
-        loadGames();
+        // Erst laden wenn die Dictionaries da sind — sonst würde t() rohe Keys
+        // liefern (z.B. "deals.error_load" statt der Fehlermeldung).
+        i18nReady.then(loadGames);
         onLanguageChange(loadGames);
     </script>
     <script src="/js/config.js"></script>
