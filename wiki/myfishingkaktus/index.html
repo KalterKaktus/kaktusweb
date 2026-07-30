@@ -482,11 +482,11 @@ Pool (gewichtet): BIG 65 / HUGE 25 / SHINY 10</code></pre>
             <section data-searchable id="karl" data-i18n-html="wiki.fishing.karl">
                 <h2>Karl die Schildkröte</h2>
                 <p>
-                    Bonus-Event. Karl taucht <strong>maximal 1× pro Stunde</strong> auf, zu einer
-                    deterministisch-zufälligen Sekunde innerhalb der Stunde (global synchron).
+                    Bonus-Event. Karl taucht <strong>maximal 1× pro 30 Minuten</strong> auf, zu einer
+                    deterministisch-zufälligen Sekunde innerhalb des Slots (global synchron).
                     Sichtbar für 30 Sekunden — wer nicht antippt, verpasst ihn.
                 </p>
-                <pre><code>KARL_SLOT_MS = 3.600.000   // 1 Stunde
+                <pre><code>KARL_SLOT_MS = 1.800.000   // 30 Minuten
 KARL_VISIBLE_MS = 30.000   // 30 Sekunden
 appearOffset = hash(slotIndex) → zwischen 60s und (SLOT_MS − VISIBLE_MS − 60s)</code></pre>
 
