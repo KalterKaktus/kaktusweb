@@ -4,6 +4,7 @@ import { AREA_ORDER } from "../data/areas.js";
 import { FISH_BY_ID } from "../data/fish.js";
 import { UPGRADE_ORDER } from "../data/upgrades.js";
 import { resetUpgrades } from "./upgradeSystem.js";
+import { t } from "/js/i18n.js";
 
 export const FISHING_GAME_ID = "my-fishing-kaktus";
 const LOCAL_KEY = "my-fishing-kaktus-save-v1";
@@ -212,7 +213,7 @@ export async function saveState(state, user) {
 
     const supabase = getSupabase();
     if (!supabase) {
-        return { mode: "cloud", error: new Error("Cloud-Save ist gerade nicht verfügbar.") };
+        return { mode: "cloud", error: new Error(t("fishing.cloud_unavailable")) };
     }
 
     // display_name wird vom DB-Trigger game_saves_force_display_name_trigger
@@ -244,7 +245,7 @@ export function clearLocalState() {
 export async function fetchLeaderboard(limit = 1000) {
     const supabase = getSupabase();
     if (!supabase) {
-        return { entries: [], error: new Error("Rangliste ist gerade nicht verfügbar.") };
+        return { entries: [], error: new Error(t("fishing.leaderboard_unavailable")) };
     }
 
     // Liest aus my_fishing_kaktus_leaderboard View statt rohem game_saves.

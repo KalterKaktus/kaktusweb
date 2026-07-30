@@ -1,5 +1,6 @@
 import { getSupabase, isConfigReady } from "./supabase-client.js";
 import { fetchProfile, getDisplayName } from "./profile.js";
+import { t } from "./i18n.js";
 
 export const KAKTUS_GAME_ID = "kaktus-clicker";
 const LEADERBOARD_TIME_ZONE = "Europe/Berlin";
@@ -140,7 +141,7 @@ export async function pushCloudSave(user, state) {
 
     const period = getMonthlyLeaderboardPeriod();
     if (state.season?.id !== period.id) {
-        return { error: new Error("Dieser Save gehört zu einer alten Saison. Bitte neu laden.") };
+        return { error: new Error(t("clicker.save_stale_season")) };
     }
 
     const totalEarned = Number(state.totalEarned) || 0;
@@ -186,7 +187,7 @@ export async function ensureKaktusSeason() {
 export async function fetchLeaderboard(limit = 1000) {
     const supabase = getSupabase();
     if (!supabase) {
-        return { error: new Error("Rangliste ist gerade nicht verfügbar.") };
+        return { error: new Error(t("clicker.leaderboard_unavailable")) };
     }
 
     await ensureKaktusSeason();
@@ -212,7 +213,7 @@ export async function fetchLeaderboard(limit = 1000) {
     ]);
 
     if (error) {
-        return { error: new Error("Rangliste konnte nicht geladen werden.") };
+        return { error: new Error(t("clicker.leaderboard_load_failed")) };
     }
 
     if (archiveError) {

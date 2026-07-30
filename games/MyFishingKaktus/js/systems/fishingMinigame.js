@@ -254,9 +254,9 @@ export class FishingMinigame {
             if (game.tension < 0.3) {
                 this.tensionHint.textContent = "GLEICH REISST ER AUS!";
             } else if (game.tension < 0.6) {
-                this.tensionHint.textContent = "Zurück in die Zone!";
+                this.tensionHint.textContent = t("fishing.back_to_zone");
             } else {
-                this.tensionHint.textContent = "Halt ihn in der Zone!";
+                this.tensionHint.textContent = t("fishing.keep_in_zone");
             }
         }
     }

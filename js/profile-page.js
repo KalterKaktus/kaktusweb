@@ -1,5 +1,6 @@
 import { getSupabase, isConfigReady } from "./supabase-client.js";
 import {
+import { t } from "./i18n.js";
     ensureProfile,
     fetchProfile,
     getDisplayName,
@@ -30,7 +31,7 @@ function redirectToLogin() {
 
 async function initProfilePage() {
     if (!isConfigReady()) {
-        setStatus("Profil ist gerade nicht verfügbar.", true);
+        setStatus(t("profile.unavailable"), true);
         return;
     }
 

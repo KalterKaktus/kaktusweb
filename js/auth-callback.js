@@ -1,4 +1,5 @@
 import { getSupabase, isConfigReady } from "./supabase-client.js";
+import { t } from "./i18n.js";
 
 function getReturnPath() {
     const stored = sessionStorage.getItem("auth_return_to");
@@ -20,7 +21,7 @@ function setStatus(message, isError = false) {
 
 async function finishLogin() {
     if (!isConfigReady()) {
-        setStatus("Anmeldung ist gerade nicht verfügbar.", true);
+        setStatus(t("auth.signin_unavailable"), true);
         return;
     }
 
@@ -48,7 +49,7 @@ async function finishLogin() {
     } else {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error || !session) {
-            setStatus("Kein gültiger Login-Link. Bitte erneut anmelden.", true);
+            setStatus(t("auth.invalid_login_link"), true);
             return;
         }
     }

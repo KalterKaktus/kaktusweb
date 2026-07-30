@@ -4,6 +4,24 @@ import {
     currentKarlSlot,
     getKarlStatus,
 } from "../data/karl.js";
+import { applyTranslations, t, onLanguageChange, getLanguage, ready as i18nReady } from "/js/i18n.js";
+
+function tRarity(rarity) {
+    const key = `fishing.rarity_${String(rarity || "").toLowerCase()}`;
+    const value = t(key);
+    return value === key ? rarity : value;
+}
+
+// Wheel-Segmente haben sehr wenig Platz → eigene Kurzform statt tRarity().
+// Coin-Segmente ("+250") sind sprachneutral und bleiben wie sie sind.
+function wheelSegmentLabel(seg) {
+    if (seg.type === "spawn") {
+        const key = `fishing.karl.wheel_${String(seg.rarity || "").toLowerCase()}`;
+        const value = t(key);
+        if (value !== key) return value;
+    }
+    return seg.wheelLabel || seg.label;
+}
 
 const KARL_IMAGE_SRC = "assets/karl.png";
 
@@ -87,7 +105,7 @@ export class KarlSystem {
         const shadow = document.createElement("button");
         shadow.type = "button";
         shadow.className = "karl-shadow";
-        shadow.setAttribute("aria-label", `${KARL_NAME} antippen`);
+        shadow.setAttribute("aria-label", t("fishing.karl.tap_karl", { name: KARL_NAME }));
         // Größe wie großer Fisch, Position zufällig
         shadow.style.left = `${15 + Math.random() * 70}%`;
         shadow.style.top = `${30 + Math.random() * 50}%`;
@@ -131,18 +149,18 @@ export class KarlSystem {
             <div class="karl-card">
                 <header>
                     <div>
-                        <p>Bonus-Event</p>
+                        <p data-i18n="fishing.karl.bonus_event">Bonus-Event</p>
                         <strong>${KARL_NAME}</strong>
                     </div>
-                    <button type="button" class="karl-abort" data-karl-abort>Schließen</button>
+                    <button type="button" class="karl-abort" data-karl-abort data-i18n="fishing.karl.close">Schließen</button>
                 </header>
-                <p class="karl-hint">Putz Karls Panzer sauber — wisch den Dreck mit dem Finger oder der Maus weg.</p>
+                <p class="karl-hint" data-i18n="fishing.karl.clean_hint">Putz Karls Panzer sauber — wisch den Dreck mit dem Finger oder der Maus weg.</p>
                 <div class="karl-stage">
                     <img class="karl-image" src="${KARL_IMAGE_SRC}" alt="${KARL_NAME}" draggable="false">
                     <canvas class="karl-canvas" data-karl-canvas></canvas>
                 </div>
                 <div class="karl-progress">
-                    <span class="karl-progress-label">Sauberkeit</span>
+                    <span class="karl-progress-label" data-i18n="fishing.karl.cleanliness">Sauberkeit</span>
                     <div class="karl-progress-bar"><span data-karl-progress></span></div>
                 </div>
             </div>
@@ -160,15 +178,15 @@ export class KarlSystem {
             <div class="karl-wheel-card">
                 <header>
                     <div>
-                        <p>Glücksrad</p>
-                        <strong>Drehen für deine Belohnung</strong>
+                        <p data-i18n="fishing.karl.wheel">Glücksrad</p>
+                        <strong data-i18n="fishing.karl.spin_for_reward">Drehen für deine Belohnung</strong>
                     </div>
                 </header>
                 <div class="karl-wheel-stage">
                     <div class="karl-wheel" data-karl-wheel></div>
                     <div class="karl-wheel-pointer" aria-hidden="true"></div>
                 </div>
-                <button type="button" class="karl-wheel-spin" data-karl-spin>Drehen</button>
+                <button type="button" class="karl-wheel-spin" data-karl-spin data-i18n="fishing.karl.spin">Drehen</button>
             </div>
         `;
         document.body.append(wheelOverlay);
@@ -184,15 +202,28 @@ export class KarlSystem {
         rewardPopup.innerHTML = `
             <div class="karl-reward-card" data-karl-reward-card>
                 <div class="karl-reward-burst" aria-hidden="true"></div>
-                <p class="karl-reward-kicker">Karl schenkt dir</p>
+                <p class="karl-reward-kicker" data-i18n="fishing.karl.gives_you">Karl schenkt dir</p>
                 <strong class="karl-reward-title" data-karl-reward-title>—</strong>
                 <p class="karl-reward-sub" data-karl-reward-sub></p>
-                <button type="button" class="karl-reward-claim" data-karl-claim>Einsammeln</button>
+                <button type="button" class="karl-reward-claim" data-karl-claim data-i18n="fishing.karl.claim">Einsammeln</button>
             </div>
         `;
         document.body.append(rewardPopup);
         this.rewardPopup = rewardPopup;
         rewardPopup.querySelector("[data-karl-claim]").addEventListener("click", () => this._claimReward());
+
+        // Die drei Overlays entstehen erst hier im Konstruktor — also nach dem
+        // initialen applyTranslations() von i18n.js. Einmal selbst anwenden und
+        // bei Sprachwechsel neu anwenden, sonst bleiben sie deutsch.
+        const translateOverlays = () => {
+            [cleanOverlay, wheelOverlay, rewardPopup].forEach((el) => applyTranslations(el));
+            // Wheel-Labels sind gerendertes SVG/DOM → neu zeichnen.
+            if (this.wheelSegments && !this.wheelOverlay.hidden) {
+                this._renderWheel(this.wheelSegments);
+            }
+        };
+        i18nReady.then(translateOverlays);
+        onLanguageChange(translateOverlays);
     }
 
     async _openCleaning() {
@@ -398,7 +429,7 @@ export class KarlSystem {
             const end = (acc / totalWeight) * 360;
             const c = colors[i % colors.length];
             stops.push(`${c.fill} ${start}deg ${end}deg`);
-            segMeta.push({ start, end, mid: (start + end) / 2, c, label: seg.wheelLabel || seg.label });
+            segMeta.push({ start, end, mid: (start + end) / 2, c, label: wheelSegmentLabel(seg) });
         });
         wheel.style.background = `conic-gradient(from 0deg, ${stops.join(", ")})`;
         wheel.style.transform = "rotate(0deg)";
@@ -534,13 +565,13 @@ export class KarlSystem {
 
         // Titel + Subtitel je nach Reward-Typ
         if (reward.type === "spawn") {
-            title.textContent = `${reward.rarity}-Fischstelle!`;
-            sub.textContent = "Eine garantierte Top-Stelle taucht gleich auf — schnapp sie dir!";
+            title.textContent = t("fishing.karl.spot_title", { rarity: tRarity(reward.rarity) });
+            sub.textContent = t("fishing.karl.spot_sub");
         } else if (reward.type === "coins-fixed") {
-            title.textContent = `+${reward.amount.toLocaleString("de-DE")} Coins`;
-            sub.textContent = "Direkt im Geldbeutel.";
+            title.textContent = `+${reward.amount.toLocaleString(getLanguage() === "ru" ? "ru-RU" : "de-DE")} ${t("fishing.coins_suffix_full")}`;
+            sub.textContent = t("fishing.karl.coins_sub");
         } else {
-            title.textContent = reward.label || "Belohnung";
+            title.textContent = reward.label || t("fishing.karl.reward");
             sub.textContent = "";
         }
 

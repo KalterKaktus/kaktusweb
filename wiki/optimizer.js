@@ -11,6 +11,28 @@
 import { buildings, upgrades } from "/games/KaktusClicker/data.js";
 import { loadCloudSave, getGameSession, KAKTUS_GAME_ID } from "/js/game-cloud.js";
 import { formatNumber } from "/games/KaktusClicker/format.js";
+import { t, onLanguageChange, ready as i18nReady } from "/js/i18n.js";
+
+// Gebäudename in aktueller Sprache (Fallback = deutscher Originalname).
+function tBuilding(b) {
+    const key = `clicker.buildings.${b.id}.name`;
+    const value = t(key);
+    return value === key ? b.name : value;
+}
+
+// Upgrade-Name. Die auto-generierten "<building>-core"-Upgrades haben keinen
+// eigenen RU-Key — dort aus dem Gebäudenamen zusammensetzen (wie im Spiel).
+function tUpgrade(u) {
+    const key = `clicker.upgrades.${u.id}.name`;
+    const value = t(key);
+    if (value !== key) return value;
+    if (u.buildingId) {
+        const bKey = `clicker.buildings.${u.buildingId}.name`;
+        const bValue = t(bKey);
+        if (bValue !== bKey) return t("clicker.upgrade_core_suffix", { name: bValue });
+    }
+    return u.name;
+}
 
 const root = document.getElementById("optimizer-root");
 const statusEl = document.getElementById("optimizer-status");
@@ -40,6 +62,8 @@ function simulateBestBuys(ownedMap, boughtUpgradeIds) {
     const buildingState = buildings.map((building) => ({
         id: building.id,
         name: building.name,
+        // Übersetzter Anzeigename — der Plan wird bei Sprachwechsel neu gebaut.
+        displayName: tBuilding(building),
         icon: building.icon,
         baseCost: building.baseCost,
         cps: building.cps,
@@ -64,6 +88,7 @@ function simulateBestBuys(ownedMap, boughtUpgradeIds) {
             step,
             id: best.id,
             name: best.name,
+            displayName: best.displayName,
             icon: best.icon,
             cost: best.cost,
             cps: best.cps,
@@ -90,17 +115,17 @@ function setStatus(message, type = "info") {
 
 function renderPlan(plan, source) {
     if (!plan.length) {
-        resultEl.innerHTML = `<p class="opt-empty">Keine Empfehlung — alle Buildings haben CPS 0 oder Daten fehlen.</p>`;
+        resultEl.innerHTML = `<p class="opt-empty">${t("wiki.opt.no_recommendation")}</p>`;
         return;
     }
 
     const sourceTag = source === "cloud"
-        ? `<span class="opt-source-pill opt-source-cloud">Aus deinem Cloud-Save</span>`
-        : `<span class="opt-source-pill opt-source-manual">Manuelle Eingabe</span>`;
+        ? `<span class="opt-source-pill opt-source-cloud">${t("wiki.opt.from_cloud")}</span>`
+        : `<span class="opt-source-pill opt-source-manual">${t("wiki.opt.manual_input")}</span>`;
 
     resultEl.innerHTML = `
         <div class="opt-result-head">
-            <h3>Nächste 10 beste Käufe</h3>
+            <h3>${t("wiki.opt.next_ten")}</h3>
             ${sourceTag}
         </div>
         <ol class="opt-plan">
@@ -109,18 +134,18 @@ function renderPlan(plan, source) {
                     <span class="opt-step-num">#${entry.step}</span>
                     <span class="opt-step-icon">${entry.icon}</span>
                     <div class="opt-step-main">
-                        <strong>${entry.name}</strong>
+                        <strong>${entry.displayName || entry.name}</strong>
                         <small>
-                            Besitz ${entry.ownedBefore} → ${entry.ownedAfter}
+                            ${t("wiki.opt.owned")} ${entry.ownedBefore} → ${entry.ownedAfter}
                             · ${formatNumber(entry.effectiveCps)} CPS
-                            ${entry.multiplier > 1 ? `<em>(×${entry.multiplier.toFixed(1)} aus Upgrades)</em>` : ""}
+                            ${entry.multiplier > 1 ? `<em>(×${entry.multiplier.toFixed(1)} ${t("wiki.opt.from_upgrades")})</em>` : ""}
                         </small>
                     </div>
                     <div class="opt-step-cost">
                         <b>${formatNumber(entry.cost)}</b>
-                        <small>Kakteen</small>
+                        <small>${t("clicker.score_label")}</small>
                     </div>
-                    <div class="opt-step-roi" title="Cost ÷ CPS = Sekunden bis Refinanzierung">
+                    <div class="opt-step-roi" title="${t("wiki.opt.roi_tooltip")}">
                         <b>${formatNumber(entry.roi)}</b>
                         <small>s ROI</small>
                     </div>
@@ -128,9 +153,7 @@ function renderPlan(plan, source) {
             `).join("")}
         </ol>
         <p class="opt-disclaimer">
-            ROI = Kosten ÷ effektive CPS = Sekunden bis sich der Kauf refinanziert hat (niedriger = besser).
-            Globale Multiplikatoren (Prestige, Achievements, Goldlauf) wurden bewusst ignoriert — sie skalieren alle Käufe gleich.
-            <strong>Dein Spielstand wird nie geändert, nur gelesen.</strong>
+            ${t("wiki.opt.disclaimer")}
         </p>
     `;
 }
@@ -139,12 +162,12 @@ function renderPlan(plan, source) {
 
 function renderManualForm(prefillOwned = {}, prefillUpgrades = []) {
     manualEl.innerHTML = `
-        <p class="opt-manual-intro">Trage manuell ein wie viel du von jedem Gebäude besitzt. Optional unten die gekauften Upgrades anhaken.</p>
+        <p class="opt-manual-intro">${t("wiki.opt.manual_intro")}</p>
         <div class="opt-manual-grid">
             ${buildings.map((b) => `
                 <label class="opt-manual-field">
                     <span class="opt-manual-icon">${b.icon}</span>
-                    <span class="opt-manual-name">${b.name}</span>
+                    <span class="opt-manual-name">${tBuilding(b)}</span>
                     <input class="opt-manual-input" type="number" min="0" step="1"
                            data-manual-owned="${b.id}"
                            value="${prefillOwned[b.id] || 0}"
@@ -153,17 +176,17 @@ function renderManualForm(prefillOwned = {}, prefillUpgrades = []) {
             `).join("")}
         </div>
         <details class="opt-manual-upgrades">
-            <summary>Gekaufte Upgrades anhaken (optional, beeinflusst Multiplikatoren)</summary>
+            <summary>${t("wiki.opt.check_upgrades")}</summary>
             <div class="opt-manual-upgrade-grid">
                 ${upgrades.filter((u) => u.buildingMultiplier).map((u) => `
                     <label class="opt-manual-upgrade-row">
                         <input type="checkbox" data-manual-upgrade="${u.id}" ${prefillUpgrades.includes(u.id) ? "checked" : ""}>
-                        <span>${u.name} <em>(×${u.buildingMultiplier})</em></span>
+                        <span>${tUpgrade(u)} <em>(×${u.buildingMultiplier})</em></span>
                     </label>
                 `).join("")}
             </div>
         </details>
-        <button type="button" class="opt-manual-run" id="optimizer-manual-run">Plan berechnen</button>
+        <button type="button" class="opt-manual-run" id="optimizer-manual-run">${t("wiki.opt.compute_plan")}</button>
     `;
     document.getElementById("optimizer-manual-run")?.addEventListener("click", computeManual);
 }
@@ -184,7 +207,7 @@ function computeManual() {
 // --- Main flow ---
 
 async function tryLoadCloud() {
-    setStatus("Prüfe Login …");
+    setStatus(t("wiki.opt.checking_login"));
     let session;
     try {
         session = await getGameSession();
@@ -192,7 +215,7 @@ async function tryLoadCloud() {
         session = null;
     }
     if (!session?.user?.id) {
-        setStatus("Du bist nicht eingeloggt. Logg dich ein um deinen Cloud-Save automatisch zu laden, oder benutze den manuellen Modus unten.", "warn");
+        setStatus(t("wiki.opt.not_logged_in"), "warn");
         manualEl.hidden = false;
         toggleManualBtn.hidden = true;
         recomputeBtn.hidden = true;
@@ -200,7 +223,7 @@ async function tryLoadCloud() {
         return;
     }
 
-    setStatus("Lade Cloud-Save …");
+    setStatus(t("wiki.opt.loading_cloud"));
     let cloud;
     try {
         cloud = await loadCloudSave(session.user);
@@ -208,7 +231,7 @@ async function tryLoadCloud() {
         cloud = null;
     }
     if (!cloud) {
-        setStatus("Kein KaktusClicker Cloud-Save gefunden. Spiele eine Runde und speichere, dann komm wieder.", "warn");
+        setStatus(t("wiki.opt.no_save"), "warn");
         manualEl.hidden = false;
         toggleManualBtn.hidden = true;
         renderManualForm();
@@ -218,10 +241,10 @@ async function tryLoadCloud() {
     const ownedMap = cloud.state?.buildings || {};
     const boughtUpgradeIds = Array.isArray(cloud.state?.upgrades) ? cloud.state.upgrades : [];
 
-    setStatus(`Cloud-Save geladen (${cloud.displayName || "Spieler"}) — Berechne …`);
+    setStatus(t("wiki.opt.loaded_calculating", { name: cloud.displayName || t("profile.player_fallback") }));
     const plan = simulateBestBuys(ownedMap, boughtUpgradeIds);
     renderPlan(plan, "cloud");
-    setStatus(`Cloud-Save geladen (${cloud.displayName || "Spieler"}) · Saison ${cloud.seasonId || "?"}`, "ok");
+    setStatus(t("wiki.opt.loaded_season", { name: cloud.displayName || t("profile.player_fallback"), season: cloud.seasonId || "?" }), "ok");
     toggleManualBtn.hidden = false;
     recomputeBtn.hidden = false;
 
@@ -232,12 +255,16 @@ async function tryLoadCloud() {
 toggleManualBtn?.addEventListener("click", () => {
     manualEl.hidden = !manualEl.hidden;
     toggleManualBtn.textContent = manualEl.hidden
-        ? "Manueller Modus"
-        : "Manuelle Eingabe ausblenden";
+        ? t("wiki.optimizer_manual")
+        : t("wiki.opt.hide_manual");
 });
 
 recomputeBtn?.addEventListener("click", () => tryLoadCloud());
 
 if (root) {
-    tryLoadCloud();
+    // Erst nach dem Laden der Dictionaries starten — sonst würde setStatus()
+    // rohe Keys anzeigen. Bei Sprachwechsel komplett neu berechnen, damit
+    // Gebäudenamen und Status-Texte in der neuen Sprache erscheinen.
+    i18nReady.then(() => tryLoadCloud());
+    onLanguageChange(() => tryLoadCloud());
 }

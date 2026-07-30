@@ -49,6 +49,18 @@ function tRarity(rarity) {
     const value = t(key);
     return value === key ? rarity : value;
 }
+function tWeatherName(event) {
+    if (!event) return "";
+    const key = `fishing.weather.${event.type}.name`;
+    const value = t(key);
+    return value === key ? event.name : value;
+}
+function tWeatherBuff(event) {
+    if (!event) return "";
+    const key = `fishing.weather.${event.type}.buff`;
+    const value = t(key);
+    return value === key ? event.buffLabel : value;
+}
 function tMutation(mut) {
     if (!mut) return "";
     const key = `fishing.mutation_labels.${mut.id}`;
@@ -143,9 +155,9 @@ function renderWeatherBanner() {
         el.style.setProperty("--event-accent", e.accent);
         el.innerHTML =
             `<span class="weather-banner-icon" aria-hidden="true">${e.icon}</span>` +
-            `<span class="weather-banner-name">${e.name}</span>` +
+            `<span class="weather-banner-name">${tWeatherName(e)}</span>` +
             `<span class="weather-banner-sep">·</span>` +
-            `<span class="weather-banner-buff">${e.buffLabel}</span>` +
+            `<span class="weather-banner-buff">${tWeatherBuff(e)}</span>` +
             `<span class="weather-banner-sep">·</span>` +
             `<span class="weather-banner-time">${formatCountdown(status.msLeft)}</span>`;
         el.hidden = false;
@@ -166,7 +178,10 @@ function handleWeatherChange(event, previous) {
     audio.setRainAmbient(rainIntensity);
     if (event) {
         audio.playSell();
-        showBroadcast(`Wetter-Event: ${event.name} — ${event.buffLabel} (2,5 Min.)`);
+        showBroadcast(t("fishing.weather_started", {
+            name: tWeatherName(event),
+            buff: tWeatherBuff(event),
+        }));
     } else if (previous) {
         showBroadcast(t("fishing.weather_over"));
     }

@@ -1,4 +1,5 @@
 import { getSupabase } from "./supabase-client.js";
+import { t } from "./i18n.js";
 
 const KAKTUS_GAME_ID = "kaktus-clicker";
 
@@ -99,7 +100,7 @@ export function validateUsername(username) {
 export async function saveUsername(userId, username) {
     const supabase = getSupabase();
     if (!supabase) {
-        return { error: new Error("Profil ist gerade nicht verfügbar.") };
+        return { error: new Error(t("profile.unavailable")) };
     }
 
     await ensureProfile(userId);
@@ -119,7 +120,7 @@ export async function saveUsername(userId, username) {
             return { error: new Error("Dieser Benutzername ist schon vergeben.") };
         }
         if (error.code === "23514") {
-            return { error: new Error("Username erfüllt nicht die Format-Regeln (nur a-Z, 0-9, _ erlaubt, 2-24 Zeichen).") };
+            return { error: new Error(t("profile.username_invalid")) };
         }
         // Echten Supabase-Fehler durchreichen damit man im Status sieht was kaputt ist
         return { error: new Error(`Profil-Speichern fehlgeschlagen: ${error.message || error.code || "unbekannt"}`) };

@@ -99,7 +99,9 @@
         "load_error": "Etwas ist schiefgelaufen beim Laden des Profils.",
         "close": "Schließen",
         "preview": "Vorschau",
-        "your_name": "Dein Name"
+        "your_name": "Dein Name",
+        "unavailable": "Profil ist gerade nicht verfügbar.",
+        "username_invalid": "Username erfüllt nicht die Format-Regeln (nur a-Z, 0-9, _ erlaubt, 2-24 Zeichen)."
     },
     "wiki": {
         "meta_title": "KalterKaktus Wiki",
@@ -169,6 +171,26 @@
             "toc_vip": "VIP & Unterstützer",
             "toc_referral": "Referral",
             "toc_anti_cheat": "Anti-Cheat / Limits"
+        },
+        "opt": {
+            "no_recommendation": "Keine Empfehlung — alle Buildings haben CPS 0 oder Daten fehlen.",
+            "from_cloud": "Aus deinem Cloud-Save",
+            "manual_input": "Manuelle Eingabe",
+            "next_ten": "Nächste 10 beste Käufe",
+            "owned": "Besitz",
+            "from_upgrades": "aus Upgrades",
+            "roi_tooltip": "Cost ÷ CPS = Sekunden bis Refinanzierung",
+            "disclaimer": "ROI = Kosten ÷ effektive CPS = Sekunden bis sich der Kauf refinanziert hat (niedriger = besser). Globale Multiplikatoren (Prestige, Achievements, Goldlauf) wurden bewusst ignoriert — sie skalieren alle Käufe gleich. Dein Spielstand wird nie geändert, nur gelesen.",
+            "manual_intro": "Trage manuell ein wie viel du von jedem Gebäude besitzt. Optional unten die gekauften Upgrades anhaken.",
+            "check_upgrades": "Gekaufte Upgrades anhaken (optional, beeinflusst Multiplikatoren)",
+            "compute_plan": "Plan berechnen",
+            "hide_manual": "Manuelle Eingabe ausblenden",
+            "checking_login": "Prüfe Login …",
+            "not_logged_in": "Du bist nicht eingeloggt. Logg dich ein um deinen Cloud-Save automatisch zu laden, oder benutze den manuellen Modus unten.",
+            "loading_cloud": "Lade Cloud-Save …",
+            "no_save": "Kein KaktusClicker Cloud-Save gefunden. Spiele eine Runde und speichere, dann komm wieder.",
+            "loaded_calculating": "Cloud-Save geladen ({name}) — Berechne …",
+            "loaded_season": "Cloud-Save geladen ({name}) · Saison {season}"
         }
     },
     "deals": {
@@ -666,7 +688,10 @@
                 "name": "Rubinkaktus",
                 "goal": "Fange einen Rubinkaktus."
             }
-        }
+        },
+        "save_stale_season": "Dieser Save gehört zu einer alten Saison. Bitte neu laden.",
+        "leaderboard_unavailable": "Rangliste ist gerade nicht verfügbar.",
+        "leaderboard_load_failed": "Rangliste konnte nicht geladen werden."
     },
     "fishing": {
         "loading_title": "Der Ozean wartet",
@@ -878,6 +903,77 @@
             "big": "Großer Fisch",
             "sword": "Schwertfisch",
             "shark": "Hai"
+        },
+        "karl": {
+            "bonus_event": "Bonus-Event",
+            "close": "Schließen",
+            "clean_hint": "Putz Karls Panzer sauber — wisch den Dreck mit dem Finger oder der Maus weg.",
+            "cleanliness": "Sauberkeit",
+            "wheel": "Glücksrad",
+            "spin_for_reward": "Drehen für deine Belohnung",
+            "spin": "Drehen",
+            "gives_you": "Karl schenkt dir",
+            "claim": "Einsammeln",
+            "spot_title": "{rarity}-Fischstelle!",
+            "spot_sub": "Eine garantierte Top-Stelle taucht gleich auf — schnapp sie dir!",
+            "coins_sub": "Direkt im Geldbeutel.",
+            "reward": "Belohnung",
+            "tap_karl": "{name} antippen",
+            "wheel_epic": "★ Epic",
+            "wheel_legendary": "★ Legend"
+        },
+        "daily_ui": {
+            "kicker": "Daily Login-Bonus",
+            "claim": "Einsammeln",
+            "streak_line": "Tag {day} · Streak {streak}",
+            "day_short": "T"
+        },
+        "back_to_zone": "Zurück in die Zone!",
+        "cloud_unavailable": "Cloud-Save ist gerade nicht verfügbar.",
+        "leaderboard_unavailable": "Rangliste ist gerade nicht verfügbar.",
+        "collect_coin_fish": "Fischschatten einsammeln für Coins",
+        "weather_started": "Wetter-Event: {name} — {buff} (2,5 Min.)",
+        "weather": {
+            "sunny": {
+                "name": "Sonniges Wetter",
+                "buff": "Glück 2× + SUNNY-Mutation ×2 (20 %)"
+            },
+            "rain": {
+                "name": "Regenschauer",
+                "buff": "Spawnrate 2× + WET-Mutation ×2 (20 %)"
+            },
+            "storm": {
+                "name": "Sturm",
+                "buff": "Haken 2× + STORMY-Mutation ×2 (20 %)"
+            },
+            "fog": {
+                "name": "Nebel",
+                "buff": "Rute 2× + MISTY-Mutation ×2 (20 %)"
+            },
+            "night": {
+                "name": "Nachtangeln",
+                "buff": "Schnur 2× + NOCTURNAL-Mutation ×2 (20 %)"
+            },
+            "abyss": {
+                "name": "Abyss",
+                "buff": "Epic+ Spawn 2× + ABYSSAL-Mutation ×4 (15 %)"
+            },
+            "polarlicht": {
+                "name": "Polarlicht",
+                "buff": "AURORA-Mutation ×3 (30 %)"
+            },
+            "glutsturm": {
+                "name": "Glutsturm",
+                "buff": "EMBER-Mutation ×5 (25 %)"
+            },
+            "blutmond": {
+                "name": "Blutmond",
+                "buff": "CRIMSON-Mutation ×7 (20 %)"
+            },
+            "geistermeer": {
+                "name": "Geistermeer",
+                "buff": "HAUNTED-Mutation ×10 (15 %)"
+            }
         }
     },
     "auth": {
@@ -908,7 +1004,15 @@
         "reset_page_title": "Passwort zurücksetzen - KalterKaktus",
         "new_password": "Neues Passwort",
         "repeat_password": "Passwort wiederholen",
-        "save_password": "Passwort speichern"
+        "save_password": "Passwort speichern",
+        "signin_unavailable": "Anmeldung ist gerade nicht verfügbar.",
+        "signing_in": "Anmeldung läuft…",
+        "account_created": "Account erstellt — bitte E-Mail bestätigen, dann hier anmelden.",
+        "account_banned": "Dein Account wurde gesperrt. Login nicht möglich.",
+        "invalid_login_link": "Kein gültiger Login-Link. Bitte erneut anmelden.",
+        "config_missing": "Konfiguration fehlt. Bitte später erneut versuchen.",
+        "invalid_recovery": "Kein gültiger Recovery-Token erkannt. Bitte den Reset-Link aus der E-Mail erneut öffnen.",
+        "passwords_mismatch": "Passwörter stimmen nicht überein."
     },
     "badges": {
         "lvl_25": {

@@ -1,4 +1,5 @@
 import { getAuthRedirectUrl, getSupabase, isConfigReady } from "./supabase-client.js";
+import { t } from "./i18n.js";
 
 function getReturnPath() {
     const params = new URLSearchParams(window.location.search);
@@ -27,7 +28,7 @@ async function startGoogleLogin() {
     const supabase = getSupabase();
 
     if (!supabase) {
-        setStatus("Anmeldung ist gerade nicht verfügbar.", true);
+        setStatus(t("auth.signin_unavailable"), true);
         return;
     }
 
@@ -57,7 +58,7 @@ async function handleEmailSignIn(event) {
     event.preventDefault();
     const supabase = getSupabase();
     if (!supabase) {
-        setStatus("Anmeldung ist gerade nicht verfügbar.", true);
+        setStatus(t("auth.signin_unavailable"), true);
         return;
     }
     const email = document.getElementById("auth-email").value.trim();
@@ -67,7 +68,7 @@ async function handleEmailSignIn(event) {
         return;
     }
     setEmailLoading(true);
-    setStatus("Anmeldung läuft…");
+    setStatus(t("auth.signing_in"));
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
         setStatus(`Anmeldung fehlgeschlagen: ${error.message}`, true);
@@ -138,7 +139,7 @@ async function handleEmailSignUp() {
         window.location.href = returnPath;
     } else {
         // Email-Confirm aktiviert: User muss Link in Mail klicken
-        setStatus("Account erstellt — bitte E-Mail bestätigen, dann hier anmelden.");
+        setStatus(t("auth.account_created"));
         setEmailLoading(false);
     }
 }
@@ -146,7 +147,7 @@ async function handleEmailSignUp() {
 async function handleForgotPassword() {
     const supabase = getSupabase();
     if (!supabase) {
-        setStatus("Anmeldung ist gerade nicht verfügbar.", true);
+        setStatus(t("auth.signin_unavailable"), true);
         return;
     }
     const emailField = document.getElementById("auth-email");
@@ -177,7 +178,7 @@ function initLoginPage() {
     // ?banned=1 wird vom zentralen auth-nav Ban-Check beim Redirect gesetzt.
     // Zeigt einen sticky Hinweis sodass der User versteht warum er hier ist.
     if (new URLSearchParams(window.location.search).get("banned") === "1") {
-        setStatus("Dein Account wurde gesperrt. Login nicht möglich.", true);
+        setStatus(t("auth.account_banned"), true);
     }
 
     // Referral-Code aus URL (?ref=ABCDEF) für späteren claim_referral Aufruf merken.
@@ -203,7 +204,7 @@ function initLoginPage() {
     if (forgotBtn) forgotBtn.addEventListener("click", handleForgotPassword);
 
     if (!isConfigReady()) {
-        setStatus("Anmeldung ist gerade nicht verfügbar.", true);
+        setStatus(t("auth.signin_unavailable"), true);
         setOAuthLoading(true);
         setEmailLoading(true);
     }

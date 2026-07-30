@@ -1,4 +1,5 @@
 import { getSupabase, isConfigReady } from "/js/supabase-client.js";
+import { t } from "./i18n.js";
 
 const els = {
     intro: document.getElementById("reset-intro"),
@@ -29,7 +30,7 @@ function parseHashParams() {
 
 async function initReset() {
     if (!isConfigReady()) {
-        setStatus(els.intro, "Konfiguration fehlt. Bitte später erneut versuchen.", true);
+        setStatus(els.intro, t("auth.config_missing"), true);
         return;
     }
     const supabase = getSupabase();
@@ -76,7 +77,7 @@ async function handleSubmit(event) {
         return;
     }
     if (pw1 !== pw2) {
-        setStatus(els.status, "Passwörter stimmen nicht überein.", true);
+        setStatus(els.status, t("auth.passwords_mismatch"), true);
         return;
     }
     const supabase = getSupabase();

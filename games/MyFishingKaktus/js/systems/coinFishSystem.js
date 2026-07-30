@@ -1,3 +1,4 @@
+import { t } from "/js/i18n.js";
 const SHAPES = {
     small: `<svg viewBox="0 0 140 78" xmlns="http://www.w3.org/2000/svg">
         <path d="M42 39 8 13 19 39 8 65Z" fill="#0a1a24"/>
@@ -136,7 +137,7 @@ export class CoinFishSystem {
         const fish = document.createElement("button");
         fish.type = "button";
         fish.className = `coin-fish coin-fish--${tier.id}`;
-        fish.setAttribute("aria-label", "Fischschatten einsammeln für Coins");
+        fish.setAttribute("aria-label", t("fishing.collect_coin_fish"));
         fish.style.setProperty("--size", `${tier.sizeRem}rem`);
         fish.style.setProperty("--top", `${18 + Math.random() * 56}%`);
         fish.style.setProperty("--swim", `${tier.swimSec}s`);

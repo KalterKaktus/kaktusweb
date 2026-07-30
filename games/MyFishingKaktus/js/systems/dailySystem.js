@@ -4,6 +4,13 @@ import {
     localDayKey,
     nextStreakState,
 } from "../data/dailyRewards.js";
+import { applyTranslations, t, onLanguageChange, getLanguage, ready as i18nReady } from "/js/i18n.js";
+
+function tRarityDaily(rarity) {
+    const key = `fishing.rarity_${String(rarity || "").toLowerCase()}`;
+    const value = t(key);
+    return value === key ? rarity : value;
+}
 
 export class DailySystem {
     constructor(options = {}) {
@@ -50,22 +57,33 @@ export class DailySystem {
         overlay.innerHTML = `
             <div class="daily-card" data-daily-card>
                 <div class="daily-burst" aria-hidden="true"></div>
-                <p class="daily-kicker">Daily Login-Bonus</p>
+                <p class="daily-kicker" data-i18n="fishing.daily_ui.kicker">Daily Login-Bonus</p>
                 <strong class="daily-streak-line" data-daily-streak></strong>
                 <div class="daily-reward-line">
-                    <span class="daily-reward-coins" data-daily-coins>+0 Coins</span>
+                    <span class="daily-reward-coins" data-daily-coins>+0</span>
                     <span class="daily-reward-spawn" data-daily-spawn hidden></span>
                 </div>
                 <div class="daily-week-grid" data-daily-week></div>
-                <button type="button" class="daily-claim" data-daily-claim>Einsammeln</button>
+                <button type="button" class="daily-claim" data-daily-claim data-i18n="fishing.daily_ui.claim">Einsammeln</button>
             </div>
         `;
         document.body.append(overlay);
         this.overlay = overlay;
         overlay.querySelector("[data-daily-claim]").addEventListener("click", () => this._claim());
+
+        // Overlay entsteht erst hier — nach dem initialen applyTranslations von
+        // i18n.js. Selbst anwenden und bei Sprachwechsel nachziehen.
+        i18nReady.then(() => applyTranslations(overlay));
+        onLanguageChange(() => {
+            applyTranslations(overlay);
+            if (this._lastReward && this._lastDaily) this._render(this._lastReward, this._lastDaily);
+        });
     }
 
     _render(reward, daily) {
+        // Für Re-Render bei Sprachwechsel merken.
+        this._lastReward = reward;
+        this._lastDaily = daily;
         const card = this.overlay.querySelector("[data-daily-card]");
         // Theme: Legendary > Epic > Gold
         let theme = "gold";
@@ -74,15 +92,15 @@ export class DailySystem {
         card.dataset.theme = theme;
 
         const streakLine = this.overlay.querySelector("[data-daily-streak]");
-        streakLine.textContent = `Tag ${reward.streakDay} · Streak ${daily.streak}`;
+        streakLine.textContent = t("fishing.daily_ui.streak_line", { day: reward.streakDay, streak: daily.streak });
 
         const coinsEl = this.overlay.querySelector("[data-daily-coins]");
-        coinsEl.textContent = `+${reward.coins.toLocaleString("de-DE")} Coins`;
+        coinsEl.textContent = `+${reward.coins.toLocaleString(getLanguage() === "ru" ? "ru-RU" : "de-DE")} ${t("fishing.coins_suffix_full")}`;
 
         const spawnEl = this.overlay.querySelector("[data-daily-spawn]");
         if (reward.spawn) {
             const count = reward.spawn.count > 1 ? `${reward.spawn.count}× ` : "";
-            spawnEl.textContent = `${count}${reward.spawn.rarity}-Fischstelle!`;
+            spawnEl.textContent = t("fishing.daily_spawn_part", { count, rarity: tRarityDaily(reward.spawn.rarity) }) + "!";
             spawnEl.hidden = false;
         } else {
             spawnEl.hidden = true;
@@ -108,7 +126,7 @@ export class DailySystem {
                 : `+${p.coins}`;
             return `
                 <div class="${cls}">
-                    <span class="daily-week-day">T ${p.dayInWeek}</span>
+                    <span class="daily-week-day">${t("fishing.daily_ui.day_short")} ${p.dayInWeek}</span>
                     <span class="daily-week-reward">${label}</span>
                 </div>
             `;
