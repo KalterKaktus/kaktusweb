@@ -3273,7 +3273,10 @@ body.reduce-fishing-motion .fish-spot-swimmer {
 .daily-week-grid {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  /* Bewusst 4 statt 7 Spalten (also 4+3 statt einer Reihe): bei 7 Spalten
+     bleiben in der 26rem-Karte nur ~47 px pro Zelle — dort passt kein
+     Belohnungswort hinein, weder "Legend" noch "Легенд". */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.35rem;
   margin-top: 0.3rem;
 }
@@ -3283,11 +3286,16 @@ body.reduce-fishing-motion .fish-spot-swimmer {
   align-content: center;
   justify-items: center;
   gap: 0.15rem;
+  /* min-width:0 ist der entscheidende Teil: ohne das weigern sich Grid-Items,
+     unter ihre Inhaltsbreite zu schrumpfen — 7 Zellen mit "★ Legend" und
+     "+1.120" sprengen dann das Raster nach rechts raus. */
+  min-width: 0;
   padding: 0.4rem 0.18rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 0.55rem;
   background: rgba(255, 255, 255, 0.04);
   font-size: 0.68rem;
+  overflow: hidden;
 }
 
 .daily-week-cell.is-past {
@@ -3307,17 +3315,36 @@ body.reduce-fishing-motion .fish-spot-swimmer {
 }
 
 .daily-week-day {
-  font-size: 0.58rem;
-  letter-spacing: 0.1em;
+  font-size: clamp(0.48rem, 1.6vw, 0.58rem);
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgba(220, 230, 240, 0.6);
+  max-width: 100%;
+  white-space: nowrap;
 }
 
 .daily-week-reward {
-  font-size: 0.72rem;
+  font-size: clamp(0.56rem, 1.9vw, 0.72rem);
   font-weight: 800;
   color: rgba(245, 250, 255, 0.95);
   line-height: 1.1;
+  max-width: 100%;
+  text-align: center;
+  /* nowrap + ellipsis statt Umbruch: ein "★ Легенд" soll die Zeile nicht
+     auf zwei Zeilen sprengen und damit alle Zellen höher machen. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 460px) {
+  .daily-week-grid {
+    gap: 0.3rem;
+  }
+  .daily-week-cell {
+    padding: 0.45rem 0.15rem;
+    min-height: 2.6rem;
+  }
 }
 
 .daily-week-cell.is-today .daily-week-reward,
