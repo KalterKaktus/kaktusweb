@@ -248,7 +248,7 @@
         "mult_badge": "Abzeichen",
         "mult_prestige": "Prestige",
         "mult_frenzy": "Goldlauf",
-        "frenzy_badge": "x2 Goldlauf",
+        "frenzy_badge": "x3 Goldlauf",
         "frenzy_charging": "Goldlauf lädt",
         "frenzy_progress": "{value} / {target} Klicks",
         "harvest_cactus": "Kaktus ernten",
@@ -595,6 +595,26 @@
             "endless-bloom-core": {
                 "name": "Endlosblüte Kern",
                 "description": "Endlosblüte Produktion x2."
+            },
+            "click-surge-1": {
+                "name": "Klick-Sog",
+                "description": "Klicks ernten doppelt so viel Auto-Produktion."
+            },
+            "click-surge-2": {
+                "name": "Klick-Strudel",
+                "description": "Klicks ernten nochmal doppelt so viel Auto-Produktion."
+            },
+            "autoclick-1": {
+                "name": "Fleißige Ameisen",
+                "description": "+2 Auto-Klicks pro Sekunde beim aktiven Spielen."
+            },
+            "autoclick-2": {
+                "name": "Kolibri-Schwarm",
+                "description": "+5 Auto-Klicks pro Sekunde beim aktiven Spielen."
+            },
+            "autoclick-3": {
+                "name": "Sandsturm-Finger",
+                "description": "+13 Auto-Klicks pro Sekunde beim aktiven Spielen."
             }
         },
         "achievements": {
@@ -677,6 +697,46 @@
             "red-hit": {
                 "name": "Rubinkaktus",
                 "goal": "Fange einen Rubinkaktus."
+            },
+            "first-tier": {
+                "name": "Erste Blüte",
+                "goal": "Kaufe ein Blüten-Upgrade."
+            },
+            "hundred-of-one": {
+                "name": "Monokultur",
+                "goal": "Besitze 100 Stück eines Gebäudes."
+            },
+            "five-hundred-buildings": {
+                "name": "Wüstenstadt",
+                "goal": "Besitze insgesamt 500 Gebäude."
+            },
+            "quadrillion-earned": {
+                "name": "Billiardenblüte",
+                "goal": "Ernte insgesamt 1 Brd. Kakteen."
+            },
+            "sextillion-earned": {
+                "name": "Trilliardenmeer",
+                "goal": "Ernte insgesamt 1 Trd. Kakteen."
+            },
+            "frenzy-25": {
+                "name": "Dauergold",
+                "goal": "Fülle den Klick-Balken 25 Mal."
+            },
+            "golden-legend": {
+                "name": "Goldlegende",
+                "goal": "Fange 25 Goldkakteen."
+            },
+            "red-hunter": {
+                "name": "Rubinjäger",
+                "goal": "Fange 10 Rubinkakteen."
+            },
+            "hundred-nopal": {
+                "name": "Nopal-Speicher",
+                "goal": "Sammle 100 Nopal in dieser Saison."
+            },
+            "auto-gardener": {
+                "name": "Automatengarten",
+                "goal": "Kaufe einen Autoklicker."
             }
         },
         "save_stale_season": "Dieser Save gehört zu einer alten Saison. Bitte neu laden.",
@@ -688,7 +748,11 @@
         "settings_sub": "Speichern, Changelog und Spielstand",
         "loading_title": "Die Wüste erwacht",
         "loading_hint": "Spielstand wird geladen…",
-        "credits_art": "Kaktus-Grafik"
+        "credits_art": "Kaktus-Grafik",
+        "upgrade_tier_10": "{name} Aufblüte",
+        "upgrade_tier_25": "{name} Vollblüte",
+        "upgrade_tier_50": "{name} Prachtblüte",
+        "upgrade_tier_100": "{name} Wunderblüte"
     },
     "fishing": {
         "loading_title": "Der Ozean wartet",

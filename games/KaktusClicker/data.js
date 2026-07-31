@@ -1,34 +1,39 @@
+// Economy V3 (August 2026): Kosten sind unverändert, die CPS späterer Gebäude
+// wurden massiv angehoben. Ziel-Amortisation ≈ 120 × 1,5^Index Sekunden —
+// vorher explodierte sie exponentiell (Gebäude #30: 337 Jahre, niemand hat je
+// mehr als 9 Gebäudetypen besessen). Frühe Gebäude behalten ihre alten Werte,
+// wo die alte CPS über der neuen Kurve lag (kein Nerf im Early Game).
 export const buildings = [
-  { id: "seedling", name: "Mini-Kaktus", icon: "K", baseCost: 15, cps: 0.1, description: "Kleine Produktion für den Anfang." },
+  { id: "seedling", name: "Mini-Kaktus", icon: "K", baseCost: 15, cps: 0.125, description: "Kleine Produktion für den Anfang." },
   { id: "greenhouse", name: "Gewächshaus", icon: "G", baseCost: 100, cps: 1, description: "Mehr Kakteen aus kontrolliertem Anbau." },
   { id: "ranch", name: "Kaktus-Ranch", icon: "R", baseCost: 1100, cps: 8, description: "Reihenweise Kakteen für den nächsten Schub." },
   { id: "oasis", name: "Oasenpumpe", icon: "O", baseCost: 12000, cps: 47, description: "Stabile Ernte auch im trockenen Boden." },
   { id: "factory", name: "Stachelwerk", icon: "F", baseCost: 130000, cps: 260, description: "Industrielle Produktion für große Zahlen." },
-  { id: "harvest-drone", name: "Erntedrohne", icon: "D", baseCost: 1400000, cps: 1400, description: "Automatisiert die schnelle Ernte." },
-  { id: "lab", name: "Kaktuslabor", icon: "L", baseCost: 20000000, cps: 7800, description: "Züchtet stärkere Produktionslinien." },
-  { id: "server-farm", name: "Wüstenserver", icon: "S", baseCost: 330000000, cps: 44000, description: "Optimiert jeden Produktionszyklus." },
-  { id: "orbital-greenhouse", name: "Orbit-Gewächshaus", icon: "O", baseCost: 5100000000, cps: 260000, description: "Kakteenproduktion ohne Tageslimit." },
-  { id: "monsoon-rig", name: "Monsun-Rig", icon: "M", baseCost: 75000000000, cps: 1600000, description: "Zieht Feuchtigkeit aus jedem Sturm." },
-  { id: "canyon-refinery", name: "Canyon-Raffinerie", icon: "C", baseCost: 1000000000000, cps: 10000000, description: "Presst jeden Tropfen in Wachstum." },
-  { id: "plasma-irrigation", name: "Plasma-Bewässerung", icon: "P", baseCost: 14000000000000, cps: 65000000, description: "Lädt Wurzeln mit Neonenergie." },
-  { id: "lunar-nursery", name: "Mondgärtnerei", icon: "M", baseCost: 170000000000000, cps: 420000000, description: "Pflegt Kakteen unter kaltem Licht." },
-  { id: "asteroid-hacienda", name: "Asteroiden-Hacienda", icon: "A", baseCost: 2100000000000000, cps: 2800000000, description: "Erntet zwischen schwebenden Felsen." },
-  { id: "solar-silo", name: "Solarsilo", icon: "S", baseCost: 26000000000000000, cps: 18000000000, description: "Speichert Glut für endlose Ernten." },
-  { id: "quantum-spine", name: "Quantenstachel", icon: "Q", baseCost: 310000000000000000, cps: 120000000000, description: "Verdoppelt Ernten in Nebenpfaden." },
-  { id: "nebula-pipeline", name: "Nebula-Pipeline", icon: "N", baseCost: 3700000000000000000, cps: 790000000000, description: "Schickt Kaktussaft durch Sternennebel." },
-  { id: "rift-garden", name: "Rissgarten", icon: "R", baseCost: 44000000000000000000, cps: 5200000000000, description: "Lässt Dornen aus Parallelräumen wachsen." },
-  { id: "prism-foundry", name: "Prisma-Gießerei", icon: "P", baseCost: 520000000000000000000, cps: 34000000000000, description: "Gießt Licht in neue Pflanzenformen." },
-  { id: "void-terrace", name: "Void-Terrasse", icon: "V", baseCost: 6200000000000000000000, cps: 220000000000000, description: "Blüht dort, wo sonst nichts lebt." },
-  { id: "starloom", name: "Sternwebstuhl", icon: "S", baseCost: 74000000000000000000000, cps: 1450000000000000, description: "Webt Ernteketten aus Sternenstaub." },
-  { id: "thorn-reactor", name: "Dornenreaktor", icon: "D", baseCost: 890000000000000000000000, cps: 9600000000000000, description: "Hält die Wüste dauerhaft kritisch." },
-  { id: "chrono-orchard", name: "Chrono-Orchard", icon: "C", baseCost: 1.07e25, cps: 6.3e16, description: "Erntet mehrere Sekunden zugleich." },
-  { id: "singularity-nursery", name: "Singularitätsgarten", icon: "S", baseCost: 1.28e26, cps: 4.2e17, description: "Zieht Wachstum in einen grünen Kern." },
-  { id: "galaxy-vault", name: "Galaxie-Tresor", icon: "G", baseCost: 1.54e27, cps: 2.8e18, description: "Lagert Ernten über ganze Spiralen." },
-  { id: "mythic-desert", name: "Mythische Wüste", icon: "M", baseCost: 1.85e28, cps: 1.85e19, description: "Macht Legenden zu Produktion." },
-  { id: "cactus-matrix", name: "Kaktus-Matrix", icon: "X", baseCost: 2.22e29, cps: 1.22e20, description: "Berechnet Wachstum vor dem Klick." },
-  { id: "nopal-ark", name: "Nopal-Arche", icon: "N", baseCost: 2.66e30, cps: 8.1e20, description: "Trägt Dornen durch jede Saison." },
-  { id: "cosmic-root", name: "Kosmische Wurzel", icon: "K", baseCost: 3.19e31, cps: 5.4e21, description: "Verankert Ernte in tiefem Raum." },
-  { id: "endless-bloom", name: "Endlosblüte", icon: "E", baseCost: 3.83e32, cps: 3.6e22, description: "Wächst weiter, wenn Zahlen verschwimmen." },
+  { id: "harvest-drone", name: "Erntedrohne", icon: "D", baseCost: 1400000, cps: 1540, description: "Automatisiert die schnelle Ernte." },
+  { id: "lab", name: "Kaktuslabor", icon: "L", baseCost: 20000000, cps: 14600, description: "Züchtet stärkere Produktionslinien." },
+  { id: "server-farm", name: "Wüstenserver", icon: "S", baseCost: 330000000, cps: 161000, description: "Optimiert jeden Produktionszyklus." },
+  { id: "orbital-greenhouse", name: "Orbit-Gewächshaus", icon: "O", baseCost: 5100000000, cps: 1.66e6, description: "Kakteenproduktion ohne Tageslimit." },
+  { id: "monsoon-rig", name: "Monsun-Rig", icon: "M", baseCost: 75000000000, cps: 1.63e7, description: "Zieht Feuchtigkeit aus jedem Sturm." },
+  { id: "canyon-refinery", name: "Canyon-Raffinerie", icon: "C", baseCost: 1000000000000, cps: 1.45e8, description: "Presst jeden Tropfen in Wachstum." },
+  { id: "plasma-irrigation", name: "Plasma-Bewässerung", icon: "P", baseCost: 14000000000000, cps: 1.35e9, description: "Lädt Wurzeln mit Neonenergie." },
+  { id: "lunar-nursery", name: "Mondgärtnerei", icon: "M", baseCost: 170000000000000, cps: 1.09e10, description: "Pflegt Kakteen unter kaltem Licht." },
+  { id: "asteroid-hacienda", name: "Asteroiden-Hacienda", icon: "A", baseCost: 2100000000000000, cps: 8.99e10, description: "Erntet zwischen schwebenden Felsen." },
+  { id: "solar-silo", name: "Solarsilo", icon: "S", baseCost: 26000000000000000, cps: 7.42e11, description: "Speichert Glut für endlose Ernten." },
+  { id: "quantum-spine", name: "Quantenstachel", icon: "Q", baseCost: 310000000000000000, cps: 5.9e12, description: "Verdoppelt Ernten in Nebenpfaden." },
+  { id: "nebula-pipeline", name: "Nebula-Pipeline", icon: "N", baseCost: 3700000000000000000, cps: 4.69e13, description: "Schickt Kaktussaft durch Sternennebel." },
+  { id: "rift-garden", name: "Rissgarten", icon: "R", baseCost: 44000000000000000000, cps: 3.72e14, description: "Lässt Dornen aus Parallelräumen wachsen." },
+  { id: "prism-foundry", name: "Prisma-Gießerei", icon: "P", baseCost: 520000000000000000000, cps: 2.93e15, description: "Gießt Licht in neue Pflanzenformen." },
+  { id: "void-terrace", name: "Void-Terrasse", icon: "V", baseCost: 6200000000000000000000, cps: 2.33e16, description: "Blüht dort, wo sonst nichts lebt." },
+  { id: "starloom", name: "Sternwebstuhl", icon: "S", baseCost: 74000000000000000000000, cps: 1.85e17, description: "Webt Ernteketten aus Sternenstaub." },
+  { id: "thorn-reactor", name: "Dornenreaktor", icon: "D", baseCost: 890000000000000000000000, cps: 1.49e18, description: "Hält die Wüste dauerhaft kritisch." },
+  { id: "chrono-orchard", name: "Chrono-Orchard", icon: "C", baseCost: 1.07e25, cps: 1.19e19, description: "Erntet mehrere Sekunden zugleich." },
+  { id: "singularity-nursery", name: "Singularitätsgarten", icon: "S", baseCost: 1.28e26, cps: 9.5e19, description: "Zieht Wachstum in einen grünen Kern." },
+  { id: "galaxy-vault", name: "Galaxie-Tresor", icon: "G", baseCost: 1.54e27, cps: 7.62e20, description: "Lagert Ernten über ganze Spiralen." },
+  { id: "mythic-desert", name: "Mythische Wüste", icon: "M", baseCost: 1.85e28, cps: 6.11e21, description: "Macht Legenden zu Produktion." },
+  { id: "cactus-matrix", name: "Kaktus-Matrix", icon: "X", baseCost: 2.22e29, cps: 4.88e22, description: "Berechnet Wachstum vor dem Klick." },
+  { id: "nopal-ark", name: "Nopal-Arche", icon: "N", baseCost: 2.66e30, cps: 3.9e23, description: "Trägt Dornen durch jede Saison." },
+  { id: "cosmic-root", name: "Kosmische Wurzel", icon: "K", baseCost: 3.19e31, cps: 3.12e24, description: "Verankert Ernte in tiefem Raum." },
+  { id: "endless-bloom", name: "Endlosblüte", icon: "E", baseCost: 3.83e32, cps: 2.5e25, description: "Wächst weiter, wenn Zahlen verschwimmen." },
 ];
 
 const legacyUpgrades = [
@@ -56,9 +61,56 @@ const newBuildingUpgrades = buildings.slice(9).map((building, index) => ({
   buildingMultiplier: 2,
 }));
 
+// Economy V3: Gestaffelte Blüten-Upgrades nach Cookie-Clicker-Muster — jedes
+// Gebäude bekommt bei 10/25/50/100 Besitz je ein weiteres x2. Sie erscheinen
+// erst, wenn die Schwelle erreicht ist (unlockOwned, siehe renderUpgrades).
+// Kosten ≈ 2,5× der Stückkosten an der Schwelle, damit sie beim Freischalten
+// immer ein greifbares Sparziel sind. Namen laufen über i18n-Suffixe
+// (clicker.upgrade_tier_N), der deutsche String hier ist der Fallback.
+const TIER_STEPS = [
+  { owned: 10, suffix: "Aufblüte" },
+  { owned: 25, suffix: "Vollblüte" },
+  { owned: 50, suffix: "Prachtblüte" },
+  { owned: 100, suffix: "Wunderblüte" },
+];
+
+const tierUpgrades = buildings.flatMap((building) =>
+  TIER_STEPS.map(({ owned, suffix }) => ({
+    id: `${building.id}-t${owned}`,
+    name: `${building.name} ${suffix}`,
+    icon: building.icon,
+    cost: Math.ceil(building.baseCost * Math.pow(1.15, owned) * 2.5),
+    description: `${building.name} Produktion x2.`,
+    buildingId: building.id,
+    buildingMultiplier: 2,
+    tier: owned,
+    unlockOwned: owned,
+  }))
+);
+
+// Klick-Sog: Klicks ernten zusätzlich einen Prozentsatz der Auto-Produktion
+// (Basis 1 % in economy.js, diese Upgrades verdoppeln den Satz auf 2 % / 4 %).
+const clickScalingUpgrades = [
+  { id: "click-surge-1", name: "Klick-Sog", icon: "Z", cost: 1e8, description: "Klicks ernten doppelt so viel Auto-Produktion.", clickCpsMultiplier: 2 },
+  { id: "click-surge-2", name: "Klick-Strudel", icon: "Z", cost: 1e12, description: "Klicks ernten nochmal doppelt so viel Auto-Produktion.", clickCpsMultiplier: 2 },
+];
+
+// Autoklicker: klicken automatisch, aber NUR solange wirklich gespielt wird
+// (Tab sichtbar + Eingabe in den letzten Sekunden, siehe game.js). Zählen als
+// Klick-Ertrag und laden den Goldlauf auf, erhöhen aber NICHT totalClicks —
+// Klick-Abzeichen und Klick-XP bleiben Handarbeit.
+const autoClickUpgrades = [
+  { id: "autoclick-1", name: "Fleißige Ameisen", icon: "A", cost: 5e6, description: "+2 Auto-Klicks pro Sekunde beim aktiven Spielen.", autoClicksPerSecond: 2 },
+  { id: "autoclick-2", name: "Kolibri-Schwarm", icon: "A", cost: 5e9, description: "+5 Auto-Klicks pro Sekunde beim aktiven Spielen.", autoClicksPerSecond: 5 },
+  { id: "autoclick-3", name: "Sandsturm-Finger", icon: "A", cost: 5e13, description: "+13 Auto-Klicks pro Sekunde beim aktiven Spielen.", autoClicksPerSecond: 13 },
+];
+
 export const upgrades = [
   ...legacyUpgrades,
   ...newBuildingUpgrades,
+  ...tierUpgrades,
+  ...clickScalingUpgrades,
+  ...autoClickUpgrades,
 ];
 
 export const achievements = [
@@ -82,11 +134,51 @@ export const achievements = [
   { id: "golden-hit", name: "Goldkaktus", goal: "Fange einen Goldkaktus.", test: (state) => state.events.goldenHits >= 1 },
   { id: "golden-hunter", name: "Goldjäger", goal: "Fange 10 Goldkakteen.", test: (state) => state.events.goldenHits >= 10 },
   { id: "red-hit", name: "Rubinkaktus", goal: "Fange einen Rubinkaktus.", test: (state) => state.events.redHits >= 1 },
+  // Economy V3: neue Abzeichen für die neuen Systeme. Wie alle: je +0,1x.
+  { id: "first-tier", name: "Erste Blüte", goal: "Kaufe ein Blüten-Upgrade.", test: (state) => state.upgrades.some((id) => id.includes("-t")) },
+  { id: "hundred-of-one", name: "Monokultur", goal: "Besitze 100 Stück eines Gebäudes.", test: (state) => Object.values(state.buildings).some((n) => n >= 100) },
+  { id: "five-hundred-buildings", name: "Wüstenstadt", goal: "Besitze insgesamt 500 Gebäude.", test: (state) => Object.values(state.buildings).reduce((s, n) => s + n, 0) >= 500 },
+  { id: "quadrillion-earned", name: "Billiardenblüte", goal: "Ernte insgesamt 1 Brd. Kakteen.", test: (state) => state.totalEarned >= 1e15 },
+  { id: "sextillion-earned", name: "Trilliardenmeer", goal: "Ernte insgesamt 1 Trd. Kakteen.", test: (state) => state.totalEarned >= 1e21 },
+  { id: "frenzy-25", name: "Dauergold", goal: "Fülle den Klick-Balken 25 Mal.", test: (state) => state.events.frenzies >= 25 },
+  { id: "golden-legend", name: "Goldlegende", goal: "Fange 25 Goldkakteen.", test: (state) => state.events.goldenHits >= 25 },
+  { id: "red-hunter", name: "Rubinjäger", goal: "Fange 10 Rubinkakteen.", test: (state) => state.events.redHits >= 10 },
+  { id: "hundred-nopal", name: "Nopal-Speicher", goal: "Sammle 100 Nopal in dieser Saison.", test: (state) => state.prestige.totalNopalEarned >= 100 },
+  { id: "auto-gardener", name: "Automatengarten", goal: "Kaufe einen Autoklicker.", test: (state) => state.upgrades.some((id) => id.startsWith("autoclick-")) },
 ];
 
 // Changelog-Einträge. `ru` trägt die russische Variante von title/items;
 // fehlt sie, rendert game.js den deutschen Text als Fallback.
 export const changelogEntries = [
+  {
+    date: "01.08.2026",
+    title: "🌵 Großes Update: Neuer Look + Economy V3",
+    items: [
+      "Komplett neues Design: handgezeichnete Wüste, gemütlicher Pastell-Look, neuer Kaktus.",
+      "Alle 30 Gebäude sind jetzt wirklich erreichbar — spätere Gebäude produzieren massiv mehr.",
+      "120 neue Blüten-Upgrades: jedes Gebäude bekommt bei 10/25/50/100 Besitz ein weiteres x2.",
+      "Klicks ernten jetzt zusätzlich 1% deiner Auto-Produktion (ausbaubar auf 4%) — Klicken lohnt sich für immer.",
+      "Goldlauf: nur noch 250 Klicks, dafür x3 statt x2.",
+      "Neue Autoklicker-Upgrades: klicken automatisch mit, solange du aktiv spielst — und laden den Goldlauf auf.",
+      "Prestige komplett überarbeitet: erster Nopal schon bei 1 Mio., der Bonus wächst deutlich spürbarer.",
+      "Gold- und Rubinkakteen kommen häufiger, geben mehr und sehen jetzt aus wie echte Kakteen.",
+      "10 neue Abzeichen, Produktion läuft jetzt auch im Hintergrund-Tab korrekt weiter.",
+    ],
+    ru: {
+      title: "🌵 Большое обновление: новый вид + экономика V3",
+      items: [
+        "Полностью новый дизайн: нарисованная от руки пустыня, уютный пастельный стиль, новый кактус.",
+        "Все 30 зданий теперь реально достижимы — поздние здания производят намного больше.",
+        "120 новых улучшений «Цветение»: каждое здание получает ещё x2 при 10/25/50/100 во владении.",
+        "Клики теперь дополнительно приносят 1% авто-производства (прокачивается до 4%) — кликать выгодно всегда.",
+        "Золотой бег: всего 250 кликов, зато x3 вместо x2.",
+        "Новые улучшения-автокликеры: кликают вместе с тобой, пока ты активно играешь — и заряжают Золотой бег.",
+        "Престиж полностью переработан: первый нопаль уже при 1 млн, бонус растёт заметно ощутимее.",
+        "Золотые и рубиновые кактусы приходят чаще, дают больше и теперь выглядят как настоящие кактусы.",
+        "10 новых значков, производство теперь корректно идёт и в фоновой вкладке.",
+      ],
+    },
+  },
   {
     date: "30.07.2026",
     title: "🇷🇺 Russisch verfügbar",

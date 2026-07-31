@@ -1,4 +1,5 @@
 import { achievements, buildings, upgrades } from "./data.js";
+import { CLICK_FRENZY_TARGET } from "./economy.js";
 
 export const SAVE_VERSION = 2;
 
@@ -65,7 +66,7 @@ export function normalizeLoadedState(loaded, seasonId, now = Date.now()) {
   parsed.prestige.nopal = Math.max(0, Number(parsed.prestige.nopal) || 0);
   parsed.prestige.totalNopalEarned = Math.max(0, Number(parsed.prestige.totalNopalEarned) || 0);
   parsed.prestige.prestiges = Math.max(0, Math.floor(Number(parsed.prestige.prestiges) || 0));
-  parsed.events.clickCharge = clamp(Number(parsed.events.clickCharge) || 0, 0, 1000);
+  parsed.events.clickCharge = clamp(Number(parsed.events.clickCharge) || 0, 0, CLICK_FRENZY_TARGET);
   parsed.events.frenzyUntil = Math.max(0, Number(parsed.events.frenzyUntil) || 0);
   parsed.events.frenzies = Math.max(0, Math.floor(Number(parsed.events.frenzies) || 0));
   parsed.events.goldenHits = Math.max(0, Math.floor(Number(parsed.events.goldenHits) || 0));

@@ -132,9 +132,19 @@ englischen Originalnamen (alle 132 abgedeckt).
 
 ### KaktusClicker
 - **Pfad:** `games/KaktusClicker/` · **Game-ID:** `kaktus-clicker`
-- Idle-Clicker mit 30 Gebäuden, 33 Upgrades, 20 Abzeichen, Nopal-Prestige,
-  Goldlauf (1000 Klicks in 30 s → ×2 für 30 s), Gold-/Rubinkaktus-Events,
+- Idle-Clicker mit 30 Gebäuden, 158 Upgrades, 30 Abzeichen, Nopal-Prestige,
+  Goldlauf (250 Klicks kumulativ → ×3 für 30 s), Gold-/Rubinkaktus-Events,
   monatlicher Saison-Rangliste, Offline-Ertrag (ab 5 Min, max 12 h, 50 %).
+- **Economy V3 (August 2026):** Kosten unverändert, CPS späterer Gebäude massiv
+  gebufft (Ziel-Amortisation ≈ 120×1,5^Index s). 120 generierte Blüten-Upgrades
+  (×2 bei 10/25/50/100 Besitz, `unlockOwned` gated die Anzeige), Klick-Ertrag =
+  Basis + 1 % CPS (Klick-Sog-Upgrades → 4 %), Autoklicker-Upgrades klicken nur
+  bei aktivem Spielen mit (Tab sichtbar + Eingabe < 15 s; zählen NICHT auf
+  `totalClicks` → Klick-XP und Klick-Abzeichen bleiben manuell). Produktion
+  läuft per Delta-Zeit (Hintergrund-Tab-Drossel-Fix, Cap 300 s/Tick).
+  Kalibriert per Simulation gegen echte Spielerdaten (`tools/`-Historie im
+  Commit). Der Server-Trigger `game_saves_initial_cap` wurde auf 1e12 angehoben
+  (Migration `20260731230000`) — sonst hätte er ehrliche Tag-1-Spieler gebannt.
 - **Optik:** Cozy-Look (siehe Design-System). `<body class="theme-cozy">`,
   Ladebildschirm inline in der `index.html` wie bei Fishing.
 - **7 Tabs:** Gebäude · Upgrades · Stats · Prestige · Rangliste · Erfolge ·
@@ -145,7 +155,8 @@ englischen Originalnamen (alle 132 abgedeckt).
 - **Daten:** `data.js` → `buildings`, `upgrades`, `achievements`, `changelogEntries`
 - **Zahlenformat:** `format.js`, locale-abhängig (Mio./Mrd. vs. млн/млрд)
 - **Changelog:** Zusatzmenü → Changelog. Neue Einträge in `data.js`, mit `ru`-Variante.
-- **Prestige:** `nopal^0.35 × 0.15 + 1` — Formel steht in `economy.js`
+- **Prestige (V3):** Nopal-Gewinn `floor((totalEarned/1e6)^0.35)`, Multiplikator
+  `1 + 0,25·nopal^0.4` — beide Formeln stehen in `economy.js`
 - **Rangliste „Letzter Monat":** Platz und Punktzahl sind historisch aus
   `game_season_archives.top_entries`, **Name/Level/Badge/Farbe kommen live** aus
   `profiles_public` (per `user_id` gejoint).

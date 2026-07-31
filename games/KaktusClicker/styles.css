@@ -1157,6 +1157,14 @@ dd {
   color: var(--red-event-hot);
 }
 
+/* Sammel-Floats der Autoklicker: kleiner und dezenter als Hand-Klicks, damit
+   sie den Bildschirm nicht dominieren. */
+.float-pop.is-auto {
+  color: var(--green);
+  font-size: 15px;
+  opacity: 0.85;
+}
+
 @keyframes float-pop {
   from {
     opacity: 1;
@@ -1250,10 +1258,16 @@ dd {
   animation: random-event-life var(--event-life) linear forwards;
 }
 
+/* Beide Events zeigen den echten Spiel-Kaktus, per Filter gold bzw. rot
+   getönt — kein zweites Bild-Asset nötig. */
 .random-event-icon {
   width: 58px;
   height: 58px;
   object-fit: contain;
+}
+
+.random-event-cactus.is-golden .random-event-icon {
+  filter: sepia(1) saturate(3.2) hue-rotate(-12deg) brightness(1.12);
 }
 
 .random-event-cactus.is-red {
@@ -1261,7 +1275,7 @@ dd {
 }
 
 .random-event-cactus.is-red .random-event-icon {
-  filter: hue-rotate(-42deg) saturate(1.5);
+  filter: sepia(1) saturate(4.5) hue-rotate(-48deg) brightness(0.96);
 }
 
 @keyframes random-event-life {

@@ -13,7 +13,9 @@ import { addPendingXp, setXpUser } from "/js/xp-service.js";
 import { renderLevelTag, renderPlayerName } from "/js/progression.js";
 import { achievements, buildings, changelogEntries, upgrades } from "./data.js";
 import {
+  CLICK_FRENZY_TARGET,
   getAchievementMultiplier,
+  getAutoClickRate,
   getAutomaticProduction,
   getBuildingCost,
   getBuildingProduction,
@@ -33,11 +35,21 @@ function tName(item, category) {
     const key = `clicker.${category}.${item.id}.name`;
     const value = t(key);
     if (value !== key) return value;
-    // Building-Core Upgrades: dynamisch aus Building-Name zusammensetzen
+    // Generierte Upgrades: dynamisch aus dem Building-Namen zusammensetzen.
+    // Tier-Upgrades (V3) nutzen clicker.upgrade_tier_<N>, Core-Upgrades das
+    // bestehende clicker.upgrade_core_suffix.
     if (category === "upgrades" && item.buildingId) {
         const bKey = `clicker.buildings.${item.buildingId}.name`;
         const bValue = t(bKey);
-        if (bValue !== bKey) return t("clicker.upgrade_core_suffix", { name: bValue });
+        if (bValue !== bKey) {
+            if (item.tier) {
+                const tierKey = `clicker.upgrade_tier_${item.tier}`;
+                const tierValue = t(tierKey, { name: bValue });
+                if (tierValue !== tierKey) return tierValue;
+            } else {
+                return t("clicker.upgrade_core_suffix", { name: bValue });
+            }
+        }
     }
     return item.name;
 }
@@ -71,17 +83,20 @@ function tSaveLabel(label) {
 }
 
 const STORAGE_KEY = "kaktus-clicker-save-v1";
-const CLICK_FRENZY_TARGET = 1000;
 const CLICK_FRENZY_MS = 30000;
 const OFFLINE_LIMIT_SECONDS = 12 * 60 * 60;
 const OFFLINE_MIN_SECONDS = 5 * 60;
 const OFFLINE_RATE = 0.5;
-const GOLDEN_REWARD_SECONDS = 300;
-const RED_REWARD_SECONDS = 1800;
-// Spawn-Intervalle: nach Removal des Auto-Collect höher getaktet damit
-// aktives Spielen sich lohnt. (Vorher: Golden 3-7min, Red 20-40min.)
-const GOLDEN_EVENT_DELAY = [90 * 1000, 3.5 * 60 * 1000];
-const RED_EVENT_DELAY = [10 * 60 * 1000, 22 * 60 * 1000];
+// Economy V3: Events geben mehr (600 s / 2 h Produktion) und kommen öfter.
+const GOLDEN_REWARD_SECONDS = 600;
+const RED_REWARD_SECONDS = 7200;
+const GOLDEN_EVENT_DELAY = [60 * 1000, 2.5 * 60 * 1000];
+const RED_EVENT_DELAY = [6 * 60 * 1000, 14 * 60 * 1000];
+// Autoklicker gelten nur beim aktiven Spielen: Tab sichtbar UND echte Eingabe
+// innerhalb dieses Fensters. Verhindert, dass ein offener Tab über Nacht als
+// "aktiv" durchgeht — genau das war der Grund, warum Auto-Collect rausflog.
+const AUTO_CLICK_ACTIVE_WINDOW_MS = 15000;
+const AUTO_CLICK_TICK_MS = 500;
 const ADMIN_GAME_EVENT_POLL_MS = 2500;
 const RANDOM_EVENT_CONFIG = {
   golden: { duration: 10000, rewardSeconds: GOLDEN_REWARD_SECONDS, label: "Goldkaktus" },
@@ -312,11 +327,58 @@ function clickCactus(event) {
   const earned = getClickYield(state);
   addCactus(earned);
   state.totalClicks += 1;
+  lastRealInputAt = Date.now();
   // XP: alle 100 Clicks = 1 XP (sehr gemächlich, dafür konstant beim Spielen).
   // Spike-XP gibt's beim Prestige.
   if (state.totalClicks % 100 === 0) addPendingXp(1, "clicker-click");
   chargeClickFrenzy();
   spawnFloat(event.clientX, event.clientY, `+${formatNumber(earned)}`);
+  const achievementChanged = updateAchievements();
+  renderGameplayHud({ achievementChanged });
+}
+
+// --- Autoklicker (Economy V3) -----------------------------------------------
+// Klicken automatisch mit, aber NUR beim aktiven Spielen: Tab sichtbar und
+// echte Eingabe in den letzten AUTO_CLICK_ACTIVE_WINDOW_MS. Sie erzeugen
+// Klick-Ertrag und laden den Goldlauf, erhöhen aber bewusst NICHT totalClicks:
+// Klick-Abzeichen und Klick-XP bleiben Handarbeit, und der XP-Durchsatz zum
+// Server ändert sich nicht.
+let lastRealInputAt = 0;
+let autoClickCarry = 0;
+
+function isActivelyPlaying(now = Date.now()) {
+  return !document.hidden && now - lastRealInputAt < AUTO_CLICK_ACTIVE_WINDOW_MS;
+}
+
+function runAutoClicks() {
+  const rate = getAutoClickRate(state);
+  if (!rate || !isActivelyPlaying()) {
+    autoClickCarry = 0;
+    return;
+  }
+
+  // Bruchteile sammeln, damit auch krumme Raten (2/s bei 500-ms-Takt) exakt sind.
+  autoClickCarry += rate * (AUTO_CLICK_TICK_MS / 1000);
+  const whole = Math.floor(autoClickCarry);
+  if (whole <= 0) {
+    return;
+  }
+  autoClickCarry -= whole;
+
+  const earned = getClickYield(state) * whole;
+  addCactus(earned);
+  for (let i = 0; i < whole; i += 1) {
+    chargeClickFrenzy();
+  }
+  // Ein Sammel-Float am Kaktus statt einem pro Auto-Klick — bei 20/s würden
+  // einzelne Floats das DOM fluten.
+  const rect = elements.cactusButton.getBoundingClientRect();
+  spawnFloat(
+    rect.left + rect.width * (0.35 + Math.random() * 0.3),
+    rect.top + rect.height * (0.25 + Math.random() * 0.3),
+    `+${formatNumber(earned)}`,
+    "is-auto"
+  );
   const achievementChanged = updateAchievements();
   renderGameplayHud({ achievementChanged });
 }
@@ -365,9 +427,14 @@ function buyBuilding(id) {
   render();
 }
 
+function isUpgradeUnlocked(upgrade) {
+  // Tier-Upgrades erscheinen erst ab der Besitz-Schwelle ihres Gebäudes.
+  return !upgrade.unlockOwned || (state.buildings[upgrade.buildingId] || 0) >= upgrade.unlockOwned;
+}
+
 function buyUpgrade(id) {
   const upgrade = getUpgrade(id);
-  if (!upgrade || state.upgrades.includes(id) || state.cactus < upgrade.cost) {
+  if (!upgrade || state.upgrades.includes(id) || state.cactus < upgrade.cost || !isUpgradeUnlocked(upgrade)) {
     return;
   }
 
@@ -422,7 +489,12 @@ function renderShop() {
 }
 
 function renderUpgrades() {
-  const visibleUpgrades = upgrades.filter((upgrade) => !state.upgrades.includes(upgrade.id));
+  // Gekaufte raus, verriegelte Tier-Upgrades raus — sonst stünden ab Tag 1
+  // über 150 Einträge in der Liste. Sortierung nach Preis: das nächste
+  // erreichbare Ziel steht oben.
+  const visibleUpgrades = upgrades
+    .filter((upgrade) => !state.upgrades.includes(upgrade.id) && isUpgradeUnlocked(upgrade))
+    .sort((a, b) => a.cost - b.cost);
   elements.upgradeList.innerHTML = visibleUpgrades.length
     ? visibleUpgrades.map((upgrade) => {
       const disabled = state.cactus < upgrade.cost ? "disabled" : "";
@@ -513,7 +585,7 @@ function renderEventMeter(now = Date.now()) {
   elements.eventMeterFill.style.width = `${Math.min(100, Math.max(0, fill))}%`;
   elements.eventMeterLabel.textContent = active ? t("clicker.frenzy_active") : t("clicker.frenzy_charging");
   elements.eventMeterValue.textContent = active
-    ? `${formatDuration(remainingMs / 1000)} x2`
+    ? `${formatDuration(remainingMs / 1000)} x3`
     : t("clicker.frenzy_progress", {
       value: formatNumber(state.events.clickCharge),
       target: formatNumber(CLICK_FRENZY_TARGET),
@@ -564,10 +636,20 @@ function render() {
   renderEventMeter();
 }
 
-function payProductionSecond() {
+// Produktion nach echt verstrichener Zeit statt "1 Sekunde pro Tick":
+// Browser drosseln setInterval in Hintergrund-Tabs auf ~1 Tick/Minute — vorher
+// bekam ein offener Hintergrund-Tab dadurch nur ~2 % der Produktion (schlechter
+// als die 50 % offline!). Cap 300 s: längere Lücken (Tab eingefroren, Rechner
+// im Standby) gehören dem Offline-Ertrag, nicht dem Live-Ticker.
+let lastProductionTickAt = Date.now();
+
+function payProduction() {
+  const now = Date.now();
+  const dt = Math.min(300, Math.max(0, (now - lastProductionTickAt) / 1000));
+  lastProductionTickAt = now;
   const production = getAutomaticProduction(state);
-  if (production > 0) {
-    addCactus(production);
+  if (production > 0 && dt > 0) {
+    addCactus(production * dt);
     const achievementChanged = updateAchievements();
     renderGameplayHud({ achievementChanged });
   } else {
@@ -897,9 +979,9 @@ function spawnRandomEvent(kind, duration, rewardSeconds, label) {
   button.type = "button";
   button.style.setProperty("--event-life", `${shrinkSeconds}s`);
   button.setAttribute("aria-label", `${label} fangen`);
-  // Beide Events benutzen dasselbe Coin-Asset; die Rubin-Variante färbt es per
-  // CSS-Filter um. Ein zweites Bild dafür wäre reines Zusatzgewicht.
-  button.innerHTML = `<img class="random-event-icon" src="assets/currencies/coin.webp" alt="" aria-hidden="true">`;
+  // Der Spiel-Kaktus selbst, per CSS-Filter gold bzw. rot getönt — Spieler
+  // erkennen sofort "das ist ein besonderer Kaktus", kein Extra-Asset nötig.
+  button.innerHTML = `<img class="random-event-icon" src="assets/cactus/cactus.webp" alt="" aria-hidden="true">`;
   elements.clickZone.append(button);
   positionRandomEventOverCactus(button);
 
@@ -1013,9 +1095,15 @@ function bindEvents() {
     render();
   });
 
+  // Jede Eingabe zählt als "aktiv spielen" für die Autoklicker — auch Käufe
+  // und Tab-Wechsel im Panel, nicht nur Kaktus-Klicks.
+  window.addEventListener("pointerdown", () => { lastRealInputAt = Date.now(); });
+  window.addEventListener("keydown", () => { lastRealInputAt = Date.now(); });
+  window.setInterval(runAutoClicks, AUTO_CLICK_TICK_MS);
+
   window.setInterval(() => saveState("Automatisch gespeichert"), 15000);
   window.setInterval(() => {
-    payProductionSecond();
+    payProduction();
     checkRandomEvents();
     updateLeaderboardResetCountdown();
   }, 1000);
