@@ -55,7 +55,7 @@ games/
   KaktusClicker/        Idle-Clicker
   MyFishingKaktus/      Active-Fishing
 steam-deals/            Steam-Deals-Seite
-wiki/                   Statisches Wiki + Kauf-Optimizer
+wiki/                   Statisches Wiki + Kauf-Optimizer (siehe eigenen Abschnitt)
 js/                     Shared-Module (siehe unten)
 css/                    game-tokens.css, fonts.css + selbst gehostete Schriften
 tools/                  optimize-assets.py (Rohbilder → WebP); tools/raw/ gitignored
@@ -160,6 +160,47 @@ englischen Originalnamen (alle 132 abgedeckt).
 - **Rangliste „Letzter Monat":** Platz und Punktzahl sind historisch aus
   `game_season_archives.top_entries`, **Name/Level/Badge/Farbe kommen live** aus
   `profiles_public` (per `user_id` gejoint).
+
+### Wiki: Kauf-Optimizer und generierte Tabellen
+
+- **`wiki/clicker-planner.js`** — rechnet den Kauf-Plan. **Simuliert echte Zeit**,
+  sortiert nicht nach Refinanzierungs-Zeit: ein Kauf kostet
+  `(Kosten − Kontostand) ÷ Einkommen` an Wartezeit, danach steigt das Einkommen.
+  Bewertet wird eine ganze Reihenfolge daran, wie viel sie im Zeitfenster erntet
+  — also `totalEarned`, der Ranglisten-Wert. Das Ergebnis ist ein **Ablauf**,
+  keine Rangliste.
+  Kandidaten: Gebäude, alle 150 Gebäude-Upgrades, Klick-, Klick-Sog- und
+  Autoklicker-Upgrades. `unlockOwned` ist Teil der Simulation.
+  Suchverfahren: Beam-Search **über Zeitscheiben, nicht über Kaufschritte**.
+  ⚠️ Das ist der Punkt, an dem zwei Anläufe gescheitert sind — nach Kaufschritten
+  gruppiert stehen Zustände aus Minute 1 neben solchen aus Minute 50, und jede
+  Bewertung bevorzugt dann systematisch eine Sorte. Symptom: mehr Kandidaten
+  machten das Ergebnis *schlechter*. Wer daran schraubt, prüft zuerst das:
+  zusätzliche Optionen dürfen nie schaden.
+  Ebenfalls gemessen und verworfen: typisierte Arrays für die Zustände (4× langsamer
+  als `Array.slice()`) und logarithmische Zeitscheiben (halbierte die Qualität
+  über 24 h). Beides steht als Kommentar im Code, damit es niemand nochmal probiert.
+  Näherung, kein Optimum: die Voreinstellungen liefern 95-115 % eines rund
+  zwanzigmal teureren Suchlaufs.
+- **`wiki/optimizer.js`** — nur Oberfläche: Cloud-Save lesen, Eingaben sammeln,
+  Ergebnis rendern. Zeitfenster 1/6/24 h, Klicks-pro-Sekunde-Feld (0 = reines Idle).
+  Die Suche blockiert den Hauptthread rund eine Sekunde, deshalb läuft sie hinter
+  einem doppelten `requestAnimationFrame` — sonst sieht niemand den Hinweis.
+- **Prestige-Empfehlung** (`evaluatePrestige`) — rechnet beide Wege durch,
+  weiterspielen gegen sofort prestigen, und vergleicht den Ertrag über 1/6/24 h.
+  Die Prestige-Seite startet bei null Gebäuden mit höherem Multiplikator. Sie
+  braucht zwingend eine Klickrate > 0, sonst läuft ein zurückgesetzter Spielstand
+  nie an — deshalb rechnet der Vergleich mit mindestens 1 Klick/s auf beiden Seiten.
+- **`wiki/clicker-tables.js`** — Gebäude-, Abzeichen- und Klick-Upgrade-Tabelle
+  auf `wiki/kaktusclicker/` werden **aus `data.js` generiert**, nicht im HTML
+  gepflegt. Grund: von Hand gepflegt rotten sie bei jedem Balance-Patch, und zwar
+  doppelt (die russische Fassung liegt als HTML-String in `ru.json`). Platzhalter
+  ist `<div class="table-wrap" data-clicker-table="…">` — der muss in der
+  deutschen HTML-Fassung **und** im RU-String stehen, sonst fehlt die Tabelle in
+  einer Sprache. Gerendert wird per `onLanguageChange`, weil `applyTranslations()`
+  das `innerHTML` der Sections (`data-i18n-html`) bei jedem Wechsel ersetzt.
+- Der **Fließtext** der Wiki-Seite (Formeln, Schwellen, Beispieltabellen) ist
+  weiterhin Handarbeit in beiden Sprachen. Bei Balance-Änderungen mitziehen.
 
 ### My Fishing Kaktus
 - **Pfad:** `games/MyFishingKaktus/` · **Game-ID:** `my-fishing-kaktus`
