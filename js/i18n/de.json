@@ -173,16 +173,16 @@
             "toc_anti_cheat": "Anti-Cheat / Limits"
         },
         "opt": {
-            "no_recommendation": "Keine Empfehlung — alle Buildings haben CPS 0 oder Daten fehlen.",
+            "no_recommendation": "Keine Empfehlung — trage oben deinen Gebäude-Besitz ein.",
             "from_cloud": "Aus deinem Cloud-Save",
             "manual_input": "Manuelle Eingabe",
             "next_ten": "Nächste 10 beste Käufe",
             "owned": "Besitz",
             "from_upgrades": "aus Upgrades",
-            "roi_tooltip": "Cost ÷ CPS = Sekunden bis Refinanzierung",
-            "disclaimer": "ROI = Kosten ÷ effektive CPS = Sekunden bis sich der Kauf refinanziert hat (niedriger = besser). Globale Multiplikatoren (Prestige, Achievements, Goldlauf) wurden bewusst ignoriert — sie skalieren alle Käufe gleich. Dein Spielstand wird nie geändert, nur gelesen.",
-            "manual_intro": "Trage manuell ein wie viel du von jedem Gebäude besitzt. Optional unten die gekauften Upgrades anhaken.",
-            "check_upgrades": "Gekaufte Upgrades anhaken (optional, beeinflusst Multiplikatoren)",
+            "roi_tooltip": "Kosten ÷ zusätzliche CPS = Sekunden bis Refinanzierung",
+            "disclaimer": "ROI = Kosten ÷ zusätzliche CPS = Sekunden bis sich der Kauf refinanziert hat (niedriger = besser). Der Plan vergleicht Gebäude und Gebäude-Upgrades direkt miteinander — ein Blüten-Upgrade verdoppelt alle besessenen Exemplare und ist deshalb meist der bessere Kauf. Globale Multiplikatoren (Prestige, Abzeichen, Goldlauf) sind bewusst ignoriert, sie skalieren alles gleich. Klick-, Klick-Sog- und Autoklicker-Upgrades tauchen nicht auf, weil sie den Klick-Ertrag statt der CPS erhöhen. Dein Spielstand wird nie geändert, nur gelesen. Der ROI muss über den Plan hinweg nicht steigen: ein gekauftes Upgrade erhöht den Wert der folgenden Upgrades desselben Gebäudes, deshalb kann Schritt 5 günstiger sein als Schritt 4.",
+            "manual_intro": "Trage manuell ein wie viel du von jedem Gebäude besitzt. Optional unten die bereits gekauften Upgrades anhaken.",
+            "check_upgrades": "Gekaufte Upgrades anhaken (zeigt nur, was bei deinem Besitz freigeschaltet ist)",
             "compute_plan": "Plan berechnen",
             "hide_manual": "Manuelle Eingabe ausblenden",
             "checking_login": "Prüfe Login …",
@@ -190,7 +190,19 @@
             "loading_cloud": "Lade Cloud-Save …",
             "no_save": "Kein KaktusClicker Cloud-Save gefunden. Spiele eine Runde und speichere, dann komm wieder.",
             "loaded_calculating": "Cloud-Save geladen ({name}) — Berechne …",
-            "loaded_season": "Cloud-Save geladen ({name}) · Saison {season}"
+            "loaded_season": "Cloud-Save geladen ({name}) · Saison {season}",
+            "kind_building": "Gebäude",
+            "kind_upgrade": "Upgrade",
+            "no_upgrades_yet": "Noch keine Upgrades freigeschaltet. Trage oben ein, wie viele Gebäude du besitzt — Blüten-Upgrades erscheinen ab 10, 25, 50 und 100 Stück."
+        },
+        "ct": {
+            "col_name": "Name",
+            "col_base_cost": "Base-Kosten",
+            "col_payback": "Payback @ owned=0",
+            "col_condition": "Bedingung",
+            "col_cost": "Kosten",
+            "col_effect": "Effekt",
+            "unit_seconds": "s"
         }
     },
     "deals": {

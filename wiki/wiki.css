@@ -883,6 +883,28 @@ tbody tr:last-child td {
     font-style: normal;
     font-weight: 700;
 }
+/* Kauf-Art (Gebäude/Upgrade) als Pill vor dem Detailtext — der Plan mischt
+   beide Typen, ohne Marker wäre nicht erkennbar was man da kauft. */
+.opt-step-main small em.opt-kind {
+    display: inline-block;
+    margin-right: 0.4rem;
+    padding: 0.05rem 0.42rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    vertical-align: 0.05em;
+}
+.opt-plan-row--upgrade .opt-step-main small em.opt-kind {
+    border-color: var(--accent-light);
+    color: var(--accent-light);
+}
+.opt-plan-row--upgrade .opt-step-icon {
+    border-color: var(--accent-light);
+}
 
 .opt-step-cost, .opt-step-roi {
     text-align: right;
@@ -1004,6 +1026,25 @@ tbody tr:last-child td {
     color: #ffe066;
     font-style: normal;
     font-weight: 700;
+}
+/* Seit Economy V3 hat jedes Gebäude bis zu 5 Upgrades — ohne Gruppierung nach
+   Gebäude wäre die Liste nicht mehr lesbar. */
+.opt-manual-upgrade-group {
+    display: grid;
+    gap: 0.22rem;
+    align-content: start;
+}
+.opt-manual-upgrade-group h4 {
+    margin: 0 0 0.15rem;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    font-weight: 900;
+}
+.opt-manual-empty {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.5;
 }
 
 .opt-manual-run {

@@ -55,7 +55,7 @@ games/
   KaktusClicker/        Idle-Clicker
   MyFishingKaktus/      Active-Fishing
 steam-deals/            Steam-Deals-Seite
-wiki/                   Statisches Wiki + Kauf-Optimizer
+wiki/                   Statisches Wiki + Kauf-Optimizer (siehe eigenen Abschnitt)
 js/                     Shared-Module (siehe unten)
 css/                    game-tokens.css, fonts.css + selbst gehostete Schriften
 tools/                  optimize-assets.py (Rohbilder → WebP); tools/raw/ gitignored
@@ -160,6 +160,31 @@ englischen Originalnamen (alle 132 abgedeckt).
 - **Rangliste „Letzter Monat":** Platz und Punktzahl sind historisch aus
   `game_season_archives.top_entries`, **Name/Level/Badge/Farbe kommen live** aus
   `profiles_public` (per `user_id` gejoint).
+
+### Wiki: Kauf-Optimizer und generierte Tabellen
+
+- **`wiki/optimizer.js`** — der Kauf-Optimizer auf der Wiki-Startseite. Vergleicht
+  seit Economy V3 **Gebäude UND Gebäude-Upgrades in einem Plan**. Das ist keine
+  Kosmetik: ein Blüten-Upgrade kostet ~2,5 Stückpreise und verdoppelt alle
+  besessenen Exemplare — bei 100 Stück also ~40× rentabler als ein Gebäude. Ein
+  Plan aus reinen Gebäuden wäre schlicht falscher Rat. Die Simulation zieht
+  `unlockOwned` mit: erreicht ein Gebäude im Plan 10/25/50/100, taucht das dann
+  freigeschaltete Upgrade als Kandidat auf.
+  ROI = `Kosten ÷ zusätzliche CPS`. Bewusst **nicht** im Plan: Klick-, Klick-Sog-
+  und Autoklicker-Upgrades (zahlen auf den Klick-Ertrag statt die CPS ein) sowie
+  globale Multiplikatoren (skalieren alle Kandidaten gleich).
+  Der ROI im Plan steigt nicht monoton — ein gekauftes Upgrade hebt den Wert der
+  folgenden Upgrades desselben Gebäudes. Das ist korrekt, kein Sortierfehler.
+- **`wiki/clicker-tables.js`** — Gebäude-, Abzeichen- und Klick-Upgrade-Tabelle
+  auf `wiki/kaktusclicker/` werden **aus `data.js` generiert**, nicht im HTML
+  gepflegt. Grund: von Hand gepflegt rotten sie bei jedem Balance-Patch, und zwar
+  doppelt (die russische Fassung liegt als HTML-String in `ru.json`). Platzhalter
+  ist `<div class="table-wrap" data-clicker-table="…">` — der muss in der
+  deutschen HTML-Fassung **und** im RU-String stehen, sonst fehlt die Tabelle in
+  einer Sprache. Gerendert wird per `onLanguageChange`, weil `applyTranslations()`
+  das `innerHTML` der Sections (`data-i18n-html`) bei jedem Wechsel ersetzt.
+- Der **Fließtext** der Wiki-Seite (Formeln, Schwellen, Beispieltabellen) ist
+  weiterhin Handarbeit in beiden Sprachen. Bei Balance-Änderungen mitziehen.
 
 ### My Fishing Kaktus
 - **Pfad:** `games/MyFishingKaktus/` · **Game-ID:** `my-fishing-kaktus`
