@@ -1,6 +1,7 @@
 # KaktusClicker Asset Credits
 
-Grafiken für den Cozy-Look. Das Spiel hat seit dem Redesign kein Audio mehr.
+Grafiken für den Cozy-Look. Der Sound wird zur Laufzeit synthetisiert
+(`audio.js`) — es gibt keine Audio-Dateien und damit auch nichts zu lizenzieren.
 
 Die Rohbilder liegen **nicht** im Repo (`tools/raw/` ist gitignored). Optimiert
 werden sie mit `python tools/optimize-assets.py`; dort stehen auch die Zielgrößen.
