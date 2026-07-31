@@ -23,6 +23,13 @@ Diese Punkte sehen wie Bugs aus, sind aber **gewollt**. Nicht „reparieren":
   i18n dort. Die Admin-*Nav* ist übersetzt, der Panel-Inhalt nicht.
 - **`u_hold` im Wasser-Shader ist deklariert aber unbenutzt.** Rest vom
   entfernten Klick-Ripple, kein Versehen.
+- **KaktusClicker hat kein Audio mehr.** Musik, Soundeffekte, AudioContext und
+  die Lautstärkeregler wurden mit dem Cozy-Redesign komplett entfernt — die
+  alten Dateien passten stilistisch nicht und waren mit 5 MB das schwerste
+  Asset des Spiels. Neue Sounds kommen später.
+- **Die Vecteezy-Attribution im Einstellungen-Tab des Clickers muss sichtbar
+  bleiben.** Die Free-Lizenz verlangt sie auf der Seite selbst. Siehe
+  `games/KaktusClicker/ASSET_CREDITS.md`.
 
 ### Netlify-Credits sind knapp
 Der Besitzer hat den 9-€-Plan mit begrenzten Build-Credits (Stand Ende Juli 2026:
@@ -50,6 +57,8 @@ games/
 steam-deals/            Steam-Deals-Seite
 wiki/                   Statisches Wiki + Kauf-Optimizer
 js/                     Shared-Module (siehe unten)
+css/                    game-tokens.css, fonts.css + selbst gehostete Schriften
+tools/                  optimize-assets.py (Rohbilder → WebP); tools/raw/ gitignored
 netlify/functions/      Serverless
 supabase/migrations/    DB-Migrations
 netlify.toml            Hosting-Config + Function-Schedules
@@ -126,6 +135,13 @@ englischen Originalnamen (alle 132 abgedeckt).
 - Idle-Clicker mit 30 Gebäuden, 33 Upgrades, 20 Abzeichen, Nopal-Prestige,
   Goldlauf (1000 Klicks in 30 s → ×2 für 30 s), Gold-/Rubinkaktus-Events,
   monatlicher Saison-Rangliste, Offline-Ertrag (ab 5 Min, max 12 h, 50 %).
+- **Optik:** Cozy-Look (siehe Design-System). `<body class="theme-cozy">`,
+  Ladebildschirm inline in der `index.html` wie bei Fishing.
+- **7 Tabs:** Gebäude · Upgrades · Stats · Prestige · Rangliste · Erfolge ·
+  Einstellungen. Konvention: `data-tab="x"` braucht ein `id="x-panel"`.
+- **Assets:** `assets/background/`, `assets/cactus/`, `assets/currencies/` —
+  alles WebP, kein PNG-Fallback. Erzeugt aus `tools/raw/` (gitignored) per
+  `python tools/optimize-assets.py`. Lizenzen in `ASSET_CREDITS.md`.
 - **Daten:** `data.js` → `buildings`, `upgrades`, `achievements`, `changelogEntries`
 - **Zahlenformat:** `format.js`, locale-abhängig (Mio./Mrd. vs. млн/млрд)
 - **Changelog:** Zusatzmenü → Changelog. Neue Einträge in `data.js`, mit `ru`-Variante.
@@ -300,19 +316,45 @@ Light-Mode, keine generischen Partikel, kein Matrix-Regen.
 **MyFishingKaktus:** weicht thematisch ab — ozeanische Blautöne, weiches Wasser,
 warme Gelb-/Goldtöne für Highlights. Die globale Nav bleibt im grünen System.
 
-**KaktusClicker:** wird auf **clean, modern, creamy, lime, soft, cozy**
-umgestellt (Stand Ende Juli 2026, in Arbeit). Helle Cremeflächen, große Radien
-(16–28 px), weiche tiefe Schatten statt Glow, runde Schrift, Pastell-Varianten
-der semantischen Akzente. Umsetzung als zweites Wertesatz-Theme im Game-Token-File,
-aktiviert per Klasse auf `<body>` — die Token-*Namen* bleiben identisch.
+**KaktusClicker:** **cozy** — cremig, pastellig, handgezeichnet. Umgesetzt als
+zweiter Wertesatz `.theme-cozy` in `css/game-tokens.css`, aktiviert über
+`<body class="theme-cozy">`. Die Token-*Namen* sind identisch zum dunklen Theme.
+Cremeflächen, Radien 12–26 px, weiche Schatten nach unten statt Glow, Nunito
+(selbst gehostet in `css/fonts/`, eingebunden über `css/fonts.css`).
+
+⚠️ **Die Suffixe kehren sich im Cozy-Theme um.** Im dunklen Theme heißt `-hot`
+„heller, damit es auf Schwarz lesbar ist". Auf Creme gilt:
+
+| Suffix | Bedeutung im Cozy-Theme |
+|---|---|
+| `--x` | Grundfarbe für Flächen und Rahmen |
+| `--x-hot` | **dunkler und kräftiger** — für Text und starke Kanten |
+| `--x-pale`, `--x-deep` | **helle Tönung** — nur als Hintergrundfläche |
+
+Ein aus dem dunklen Theme übernommenes `color: var(--gold-pale)` ist auf Creme
+unlesbar. Beim Portieren also prüfen, nicht blind übernehmen.
+
+Cozy-eigene Zusatztokens: `--on-accent` (Text auf gefüllten Akzentflächen —
+nicht `--bg` dafür nehmen, Creme auf Pastellgrün schafft nur ~2,9:1),
+`--terracotta`, `--paper-rgb`, `--shadow-soft`, `--shadow-raise`,
+`--shadow-button`, `--shadow-button-press`, `--shadow-inset-top`.
 
 Das „kein Beige/Creme"-Verbot gilt also **nur noch für den Rest der Site**, nicht
 für den Clicker und nicht für künftige Spiele, die den Cozy-Look übernehmen.
 
 ### Neues Spiel im Cozy-Look anlegen
-1. `css/game-tokens.css` vor dem eigenen Stylesheet einbinden
+1. `css/fonts.css` und `css/game-tokens.css` vor dem eigenen Stylesheet einbinden
 2. `<body class="theme-cozy">` setzen
 3. Im eigenen CSS ausschließlich `var(--…)` verwenden
+4. `font-family: var(--font-game)` **auf `body`** setzen, nicht nur auf `:root` —
+   die globale `styles.css` setzt `body { font-family: … }` und schlägt sonst
+   die Vererbung
+5. Die globale Nav umfärben, indem auf ihr die *Site*-Tokens lokal neu belegt
+   werden (`--text-primary`, `--text-secondary`, `--accent-light`, `--border`).
+   Dann erben alle Nav-Kinder mit, auch was `auth-nav.js` zur Laufzeit einhängt.
+6. `.player-name`, `.level-tag` und `.badge-pill` kommen aus der globalen
+   `styles.css` und sind für Dunkel gebaut — `.player-name` ist dort hart auf
+   Weiß gesetzt und auf Creme **unsichtbar**. Lokal überschreiben.
 
 ---
 

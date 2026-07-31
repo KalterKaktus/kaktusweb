@@ -240,16 +240,7 @@
         "terms": "Nutzungsbedingungen"
     },
     "clicker": {
-        "tagline_click": "Klicken.",
-        "tagline_build": "Produktion bauen.",
-        "tagline_rank": "Rangliste jagen.",
         "save_now": "Jetzt speichern",
-        "music": "Musik",
-        "music_mute": "Musik stummschalten",
-        "music_unmute": "Musik einschalten",
-        "sound": "Sound",
-        "sound_mute": "Sound stummschalten",
-        "sound_unmute": "Sound einschalten",
         "score_label": "Kakteen",
         "per_second": "pro Sekunde",
         "per_click": "pro Klick",
@@ -297,7 +288,6 @@
         "leaderboard_loading": "Rangliste wird geladen...",
         "leaderboard_last_month_loading": "Letzter Monat wird geladen...",
         "leaderboard_reset_countdown": "Reset am 01. des nächsten Monats · noch {countdown}",
-        "extra_menu": "Zusatzmenü",
         "save_status_loading": "Speicherstatus wird geladen",
         "save_status_cloud": "Cloud-Sync aktiv · lokal + Supabase",
         "save_status_local": "Nur lokal · melde dich an für Cloud-Sync",
@@ -691,7 +681,14 @@
         },
         "save_stale_season": "Dieser Save gehört zu einer alten Saison. Bitte neu laden.",
         "leaderboard_unavailable": "Rangliste ist gerade nicht verfügbar.",
-        "leaderboard_load_failed": "Rangliste konnte nicht geladen werden."
+        "leaderboard_load_failed": "Rangliste konnte nicht geladen werden.",
+        "tab_achievements": "Erfolge",
+        "tab_settings": "Einstellungen",
+        "achievements_sub": "Jedes Abzeichen gibt dauerhaft mehr Ertrag",
+        "settings_sub": "Speichern, Changelog und Spielstand",
+        "loading_title": "Die Wüste erwacht",
+        "loading_hint": "Spielstand wird geladen…",
+        "credits_art": "Kaktus-Grafik"
     },
     "fishing": {
         "loading_title": "Der Ozean wartet",

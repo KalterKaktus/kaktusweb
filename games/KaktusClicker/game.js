@@ -71,7 +71,6 @@ function tSaveLabel(label) {
 }
 
 const STORAGE_KEY = "kaktus-clicker-save-v1";
-const AUDIO_STORAGE_KEY = "kaktus-clicker-audio-v1";
 const CLICK_FRENZY_TARGET = 1000;
 const CLICK_FRENZY_MS = 30000;
 const OFFLINE_LIMIT_SECONDS = 12 * 60 * 60;
@@ -99,17 +98,11 @@ let adminEventPollTimer = null;
 let adminGameEventsPrimed = false;
 const activeRandomEvents = new Map();
 const seenAdminGameEventIds = new Set();
-const backgroundMusic = new Audio();
-const eventAppearSound = new Audio();
-let audioSettings = loadAudioSettings();
-let soundEffectsUnlocked = false;
-// AudioContext: einheitlicher Unlock-Mechanismus (Fishing-Pattern). Beide Audio-Elemente
-// werden bei initAudio() per MediaElementSource an den Context gehängt — beim ersten
-// User-Klick reicht ein einziges ctx.resume() um die ganze Audio-Pipeline freizuschalten,
-// unabhängig vom Mute-Status. Vorher: cloned <audio> mit muted=true, was als "muted autoplay"
-// nicht als gültiger Unlock zählt → Goldkaktus-Sound kam bei Music=mute nicht.
-let audioCtx = null;
 
+// Audio wurde mit dem Cozy-Redesign komplett entfernt (Musik, Effekte, AudioContext
+// und die Lautstärkeregler). Die alten Dateien passten stilistisch nicht mehr und
+// waren mit 5 MB das mit Abstand schwerste Asset des Spiels. Neue, zum Look passende
+// Sounds kommen später — dann wieder mit eigenem Unlock über einen AudioContext.
 
 const elements = {
   cactusCount: document.querySelector("#cactus-count"),
@@ -129,10 +122,6 @@ const elements = {
   achievementList: document.querySelector("#achievement-list"),
   saveStatus: document.querySelector("#save-status"),
   saveButton: document.querySelector("#save-button"),
-  musicToggle: document.querySelector("#music-toggle"),
-  musicVolume: document.querySelector("#music-volume"),
-  soundToggle: document.querySelector("#sound-toggle"),
-  soundVolume: document.querySelector("#sound-volume"),
   changelogButton: document.querySelector("#changelog-button"),
   resetButton: document.querySelector("#reset-button"),
   tabs: document.querySelectorAll(".tab"),
@@ -143,6 +132,7 @@ const elements = {
   eventMeterLabel: document.querySelector("#event-meter-label"),
   eventMeterValue: document.querySelector("#event-meter-value"),
   eventMeterFill: document.querySelector("#event-meter-fill"),
+  hudNopal: document.querySelector("#hud-nopal"),
   prestigeNopal: document.querySelector("#prestige-nopal"),
   prestigeBonus: document.querySelector("#prestige-bonus"),
   prestigeNewNopal: document.querySelector("#prestige-new-nopal"),
@@ -169,127 +159,6 @@ function loadLocalState() {
   }
 }
 
-function loadAudioSettings() {
-  try {
-    return {
-      musicMuted: false,
-      soundMuted: false,
-      musicVolume: 0.24,
-      soundVolume: 0.62,
-      ...(JSON.parse(localStorage.getItem(AUDIO_STORAGE_KEY)) || {}),
-    };
-  } catch {
-    return {
-      musicMuted: false,
-      soundMuted: false,
-      musicVolume: 0.24,
-      soundVolume: 0.62,
-    };
-  }
-}
-
-function clampAudioVolume(value) {
-  return Math.min(1, Math.max(0, Number(value) || 0));
-}
-
-function saveAudioSettings() {
-  localStorage.setItem(AUDIO_STORAGE_KEY, JSON.stringify(audioSettings));
-}
-
-function setAudioButtonState(button, muted, activeLabel, mutedLabel) {
-  button.classList.toggle("is-muted", muted);
-  button.title = muted ? mutedLabel : activeLabel;
-  button.setAttribute("aria-label", button.title);
-  button.setAttribute("aria-pressed", String(muted));
-}
-
-function renderAudioControls() {
-  audioSettings.musicVolume = clampAudioVolume(audioSettings.musicVolume);
-  audioSettings.soundVolume = clampAudioVolume(audioSettings.soundVolume);
-  backgroundMusic.volume = audioSettings.musicVolume;
-  eventAppearSound.volume = audioSettings.soundVolume;
-  elements.musicVolume.value = String(Math.round(audioSettings.musicVolume * 100));
-  elements.soundVolume.value = String(Math.round(audioSettings.soundVolume * 100));
-  setAudioButtonState(elements.musicToggle, audioSettings.musicMuted, "Musik stummschalten", "Musik einschalten");
-  setAudioButtonState(elements.soundToggle, audioSettings.soundMuted, "Sound stummschalten", "Sound einschalten");
-}
-
-function startBackgroundMusic() {
-  if (audioSettings.musicMuted) {
-    return;
-  }
-
-  backgroundMusic.play().catch(() => {
-    // Browser may wait for the first real tap before starting music.
-  });
-}
-
-function unlockSoundEffects() {
-  if (soundEffectsUnlocked) {
-    return;
-  }
-  // AudioContext-basierter Unlock (analog zum Fishing-AudioSystem): ein resume()
-  // genügt um die Audio-Pipeline endgültig freizugeben, unabhängig vom Mute-Status.
-  // Beide Audio-Elemente sind in initAudio() per MediaElementSource an den Context
-  // gehängt — sobald der Context "running" ist, dürfen sie alle .play()-Calls fahren.
-  if (audioCtx && audioCtx.state === "suspended") {
-    audioCtx.resume().catch(() => {});
-  }
-  if (audioCtx && audioCtx.state === "running") {
-    soundEffectsUnlocked = true;
-  }
-}
-
-function playEventAppearSound() {
-  if (audioSettings.soundMuted) {
-    return;
-  }
-
-  // WICHTIG: nicht cloneNode() — der Clone ist NICHT am audioCtx (MediaElementSource
-  // ist 1:1 zum Original gebunden). Auf iOS Safari + Music-mute hat der Browser
-  // keine aktive Audio-Session, und der Clone bleibt stumm. Das Original-Element
-  // läuft durch den audioCtx und respektiert ctx.resume() → klingt überall.
-  // Trade-off: schnell aufeinanderfolgende Spawns überlappen nicht (currentTime
-  // resettet jedes Mal). Für Goldkaktus/Rubinkaktus die nicht <1s spawnen ist das ok.
-  try {
-    eventAppearSound.currentTime = 0;
-  } catch {}
-  eventAppearSound.volume = audioSettings.soundVolume;
-  eventAppearSound.play().catch(() => {});
-}
-
-function initAudio() {
-  backgroundMusic.loop = true;
-  backgroundMusic.preload = "metadata";
-  backgroundMusic.src = "./audio/ambient-glitch.mp3";
-  eventAppearSound.preload = "auto";
-  eventAppearSound.src = "./audio/event-appear.mp3";
-
-  // AudioContext aufsetzen + beide <audio>-Elemente per MediaElementSource einhängen.
-  // Damit reicht später ein einziges ctx.resume() um beide freizuschalten, unabhängig
-  // davon ob Musik gerade gemutet ist. Try/catch falls Browser AudioContext nicht
-  // unterstützt — dann fallen wir auf altes Verhalten zurück (Musik on = funktioniert,
-  // Musik mute = SFX blockiert; immerhin nicht schlimmer als vorher).
-  try {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (Ctx) {
-      audioCtx = new Ctx();
-      const musicSource = audioCtx.createMediaElementSource(backgroundMusic);
-      const eventSource = audioCtx.createMediaElementSource(eventAppearSound);
-      musicSource.connect(audioCtx.destination);
-      eventSource.connect(audioCtx.destination);
-    }
-  } catch {
-    // Browser ohne AudioContext oder bereits angeschlossene Element-Sources → ignorieren.
-  }
-
-  renderAudioControls();
-  startBackgroundMusic();
-  window.addEventListener("pointerdown", startBackgroundMusic, { once: true });
-  window.addEventListener("keydown", startBackgroundMusic, { once: true });
-  window.addEventListener("pointerdown", unlockSoundEffects);
-  window.addEventListener("keydown", unlockSoundEffects);
-}
 
 function setClickerViewportHeight() {
   const height = Math.round(window.visualViewport?.height || window.innerHeight || 0);
@@ -380,7 +249,7 @@ function showGameModal({ title, message = "", bodyHtml = "", buttonLabel = "Okay
       <h2 id="game-modal-title">${escapeHtml(title)}</h2>
       ${message ? `<p>${escapeHtml(message)}</p>` : ""}
       ${bodyHtml}
-      <button class="icon-button game-modal-button" type="button">${escapeHtml(buttonLabel)}</button>
+      <button class="cozy-button game-modal-button" type="button">${escapeHtml(buttonLabel)}</button>
     </section>
   `;
   backdrop.querySelector("button")?.addEventListener("click", () => {
@@ -541,10 +410,10 @@ function renderShop() {
     return `
       <button class="shop-item" type="button" data-building="${building.id}" ${disabled}>
         <span class="item-icon" aria-hidden="true">${escapeHtml(building.icon)}</span>
-        <span>
+        <span class="item-body">
           <span class="item-name">${escapeHtml(tName(building, "buildings"))}</span>
           <span class="item-description">${escapeHtml(tDesc(building, "buildings"))}</span>
-          <span class="item-meta">${formatNumber(getBuildingProduction(state, building))}${escapeHtml(t("clicker.per_sec_short"))} - ${escapeHtml(t("clicker.owned_short"))}: ${formatNumber(owned)}</span>
+          <span class="item-meta">${formatNumber(getBuildingProduction(state, building))}${escapeHtml(t("clicker.per_sec_short"))} · ${escapeHtml(t("clicker.owned_short"))}: ${formatNumber(owned)}</span>
         </span>
         <span class="item-price">${formatNumber(cost)}</span>
       </button>
@@ -558,9 +427,9 @@ function renderUpgrades() {
     ? visibleUpgrades.map((upgrade) => {
       const disabled = state.cactus < upgrade.cost ? "disabled" : "";
       return `
-        <button class="shop-item" type="button" data-upgrade="${upgrade.id}" ${disabled}>
+        <button class="shop-item is-upgrade" type="button" data-upgrade="${upgrade.id}" ${disabled}>
           <span class="item-icon" aria-hidden="true">${escapeHtml(upgrade.icon)}</span>
-          <span>
+          <span class="item-body">
             <span class="item-name">${escapeHtml(tName(upgrade, "upgrades"))}</span>
             <span class="item-description">${escapeHtml(tDesc(upgrade, "upgrades"))}</span>
           </span>
@@ -592,11 +461,12 @@ function renderAchievements() {
     const unlocked = state.achievements.includes(achievement.id);
     return `
       <div class="achievement ${unlocked ? "is-unlocked" : ""}">
+        <span class="achievement-mark" aria-hidden="true">${unlocked ? "✓" : ""}</span>
         <span class="achievement-copy">
           <strong>${escapeHtml(tName(achievement, "achievements"))}</strong>
           <small>${escapeHtml(tGoal(achievement))}</small>
         </span>
-        <span>${unlocked ? "+0,1x" : escapeHtml(t("clicker.achievement_open"))}</span>
+        <span class="achievement-reward">${unlocked ? "+0,1x" : escapeHtml(t("clicker.achievement_open"))}</span>
       </div>
     `;
   }).join("");
@@ -606,6 +476,7 @@ function renderStatsOnly() {
   elements.cactusCount.textContent = formatNumber(state.cactus);
   elements.cactusRate.textContent = formatNumber(getAutomaticProduction(state));
   elements.clickPower.textContent = formatNumber(getClickYield(state));
+  elements.hudNopal.textContent = formatNumber(state.prestige.nopal);
   elements.achievementMultiplier.textContent = `x${formatNumber(getAchievementMultiplier(state))}`;
   elements.scorePrestigeMultiplier.textContent = `x${formatNumber(getPrestigeMultiplier(state))}`;
   elements.totalEarned.textContent = formatNumber(state.totalEarned);
@@ -643,7 +514,10 @@ function renderEventMeter(now = Date.now()) {
   elements.eventMeterLabel.textContent = active ? t("clicker.frenzy_active") : t("clicker.frenzy_charging");
   elements.eventMeterValue.textContent = active
     ? `${formatDuration(remainingMs / 1000)} x2`
-    : `${formatNumber(state.events.clickCharge)} / ${formatNumber(CLICK_FRENZY_TARGET)} Klicks`;
+    : t("clicker.frenzy_progress", {
+      value: formatNumber(state.events.clickCharge),
+      target: formatNumber(CLICK_FRENZY_TARGET),
+    });
   elements.frenzyBadge.hidden = !active;
   elements.scoreFrenzyMultiplier.hidden = !active;
   elements.scoreCard.classList.toggle("is-frenzy", active);
@@ -1023,10 +897,11 @@ function spawnRandomEvent(kind, duration, rewardSeconds, label) {
   button.type = "button";
   button.style.setProperty("--event-life", `${shrinkSeconds}s`);
   button.setAttribute("aria-label", `${label} fangen`);
-  button.innerHTML = `<img class="random-event-icon" src="/favicon-32x32.png" alt="" aria-hidden="true">`;
+  // Beide Events benutzen dasselbe Coin-Asset; die Rubin-Variante färbt es per
+  // CSS-Filter um. Ein zweites Bild dafür wäre reines Zusatzgewicht.
+  button.innerHTML = `<img class="random-event-icon" src="assets/currencies/coin.webp" alt="" aria-hidden="true">`;
   elements.clickZone.append(button);
   positionRandomEventOverCactus(button);
-  playEventAppearSound();
 
   const removeEvent = (caught) => {
     const entry = activeRandomEvents.get(kind);
@@ -1092,32 +967,6 @@ function bindEvents() {
     });
   });
   elements.saveButton.addEventListener("click", () => saveState("Manuell gespeichert"));
-  elements.musicToggle.addEventListener("click", () => {
-    audioSettings.musicMuted = !audioSettings.musicMuted;
-    if (audioSettings.musicMuted) {
-      backgroundMusic.pause();
-    } else {
-      startBackgroundMusic();
-    }
-    saveAudioSettings();
-    renderAudioControls();
-  });
-  elements.musicVolume.addEventListener("input", () => {
-    audioSettings.musicVolume = clampAudioVolume(Number(elements.musicVolume.value) / 100);
-    saveAudioSettings();
-    renderAudioControls();
-    startBackgroundMusic();
-  });
-  elements.soundToggle.addEventListener("click", () => {
-    audioSettings.soundMuted = !audioSettings.soundMuted;
-    saveAudioSettings();
-    renderAudioControls();
-  });
-  elements.soundVolume.addEventListener("input", () => {
-    audioSettings.soundVolume = clampAudioVolume(Number(elements.soundVolume.value) / 100);
-    saveAudioSettings();
-    renderAudioControls();
-  });
   elements.changelogButton.addEventListener("click", showChangelog);
   elements.prestigeButton.addEventListener("click", performPrestige);
 
@@ -1206,8 +1055,10 @@ async function initGame() {
     const profile = await getGameProfile(session.user);
     if (profile?.is_banned) {
       await signOutGameSession();
-      showGameModal({ title: "Account gesperrt", message: "Dein Account wurde gesperrt." });
+      showGameModal({ title: "Account gesperrt", message: t("clicker.banned_toast") });
       elements.saveStatus.textContent = "Account gesperrt";
+      // Auch hier ausblenden — sonst hängt der Ladebildschirm über dem Modal.
+      hideLoadingScreen();
       return;
     }
 
@@ -1226,7 +1077,6 @@ async function initGame() {
   recoverClickerViewport();
   tryLockPortraitOrientation();
   subscribeAdminGameEvents();
-  initAudio();
   updateAchievements();
   render();
   if (isClickFrenzyActive(state)) {
@@ -1237,12 +1087,45 @@ async function initGame() {
 
   const offlineReward = computeOfflineReward();
   saveState("Online-Zeit aktualisiert");
+  hideLoadingScreen();
   if (offlineReward) {
     showOfflineReward(offlineReward);
   }
 }
 
-initGame();
+// Der Ladebildschirm liegt inline in der index.html, damit er ohne Warten auf ein
+// Stylesheet steht. Er verschwindet erst, wenn das erste render() durch ist —
+// sonst blitzt eine leere Wüste auf, bevor die Zahlen stehen.
+function hideLoadingScreen() {
+  const loader = document.getElementById("clicker-loading");
+  if (!loader || loader.classList.contains("is-done")) {
+    return;
+  }
+
+  const dismiss = () => {
+    if (loader.classList.contains("is-done")) {
+      return;
+    }
+
+    loader.classList.add("is-done");
+    window.setTimeout(() => loader.remove(), 600);
+  };
+
+  // Normalfall: zwei Frames warten, damit das erste render() nicht nur im DOM
+  // steht, sondern auch gemalt ist — sonst springt das Bild beim Ausblenden.
+  requestAnimationFrame(() => requestAnimationFrame(dismiss));
+  // Notausgang: in einem Hintergrund-Tab produziert der Browser keine Frames,
+  // requestAnimationFrame feuert also erst beim Fokussieren. Ohne diesen Timer
+  // bliebe der Ladebildschirm bis dahin stehen. dismiss() ist idempotent.
+  window.setTimeout(dismiss, 1200);
+}
+
+initGame().catch((error) => {
+  // Ohne diesen Fallback bliebe der Ladebildschirm bei einem Fehler für immer
+  // stehen und das Spiel wäre komplett unbedienbar.
+  console.error("KaktusClicker konnte nicht starten:", error);
+  hideLoadingScreen();
+});
 
 // Bei Sprachwechsel alles neu rendern damit Buildings/Upgrades/Achievements
 // mit übersetzten Namen erscheinen.

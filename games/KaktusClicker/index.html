@@ -3,22 +3,103 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#37ff75" />
+    <meta name="theme-color" content="#fdf4dc" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="KaktusClicker" />
     <title>KaktusClicker</title>
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- Hauptassets vorladen. Der Kaktus ist auf jeder Auflösung sichtbar, die
+         Hintergründe schließen sich per media gegenseitig aus — es lädt immer
+         nur einer von beiden. -->
+    <link rel="preload" as="image" href="assets/cactus/cactus.webp" type="image/webp" />
+    <link rel="preload" as="image" href="assets/background/desert-desktop.webp" type="image/webp" media="(min-width: 901px)" />
+    <link rel="preload" as="image" href="assets/background/desert-mobile.webp" type="image/webp" media="(max-width: 900px)" />
+    <link rel="preload" as="font" type="font/woff2" href="/css/fonts/nunito-var-latin.woff2" crossorigin />
+
     <link rel="stylesheet" href="/styles.css" />
     <link rel="stylesheet" href="/profile/profile.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
     <!-- Design-Tokens VOR dem Game-CSS: das Game-CSS referenziert nur var(--…). -->
     <link rel="stylesheet" href="/css/game-tokens.css" />
     <link rel="stylesheet" href="styles.css" />
+
+    <!-- Inline, damit der Ladebildschirm ohne Warten auf ein Stylesheet steht.
+         Gleiches Muster wie MyFishingKaktus. -->
+    <style>
+      #clicker-loading {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(170deg, #fdf4dc 0%, #f7e8bf 100%);
+        color: #3e4026;
+        font-family: "Nunito", ui-rounded, "Segoe UI", system-ui, sans-serif;
+        text-align: center;
+        transition: opacity 0.5s ease;
+      }
+      #clicker-loading.is-done {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .cl-card {
+        display: grid;
+        gap: 1.1rem;
+        justify-items: center;
+        max-width: 22rem;
+        padding: 0 1.5rem;
+      }
+      .cl-kicker {
+        margin: 0;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+        color: #93ab52;
+      }
+      .cl-title {
+        margin: 0;
+        font-size: clamp(1.7rem, 4.4vw, 2.5rem);
+        font-weight: 900;
+        color: #52682d;
+      }
+      .cl-pot {
+        width: 5.5rem;
+        height: 5.5rem;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 45%, #d6e1ad, #93ab52);
+        box-shadow: 0 10px 26px rgba(110, 88, 52, 0.18);
+        animation: cl-bob 1.6s ease-in-out infinite;
+      }
+      .cl-hint {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #716242;
+      }
+      @keyframes cl-bob {
+        0%, 100% { transform: translateY(0) scale(1); }
+        50%      { transform: translateY(-0.5rem) scale(1.04); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cl-pot { animation: none; }
+      }
+    </style>
   </head>
-  <body>
-    <nav class="nav">
+  <body class="theme-cozy clicker-page">
+    <div id="clicker-loading" aria-live="polite" aria-busy="true">
+      <div class="cl-card">
+        <p class="cl-kicker">KaktusClicker</p>
+        <h1 class="cl-title" data-i18n="clicker.loading_title">Die Wüste erwacht</h1>
+        <div class="cl-pot" aria-hidden="true"></div>
+        <p class="cl-hint" data-i18n="clicker.loading_hint">Spielstand wird geladen…</p>
+      </div>
+    </div>
+
+    <nav class="nav clicker-site-nav">
       <div class="nav-container">
         <a class="logo" href="/">KK</a>
         <div class="nav-links">
@@ -35,64 +116,34 @@
 
     <main class="game-shell" aria-label="KaktusClicker Spiel">
       <section class="click-zone" aria-labelledby="game-title">
-        <header class="brand-row">
-          <div>
-            <h1 id="game-title">
-              <span>Kaktus</span>
-              <span>Clicker</span>
-            </h1>
-            <p class="tagline">
-              <span data-i18n="clicker.tagline_click">Klicken.</span>
-              <span data-i18n="clicker.tagline_build">Produktion bauen.</span>
-              <span data-i18n="clicker.tagline_rank">Rangliste jagen.</span>
-            </p>
-          </div>
-          <div class="brand-tools">
-            <div class="brand-actions">
-              <button class="icon-button" id="save-button" type="button" data-i18n-attr="title:clicker.save_now,aria-label:clicker.save_now" title="Jetzt speichern" aria-label="Jetzt speichern">
-                <svg class="save-icon" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M5 4h12l2 2v14H5V4Zm3 1.8v5h8v-5H8Zm0 9.2v3h8v-3H8Z"/>
-                </svg>
-              </button>
-            </div>
-            <div class="audio-tools" aria-label="Audio">
-              <div class="audio-control">
-                <button class="icon-button audio-button" id="music-toggle" type="button" data-i18n-attr="title:clicker.music_mute,aria-label:clicker.music_mute" title="Musik stummschalten" aria-label="Musik stummschalten">
-                  <svg class="audio-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M19 3v13.2a3.6 3.6 0 1 1-2-3.2V7.2l-7 1.5v9.5a3.6 3.6 0 1 1-2-3.2V7.1L19 4.7V3Z"/>
-                  </svg>
-                </button>
-                <label class="audio-slider" for="music-volume">
-                  <span data-i18n="clicker.music">Musik</span>
-                  <input id="music-volume" type="range" min="0" max="100" step="1" value="24" />
-                </label>
-              </div>
-              <div class="audio-control">
-                <button class="icon-button audio-button" id="sound-toggle" type="button" data-i18n-attr="title:clicker.sound_mute,aria-label:clicker.sound_mute" title="Sound stummschalten" aria-label="Sound stummschalten">
-                  <svg class="audio-icon" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M5 9h3l4-4v14l-4-4H5V9Zm10.4-.6a1 1 0 0 1 1.4 0 5 5 0 0 1 0 7.2 1 1 0 1 1-1.4-1.4 3 3 0 0 0 0-4.4 1 1 0 0 1 0-1.4Zm3-3a1 1 0 0 1 1.4 0 9.1 9.1 0 0 1 0 13.2 1 1 0 1 1-1.4-1.4 7.1 7.1 0 0 0 0-10.4 1 1 0 0 1 0-1.4Z"/>
-                  </svg>
-                </button>
-                <label class="audio-slider" for="sound-volume">
-                  <span data-i18n="clicker.sound">Sound</span>
-                  <input id="sound-volume" type="range" min="0" max="100" step="1" value="62" />
-                </label>
-              </div>
-            </div>
-          </div>
-        </header>
+        <h1 id="game-title" class="sr-only">KaktusClicker</h1>
 
-        <div class="score-card">
-          <p class="score-label" data-i18n="clicker.score_label">Kakteen</p>
-          <p class="score" id="cactus-count">0</p>
-          <p class="rate"><span id="cactus-rate">0</span> <span data-i18n="clicker.per_second">pro Sekunde</span></p>
-          <p class="click-rate">+<strong id="click-power">1</strong> <span data-i18n="clicker.per_click">pro Klick</span></p>
-          <div class="score-multipliers" data-i18n-attr="aria-label:clicker.mult_active" aria-label="Aktive Multiplikatoren">
-            <span class="score-multiplier is-achievement"><span data-i18n="clicker.mult_badge">Abzeichen</span> <strong id="achievement-multiplier">x1</strong></span>
-            <span class="score-multiplier is-prestige"><span data-i18n="clicker.mult_prestige">Prestige</span> <strong id="score-prestige-multiplier">x1</strong></span>
-            <span class="score-multiplier is-frenzy" id="score-frenzy-multiplier" hidden><span data-i18n="clicker.mult_frenzy">Goldlauf</span> <strong>x2</strong></span>
+        <!-- Ressourcenleiste. .score-card bleibt als Klasse erhalten: game.js
+             hängt den Goldlauf-Zustand daran (elements.scoreCard). -->
+        <div class="resource-bar">
+          <div class="score-card">
+            <img class="currency-icon is-coin" src="assets/currencies/coin.webp" alt="" width="256" height="270" aria-hidden="true" />
+            <div class="score-body">
+              <p class="score-label" data-i18n="clicker.score_label">Kakteen</p>
+              <p class="score" id="cactus-count">0</p>
+              <p class="rate"><span id="cactus-rate">0</span> <span data-i18n="clicker.per_second">pro Sekunde</span></p>
+            </div>
+            <strong class="frenzy-badge" id="frenzy-badge" hidden data-i18n="clicker.frenzy_badge">x2 Goldlauf</strong>
           </div>
-          <strong class="frenzy-badge" id="frenzy-badge" hidden data-i18n="clicker.frenzy_badge">x2 Goldlauf</strong>
+
+          <div class="resource-side">
+            <div class="nopal-card">
+              <img class="currency-icon is-nopal" src="assets/currencies/nopal.webp" alt="" width="256" height="257" aria-hidden="true" />
+              <span class="nopal-label" data-i18n="clicker.prestige_nopal">Nopal</span>
+              <strong class="nopal-value" id="hud-nopal">0</strong>
+            </div>
+            <p class="click-rate">+<strong id="click-power">1</strong> <span data-i18n="clicker.per_click">pro Klick</span></p>
+            <div class="score-multipliers" data-i18n-attr="aria-label:clicker.mult_active" aria-label="Aktive Multiplikatoren">
+              <span class="score-multiplier is-achievement"><span data-i18n="clicker.mult_badge">Abzeichen</span> <strong id="achievement-multiplier">x1</strong></span>
+              <span class="score-multiplier is-prestige"><span data-i18n="clicker.mult_prestige">Prestige</span> <strong id="score-prestige-multiplier">x1</strong></span>
+              <span class="score-multiplier is-frenzy" id="score-frenzy-multiplier" hidden><span data-i18n="clicker.mult_frenzy">Goldlauf</span> <strong>x2</strong></span>
+            </div>
+          </div>
         </div>
 
         <div class="event-meter" id="event-meter" aria-live="polite">
@@ -106,37 +157,9 @@
         </div>
 
         <button class="cactus-button" id="cactus-button" type="button" data-i18n-attr="aria-label:clicker.harvest_cactus" aria-label="Kaktus ernten">
-          <div class="cactus-stage">
-          <pre class="cactus-art" aria-hidden="true">⠀⠀⠀⠀⠀⠀⠀⠀⠰⣱⣷⣼⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⢀⣹⣿⢼⡻⣍⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢀⠮⢇⡞⣾⣿⣿⣦⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⣀⡄⡀⠀⢸⠈⠚⡄⣿⣿⣾⣿⠀⠀⣀⢤⣀⠀⠀
-⢠⣺⣿⣼⡟⠀⢸⠀⠐⡐⣿⣿⣿⣿⠀⠀⣛⣽⣻⣦⡀
-⡇⠄⣿⣿⡄⠀⢸⠀⠸⢀⣿⣿⣻⣿⠀⠀⠈⠙⢻⣿⡇
-⡇⡁⣿⣯⠇⠀⢸⠀⠐⢂⣿⡷⣿⣿⠀⠀⠀⠈⣼⣿⡇
-⡏⡗⣻⣿⡄⠀⠸⠀⠈⢄⣻⣟⣿⣿⠒⣒⡒⢎⣿⣯⡇
-⢣⢡⠻⣿⣿⣶⡇⢀⢬⠀⣿⣿⣿⣿⣁⣛⣡⣼⣿⡿⠃
-⠀⠁⠶⢶⣿⣿⡇⠀⢀⠃⢿⣯⣿⣿⠛⠛⠛⠛⠛⠁⠀
-⠀⠀⠀⠀⠀⠀⢸⠀⢀⠊⣿⣿⣿⣿⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢸⠀⢀⠆⣿⣿⣽⣿⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢸⠀⢘⠂⣿⣯⣿⣿⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢸⠀⢰⠁⣿⣿⣾⣿⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢸⠀⡨⠐⣿⣷⣿⣿⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⢸⠈⠅⢃⣿⣯⣿⣿⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠒⠒⠂⠒⠚⠛⠛⠛⠛⠛⠛⠛⠒⠒⠒⠒⠒⠀⠀</pre>
-            <div class="cactus-flower" aria-hidden="true">
-              <svg viewBox="0 0 60 48" xmlns="http://www.w3.org/2000/svg">
-                <g transform="translate(30 24)">
-                  <circle cx="0" cy="-14" r="9" fill="currentColor"/>
-                  <circle cx="13" cy="-4" r="9" fill="currentColor"/>
-                  <circle cx="-13" cy="-4" r="9" fill="currentColor"/>
-                  <circle cx="8" cy="12" r="9" fill="currentColor"/>
-                  <circle cx="-8" cy="12" r="9" fill="currentColor"/>
-                  <circle cx="0" cy="0" r="6" fill="#0a0a0a" opacity="0.6"/>
-                </g>
-              </svg>
-            </div>
-          </div>
+          <span class="cactus-stage">
+            <img class="cactus-image" src="assets/cactus/cactus.webp" alt="" width="1024" height="1322" draggable="false" aria-hidden="true" />
+          </span>
         </button>
 
         <p class="offline-hint" data-i18n="clicker.offline_hint">Offline-Ertrag: ab 5 Minuten 50% deiner normalen Auto-Produktion, bis zu 12 Stunden.</p>
@@ -149,6 +172,8 @@
           <button class="tab" data-tab="stats" type="button" data-i18n="clicker.tab_stats">Stats</button>
           <button class="tab prestige-tab" data-tab="prestige" type="button" data-i18n="clicker.tab_prestige">Prestige</button>
           <button class="tab" data-tab="leaderboard" type="button" data-i18n="clicker.tab_leaderboard">Rangliste</button>
+          <button class="tab achievement-tab" data-tab="achievements" type="button" data-i18n="clicker.tab_achievements">Erfolge</button>
+          <button class="tab" data-tab="settings" type="button" data-i18n="clicker.tab_settings">Einstellungen</button>
         </nav>
 
         <section class="tab-panel is-active" id="shop-panel">
@@ -190,12 +215,14 @@
               <dd id="total-upgrades">0</dd>
             </div>
           </dl>
+        </section>
 
-          <div class="achievements">
-            <h3 data-i18n="clicker.achievements_title">Abzeichen</h3>
-            <div id="achievement-list" class="achievement-list"></div>
+        <section class="tab-panel" id="achievements-panel">
+          <div class="section-title">
+            <h2 data-i18n="clicker.achievements_title">Abzeichen</h2>
+            <p data-i18n="clicker.achievements_sub">Jedes Abzeichen gibt dauerhaft mehr Ertrag</p>
           </div>
-
+          <div id="achievement-list" class="achievement-list"></div>
         </section>
 
         <section class="tab-panel prestige-panel" id="prestige-panel">
@@ -249,12 +276,27 @@
           <p id="leaderboard-hint" class="leaderboard-hint"></p>
         </section>
 
-        <details class="extra-menu">
-          <summary data-i18n="clicker.extra_menu">Zusatzmenü</summary>
-          <p class="extra-save-status" id="save-status" data-i18n="clicker.save_status_loading">Speicherstatus wird geladen</p>
-          <button class="extra-menu-button" id="changelog-button" type="button" data-i18n="clicker.changelog_button">Changelog</button>
-          <button class="danger-button extra-reset-button" id="reset-button" type="button" data-i18n="clicker.reset_button">Spielstand zurücksetzen</button>
-        </details>
+        <section class="tab-panel" id="settings-panel">
+          <div class="section-title">
+            <h2 data-i18n="clicker.tab_settings">Einstellungen</h2>
+            <p data-i18n="clicker.settings_sub">Speichern, Changelog und Spielstand</p>
+          </div>
+          <p class="save-status" id="save-status" data-i18n="clicker.save_status_loading">Speicherstatus wird geladen</p>
+          <div class="settings-actions">
+            <button class="cozy-button is-ghost" id="save-button" type="button" data-i18n="clicker.save_now">Jetzt speichern</button>
+            <button class="cozy-button is-ghost" id="changelog-button" type="button" data-i18n="clicker.changelog_button">Changelog</button>
+          </div>
+          <button class="danger-button" id="reset-button" type="button" data-i18n="clicker.reset_button">Spielstand zurücksetzen</button>
+
+          <!-- Attribution als Fußnote. Sie MUSS lesbar bleiben: die Vecteezy-
+               Free-Lizenz verlangt sie auf der Seite selbst, eine Datei im Repo
+               reicht nicht. Betrifft nur den Kaktus — Hintergründe und Währungen
+               sind Eigenmaterial. Siehe ASSET_CREDITS.md. -->
+          <p class="asset-credits">
+            <span data-i18n="clicker.credits_art">Kaktus-Grafik</span>:
+            <a href="https://www.vecteezy.com/free-png/kawaii-cactus" target="_blank" rel="noopener noreferrer">Kawaii Cactus PNGs by Vecteezy</a>
+          </p>
+        </section>
       </aside>
     </main>
 

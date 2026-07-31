@@ -14,6 +14,24 @@
 [functions."check-free-games"]
   schedule = "@hourly"
 
+# Bilder und Schriften einmal laden, danach ein Jahr aus dem Browsercache.
+# Ohne diesen Block liefert Netlify `max-age=0, must-revalidate` — der Browser
+# fragt bei JEDEM Seitenaufruf nach, bekommt zwar nur ein 304 zurück, zahlt aber
+# trotzdem die Latenz für jede Datei.
+#
+# ACHTUNG: `immutable` heißt, dass ein geänderter Inhalt unter demselben Namen
+# NICHT ankommt. Wird ein Asset ausgetauscht, muss die Datei umbenannt werden
+# (z. B. cactus-2.webp) — sonst sehen bestehende Spieler ein Jahr lang das alte.
+[[headers]]
+  for = "/games/KaktusClicker/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/css/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 [[redirects]]
   from = "https://wiki.kalterkaktus.de/*"
   to = "/wiki/:splat"

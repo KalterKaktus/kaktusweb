@@ -275,16 +275,7 @@
         "terms": "Условия использования"
     },
     "clicker": {
-        "tagline_click": "Кликай.",
-        "tagline_build": "Строй производство.",
-        "tagline_rank": "Гони в топ.",
         "save_now": "Сохранить сейчас",
-        "music": "Музыка",
-        "music_mute": "Отключить музыку",
-        "music_unmute": "Включить музыку",
-        "sound": "Звук",
-        "sound_mute": "Отключить звук",
-        "sound_unmute": "Включить звук",
         "score_label": "Кактусы",
         "per_second": "в секунду",
         "per_click": "за клик",
@@ -332,7 +323,6 @@
         "leaderboard_loading": "Загрузка таблицы...",
         "leaderboard_last_month_loading": "Загрузка прошлого месяца...",
         "leaderboard_reset_countdown": "Сброс 1-го числа следующего месяца · осталось {countdown}",
-        "extra_menu": "Дополнительно",
         "save_status_loading": "Загрузка статуса сохранения",
         "save_status_cloud": "Облачная синхронизация · локально + Supabase",
         "save_status_local": "Только локально · войди для облачной синхронизации",
@@ -642,7 +632,14 @@
         },
         "save_stale_season": "Это сохранение относится к прошлому сезону. Перезагрузи страницу.",
         "leaderboard_unavailable": "Таблица лидеров сейчас недоступна.",
-        "leaderboard_load_failed": "Не удалось загрузить таблицу лидеров."
+        "leaderboard_load_failed": "Не удалось загрузить таблицу лидеров.",
+        "tab_achievements": "Достижения",
+        "tab_settings": "Настройки",
+        "achievements_sub": "Каждый значок навсегда повышает доход",
+        "settings_sub": "Сохранение, changelog и прогресс",
+        "loading_title": "Пустыня просыпается",
+        "loading_hint": "Загружаем прогресс…",
+        "credits_art": "Графика кактуса"
     },
     "fishing": {
         "loading_title": "Океан ждёт",

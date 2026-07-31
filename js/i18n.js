@@ -6,6 +6,15 @@ const STORAGE_KEY = "kk-lang";
 const SUPPORTED = ["de", "ru"];
 const DEFAULT_LANG = "de";
 
+// Cache-Buster für die Dictionaries. `cache: "force-cache"` unten nimmt einen
+// vorhandenen Cache-Eintrag OHNE Rückfrage — egal wie alt er ist. Ohne diesen
+// Parameter behalten wiederkehrende Besucher nach einem Deploy ihr altes
+// Wörterbuch und sehen neue oder korrigierte Strings nie.
+//
+// ⚠️ Bei JEDER Änderung an de.json/ru.json hochzählen. Eine neue URL ist ein
+// neuer Cache-Eintrag — das ist genau der Zweck.
+const DICT_VERSION = "2026-07-31";
+
 const state = {
     lang: DEFAULT_LANG,
     dicts: { de: {}, ru: {} },
@@ -23,7 +32,7 @@ function detectInitialLanguage() {
 
 async function loadDict(lang) {
     try {
-        const response = await fetch(`/js/i18n/${lang}.json`, { cache: "force-cache" });
+        const response = await fetch(`/js/i18n/${lang}.json?v=${DICT_VERSION}`, { cache: "force-cache" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         state.dicts[lang] = await response.json();
     } catch (error) {
