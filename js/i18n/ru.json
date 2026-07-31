@@ -938,7 +938,9 @@
             "kicker": "Ежедневный бонус за вход",
             "claim": "Забрать",
             "streak_line": "День {day} · Стрик {streak}",
-            "day_short": "Д"
+            "day_short": "Д",
+            "epic_short": "Эпик",
+            "legendary_short": "Легенд"
         },
         "back_to_zone": "Назад в зону!",
         "cloud_unavailable": "Облачное сохранение сейчас недоступно.",

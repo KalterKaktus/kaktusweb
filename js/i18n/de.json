@@ -987,7 +987,9 @@
             "kicker": "Daily Login-Bonus",
             "claim": "Einsammeln",
             "streak_line": "Tag {day} · Streak {streak}",
-            "day_short": "T"
+            "day_short": "T",
+            "epic_short": "Epic",
+            "legendary_short": "Legend"
         },
         "back_to_zone": "Zurück in die Zone!",
         "cloud_unavailable": "Cloud-Save ist gerade nicht verfügbar.",
