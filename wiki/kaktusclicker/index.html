@@ -399,26 +399,39 @@ neuerNopal = verfügbarerNopalGesamtwert − bereitsErarbeiteterNopal</code></pr
             </section>
 
             <section data-searchable id="tools" data-i18n-html="wiki.clicker.tools">
-                <h2>Tools</h2>
+<h2>Tools</h2>
                 <p>
                     Der <a href="../#optimizer-root">Kauf-Optimizer</a> (am Ende der
-                    <a href="../">Wiki-Startseite</a>) liest deinen Cloud-Save (read-only) und berechnet
-                    die nächsten 10 ROI-optimalen Käufe.
+                    <a href="../">Wiki-Startseite</a>) liest deinen Cloud-Save (read-only) und
+                    simuliert daraus den besten Kauf-Ablauf für ein Zeitfenster.
                 </p>
                 <p>
-                    Kandidaten sind <strong>Gebäude und Gebäude-Upgrades gemeinsam</strong> — seit
-                    Economy V3 ist ein Blüten-Upgrade meist der weit bessere Kauf, ein Plan aus reinen
-                    Gebäuden wäre irreführend. ROI = <code>Kosten ÷ zusätzliche CPS</code>, also die
-                    Sekunden bis sich der Kauf refinanziert hat (niedriger = besser). Die Simulation
-                    zieht auch das Freischalten der Blüten-Upgrades mit: erreicht ein Gebäude im Plan
-                    die Schwelle 10/25/50/100, taucht das dann freigeschaltete Upgrade als nächster
-                    Kandidat auf.
+                    Er sortiert Käufe <strong>nicht</strong> nach Refinanzierungs-Zeit, sondern
+                    simuliert echte Zeit: jeder Kauf kostet die Wartezeit
+                    <code>(Kosten − Kontostand) ÷ Einkommen</code>, danach steigt das Einkommen.
+                    Bewertet wird eine ganze Reihenfolge daran, wie viele Kakteen sie im Fenster
+                    erntet — also genau der Wert <code>totalEarned</code>, der in die Rangliste zählt.
+                    Das Ergebnis ist damit ein <em>Ablauf</em>, keine Rangliste: ein späterer Schritt
+                    ist nicht schlechter, er kommt später, weil du erst darauf sparst.
                 </p>
                 <p>
-                    Nicht im Plan: Klick-, Klick-Sog- und Autoklicker-Upgrades (sie erhöhen den
-                    Klick-Ertrag statt der CPS und sind mit einer CPS-ROI nicht vergleichbar) sowie
-                    globale Multiplikatoren wie Prestige, Abzeichen und Goldlauf — die skalieren jeden
-                    Kandidaten gleich und ändern die Reihenfolge daher nicht.
+                    Kandidaten sind Gebäude, alle 150 Gebäude-Upgrades sowie Klick-, Klick-Sog- und
+                    Autoklicker-Upgrades. Das Freischalten der Blüten-Upgrades ist Teil der
+                    Simulation: erreicht ein Gebäude im Plan 10/25/50/100, steht das dann offene
+                    Upgrade sofort zur Wahl. Wie viel du selbst klickst, gibst du als Klicks pro
+                    Sekunde an — bei 0 rechnet er reines Idle.
+                </p>
+                <p>
+                    Dazu gibt es eine <strong>Prestige-Empfehlung</strong>: der Planer rechnet beide
+                    Wege durch — weiterspielen gegen sofort prestigen (null Gebäude, null Kakteen,
+                    dafür höherer Multiplikator) — und vergleicht den Ertrag über 1, 6 und 24 Stunden.
+                </p>
+                <p>
+                    Die Suche ist eine Näherung, kein bewiesenes Optimum: alle Reihenfolgen
+                    durchzuprobieren ist bei rund 180 Kaufoptionen und mehreren hundert Käufen nicht
+                    berechenbar. Nicht modelliert sind Goldlauf, Gold- und Rubinkakteen sowie
+                    Abzeichen, die während des Fensters aufgehen — die machen dich schneller als
+                    geplant, nie langsamer.
                 </p>
             </section>
         </article>
