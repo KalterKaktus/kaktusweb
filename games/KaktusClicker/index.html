@@ -99,6 +99,32 @@
       </div>
     </div>
 
+    <!-- Sicherheitsnetz für den Ladebildschirm. Bewusst klassisches Inline-Script
+         OHNE jeden Import: game.js hängt über supabase-client.js an einem
+         statischen esm.sh-Import. Ist das CDN langsam oder blockiert (iOS-
+         Contentblocker, schlechtes Mobilfunknetz), wird game.js nie ausgewertet
+         — dann räumt auch niemand den Ladebildschirm weg und die Seite wirkt
+         tot. Dieses Script läuft immer, egal was mit den Modulen passiert. -->
+    <script>
+      (function () {
+        var loader = document.getElementById("clicker-loading");
+        if (!loader) return;
+
+        function dismiss() {
+          if (loader.classList.contains("is-done")) return;
+          loader.classList.add("is-done");
+          window.setTimeout(function () { loader.remove(); }, 600);
+        }
+
+        // Nach 8 s ist entweder das Spiel da (dann hat game.js längst selbst
+        // ausgeblendet) oder es kommt nicht mehr. Lieber ein statisches Spiel
+        // zeigen als einen Ladebildschirm, aus dem man nicht mehr rauskommt.
+        window.setTimeout(dismiss, 8000);
+        // Tippen bricht sofort ab, falls jemand nicht warten will.
+        loader.addEventListener("click", dismiss);
+      })();
+    </script>
+
     <nav class="nav clicker-site-nav">
       <div class="nav-container">
         <a class="logo" href="/">KK</a>
