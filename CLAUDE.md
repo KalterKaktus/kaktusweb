@@ -23,10 +23,12 @@ Diese Punkte sehen wie Bugs aus, sind aber **gewollt**. Nicht „reparieren":
   i18n dort. Die Admin-*Nav* ist übersetzt, der Panel-Inhalt nicht.
 - **`u_hold` im Wasser-Shader ist deklariert aber unbenutzt.** Rest vom
   entfernten Klick-Ripple, kein Versehen.
-- **KaktusClicker hat kein Audio mehr.** Musik, Soundeffekte, AudioContext und
-  die Lautstärkeregler wurden mit dem Cozy-Redesign komplett entfernt — die
-  alten Dateien passten stilistisch nicht und waren mit 5 MB das schwerste
-  Asset des Spiels. Neue Sounds kommen später.
+- **KaktusClicker hat Sound, aber keine Audio-Dateien.** Alles wird zur Laufzeit
+  per Web Audio synthetisiert (`games/KaktusClicker/audio.js`). Die alten Dateien
+  waren mit 5 MB das schwerste Asset des Spiels und wurden beim Cozy-Redesign
+  entfernt; synthetisiert wiegt es ein paar Kilobyte und lässt jeden Klick leicht
+  anders klingen. Wer Musik nachrüstet, braucht dafür wieder Dateien — Sound-
+  effekte bitte nicht.
 - **Die Vecteezy-Attribution im Einstellungen-Tab des Clickers muss sichtbar
   bleiben.** Die Free-Lizenz verlangt sie auf der Seite selbst. Siehe
   `games/KaktusClicker/ASSET_CREDITS.md`.
@@ -153,6 +155,15 @@ englischen Originalnamen (alle 132 abgedeckt).
   alles WebP, kein PNG-Fallback. Erzeugt aus `tools/raw/` (gitignored) per
   `python tools/optimize-assets.py`. Lizenzen in `ASSET_CREDITS.md`.
 - **Daten:** `data.js` → `buildings`, `upgrades`, `achievements`, `changelogEntries`
+- **Sound:** `audio.js`, komplett synthetisiert (Sinus/Dreieck, Tiefpass, weicher
+  Anschlag — passend zum Cozy-Look). Sechs Sounds: Klick, Gebäude-Kauf,
+  Upgrade-Kauf, Tab-Wechsel, Gold- und Rubinkaktus-Erscheinen. Der Klick ist auf
+  einen alle 28 ms gedrosselt und streut in der Tonhöhe, sonst wird Dauerklicken
+  zum Maschinengewehr. **Autoklicker lösen bewusst keinen Ton aus** — bei 20/s
+  wäre das Dauerfeuer. Einstellungen (an/aus, Lautstärke) liegen in
+  `localStorage["kaktus-clicker-audio"]`, **nicht im Spielstand**: Lautstärke ist
+  eine Geräte-Einstellung und hat in der Cloud nichts verloren. Der AudioContext
+  wird erst bei der ersten echten Geste geöffnet (Autoplay-Richtlinie).
 - **Zahlenformat:** `format.js`, locale-abhängig (Mio./Mrd. vs. млн/млрд)
 - **Changelog:** Zusatzmenü → Changelog. Neue Einträge in `data.js`, mit `ru`-Variante.
 - **Prestige (V3):** Nopal-Gewinn `floor((totalEarned/1e6)^0.35)`, Multiplikator

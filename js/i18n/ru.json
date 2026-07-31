@@ -740,7 +740,11 @@
         "upgrade_tier_10": "{name}: Расцвет",
         "upgrade_tier_25": "{name}: Полный расцвет",
         "upgrade_tier_50": "{name}: Пышный расцвет",
-        "upgrade_tier_100": "{name}: Чудо-расцвет"
+        "upgrade_tier_100": "{name}: Чудо-расцвет",
+        "sound_label": "Звук",
+        "sound_volume": "Громкость",
+        "sound_on": "Вкл.",
+        "sound_off": "Выкл."
     },
     "fishing": {
         "loading_title": "Океан ждёт",

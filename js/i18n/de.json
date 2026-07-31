@@ -789,7 +789,11 @@
         "upgrade_tier_10": "{name} Aufblüte",
         "upgrade_tier_25": "{name} Vollblüte",
         "upgrade_tier_50": "{name} Prachtblüte",
-        "upgrade_tier_100": "{name} Wunderblüte"
+        "upgrade_tier_100": "{name} Wunderblüte",
+        "sound_label": "Sound",
+        "sound_volume": "Lautstärke",
+        "sound_on": "An",
+        "sound_off": "Aus"
     },
     "fishing": {
         "loading_title": "Der Ozean wartet",

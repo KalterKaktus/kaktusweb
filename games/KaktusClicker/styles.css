@@ -978,6 +978,94 @@ dd {
   line-height: 1.45;
 }
 
+/* Sound-Einstellungen. Nur Tokens, keine Farbliterale — auf Creme gilt:
+   --x-hot ist die dunkle, kräftige Variante für Text und Kanten. */
+.sound-settings {
+  display: grid;
+  gap: 8px;
+  margin-top: 11px;
+  padding: 11px 13px;
+  background: var(--panel-strong);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-inset-top);
+}
+
+.sound-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sound-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.sound-toggle {
+  flex: 0 0 auto;
+  min-width: 84px;
+}
+
+.sound-toggle.is-off {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+.sound-value {
+  flex: 0 0 auto;
+  min-width: 44px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--green-hot);
+}
+
+/* Der Regler wird komplett selbst gezeichnet: die Browser-Voreinstellung ist
+   blau und sprengt den Cozy-Look. -webkit- und -moz- brauchen getrennte
+   Regeln, zusammengefasst wirft der ganze Block raus. */
+#sound-volume {
+  flex: 1 1 120px;
+  min-width: 0;
+  height: 6px;
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--green-dim);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+#sound-volume:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+#sound-volume::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid var(--green-hot);
+  box-shadow: var(--shadow-button);
+  cursor: pointer;
+}
+
+#sound-volume::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--green);
+  border: 2px solid var(--green-hot);
+  box-shadow: var(--shadow-button);
+  cursor: pointer;
+}
+
 .settings-actions {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
