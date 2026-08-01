@@ -185,6 +185,41 @@ englischen Originalnamen (alle 132 abgedeckt).
 - **Angel-UI:** `js/systems/angelUiSystem.js` (ersetzt den alten Shop; Window-ID
   bleibt intern `shop`). Unter 460 px Breite liegen die 5 Part-Tabs als 3+2.
 
+### KaktusGarden
+- **Pfad:** `games/KaktusGarden/` · **Game-ID:** `kaktus-garden` · **Save-Version 2**
+- Statisches Klick-Farmspiel: 16 Beete, 19 Pflanzen, Shop mit 5-Minuten-Restock,
+  Schaufel, Ernte verkaufen, Besuch fremder Farmen (read-only).
+- **Zugang über drei Gebäude** auf dem Hofplatz: zwei Häuser (Laden, Verkauf)
+  und Briefkasten + Brett (Spieler).
+- **Welt = echte Tilemap.** `js/data/farmMap.js` beschreibt jedes Tile,
+  `js/render/worldRenderer.js` zeichnet es auf ein `<canvas>`; Beete, Gebäude,
+  Timer und Pflanzen liegen als DOM-Ebene darüber. Übergänge Gras→Erde→Beet
+  kommen aus den 1×6-Autotile-Strips (Zeilen: freistehend, senkrecht,
+  waagerecht, Innenecken, Füllung, Hintergrund; je 8×8-Viertel).
+- **`--px`** auf `.garden-world` rechnet Map-Pixel in CSS-Pixel um. Alles
+  Positionierte nutzt es. `FOCUS_VIEW` (Zaun + Gebäude) muss immer sichtbar
+  bleiben; überschüssiger Platz zeigt mehr Waldrand statt größerer Beete.
+- ⚠️ **Zwei Rückkopplungen beim Vermessen, beide gelöst — nicht zurückbauen:**
+  `.garden-shell` braucht `grid-template-columns: minmax(0, 1fr)`, sonst
+  bestimmt die Welt die Spaltenbreite und misst sich daran; und die verfügbare
+  Höhe darf nicht aus `rect.top` kommen (scrollabhängig), sondern aus
+  `rect.top + scrollY`. Sonst wächst die Karte bei jedem Resize weiter — sichtbar
+  als verrutschte Farm nach dem Drehen des Handys.
+- **Der Zaun umschließt nur die Anbaufläche.** Innen ausschließlich Erde und
+  Beete — jede Deko gehört nach außen.
+- **Keine CSS-Animation auf Pflanzen.** Wachstum läuft über die Sprite-Frames,
+  reife Pflanzen stehen still (Ausnahme: Mais hat ein `shake`-Sheet). Beete
+  hüpfen bei Hover/Klick nicht.
+- **Menüs sind mittige Overlays** (Shop, Verkauf, Spieler, Samen, Beet) mit
+  identischer Breite; standardmäßig ist alles geschlossen.
+- **Zentrale Render-/Balancing-Werte** stehen in `js/data/plants.js`
+  (`PLANT_RENDER`, `RESTOCK_RULES`, `GUARANTEED_SEED`), nicht im UI-Code.
+  Balancing-Tabelle im `README.md` des Spiels.
+- **`assets/pixel/` und `tools/build-garden-pixel-assets.py` sind tot** — der
+  Renderer schneidet direkt aus den Original-Sheets.
+- ⚠️ Die globale `styles.css` setzt `* { margin: 0 }` und nimmt `<dialog>` damit
+  die Zentrierung. `margin: auto` muss lokal wieder gesetzt werden.
+
 ---
 
 ## Supabase

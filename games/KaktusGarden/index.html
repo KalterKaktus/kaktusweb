@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#367c42" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <title data-i18n="garden.meta_title">KaktusGarden</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="preload" as="image" href="assets/autotiles/02_grass/03_grass_on_dirt_02.png" type="image/png" />
+    <link rel="preload" as="image" href="assets/autotiles/06_field/02_field_02.png" type="image/png" />
+    <link rel="preload" as="image" href="assets/tiles/ground_03_16x16.png" type="image/png" />
+    <link rel="preload" as="font" type="font/woff2" href="/css/fonts/nunito-var-latin.woff2" crossorigin />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/profile/profile.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    <link rel="stylesheet" href="/css/game-tokens.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="theme-cozy theme-pixel-garden garden-page">
+    <div class="garden-loading" id="garden-loading" aria-live="polite" aria-busy="true">
+      <div class="loading-card">
+        <span class="loading-sprout" aria-hidden="true"></span>
+        <h1 data-i18n="garden.loading_title">Der Garten wacht auf</h1>
+        <p data-i18n="garden.loading_hint">Beete und Vorräte werden geladen…</p>
+        <div class="loading-track"><span></span></div>
+      </div>
+    </div>
+
+    <nav class="nav garden-site-nav">
+      <div class="nav-container">
+        <a class="logo" href="/">KK</a>
+        <div class="nav-links">
+          <a href="/" class="nav-link" data-i18n="nav.home">Home</a>
+          <a href="/steam-deals/" class="nav-link" data-i18n="nav.steam_deals">Steam Deals</a>
+          <a href="/games/" class="nav-link" data-i18n="nav.games">Games</a>
+          <a href="/wiki/" class="nav-link" data-i18n="nav.wiki">Wiki</a>
+          <div id="auth-nav" class="auth-nav" aria-live="polite">
+            <a class="nav-link auth-link" href="/login.html" data-i18n="nav.login">Login</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="garden-shell">
+      <h1 class="sr-only">KaktusGarden</h1>
+
+      <header class="garden-topbar">
+        <div class="player-summary">
+          <span class="player-avatar" id="player-avatar" aria-hidden="true"><span class="avatar-sprite"></span></span>
+          <span><strong id="player-name">Gärtner</strong><small><span data-i18n="garden.level">Level</span> <span id="player-level">1</span></small></span>
+        </div>
+        <div class="currency-pill coin-pill"><span class="pixel-icon icon-coin" aria-hidden="true"></span><strong id="coin-count">100</strong><small data-i18n="garden.coins">Münzen</small></div>
+        <div class="currency-pill gem-pill"><span class="pixel-icon icon-gem" aria-hidden="true"></span><strong id="gem-count">0</strong><small data-i18n="garden.gems">Gems</small></div>
+        <button class="icon-button" id="settings-button" type="button" data-i18n-attr="aria-label:garden.settings" aria-label="Einstellungen"><span class="settings-glyph" aria-hidden="true"></span></button>
+      </header>
+
+      <div class="visit-banner" id="visit-banner" hidden>
+        <span><strong id="visit-name"></strong></span>
+        <button class="soft-button back-button" id="back-button" type="button" data-i18n="garden.back_farm">Zurück zu meiner Farm</button>
+      </div>
+
+      <div class="garden-stage" id="garden-stage">
+        <div class="garden-world" id="garden-world">
+          <div class="world-track" id="world-track">
+            <canvas class="world-canvas" id="world-canvas" aria-hidden="true"></canvas>
+            <div class="world-layer" id="world-layer" data-i18n-attr="aria-label:garden.farm_label" aria-label="Farm mit 16 Beeten"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="sheet-scrim" id="sheet-scrim" hidden></div>
+    <section class="garden-sheet" id="garden-sheet" role="dialog" aria-modal="true" aria-live="polite" hidden>
+      <button class="panel-close" id="panel-close" type="button" data-i18n-attr="aria-label:garden.close" aria-label="Schließen">×</button>
+      <div id="panel-content" class="panel-content"></div>
+    </section>
+
+    <dialog class="garden-dialog seed-dialog" id="seed-dialog">
+      <form method="dialog" class="dialog-card">
+        <div class="dialog-heading">
+          <div><p class="eyebrow" data-i18n="garden.seed_inventory">Sameninventar</p><h2 data-i18n="garden.choose_seed">Was möchtest du pflanzen?</h2></div>
+          <button class="dialog-close" value="cancel" data-i18n-attr="aria-label:garden.close" aria-label="Schließen">×</button>
+        </div>
+        <div class="seed-list" id="seed-list"></div>
+      </form>
+    </dialog>
+
+    <dialog class="garden-dialog bed-dialog" id="bed-dialog">
+      <form method="dialog" class="dialog-card">
+        <div class="dialog-heading">
+          <div><p class="eyebrow" id="bed-eyebrow" data-i18n="garden.bed_kicker">Beet</p><h2 id="bed-title"></h2></div>
+          <button class="dialog-close" value="cancel" data-i18n-attr="aria-label:garden.close" aria-label="Schließen">×</button>
+        </div>
+        <div class="bed-track"><span id="bed-progress"></span></div>
+        <p class="bed-time" id="bed-time"></p>
+        <p class="bed-hint" data-i18n="garden.remove_copy">Dabei wird eine Schaufel verbraucht. Die Pflanze geht dauerhaft verloren.</p>
+        <div class="dialog-actions">
+          <button class="soft-button" value="cancel" data-i18n="garden.close">Schließen</button>
+          <button class="danger-button" id="bed-remove" value="remove" data-i18n="garden.remove">Entfernen</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="garden-dialog settings-dialog" id="settings-dialog">
+      <form method="dialog" class="dialog-card">
+        <div class="dialog-heading"><h2 data-i18n="garden.settings">Einstellungen</h2><button class="dialog-close" value="cancel" data-i18n-attr="aria-label:garden.close" aria-label="Schließen">×</button></div>
+        <label class="setting-row"><span><strong data-i18n="garden.reduced_motion">Weniger Bewegung</strong><small data-i18n="garden.reduced_motion_hint">Reduziert Schweben und Übergänge.</small></span><input id="reduced-motion" type="checkbox" /></label>
+        <div class="save-mode"><span id="save-mode-dot"></span><span id="save-mode-text"></span></div>
+        <p class="asset-credit" data-i18n="garden.asset_credit">Pixel-Assets: Super Retro Ranch von Gif.</p>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      window.setTimeout(function () {
+        var loader = document.getElementById("garden-loading");
+        if (loader) loader.classList.add("is-done");
+      }, 9000);
+    </script>
+    <script src="/js/config.js"></script>
+    <script type="module" src="/js/i18n.js"></script>
+    <script type="module" src="/js/auth-nav.js"></script>
+    <script type="module" src="js/game.js"></script>
+  </body>
+</html>

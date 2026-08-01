@@ -175,6 +175,89 @@
   color-scheme: dark;
 }
 
+/* KaktusGarden: 16px-Pixelwelt auf Basis des Cozy-Tokenvertrags. */
+.theme-cozy.theme-pixel-garden {
+  --bg: #d8e99a;
+  --bg-rgb: 216 233 154;
+  --bg-soft: #f3d68b;
+  --bg-soft-rgb: 243 214 139;
+  --panel-base: #f7f0df;
+  --panel-base-rgb: 247 240 223;
+  --panel-strong-base: #fffaf0;
+  --panel-strong-base-rgb: 255 250 240;
+  --panel: rgb(var(--panel-base-rgb) / 0.98);
+  --panel-strong: rgb(var(--panel-strong-base-rgb) / 0.99);
+  --line-base: #7b5548;
+  --line-base-rgb: 123 85 72;
+  --line: rgb(var(--line-base-rgb) / 0.92);
+  --line-hot-base: #4e3a32;
+  --line-hot-base-rgb: 78 58 50;
+  --line-hot: rgb(var(--line-hot-base-rgb) / 0.96);
+  --text: #382f2b;
+  --text-rgb: 56 47 43;
+  --muted: #705b4e;
+  --muted-rgb: 112 91 78;
+  --green: #71ab31;
+  --green-rgb: 113 171 49;
+  --green-hot: #28633a;
+  --green-hot-rgb: 40 99 58;
+  --green-dark: #1f4d34;
+  --green-dark-rgb: 31 77 52;
+  --green-dim: #c9df85;
+  --green-dim-rgb: 201 223 133;
+  --gold: #eea160;
+  --gold-rgb: 238 161 96;
+  --gold-hot: #9b552f;
+  --gold-hot-rgb: 155 85 47;
+  --gold-pale: #f6ca70;
+  --gold-pale-rgb: 246 202 112;
+  --gold-ink: #503222;
+  --gold-ink-rgb: 80 50 34;
+  --building: #b56d56;
+  --building-rgb: 181 109 86;
+  --building-hot: #86494b;
+  --building-hot-rgb: 134 73 75;
+  --building-deep: #efd0a7;
+  --building-deep-rgb: 239 208 167;
+  --achievement: #3c87a5;
+  --achievement-rgb: 60 135 165;
+  --achievement-hot: #225b73;
+  --achievement-hot-rgb: 34 91 115;
+  --achievement-deep: #d4edf0;
+  --achievement-deep-rgb: 212 237 240;
+  --prestige: #8e5aa2;
+  --prestige-rgb: 142 90 162;
+  --prestige-hot: #653e78;
+  --prestige-hot-rgb: 101 62 120;
+  --prestige-deep: #eadcf0;
+  --prestige-deep-rgb: 234 220 240;
+  --red-event: #ca594f;
+  --red-event-rgb: 202 89 79;
+  --red-event-hot: #8f3b37;
+  --red-event-hot-rgb: 143 59 55;
+  --red-event-pale: #f4d2c5;
+  --red-event-pale-rgb: 244 210 197;
+  --danger: #a83f3f;
+  --danger-rgb: 168 63 63;
+  --on-accent: #fff8e8;
+  --on-accent-rgb: 255 248 232;
+  --garden-grass: #71ab31;
+  --garden-grass-rgb: 113 171 49;
+  --garden-grass-dark: #367c42;
+  --garden-grass-dark-rgb: 54 124 66;
+  --garden-soil: #b56d56;
+  --garden-soil-rgb: 181 109 86;
+  --radius-sm: 0.125rem;
+  --radius: 0.25rem;
+  --radius-lg: 0.375rem;
+  --radius-pill: 0.25rem;
+  --shadow-soft: 0 4px 0 rgb(var(--line-base-rgb) / 0.28);
+  --shadow-raise: 0 6px 0 rgb(var(--line-hot-base-rgb) / 0.42);
+  --shadow-button: 0 4px 0 var(--line-hot);
+  --shadow-button-press: 0 1px 0 var(--line-hot);
+  --shadow-inset-top: inset 0 3px 0 rgb(var(--on-accent-rgb) / 0.52);
+}
+
 
 /* ============================================================================
    THEME: COZY  —  creamy, pastel, soft, hand-drawn

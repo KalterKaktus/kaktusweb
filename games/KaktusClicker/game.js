@@ -13,7 +13,12 @@ import { addPendingXp, setXpUser } from "/js/xp-service.js";
 import { renderLevelTag, renderPlayerName } from "/js/progression.js";
 import { achievements, buildings, changelogEntries, upgrades } from "./data.js";
 import {
+  CLICK_FRENZY_MS,
   CLICK_FRENZY_TARGET,
+  GOLDEN_EVENT_DELAY,
+  GOLDEN_REWARD_SECONDS,
+  RED_EVENT_DELAY,
+  RED_REWARD_SECONDS,
   getAchievementMultiplier,
   getAutoClickRate,
   getAutomaticProduction,
@@ -69,15 +74,10 @@ function tSaveLabel(label) {
 }
 
 const STORAGE_KEY = "kaktus-clicker-save-v1";
-const CLICK_FRENZY_MS = 30000;
 const OFFLINE_LIMIT_SECONDS = 12 * 60 * 60;
 const OFFLINE_MIN_SECONDS = 5 * 60;
 const OFFLINE_RATE = 0.5;
-// Economy V3: Events geben mehr (600 s / 2 h Produktion) und kommen öfter.
-const GOLDEN_REWARD_SECONDS = 600;
-const RED_REWARD_SECONDS = 7200;
-const GOLDEN_EVENT_DELAY = [60 * 1000, 2.5 * 60 * 1000];
-const RED_EVENT_DELAY = [6 * 60 * 1000, 14 * 60 * 1000];
+// Event-Werte kommen aus economy.js — der Prestige-Rechner braucht sie auch.
 // Autoklicker gelten nur beim aktiven Spielen: Tab sichtbar UND echte Eingabe
 // innerhalb dieses Fensters. Verhindert, dass ein offener Tab über Nacht als
 // "aktiv" durchgeht — genau das war der Grund, warum Auto-Collect rausflog.
@@ -369,6 +369,15 @@ function runAutoClicks() {
   renderGameplayHud({ achievementChanged });
 }
 
+// Startet den Goldlauf. Läuft bereits einer, beginnt die volle Dauer von vorn —
+// ein Goldkaktus mitten im Goldlauf verlängert also, statt zu verpuffen.
+function triggerFrenzy() {
+  state.events.frenzyUntil = Date.now() + CLICK_FRENZY_MS;
+  state.events.frenzies += 1;
+  elements.saveStatus.textContent = t("clicker.frenzy_active");
+  startFrenzyMeterLoop();
+}
+
 function chargeClickFrenzy() {
   if (isClickFrenzyActive(state)) {
     return;
@@ -380,10 +389,7 @@ function chargeClickFrenzy() {
   }
 
   state.events.clickCharge = 0;
-  state.events.frenzyUntil = Date.now() + CLICK_FRENZY_MS;
-  state.events.frenzies += 1;
-  elements.saveStatus.textContent = t("clicker.frenzy_active");
-  startFrenzyMeterLoop();
+  triggerFrenzy();
 }
 
 function spawnFloat(x, y, text, className = "") {
@@ -988,6 +994,9 @@ function spawnRandomEvent(kind, duration, rewardSeconds, label) {
     addCactus(reward);
     if (kind === "golden") {
       state.events.goldenHits += 1;
+      // Der Goldkaktus zündet zusätzlich den Goldlauf. Der Reward oben nutzt
+      // bewusst includeEvent:false und wird davon nicht rückwirkend erhöht.
+      triggerFrenzy();
     } else {
       state.events.redHits += 1;
     }

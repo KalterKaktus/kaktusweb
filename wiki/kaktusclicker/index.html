@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#07120c">
     <title>KaktusClicker Wiki - KalterKaktus</title>
-    <meta name="description" content="Technische Referenz zu KaktusClicker: Gebäude, Upgrades, Formeln, Prestige, Goldlauf, Abzeichen, Saison-Reset.">
+    <meta name="description" content="Technische Referenz zu KaktusClicker: Gebäude, Upgrades, Formeln, Prestige, Goldlauf, Erfolge, Saison-Reset.">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="stylesheet" href="/styles.css">
@@ -42,7 +42,7 @@
                 <a href="#buildings" data-i18n="wiki.clicker.toc_buildings">Gebäude</a>
                 <a href="#upgrades" data-i18n="wiki.clicker.toc_upgrades">Upgrades</a>
                 <a href="#multipliers" data-i18n="wiki.clicker.toc_multipliers">Multiplikator-Stack</a>
-                <a href="#achievements" data-i18n="wiki.clicker.toc_achievements">Abzeichen</a>
+                <a href="#achievements" data-i18n="wiki.clicker.toc_achievements">Erfolge</a>
                 <a href="#frenzy" data-i18n="wiki.clicker.toc_frenzy">Goldlauf</a>
                 <a href="#events" data-i18n="wiki.clicker.toc_events">Random Events</a>
                 <a href="#offline" data-i18n="wiki.clicker.toc_offline">Offline-Ertrag</a>
@@ -85,7 +85,7 @@
                 <ul>
                     <li><strong><span data-wiki-count="buildings">30</span> Gebäude</strong> mit exponentieller Kostensteigerung.</li>
                     <li><strong><span data-wiki-count="upgrades">158</span> Upgrades</strong> (Klick, Klick-Sog, Autoklicker, Gebäude-Kern und Blüten-Stufen).</li>
-                    <li><strong><span data-wiki-count="achievements">30</span> Abzeichen</strong>, jedes gibt +0.1× globalen Multiplikator (max <span data-wiki-count="achievement-max">x4</span>).</li>
+                    <li><strong><span data-wiki-count="achievements">30</span> Erfolge</strong>, jedes gibt +0.1× globalen Multiplikator (max <span data-wiki-count="achievement-max">x4</span>).</li>
                     <li><strong>Nopal-Prestige</strong> mit nicht-linearer Wertkurve (Exponent 0.35).</li>
                     <li><strong>Goldlauf</strong> via Klick-Threshold, Gold-/Rubinkaktus-Events, Offline-Ertrag.</li>
                     <li><strong>Autoklicker</strong>, die nur beim aktiven Spielen mitklicken.</li>
@@ -110,7 +110,7 @@
                     bedeutungslos — jetzt skaliert es dauerhaft mit.
                 </p>
                 <p>
-                    Basis-Klick (keine Upgrades, kein Prestige, keine Abzeichen, kein Goldlauf,
+                    Basis-Klick (keine Upgrades, kein Prestige, keine Erfolge, kein Goldlauf,
                     keine Gebäude) = <strong>1 Kaktus</strong>.
                 </p>
                 <h3>Autoklicker</h3>
@@ -119,7 +119,7 @@
                     Spielen</strong>: der Tab muss sichtbar sein und die letzte echte Eingabe darf
                     höchstens 15 Sekunden zurückliegen. Sie erzeugen vollen Klick-Ertrag und laden
                     den Goldlauf auf, zählen aber bewusst <strong>nicht</strong> auf
-                    <code>totalClicks</code> — Klick-Abzeichen und Klick-XP bleiben Handarbeit.
+                    <code>totalClicks</code> — Klick-Erfolge und Klick-XP bleiben Handarbeit.
                 </p>
                 <p>
                     <strong>Steuerung:</strong> Maus-/Touch-Tap auf den Kaktus <em>oder</em> <kbd>Leertaste</kbd>
@@ -143,7 +143,7 @@
                 <p>
                     Payback ist die Zeit, bis sich der Erstkauf refinanziert hat
                     (<code>baseCost / CPS</code>) — <strong>ohne jeden Multiplikator</strong>.
-                    Der reale Wert liegt deutlich darunter: Prestige, Abzeichen und die bis zu
+                    Der reale Wert liegt deutlich darunter: Prestige, Erfolge und die bis zu
                     fünf Upgrades pro Gebäude (zusammen ×32) wirken auf alle Gebäude und stauchen
                     die Spalte gleichmäßig zusammen.
                 </p>
@@ -206,15 +206,15 @@ klickYield = clickMultiplier × coreMultiplier
             </section>
 
             <section data-searchable id="achievements" data-i18n-html="wiki.clicker.achievements">
-                <h2>Abzeichen</h2>
+                <h2>Erfolge</h2>
                 <p>
-                    Jedes freigeschaltete Abzeichen erhöht den <code>achievementMultiplier</code> um
+                    Jeder freigeschaltete Erfolg erhöht den <code>achievementMultiplier</code> um
                     <strong>+0,1</strong>. Mit allen <span data-wiki-count="achievements">30</span>
-                    Abzeichen ergibt das <span data-wiki-count="achievement-max">x4</span>.
+                    Erfolgen ergibt das <span data-wiki-count="achievement-max">x4</span>.
                 </p>
-                <pre><code>achievementMultiplier = 1 + freigeschalteteAbzeichen × 0.1</code></pre>
+                <pre><code>achievementMultiplier = 1 + freigeschalteteErfolge × 0.1</code></pre>
 
-                <h3>Alle Abzeichen</h3>
+                <h3>Alle Erfolge</h3>
                 <div data-wiki-table="achievements"></div>
             </section>
 
@@ -256,7 +256,7 @@ clickChargeThreshold = 250 Klicks</code></pre>
                         <thead><tr><th>Event</th><th>Spawn-Intervall</th><th>Sichtbar</th><th>Reward (× CPS)</th></tr></thead>
                         <tbody>
                             <tr><td>Goldkaktus</td><td>1–2,5 min</td><td>10 s</td><td>10 Minuten Auto-Produktion (= 600 × CPS)</td></tr>
-                            <tr><td>Rubinkaktus</td><td>6–14 min</td><td>10 s</td><td>2 Stunden Auto-Produktion (= 7.200 × CPS)</td></tr>
+                            <tr><td>Rubinkaktus</td><td>6–14 min</td><td>10 s</td><td>1 Stunde Auto-Produktion (= 3.600 × CPS)</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -343,7 +343,7 @@ neuerNopal = verfügbarerNopalGesamtwert − bereitsErarbeiteterNopal</code></pr
                         <h4>Bleibt</h4>
                         <ul>
                             <li>Nopal-Punkte</li>
-                            <li>Abzeichen (laufende Saison)</li>
+                            <li>Erfolge (laufende Saison)</li>
                             <li><code>totalEarned</code></li>
                             <li><code>totalClicks</code></li>
                             <li>Prestige-Zähler</li>
@@ -425,7 +425,7 @@ neuerNopal = verfügbarerNopalGesamtwert − bereitsErarbeiteterNopal</code></pr
     <script src="../wiki.js"></script>
     <script type="module" src="/js/i18n.js"></script>
     <script type="module" src="/js/auth-nav.js"></script>
-    <!-- Baut die Gebäude-, Upgrade- und Abzeichen-Tabellen aus data.js. -->
+    <!-- Baut die Gebäude-, Upgrade- und Erfolgs-Tabellen aus data.js. -->
     <script type="module" src="./tables.js"></script>
 </body>
 </html>

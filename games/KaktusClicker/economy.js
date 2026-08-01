@@ -6,9 +6,54 @@ export const CLICK_FRENZY_MULTIPLIER = 3;
 // nur 4-7x pro MONAT vor. Lebt hier statt in game.js, weil state.js den Wert
 // zum Clampen des geladenen Spielstands braucht.
 export const CLICK_FRENZY_TARGET = 250;
+// Dauer eines Goldlaufs. Liegt hier, weil getEventIncomeFactor() sie braucht.
+export const CLICK_FRENZY_MS = 30000;
 // Klicks ernten zusätzlich diesen Anteil der Auto-Produktion (Economy V3).
 // Die Klick-Sog-Upgrades multiplizieren den Satz (x2 x2 -> max 4 %).
 export const CLICK_CPS_SHARE = 0.01;
+
+// --- Gold- und Rubinkaktus ---------------------------------------------------
+// Liegen hier statt in game.js, weil der Prestige-Rechner sie ebenfalls braucht
+// und eine zweite Kopie garantiert auseinanderdriftet.
+//
+// WICHTIG für jedes künftige Balancing: Spawn-Rate und Belohnung multiplizieren
+// sich zu einem Einkommensfaktor. Mit den aktuellen Werten liefern Events bei
+// vollständigem Einsammeln rund das 18-fache der passiven Produktion — das
+// Spiel ist damit bewusst event-getrieben, Gebäude sind die Basis dafür.
+// getEventIncomeFactor() macht diesen Zusammenhang rechenbar; wer an einer der
+// vier Zahlen dreht, sieht dort sofort die Wirkung.
+export const GOLDEN_REWARD_SECONDS = 600;
+// Von 7200 auf 3600 gesenkt: der Rubinkaktus allein trug zwölfmal so viel bei
+// wie die gesamte passive Produktion und hat damit alles andere erdrückt. Bei
+// 3600 s liegt er mit dem Goldkaktus gleichauf (je rund x6 des Passiveinkommens)
+// — bleibt aber der konzentrierte Jackpot: sechsmal größerer Einzeltreffer,
+// dafür knapp sechsmal seltener.
+export const RED_REWARD_SECONDS = 3600;
+export const GOLDEN_EVENT_DELAY = [60 * 1000, 2.5 * 60 * 1000];
+export const RED_EVENT_DELAY = [6 * 60 * 1000, 14 * 60 * 1000];
+
+/**
+ * Um welchen Faktor hebt aktives Event-Einsammeln das Einkommen?
+ *
+ * Drei Beiträge: die beiden Sofortauszahlungen und — seit der Goldkaktus den
+ * Goldlauf zündet — der Zeitanteil, den der Goldlauf dadurch aktiv ist. Die
+ * Event-Auszahlungen selbst werden vom Goldlauf NICHT erhöht (der Reward nutzt
+ * `includeEvent: false`), deshalb wirkt er nur auf die laufende Produktion.
+ *
+ * @param {number} captureRate 0 = nichts eingesammelt (offline/idle),
+ *                             1 = jedes Event getroffen
+ */
+export function getEventIncomeFactor(captureRate = 1) {
+  const rate = Math.min(1, Math.max(0, Number(captureRate) || 0));
+  const goldenAverage = (GOLDEN_EVENT_DELAY[0] + GOLDEN_EVENT_DELAY[1]) / 2000;
+  const redAverage = (RED_EVENT_DELAY[0] + RED_EVENT_DELAY[1]) / 2000;
+
+  const payouts = GOLDEN_REWARD_SECONDS / goldenAverage + RED_REWARD_SECONDS / redAverage;
+  const frenzyUptime = Math.min(1, (CLICK_FRENZY_MS / 1000) / goldenAverage);
+  const frenzyBoost = frenzyUptime * (CLICK_FRENZY_MULTIPLIER - 1);
+
+  return 1 + rate * (payouts + frenzyBoost);
+}
 
 export function getBuildingCost(state, building) {
   return Math.ceil(building.baseCost * Math.pow(1.15, state.buildings[building.id] || 0));

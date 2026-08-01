@@ -1024,7 +1024,7 @@ body::before {
 
 .hub-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
 }
 
@@ -1119,6 +1119,13 @@ body::before {
     font-size: clamp(1.8rem, 4vw, 3rem);
     font-weight: 900;
     line-height: 0.95;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+    .hub-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 .hub-card-text {
@@ -1127,8 +1134,29 @@ body::before {
 }
 
 .hub-card-action {
+    display: inline-flex;
+    width: fit-content;
+    min-width: 11rem;
+    max-width: 100%;
+    min-height: 2.9rem;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid rgba(105, 240, 174, 0.34);
+    border-radius: 6px;
+    background: rgba(105, 240, 174, 0.08);
     color: var(--accent-light);
     font-weight: 850;
+    line-height: 1.25;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.hub-card-disabled .hub-card-action {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
 }
 
 .hub-empty {
