@@ -832,7 +832,7 @@ tbody tr:last-child td {
 
 .opt-plan-row {
     display: grid;
-    grid-template-columns: auto auto 1fr auto auto;
+    grid-template-columns: auto auto 1fr auto;
     align-items: center;
     gap: 0.85rem;
     padding: 0.75rem 0.95rem;
@@ -883,8 +883,30 @@ tbody tr:last-child td {
     font-style: normal;
     font-weight: 700;
 }
+/* Kauf-Art (Gebäude/Upgrade) als Pill vor dem Detailtext — der Plan mischt
+   beide Typen, ohne Marker wäre nicht erkennbar was man da kauft. */
+.opt-step-main small em.opt-kind {
+    display: inline-block;
+    margin-right: 0.4rem;
+    padding: 0.05rem 0.42rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    vertical-align: 0.05em;
+}
+.opt-plan-row--upgrade .opt-step-main small em.opt-kind {
+    border-color: var(--accent-light);
+    color: var(--accent-light);
+}
+.opt-plan-row--upgrade .opt-step-icon {
+    border-color: var(--accent-light);
+}
 
-.opt-step-cost, .opt-step-roi {
+.opt-step-cost {
     text-align: right;
     display: grid;
     line-height: 1.1;
@@ -894,15 +916,9 @@ tbody tr:last-child td {
     font-size: 0.96rem;
     font-weight: 950;
 }
-.opt-step-cost small,
-.opt-step-roi small {
+.opt-step-cost small {
     color: var(--text-secondary);
     font-size: 0.7rem;
-}
-.opt-step-roi b {
-    color: #9ef0ff;
-    font-size: 0.96rem;
-    font-weight: 950;
 }
 
 .opt-disclaimer {
@@ -916,6 +932,125 @@ tbody tr:last-child td {
     line-height: 1.55;
 }
 .opt-disclaimer strong { color: #b8ffd6; font-weight: 850; }
+
+/* --- Steuerung: Zeitfenster + Klickrate --- */
+
+.opt-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.9rem 1.4rem;
+    margin: 0.9rem 0 0.2rem;
+}
+.opt-control {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+.opt-control-label {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+.opt-horizons {
+    display: flex;
+    gap: 0.3rem;
+}
+.opt-horizon {
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+.opt-horizon.is-active {
+    border-color: var(--accent-light);
+    color: var(--accent-light);
+    background: rgb(var(--accent-light-rgb) / 0.12);
+}
+.opt-control--clicks input {
+    width: 4rem;
+    padding: 0.32rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.42);
+    color: var(--text-primary);
+    font: inherit;
+    font-weight: 800;
+    text-align: right;
+}
+.opt-control-hint {
+    flex-basis: 100%;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.76rem;
+    line-height: 1.5;
+}
+
+.opt-computing {
+    margin: 0.8rem 0;
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+    font-weight: 700;
+}
+.opt-plan-summary {
+    margin: 0 0 0.6rem;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+.opt-plan-rest {
+    margin: 0.55rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+}
+
+/* --- Prestige-Empfehlung --- */
+
+.opt-prestige:not(:empty) {
+    margin-top: 1.4rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.24);
+}
+.opt-prestige h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+}
+.opt-prestige-gain,
+.opt-prestige-none {
+    margin: 0 0 0.7rem;
+    color: var(--text-secondary);
+    font-size: 0.86rem;
+}
+.opt-prestige-run {
+    padding: 0.55rem 1.1rem;
+    border: 1px solid var(--accent-light);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--accent-light);
+    font: inherit;
+    font-weight: 850;
+    cursor: pointer;
+}
+.opt-prestige-run[disabled] {
+    opacity: 0.5;
+    cursor: progress;
+}
+.opt-prestige-verdict {
+    margin: 0.9rem 0 0.6rem;
+    font-size: 0.92rem;
+    font-weight: 850;
+}
+.opt-prestige-verdict.is-yes { color: var(--accent-light); }
+.opt-prestige-verdict.is-no { color: var(--text-primary); }
+.opt-prestige-table tr.is-reset td:last-child { color: var(--accent-light); font-weight: 850; }
+.opt-prestige-table tr.is-keep td:nth-child(2) { font-weight: 850; }
 
 /* --- Manueller Modus --- */
 
@@ -1028,6 +1163,33 @@ tbody tr:last-child td {
     font-style: normal;
     font-weight: 700;
 }
+.opt-manual-extra {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+}
+.opt-manual-input--wide { width: 9rem; }
+
+/* Seit Economy V3 hat jedes Gebäude bis zu 5 Upgrades — ohne Gruppierung nach
+   Gebäude wäre die Liste nicht mehr lesbar. */
+.opt-manual-upgrade-group {
+    display: grid;
+    gap: 0.22rem;
+    align-content: start;
+}
+.opt-manual-upgrade-group h4 {
+    margin: 0 0 0.15rem;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    font-weight: 900;
+}
+.opt-manual-empty {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
 
 .opt-manual-run {
     margin-top: 1rem;
@@ -1054,12 +1216,11 @@ tbody tr:last-child td {
         grid-template-columns: auto 1fr auto;
         grid-template-areas:
             "num main main"
-            "icon cost roi";
+            "icon cost cost";
         row-gap: 0.4rem;
     }
     .opt-step-num { grid-area: num; }
     .opt-step-icon { grid-area: icon; }
     .opt-step-main { grid-area: main; }
     .opt-step-cost { grid-area: cost; text-align: left; }
-    .opt-step-roi { grid-area: roi; }
 }

@@ -151,6 +151,29 @@ export const achievements = [
 // fehlt sie, rendert game.js den deutschen Text als Fallback.
 export const changelogEntries = [
   {
+    date: "02.08.2026",
+    title: "🔊 Sound ist zurück",
+    items: [
+      "Dezenter Klick-Sound — jeder Klick klingt minimal anders, damit es beim Dauerklicken nicht nervt.",
+      "Eigene Sounds für Gebäude-Käufe und Upgrade-Käufe.",
+      "Gold- und Rubinkaktus kündigen sich jetzt hörbar an, wenn sie erscheinen.",
+      "Leiser Ton beim Wechseln der Tabs.",
+      "An/Aus und Lautstärke findest du unter Einstellungen. Die Einstellung gilt pro Gerät.",
+      "Autoklicker bleiben stumm — sonst wäre es bei 20 Klicks pro Sekunde Dauerfeuer.",
+    ],
+    ru: {
+      title: "🔊 Звук вернулся",
+      items: [
+        "Ненавязчивый звук клика — каждый клик звучит чуть иначе, чтобы не надоедать при долгой игре.",
+        "Отдельные звуки для покупки зданий и покупки улучшений.",
+        "Золотой и Рубиновый кактус теперь слышно, когда они появляются.",
+        "Тихий звук при переключении вкладок.",
+        "Вкл./выкл. и громкость — в настройках. Настройка своя на каждом устройстве.",
+        "Автокликеры молчат — иначе при 20 кликах в секунду это была бы очередь.",
+      ],
+    },
+  },
+  {
     date: "01.08.2026",
     title: "🌵 Großes Update: Neuer Look + Economy V3",
     items: [

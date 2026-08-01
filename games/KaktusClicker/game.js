@@ -43,6 +43,13 @@ import {
   upgradeDescription,
   upgradeName,
 } from "./names.js";
+import {
+  getAudioSettings,
+  playSound,
+  setAudioEnabled,
+  setAudioVolume,
+  unlockAudio,
+} from "./audio.js";
 
 // Namensauflösung liegt in names.js — sie wird auch vom Wiki und vom
 // Kauf-Optimizer gebraucht. Diese Wrapper halten die alte (item, category)-
@@ -100,11 +107,6 @@ let adminGameEventsPrimed = false;
 const activeRandomEvents = new Map();
 const seenAdminGameEventIds = new Set();
 
-// Audio wurde mit dem Cozy-Redesign komplett entfernt (Musik, Effekte, AudioContext
-// und die Lautstärkeregler). Die alten Dateien passten stilistisch nicht mehr und
-// waren mit 5 MB das mit Abstand schwerste Asset des Spiels. Neue, zum Look passende
-// Sounds kommen später — dann wieder mit eigenem Unlock über einen AudioContext.
-
 const elements = {
   cactusCount: document.querySelector("#cactus-count"),
   cactusRate: document.querySelector("#cactus-rate"),
@@ -125,6 +127,9 @@ const elements = {
   saveButton: document.querySelector("#save-button"),
   changelogButton: document.querySelector("#changelog-button"),
   resetButton: document.querySelector("#reset-button"),
+  soundToggle: document.querySelector("#sound-toggle"),
+  soundVolume: document.querySelector("#sound-volume"),
+  soundVolumeValue: document.querySelector("#sound-volume-value"),
   tabs: document.querySelectorAll(".tab"),
   panels: document.querySelectorAll(".tab-panel"),
   scoreCard: document.querySelector(".score-card"),
@@ -310,6 +315,9 @@ function getUpgrade(id) {
 }
 
 function clickCactus(event) {
+  // Nur der manuelle Klick klingt. runAutoClicks() ruft diese Funktion bewusst
+  // nicht auf — bei bis zu 20 Auto-Klicks pro Sekunde wäre das Dauerfeuer.
+  playSound("click");
   const earned = getClickYield(state);
   addCactus(earned);
   state.totalClicks += 1;
@@ -415,6 +423,7 @@ function buyBuilding(id) {
 
   state.cactus -= cost;
   state.buildings[id] += 1;
+  playSound("buy-building");
   updateAchievements();
   render();
 }
@@ -432,6 +441,7 @@ function buyUpgrade(id) {
 
   state.cactus -= upgrade.cost;
   state.upgrades.push(id);
+  playSound("buy-upgrade");
   updateAchievements();
   render();
 }
@@ -976,6 +986,10 @@ function spawnRandomEvent(kind, duration, rewardSeconds, label) {
   button.innerHTML = `<img class="random-event-icon" src="assets/cactus/cactus.webp" alt="" aria-hidden="true">`;
   elements.clickZone.append(button);
   positionRandomEventOverCactus(button);
+  // Der Erscheinen-Sound ist die eigentliche Ansage: die Kakteen sind nur 10 s
+  // sichtbar und tauchen irgendwo über dem Spiel-Kaktus auf. Wer gerade woanders
+  // hinschaut, hätte sonst keine Chance.
+  playSound(kind === "red" ? "ruby-spawn" : "golden-spawn");
 
   const removeEvent = (caught) => {
     const entry = activeRandomEvents.get(kind);
@@ -1021,6 +1035,42 @@ function spawnRandomEvent(kind, duration, rewardSeconds, label) {
   });
 }
 
+// Sound-Einstellungen. Sie leben in localStorage, nicht im Spielstand — siehe
+// audio.js. Der Regler spielt beim Loslassen einen Klick, damit man die neue
+// Lautstärke sofort hört statt sie zu erraten.
+function renderSoundSettings() {
+  const { enabled, volume } = getAudioSettings();
+  if (elements.soundToggle) {
+    elements.soundToggle.textContent = t(enabled ? "clicker.sound_on" : "clicker.sound_off");
+    elements.soundToggle.setAttribute("aria-pressed", String(enabled));
+    elements.soundToggle.classList.toggle("is-off", !enabled);
+  }
+  if (elements.soundVolume) {
+    elements.soundVolume.value = String(Math.round(volume * 100));
+    elements.soundVolume.disabled = !enabled;
+  }
+  if (elements.soundVolumeValue) {
+    elements.soundVolumeValue.textContent = `${Math.round(volume * 100)}\u00a0%`;
+  }
+}
+
+function bindSoundSettings() {
+  elements.soundToggle?.addEventListener("click", () => {
+    const next = !getAudioSettings().enabled;
+    setAudioEnabled(next);
+    renderSoundSettings();
+    if (next) playSound("buy-upgrade");
+  });
+
+  elements.soundVolume?.addEventListener("input", (event) => {
+    setAudioVolume(Number(event.target.value) / 100);
+    renderSoundSettings();
+  });
+  elements.soundVolume?.addEventListener("change", () => playSound("click"));
+
+  renderSoundSettings();
+}
+
 function bindEvents() {
   elements.cactusButton.addEventListener("click", clickCactus);
 
@@ -1043,6 +1093,7 @@ function bindEvents() {
       clientY: rect.top + rect.height / 2,
     });
   });
+  bindSoundSettings();
   elements.saveButton.addEventListener("click", () => saveState("Manuell gespeichert"));
   elements.changelogButton.addEventListener("click", showChangelog);
   elements.prestigeButton.addEventListener("click", performPrestige);
@@ -1063,6 +1114,7 @@ function bindEvents() {
 
   elements.tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
+      playSound("tab");
       elements.tabs.forEach((item) => item.classList.toggle("is-active", item === tab));
       elements.panels.forEach((panel) => {
         panel.classList.toggle("is-active", panel.id === `${tab.dataset.tab}-panel`);
@@ -1093,6 +1145,12 @@ function bindEvents() {
   // Jede Eingabe zählt als "aktiv spielen" für die Autoklicker — auch Käufe
   // und Tab-Wechsel im Panel, nicht nur Kaktus-Klicks.
   window.addEventListener("pointerdown", () => { lastRealInputAt = Date.now(); });
+
+  // Browser lassen Ton erst nach der ersten echten Geste zu. Einmal anstoßen
+  // reicht, danach bleibt der AudioContext offen.
+  const unlock = () => unlockAudio();
+  window.addEventListener("pointerdown", unlock, { once: true });
+  window.addEventListener("keydown", unlock, { once: true });
   window.addEventListener("keydown", () => { lastRealInputAt = Date.now(); });
   window.setInterval(runAutoClicks, AUTO_CLICK_TICK_MS);
 
@@ -1216,6 +1274,9 @@ onLanguageChange(() => {
     try {
         render();
         elements.saveStatus.textContent = getIdleSaveLabel();
+        // Die Beschriftung des Sound-Schalters steht in JS, nicht als
+        // data-i18n im HTML — sie wechselt mit dem Zustand.
+        renderSoundSettings();
         updateLeaderboardResetCountdown();
         if (leaderboardLoaded) {
             leaderboardLoaded = false;

@@ -14,6 +14,9 @@
     --text-secondary: #94a3a3;
     --accent: #143c2b;
     --accent-light: #69f0ae;
+    /* Kanal-Tripel fuer rgb(var(--x) / a) — die rgba()-Komma-Syntax
+       akzeptiert keine Variable. */
+    --accent-light-rgb: 105 240 174;
     --accent-hot: #f6d365;
     --border: rgba(120, 154, 143, 0.24);
 }

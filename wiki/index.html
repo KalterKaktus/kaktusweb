@@ -66,12 +66,15 @@
                 <p class="opt-kicker" data-i18n="wiki.optimizer_kicker">KaktusClicker · Tool</p>
                 <h2 id="optimizer-title" data-i18n="wiki.optimizer_title">Kauf-Optimizer</h2>
                 <p class="opt-sub" data-i18n-html="wiki.optimizer_sub">
-                    Berechnet aus deinem Cloud-Save die nächsten <b>10 besten Käufe</b> nach Refinanzierungs-Zeit (ROI).
+                    Simuliert aus deinem Cloud-Save den <b>besten Kauf-Ablauf</b> für ein Zeitfenster —
+                    inklusive Wartezeiten und der Frage, wann sich Prestige lohnt.
                     Liest deinen Spielstand nur — <strong>verändert nichts</strong>.
                 </p>
             </header>
 
             <p class="opt-status" id="optimizer-status" data-type="info" data-i18n="wiki.optimizer_init">Initialisiere …</p>
+
+            <div class="opt-controls" id="optimizer-controls"></div>
 
             <div class="opt-actions">
                 <button type="button" class="opt-recompute" id="optimizer-recompute" hidden data-i18n="wiki.optimizer_reload">Cloud-Save neu laden</button>
@@ -79,6 +82,8 @@
             </div>
 
             <div class="opt-result" id="optimizer-result"></div>
+
+            <div class="opt-prestige" id="optimizer-prestige"></div>
 
             <div class="opt-manual" id="optimizer-manual" hidden></div>
         </section>

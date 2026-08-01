@@ -23,10 +23,10 @@ Diese Punkte sehen wie Bugs aus, sind aber **gewollt**. Nicht „reparieren":
   i18n dort. Die Admin-*Nav* ist übersetzt, der Panel-Inhalt nicht.
 - **`u_hold` im Wasser-Shader ist deklariert aber unbenutzt.** Rest vom
   entfernten Klick-Ripple, kein Versehen.
-- **KaktusClicker hat kein Audio mehr.** Musik, Soundeffekte, AudioContext und
-  die Lautstärkeregler wurden mit dem Cozy-Redesign komplett entfernt — die
-  alten Dateien passten stilistisch nicht und waren mit 5 MB das schwerste
-  Asset des Spiels. Neue Sounds kommen später.
+- **KaktusClicker hat Sound, aber keine Audio-Dateien.** Die Effekte werden zur
+  Laufzeit per Web Audio synthetisiert (`games/KaktusClicker/audio.js`). Die
+  alten Dateien wurden beim Cozy-Redesign entfernt; Autoklicker lösen bewusst
+  keinen Ton aus und die Sound-Einstellung bleibt gerätebezogen in localStorage.
 - **Die Vecteezy-Attribution im Einstellungen-Tab des Clickers muss sichtbar
   bleiben.** Die Free-Lizenz verlangt sie auf der Seite selbst. Siehe
   `games/KaktusClicker/ASSET_CREDITS.md`.
@@ -153,6 +153,9 @@ englischen Originalnamen (alle 132 abgedeckt).
   alles WebP, kein PNG-Fallback. Erzeugt aus `tools/raw/` (gitignored) per
   `python tools/optimize-assets.py`. Lizenzen in `ASSET_CREDITS.md`.
 - **Daten:** `data.js` → `buildings`, `upgrades`, `achievements`, `changelogEntries`
+- **Sound:** `audio.js`, vollständig synthetisiert. Klick, Käufe, Tabs sowie das
+  Erscheinen von Gold-/Rubinkakteen haben Effekte; Autoklicker bleiben stumm.
+  AudioContext erst nach echter Nutzergeste, Einstellungen nicht im Cloud-Save.
 - **Zahlenformat:** `format.js`, locale-abhängig (Mio./Mrd. vs. млн/млрд)
 - **Changelog:** Zusatzmenü → Changelog. Neue Einträge in `data.js`, mit `ru`-Variante.
 - **Prestige (V3):** Nopal-Gewinn `floor((totalEarned/1e6)^0.35)`, Multiplikator
@@ -160,6 +163,16 @@ englischen Originalnamen (alle 132 abgedeckt).
 - **Rangliste „Letzter Monat":** Platz und Punktzahl sind historisch aus
   `game_season_archives.top_entries`, **Name/Level/Badge/Farbe kommen live** aus
   `profiles_public` (per `user_id` gejoint).
+
+### Wiki: Clicker-Planer und generierte Tabellen
+
+- `wiki/clicker-planner.js` simuliert Einkommen und Käufe über echte Zeit
+  (1/6/24 h) und berücksichtigt Gebäude, Upgrades, Klickrate, Nopal und Abzeichen.
+- `wiki/optimizer.js` ist die Oberfläche und liest Cloud-Saves ausschließlich
+  read-only. Die Prestige-Empfehlung vergleicht Weiterspielen mit Sofort-Prestige.
+- `wiki/kaktusclicker/tables.js` erzeugt Gebäude-, Upgrade- und Abzeichentabellen
+  aus `data.js`. Platzhalter verwenden `data-wiki-table="buildings|upgrades|achievements"`
+  und müssen in deutschem HTML sowie den russischen `data-i18n-html`-Strings stehen.
 
 ### My Fishing Kaktus
 - **Pfad:** `games/MyFishingKaktus/` · **Game-ID:** `my-fishing-kaktus`

@@ -308,6 +308,19 @@
             <p data-i18n="clicker.settings_sub">Speichern, Changelog und Spielstand</p>
           </div>
           <p class="save-status" id="save-status" data-i18n="clicker.save_status_loading">Speicherstatus wird geladen</p>
+
+          <div class="sound-settings">
+            <div class="sound-row">
+              <span class="sound-label" data-i18n="clicker.sound_label">Sound</span>
+              <button class="cozy-button is-ghost sound-toggle" id="sound-toggle" type="button" aria-pressed="true"></button>
+            </div>
+            <label class="sound-row" for="sound-volume">
+              <span class="sound-label" data-i18n="clicker.sound_volume">Lautstärke</span>
+              <input type="range" id="sound-volume" min="0" max="100" step="5" value="60">
+              <output class="sound-value" id="sound-volume-value">60&nbsp;%</output>
+            </label>
+          </div>
+
           <div class="settings-actions">
             <button class="cozy-button is-ghost" id="save-button" type="button" data-i18n="clicker.save_now">Jetzt speichern</button>
             <button class="cozy-button is-ghost" id="changelog-button" type="button" data-i18n="clicker.changelog_button">Changelog</button>

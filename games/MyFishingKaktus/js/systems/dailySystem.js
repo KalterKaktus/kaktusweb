@@ -121,9 +121,18 @@ export class DailySystem {
                 isPast ? "is-past" : "",
                 isSpecial ? "is-special" : "",
             ].filter(Boolean).join(" ");
-            const label = isSpecial
-                ? (p.spawn.rarity === "Legendary" ? "★ Legend" : `${p.spawn.count > 1 ? p.spawn.count + "×" : "★"} Epic`)
-                : `+${p.coins}`;
+            // Früher standen hier feste englische Strings ("★ Legend" / "★ Epic"),
+            // die auch auf Russisch englisch blieben.
+            // Kein "★" im Text: der Stern kostet ~22 px und die Spezial-Tage sind
+            // über .is-special (Rahmen, Hintergrund, Farbe) schon klar markiert.
+            let label;
+            if (isSpecial) {
+                const isLegendary = p.spawn.rarity === "Legendary";
+                const name = t(isLegendary ? "fishing.daily_ui.legendary_short" : "fishing.daily_ui.epic_short");
+                label = (!isLegendary && p.spawn.count > 1) ? `${p.spawn.count}× ${name}` : name;
+            } else {
+                label = `+${p.coins.toLocaleString(getLanguage() === "ru" ? "ru-RU" : "de-DE")}`;
+            }
             return `
                 <div class="${cls}">
                     <span class="daily-week-day">${t("fishing.daily_ui.day_short")} ${p.dayInWeek}</span>
