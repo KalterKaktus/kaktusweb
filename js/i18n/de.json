@@ -190,8 +190,31 @@
             "loading_cloud": "Lade Cloud-Save …",
             "no_save": "Kein KaktusClicker Cloud-Save gefunden. Spiele eine Runde und speichere, dann komm wieder.",
             "loaded_calculating": "Cloud-Save geladen ({name}) — Berechne …",
-            "loaded_season": "Cloud-Save geladen ({name}) · Saison {season}"
-        }
+            "loaded_season": "Cloud-Save geladen ({name}) · Saison {season}",
+            "upgrade_for": "Upgrade für"
+        },
+        "gen": {
+            "name": "Name",
+            "base_cost": "Basis-Kosten",
+            "cps": "CPS",
+            "payback": "Amortisation",
+            "cost": "Kosten",
+            "effect": "Effekt",
+            "condition": "Bedingung",
+            "unlock": "Freischaltung",
+            "unlock_at": "ab {count} Stück",
+            "click_upgrades": "Klick-Upgrades",
+            "click_scaling": "Klick-Sog (Anteil der Auto-Produktion)",
+            "autoclick": "Autoklicker",
+            "building_upgrades": "Gebäude-Upgrades",
+            "building_upgrades_note": "Pro Gebäude ein Kern-Upgrade plus vier Blüten-Stufen bei 10, 25, 50 und 100 Exemplaren. Alle wirken ×2 auf die CPS genau dieses Gebäudes und stacken multiplikativ.",
+            "show_all": "Alle {count} Gebäude-Upgrades anzeigen",
+            "unit_s": "s",
+            "unit_min": "min",
+            "unit_h": "h",
+            "unit_d": "Tage"
+        },
+        "generated_note": "Tabellen werden live aus den Spieldaten erzeugt"
     },
     "deals": {
         "meta_title": "Steam Deals - KalterKaktus",

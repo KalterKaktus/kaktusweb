@@ -12,27 +12,10 @@ import { buildings, upgrades } from "/games/KaktusClicker/data.js";
 import { loadCloudSave, getGameSession, KAKTUS_GAME_ID } from "/js/game-cloud.js";
 import { formatNumber } from "/games/KaktusClicker/format.js";
 import { t, onLanguageChange, ready as i18nReady } from "/js/i18n.js";
-
-// Gebäudename in aktueller Sprache (Fallback = deutscher Originalname).
-function tBuilding(b) {
-    const key = `clicker.buildings.${b.id}.name`;
-    const value = t(key);
-    return value === key ? b.name : value;
-}
-
-// Upgrade-Name. Die auto-generierten "<building>-core"-Upgrades haben keinen
-// eigenen RU-Key — dort aus dem Gebäudenamen zusammensetzen (wie im Spiel).
-function tUpgrade(u) {
-    const key = `clicker.upgrades.${u.id}.name`;
-    const value = t(key);
-    if (value !== key) return value;
-    if (u.buildingId) {
-        const bKey = `clicker.buildings.${u.buildingId}.name`;
-        const bValue = t(bKey);
-        if (bValue !== bKey) return t("clicker.upgrade_core_suffix", { name: bValue });
-    }
-    return u.name;
-}
+// Gemeinsam mit Spiel und Wiki-Tabellen. Vorher lag hier eine eigene Kopie, die
+// die Blüten-Upgrades aus Economy V3 nicht kannte und sie alle als
+// „<Gebäude> Kern" beschriftete.
+import { buildingName as tBuilding, upgradeName as tUpgrade } from "/games/KaktusClicker/names.js";
 
 const root = document.getElementById("optimizer-root");
 const statusEl = document.getElementById("optimizer-status");
@@ -58,7 +41,8 @@ function getCurrentCost(baseCost, owned) {
 }
 
 function simulateBestBuys(ownedMap, boughtUpgradeIds) {
-    // Pro Building den Multiplier einmal vorab berechnen (stabil über die Simulation).
+    // Pro Building den Multiplier einmal vorab berechnen; er ändert sich im Lauf
+    // der Simulation nur noch, wenn ein Upgrade gekauft wird.
     const buildingState = buildings.map((building) => ({
         id: building.id,
         name: building.name,
@@ -70,38 +54,88 @@ function simulateBestBuys(ownedMap, boughtUpgradeIds) {
         multiplier: getBuildingMultiplier(building.id, boughtUpgradeIds),
         owned: Math.max(0, Math.floor(Number(ownedMap?.[building.id]) || 0)),
     }));
+    const byId = new Map(buildingState.map((b) => [b.id, b]));
+
+    // Economy V3 hat 120 gestaffelte ×2-Upgrades ergänzt. Sie nur beim Multiplikator
+    // mitzurechnen, aber nie als Kauf vorzuschlagen, führte in die Irre: ein
+    // freigeschaltetes ×2 schlägt fast immer das nächste Gebäude.
+    const owned = new Set(boughtUpgradeIds);
+    const openUpgrades = upgrades.filter((upgrade) =>
+        upgrade.buildingMultiplier && !owned.has(upgrade.id));
+    // Innerhalb dieses Laufs gekaufte Upgrades — bewusst lokal, damit die aus
+    // data.js importierten Objekte unangetastet bleiben.
+    const plannedUpgradeIds = new Set();
 
     const plan = [];
     for (let step = 1; step <= SIMULATION_STEPS; step++) {
         let best = null;
+
         for (const b of buildingState) {
             const cost = getCurrentCost(b.baseCost, b.owned);
-            const effectiveCps = b.cps * b.multiplier;
-            if (effectiveCps <= 0) continue;
-            const roi = cost / effectiveCps;
+            const gain = b.cps * b.multiplier;
+            if (gain <= 0) continue;
+            const roi = cost / gain;
             if (!best || roi < best.roi) {
-                best = { ...b, cost, effectiveCps, roi };
+                best = { kind: "building", building: b, cost, gain, roi };
             }
         }
+
+        for (const upgrade of openUpgrades) {
+            if (plannedUpgradeIds.has(upgrade.id)) continue;
+            const b = byId.get(upgrade.buildingId);
+            if (!b) continue;
+            // Blüten-Upgrades erscheinen erst ab ihrer Besitz-Schwelle.
+            if (upgrade.unlockOwned && b.owned < upgrade.unlockOwned) continue;
+            // Zugewinn = was die bereits besessenen Exemplare zusätzlich liefern.
+            const gain = b.owned * b.cps * b.multiplier * (upgrade.buildingMultiplier - 1);
+            if (gain <= 0) continue;
+            const roi = upgrade.cost / gain;
+            if (!best || roi < best.roi) {
+                best = { kind: "upgrade", building: b, upgrade, cost: upgrade.cost, gain, roi };
+            }
+        }
+
         if (!best) break;
-        plan.push({
-            step,
-            id: best.id,
-            name: best.name,
-            displayName: best.displayName,
-            icon: best.icon,
-            cost: best.cost,
-            cps: best.cps,
-            multiplier: best.multiplier,
-            effectiveCps: best.effectiveCps,
-            roi: best.roi,
-            ownedBefore: best.owned,
-            ownedAfter: best.owned + 1,
-        });
-        // Owned anpassen für nächste Iteration
-        const target = buildingState.find((b) => b.id === best.id);
-        target.owned += 1;
+
+        if (best.kind === "building") {
+            plan.push({
+                step,
+                kind: "building",
+                id: best.building.id,
+                name: best.building.name,
+                displayName: best.building.displayName,
+                icon: best.building.icon,
+                cost: best.cost,
+                cps: best.building.cps,
+                multiplier: best.building.multiplier,
+                effectiveCps: best.gain,
+                roi: best.roi,
+                ownedBefore: best.building.owned,
+                ownedAfter: best.building.owned + 1,
+            });
+            best.building.owned += 1;
+        } else {
+            plan.push({
+                step,
+                kind: "upgrade",
+                id: best.upgrade.id,
+                name: best.upgrade.name,
+                displayName: tUpgrade(best.upgrade),
+                icon: best.upgrade.icon,
+                cost: best.cost,
+                cps: best.building.cps,
+                multiplier: best.building.multiplier,
+                effectiveCps: best.gain,
+                roi: best.roi,
+                targetBuilding: best.building.displayName,
+            });
+            // Wirkung sofort einrechnen, sonst empfiehlt der nächste Schritt dasselbe
+            // Upgrade nochmal und die Gebäude-ROI bliebe zu pessimistisch.
+            best.building.multiplier *= best.upgrade.buildingMultiplier;
+            plannedUpgradeIds.add(best.upgrade.id);
+        }
     }
+
     return plan;
 }
 
@@ -130,15 +164,17 @@ function renderPlan(plan, source) {
         </div>
         <ol class="opt-plan">
             ${plan.map((entry) => `
-                <li class="opt-plan-row" style="--opt-step:${entry.step}">
+                <li class="opt-plan-row ${entry.kind === "upgrade" ? "is-upgrade" : ""}" style="--opt-step:${entry.step}">
                     <span class="opt-step-num">#${entry.step}</span>
                     <span class="opt-step-icon">${entry.icon}</span>
                     <div class="opt-step-main">
                         <strong>${entry.displayName || entry.name}</strong>
                         <small>
-                            ${t("wiki.opt.owned")} ${entry.ownedBefore} → ${entry.ownedAfter}
-                            · ${formatNumber(entry.effectiveCps)} CPS
-                            ${entry.multiplier > 1 ? `<em>(×${entry.multiplier.toFixed(1)} ${t("wiki.opt.from_upgrades")})</em>` : ""}
+                            ${entry.kind === "upgrade"
+                                ? `${t("wiki.opt.upgrade_for")} ${entry.targetBuilding} · +${formatNumber(entry.effectiveCps)} CPS`
+                                : `${t("wiki.opt.owned")} ${entry.ownedBefore} → ${entry.ownedAfter}
+                                   · ${formatNumber(entry.effectiveCps)} CPS
+                                   ${entry.multiplier > 1 ? `<em>(×${entry.multiplier.toFixed(1)} ${t("wiki.opt.from_upgrades")})</em>` : ""}`}
                         </small>
                     </div>
                     <div class="opt-step-cost">
@@ -177,14 +213,29 @@ function renderManualForm(prefillOwned = {}, prefillUpgrades = []) {
         </div>
         <details class="opt-manual-upgrades">
             <summary>${t("wiki.opt.check_upgrades")}</summary>
-            <div class="opt-manual-upgrade-grid">
-                ${upgrades.filter((u) => u.buildingMultiplier).map((u) => `
-                    <label class="opt-manual-upgrade-row">
-                        <input type="checkbox" data-manual-upgrade="${u.id}" ${prefillUpgrades.includes(u.id) ? "checked" : ""}>
-                        <span>${tUpgrade(u)} <em>(×${u.buildingMultiplier})</em></span>
-                    </label>
-                `).join("")}
-            </div>
+            <!-- Seit Economy V3 gibt es 150 Gebäude-Upgrades. Als eine flache
+                 Liste war das unbedienbar, deshalb pro Gebäude eingeklappt. -->
+            ${buildings.map((b) => {
+                const own = upgrades.filter((u) => u.buildingMultiplier && u.buildingId === b.id);
+                if (!own.length) return "";
+                const checked = own.filter((u) => prefillUpgrades.includes(u.id)).length;
+                return `
+                    <details class="opt-manual-upgrade-group">
+                        <summary>
+                            <span class="opt-manual-icon">${b.icon}</span>
+                            ${tBuilding(b)}
+                            <em>${checked}/${own.length}</em>
+                        </summary>
+                        <div class="opt-manual-upgrade-grid">
+                            ${own.map((u) => `
+                                <label class="opt-manual-upgrade-row">
+                                    <input type="checkbox" data-manual-upgrade="${u.id}" ${prefillUpgrades.includes(u.id) ? "checked" : ""}>
+                                    <span>${tUpgrade(u)} <em>(×${u.buildingMultiplier})</em></span>
+                                </label>
+                            `).join("")}
+                        </div>
+                    </details>`;
+            }).join("")}
         </details>
         <button type="button" class="opt-manual-run" id="optimizer-manual-run">${t("wiki.opt.compute_plan")}</button>
     `;

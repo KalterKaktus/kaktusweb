@@ -987,6 +987,29 @@ tbody tr:last-child td {
     color: #b8ffd6;
     font-size: 0.86rem;
 }
+/* Gruppe pro Gebäude — seit Economy V3 hängen bis zu fünf Upgrades an einem
+   Gebäude, flach wären das 150 Checkboxen am Stück. */
+.opt-manual-upgrade-group {
+    margin-top: 0.45rem;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.18);
+}
+.opt-manual-upgrade-group summary {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+.opt-manual-upgrade-group summary em {
+    margin-left: auto;
+    color: #b8ffd6;
+    font-size: 0.76rem;
+    font-style: normal;
+}
 .opt-manual-upgrade-grid {
     margin-top: 0.6rem;
     display: grid;

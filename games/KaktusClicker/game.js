@@ -30,44 +30,30 @@ import {
 import { formatDuration, formatNumber } from "./format.js";
 import { createInitialState, normalizeLoadedState, resetRunForPrestige } from "./state.js";
 import { t, onLanguageChange, getLanguage } from "/js/i18n.js";
+import {
+  achievementGoal,
+  achievementName,
+  buildingDescription,
+  buildingName,
+  upgradeDescription,
+  upgradeName,
+} from "./names.js";
 
+// Namensauflösung liegt in names.js — sie wird auch vom Wiki und vom
+// Kauf-Optimizer gebraucht. Diese Wrapper halten die alte (item, category)-
+// Signatur, damit die Render-Funktionen unten unverändert bleiben.
 function tName(item, category) {
-    const key = `clicker.${category}.${item.id}.name`;
-    const value = t(key);
-    if (value !== key) return value;
-    // Generierte Upgrades: dynamisch aus dem Building-Namen zusammensetzen.
-    // Tier-Upgrades (V3) nutzen clicker.upgrade_tier_<N>, Core-Upgrades das
-    // bestehende clicker.upgrade_core_suffix.
-    if (category === "upgrades" && item.buildingId) {
-        const bKey = `clicker.buildings.${item.buildingId}.name`;
-        const bValue = t(bKey);
-        if (bValue !== bKey) {
-            if (item.tier) {
-                const tierKey = `clicker.upgrade_tier_${item.tier}`;
-                const tierValue = t(tierKey, { name: bValue });
-                if (tierValue !== tierKey) return tierValue;
-            } else {
-                return t("clicker.upgrade_core_suffix", { name: bValue });
-            }
-        }
-    }
-    return item.name;
+    if (category === "buildings") return buildingName(item);
+    if (category === "upgrades") return upgradeName(item);
+    return achievementName(item);
 }
 function tDesc(item, category) {
-    const key = `clicker.${category}.${item.id}.description`;
-    const value = t(key);
-    if (value !== key) return value;
-    if (category === "upgrades" && item.buildingId) {
-        const bKey = `clicker.buildings.${item.buildingId}.name`;
-        const bValue = t(bKey);
-        if (bValue !== bKey) return t("clicker.upgrade_prod_x2", { name: bValue });
-    }
+    if (category === "buildings") return buildingDescription(item);
+    if (category === "upgrades") return upgradeDescription(item);
     return item.description || item.goal || "";
 }
 function tGoal(item) {
-    const key = `clicker.achievements.${item.id}.goal`;
-    const value = t(key);
-    return value === key ? (item.goal || "") : value;
+    return achievementGoal(item);
 }
 function tSaveLabel(label) {
     const map = {

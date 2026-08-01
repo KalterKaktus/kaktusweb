@@ -35,6 +35,15 @@ function setupWikiSearch() {
         snapshotSections();
         if (input.value.trim()) applyFilter(input.value);
     });
+    // Dasselbe für Inhalte, die ein Modul erst zur Laufzeit einsetzt (die aus
+    // data.js generierten Tabellen in kaktusclicker/tables.js). Module laufen
+    // nach diesem klassischen Script — ohne dieses Signal würde die erste
+    // Sucheingabe aus einem Snapshot ohne Tabellen wiederherstellen und sie
+    // damit löschen.
+    document.addEventListener("kk:wikicontent", () => {
+        snapshotSections();
+        if (input.value.trim()) applyFilter(input.value);
+    });
     // Initiales Apply von i18n passiert nach diesem Script → einmal nachziehen.
     window.setTimeout(snapshotSections, 0);
 

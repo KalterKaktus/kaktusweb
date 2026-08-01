@@ -63,8 +63,9 @@
                     Kein Spielratgeber — nur Fakten und Formeln.
                 </p>
                 <div class="guide-meta">
-                    <span>Stand: 25.05.2026</span>
-                    <span data-i18n="wiki.clicker.balance_ver">Saison-Balance V2</span>
+                    <span>Stand: 01.08.2026</span>
+                    <span data-i18n="wiki.clicker.balance_ver">Saison-Balance V3</span>
+                    <span data-i18n="wiki.generated_note">Tabellen werden live aus den Spieldaten erzeugt</span>
                 </div>
             </header>
 
@@ -82,25 +83,43 @@
                     Saison-Wert ist der ranglistenrelevante <code>totalEarned</code>.
                 </p>
                 <ul>
-                    <li><strong>30 Gebäude</strong> mit exponentieller Kostensteigerung.</li>
-                    <li><strong>33 Upgrades</strong> (3 Klick × 2, 30 Gebäude × 2).</li>
-                    <li><strong>20 Abzeichen</strong>, jedes gibt +0.1× globalen Multiplikator.</li>
+                    <li><strong><span data-wiki-count="buildings">30</span> Gebäude</strong> mit exponentieller Kostensteigerung.</li>
+                    <li><strong><span data-wiki-count="upgrades">158</span> Upgrades</strong> (Klick, Klick-Sog, Autoklicker, Gebäude-Kern und Blüten-Stufen).</li>
+                    <li><strong><span data-wiki-count="achievements">30</span> Abzeichen</strong>, jedes gibt +0.1× globalen Multiplikator (max <span data-wiki-count="achievement-max">x4</span>).</li>
                     <li><strong>Nopal-Prestige</strong> mit nicht-linearer Wertkurve (Exponent 0.35).</li>
                     <li><strong>Goldlauf</strong> via Klick-Threshold, Gold-/Rubinkaktus-Events, Offline-Ertrag.</li>
+                    <li><strong>Autoklicker</strong>, die nur beim aktiven Spielen mitklicken.</li>
                 </ul>
             </section>
 
             <section data-searchable id="click" data-i18n-html="wiki.clicker.click">
                 <h2>Klick-Mechanik</h2>
                 <p>Jeder manuelle Klick produziert Kakteen nach dieser Formel:</p>
-                <pre><code>clickYield = clickMultiplier × coreMultiplier</code></pre>
+                <pre><code>clickYield = clickMultiplier × coreMultiplier
+           + 0,01 × clickCpsMultiplier × automatischeProduktion</code></pre>
                 <p>Wobei:</p>
                 <ul>
                     <li><code>clickMultiplier</code> = Produkt aller gekauften Klick-Upgrades (Basis 1, jeweils ×2).</li>
                     <li><code>coreMultiplier</code> = <code>prestigeMultiplier × achievementMultiplier × eventMultiplier</code> (siehe unten).</li>
+                    <li><code>clickCpsMultiplier</code> = Produkt der Klick-Sog-Upgrades (Basis 1, zweimal ×2 → maximal 4 %).</li>
                 </ul>
                 <p>
-                    Basis-Klick (keine Upgrades, kein Prestige, keine Abzeichen, kein Goldlauf) = <strong>1 Kaktus</strong>.
+                    Der zweite Summand ist die zentrale Änderung von Economy V3: Ein Klick erntet
+                    zusätzlich <strong>1 % deiner Auto-Produktion</strong>, ausbaubar auf 4 %.
+                    Vorher war Klicken bei maximal ×8 gedeckelt und damit ab dem mittleren Spiel
+                    bedeutungslos — jetzt skaliert es dauerhaft mit.
+                </p>
+                <p>
+                    Basis-Klick (keine Upgrades, kein Prestige, keine Abzeichen, kein Goldlauf,
+                    keine Gebäude) = <strong>1 Kaktus</strong>.
+                </p>
+                <h3>Autoklicker</h3>
+                <p>
+                    Autoklicker-Upgrades klicken automatisch mit, aber <strong>nur beim aktiven
+                    Spielen</strong>: der Tab muss sichtbar sein und die letzte echte Eingabe darf
+                    höchstens 15 Sekunden zurückliegen. Sie erzeugen vollen Klick-Ertrag und laden
+                    den Goldlauf auf, zählen aber bewusst <strong>nicht</strong> auf
+                    <code>totalClicks</code> — Klick-Abzeichen und Klick-XP bleiben Handarbeit.
                 </p>
                 <p>
                     <strong>Steuerung:</strong> Maus-/Touch-Tap auf den Kaktus <em>oder</em> <kbd>Leertaste</kbd>
@@ -119,81 +138,46 @@
                     Exemplaren ist es signifikant über dem Basispreis.
                 </p>
 
-                <h3>Alle 30 Gebäude</h3>
-                <div class="table-wrap">
-                    <table class="wiki-table">
-                        <thead>
-                            <tr><th>#</th><th>Name</th><th>Base-Kosten</th><th>CPS</th><th>Payback @ owned=0</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>1</td><td>Mini-Kaktus</td><td>15</td><td>0,1</td><td>150 s</td></tr>
-                            <tr><td>2</td><td>Gewächshaus</td><td>100</td><td>1</td><td>100 s</td></tr>
-                            <tr><td>3</td><td>Kaktus-Ranch</td><td>1.100</td><td>8</td><td>138 s</td></tr>
-                            <tr><td>4</td><td>Oasenpumpe</td><td>12.000</td><td>47</td><td>255 s</td></tr>
-                            <tr><td>5</td><td>Stachelwerk</td><td>130.000</td><td>260</td><td>500 s</td></tr>
-                            <tr><td>6</td><td>Erntedrohne</td><td>1,4 Mio</td><td>1.400</td><td>1.000 s</td></tr>
-                            <tr><td>7</td><td>Kaktuslabor</td><td>20 Mio</td><td>7.800</td><td>2.564 s</td></tr>
-                            <tr><td>8</td><td>Wüstenserver</td><td>330 Mio</td><td>44.000</td><td>7.500 s</td></tr>
-                            <tr><td>9</td><td>Orbit-Gewächshaus</td><td>5,1 Mrd</td><td>260.000</td><td>19.615 s</td></tr>
-                            <tr><td>10</td><td>Monsun-Rig</td><td>75 Mrd</td><td>1,6 Mio</td><td>46.875 s</td></tr>
-                            <tr><td>11</td><td>Canyon-Raffinerie</td><td>1 Bio</td><td>10 Mio</td><td>100.000 s</td></tr>
-                            <tr><td>12</td><td>Plasma-Bewässerung</td><td>14 Bio</td><td>65 Mio</td><td>215.384 s</td></tr>
-                            <tr><td>13</td><td>Mondgärtnerei</td><td>170 Bio</td><td>420 Mio</td><td>404.761 s</td></tr>
-                            <tr><td>14</td><td>Asteroiden-Hacienda</td><td>2,1 Brd</td><td>2,8 Mrd</td><td>750.000 s</td></tr>
-                            <tr><td>15</td><td>Solarsilo</td><td>26 Brd</td><td>18 Mrd</td><td>1,44 Mio s</td></tr>
-                            <tr><td>16</td><td>Quantenstachel</td><td>310 Brd</td><td>120 Mrd</td><td>2,58 Mio s</td></tr>
-                            <tr><td>17</td><td>Nebula-Pipeline</td><td>3,7 Bio Bio</td><td>790 Mrd</td><td>4,68 Mio s</td></tr>
-                            <tr><td>18</td><td>Rissgarten</td><td>44 Bio Bio</td><td>5,2 Bio</td><td>8,46 Mio s</td></tr>
-                            <tr><td>19</td><td>Prisma-Gießerei</td><td>520 Bio Bio</td><td>34 Bio</td><td>15,29 Mio s</td></tr>
-                            <tr><td>20</td><td>Void-Terrasse</td><td>6,2 Brd Bio</td><td>220 Bio</td><td>28,18 Mio s</td></tr>
-                            <tr><td>21</td><td>Sternwebstuhl</td><td>74 Brd Bio</td><td>1,45 Brd</td><td>51,03 Mio s</td></tr>
-                            <tr><td>22</td><td>Dornenreaktor</td><td>890 Brd Bio</td><td>9,6 Brd</td><td>92,7 Mio s</td></tr>
-                            <tr><td>23</td><td>Chrono-Orchard</td><td>1.07e25</td><td>6.3e16</td><td>169,8 Mio s</td></tr>
-                            <tr><td>24</td><td>Singularitätsgarten</td><td>1.28e26</td><td>4.2e17</td><td>304,7 Mio s</td></tr>
-                            <tr><td>25</td><td>Galaxie-Tresor</td><td>1.54e27</td><td>2.8e18</td><td>550 Mio s</td></tr>
-                            <tr><td>26</td><td>Mythische Wüste</td><td>1.85e28</td><td>1.85e19</td><td>1,0 Mrd s</td></tr>
-                            <tr><td>27</td><td>Kaktus-Matrix</td><td>2.22e29</td><td>1.22e20</td><td>1,8 Mrd s</td></tr>
-                            <tr><td>28</td><td>Nopal-Arche</td><td>2.66e30</td><td>8.1e20</td><td>3,3 Mrd s</td></tr>
-                            <tr><td>29</td><td>Kosmische Wurzel</td><td>3.19e31</td><td>5.4e21</td><td>5,9 Mrd s</td></tr>
-                            <tr><td>30</td><td>Endlosblüte</td><td>3.83e32</td><td>3.6e22</td><td>10,6 Mrd s</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <h3>Alle Gebäude</h3>
+                <div data-wiki-table="buildings"></div>
                 <p>
-                    Payback ist die Sekunden bis sich der Erstkauf refinanziert hat
-                    (<code>baseCost / CPS</code>), ohne Multiplikatoren. Nach Multiplikatoren
-                    werden alle Werte gleich skaliert.
+                    Payback ist die Zeit, bis sich der Erstkauf refinanziert hat
+                    (<code>baseCost / CPS</code>) — <strong>ohne jeden Multiplikator</strong>.
+                    Der reale Wert liegt deutlich darunter: Prestige, Abzeichen und die bis zu
+                    fünf Upgrades pro Gebäude (zusammen ×32) wirken auf alle Gebäude und stauchen
+                    die Spalte gleichmäßig zusammen.
+                </p>
+                <p>
+                    Economy V3 hat genau hier angesetzt. Die Kosten sind unverändert geblieben,
+                    die CPS der späteren Gebäude wurden angehoben, sodass die Amortisation der
+                    Reihe <code>120 × 1,5^Index</code> Sekunden folgt statt exponentiell davonzulaufen.
+                    Vorher lag Gebäude 30 bei rund 337 Jahren Basis-Payback und war damit
+                    rechnerisch unerreichbar — in drei Saisons hat kein Spieler je mehr als neun
+                    Gebäudearten besessen.
                 </p>
             </section>
 
             <section data-searchable id="upgrades" data-i18n-html="wiki.clicker.upgrades">
                 <h2>Upgrades</h2>
-                <h3>Klick-Upgrades</h3>
-                <div class="table-wrap">
-                    <table class="wiki-table">
-                        <thead><tr><th>Name</th><th>Kosten</th><th>Effekt</th></tr></thead>
-                        <tbody>
-                            <tr><td>Dicke Handschuhe</td><td>100</td><td>Klick × 2</td></tr>
-                            <tr><td>Weiche Handschuhe</td><td>500</td><td>Klick × 2</td></tr>
-                            <tr><td>Doppelte Zange</td><td>10.000</td><td>Klick × 2</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p>Alle 3 zusammen = <code>2 × 2 × 2 = 8×</code> Klick-Multiplikator.</p>
-
-                <h3>Gebäude-Multiplikator-Upgrades</h3>
                 <p>
-                    Jedes der 30 Gebäude hat ein zugehöriges Upgrade mit Effekt <strong>× 2</strong>
-                    auf die CPS dieses Gebäudes. Kosten sind unterschiedlich verteilt:
+                    Die drei Klick-Upgrades zusammen ergeben <code>2 × 2 × 2 = 8×</code> auf den
+                    Basis-Klick. Klick-Sog und Autoklicker sind mit Economy V3 dazugekommen.
                 </p>
-                <ul>
-                    <li><strong>Gebäude 1-9</strong>: Hardcoded-Kosten (10× baseCost-Korridor).</li>
-                    <li><strong>Gebäude 10-30</strong>: <code>ceil(baseCost × (9 + (index % 4)))</code> — variiert leicht je nach Position.</li>
-                </ul>
+                <div data-wiki-table="upgrades"></div>
+
+                <h3>Wie Gebäude-Upgrades stacken</h3>
                 <pre><code>buildingEffectiveCps = baseCps × Produkt(buildingMultiplier-Upgrades)</code></pre>
                 <p>
-                    Mehrere Upgrades für dasselbe Gebäude stacken multiplikativ — aber aktuell gibt
-                    es nur <strong>genau 1 Upgrade pro Gebäude</strong> (max ×2).
+                    Upgrades für dasselbe Gebäude stacken multiplikativ. Seit Economy V3 hat jedes
+                    Gebäude <strong>fünf</strong> davon: ein Kern-Upgrade plus vier Blüten-Stufen,
+                    die bei <strong>10 / 25 / 50 / 100</strong> Exemplaren freigeschaltet werden.
+                    Voll ausgebaut ist ein Gebäude damit bei <code>2^5 = ×32</code>.
+                </p>
+                <p>
+                    Blüten-Upgrades tauchen im Spiel erst auf, wenn ihre Schwelle erreicht ist
+                    (<code>unlockOwned</code>) — sonst stünden ab Spielstart über 150 Einträge in
+                    der Liste. Die Kosten liegen bei <code>ceil(baseCost × 1,15^Schwelle × 2,5)</code>,
+                    also etwa dem 2,5-fachen des Stückpreises an der Schwelle.
                 </p>
             </section>
 
@@ -206,10 +190,18 @@ automatischeProduktion = Σ(building.cps × owned × buildingMultiplier)
                         × productionMultiplier
                         × coreMultiplier
 
-klickYield = clickMultiplier × coreMultiplier</code></pre>
+klickYield = clickMultiplier × coreMultiplier
+           + 0,01 × clickCpsMultiplier × automatischeProduktion</code></pre>
                 <p>
                     Aktuell gibt es keine Upgrades mit <code>productionMultiplier</code> — der ist
                     immer 1. Hinzukommen können sie ohne Code-Änderung.
+                </p>
+                <p>
+                    Die Produktion wird nach <strong>echt verstrichener Zeit</strong> gutgeschrieben,
+                    nicht pro Tick. Browser drosseln Timer in Hintergrund-Tabs auf etwa einen Tick
+                    pro Minute — vorher bekam ein offener Hintergrund-Tab dadurch nur rund 2 % der
+                    Produktion und war damit schlechter als komplett offline zu sein. Lücken über
+                    300 Sekunden fallen an den Offline-Ertrag.
                 </p>
             </section>
 
@@ -217,49 +209,34 @@ klickYield = clickMultiplier × coreMultiplier</code></pre>
                 <h2>Abzeichen</h2>
                 <p>
                     Jedes freigeschaltete Abzeichen erhöht den <code>achievementMultiplier</code> um
-                    <strong>+0,1</strong>. Mit allen 20 Abzeichen: <code>1 + 20 × 0,1 = ×3,0</code>.
+                    <strong>+0,1</strong>. Mit allen <span data-wiki-count="achievements">30</span>
+                    Abzeichen ergibt das <span data-wiki-count="achievement-max">x4</span>.
                 </p>
                 <pre><code>achievementMultiplier = 1 + freigeschalteteAbzeichen × 0.1</code></pre>
 
-                <h3>Alle 20 Abzeichen</h3>
-                <div class="table-wrap">
-                    <table class="wiki-table">
-                        <thead><tr><th>Name</th><th>Bedingung</th></tr></thead>
-                        <tbody>
-                            <tr><td>Erster Stich</td><td>≥ 1 manueller Klick</td></tr>
-                            <tr><td>Klickroutine</td><td>≥ 100 manuelle Klicks</td></tr>
-                            <tr><td>Goldfinger</td><td>≥ 1.000 manuelle Klicks</td></tr>
-                            <tr><td>Handarbeit</td><td>≥ 5.000 manuelle Klicks</td></tr>
-                            <tr><td>Dornenmaschine</td><td>≥ 25.000 manuelle Klicks</td></tr>
-                            <tr><td>Klicklegende</td><td>≥ 100.000 manuelle Klicks</td></tr>
-                            <tr><td>Kleiner Garten</td><td>≥ 100 totalEarned</td></tr>
-                            <tr><td>Grüne Welle</td><td>≥ 1.000 totalEarned</td></tr>
-                            <tr><td>Millionenernte</td><td>≥ 1 Mio totalEarned</td></tr>
-                            <tr><td>Milliardenfeld</td><td>≥ 1 Mrd totalEarned</td></tr>
-                            <tr><td>Billionenblüte</td><td>≥ 1 Bio totalEarned</td></tr>
-                            <tr><td>Trillionenwüste</td><td>≥ 1 Trio totalEarned</td></tr>
-                            <tr><td>Quintillionengrün</td><td>≥ 1 Quinto totalEarned</td></tr>
-                            <tr><td>Erste Nopal-Ernte</td><td>≥ 1 Prestige</td></tr>
-                            <tr><td>Nopal-Puffer</td><td>≥ 10 Nopal-Gesamtwert</td></tr>
-                            <tr><td>Saisonschleife</td><td>≥ 10 Prestiges</td></tr>
-                            <tr><td>Goldener Lauf</td><td>≥ 1 Goldlauf ausgelöst</td></tr>
-                            <tr><td>Goldkaktus</td><td>≥ 1 Goldkaktus gefangen</td></tr>
-                            <tr><td>Goldjäger</td><td>≥ 10 Goldkakteen</td></tr>
-                            <tr><td>Rubinkaktus</td><td>≥ 1 Rubinkaktus</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <h3>Alle Abzeichen</h3>
+                <div data-wiki-table="achievements"></div>
             </section>
 
             <section data-searchable id="frenzy" data-i18n-html="wiki.clicker.frenzy">
                 <h2>Goldlauf (Klick-Frenzy)</h2>
                 <p>
                     Goldlauf wird ausgelöst sobald der Klick-Charge-Balken voll ist. Er gilt für
-                    <strong>30 Sekunden</strong> und vergibt einen <code>×2</code> Multiplikator auf
+                    <strong>30 Sekunden</strong> und vergibt einen <code>×3</code> Multiplikator auf
                     sowohl Klicks als auch automatische Produktion (Event-Multiplikator).
                 </p>
-                <pre><code>frenzyMultiplier = 2 (während Goldlauf aktiv)
-clickChargeThreshold = 1.000 manuelle Klicks</code></pre>
+                <pre><code>frenzyMultiplier = 3 (während Goldlauf aktiv)
+clickChargeThreshold = 250 Klicks</code></pre>
+                <p>
+                    Die Schwelle ist <strong>kumulativ</strong>, nicht „250 Klicks in einem
+                    Zeitfenster" — der Balken merkt sich den Stand über die ganze Sitzung.
+                    Autoklicker laden ihn mit auf.
+                </p>
+                <p>
+                    Economy V3 hat die Schwelle von 1.000 auf 250 gesenkt und den Multiplikator von
+                    ×2 auf ×3 angehoben. Vorher kamen selbst die aktivsten Spieler auf nur vier bis
+                    sieben Goldläufe <em>pro Monat</em>.
+                </p>
                 <p>
                     Der Klick-Charge-Balken wird beim Prestige zurückgesetzt. Multiple Goldläufe
                     pro Run sind erreichbar — nach jedem Auslösen lädt der Balken wieder bei 0 los.
@@ -278,8 +255,8 @@ clickChargeThreshold = 1.000 manuelle Klicks</code></pre>
                     <table class="wiki-table">
                         <thead><tr><th>Event</th><th>Spawn-Intervall</th><th>Sichtbar</th><th>Reward (× CPS)</th></tr></thead>
                         <tbody>
-                            <tr><td>Goldkaktus</td><td>1,5–3,5 min</td><td>10 s</td><td>5 Minuten Auto-Produktion (= 300 × CPS)</td></tr>
-                            <tr><td>Rubinkaktus</td><td>10–22 min</td><td>10 s</td><td>30 Minuten Auto-Produktion (= 1.800 × CPS)</td></tr>
+                            <tr><td>Goldkaktus</td><td>1–2,5 min</td><td>10 s</td><td>10 Minuten Auto-Produktion (= 600 × CPS)</td></tr>
+                            <tr><td>Rubinkaktus</td><td>6–14 min</td><td>10 s</td><td>2 Stunden Auto-Produktion (= 7.200 × CPS)</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -316,17 +293,25 @@ clickChargeThreshold = 1.000 manuelle Klicks</code></pre>
                 </p>
 
                 <h3>Verfügbarer Nopal</h3>
-                <pre><code>verfügbarerNopalGesamtwert = floor((totalEarned / 100.000) ^ 0.35)
+                <pre><code>verfügbarerNopalGesamtwert = floor((totalEarned / 1.000.000) ^ 0.35)
 neuerNopal = verfügbarerNopalGesamtwert − bereitsErarbeiteterNopal</code></pre>
                 <p>
                     Die <strong>0.35-Exponent</strong>-Kurve macht hohe Nopal-Werte exponentiell
-                    teurer. Du brauchst <code>(n)^(1/0.35) × 100.000</code> totalEarned für n Nopal.
+                    teurer. Du brauchst <code>n^(1/0.35) × 1.000.000</code> totalEarned für n Nopal.
                 </p>
 
                 <h3>Prestige-Multiplikator</h3>
-                <pre><code>prestigeMultiplier = 1 + nopal^0.6 × 0.15</code></pre>
+                <pre><code>prestigeMultiplier = 1 + nopal^0.4 × 0.25</code></pre>
                 <p>
-                    Mit jedem zusätzlichen Nopal steigt der Multiplikator immer flacher (Exponent 0.6).
+                    Mit jedem zusätzlichen Nopal steigt der Multiplikator flacher (Exponent 0.4),
+                    startet dafür aber deutlich steiler als vor Economy V3.
+                </p>
+                <p>
+                    Der Grund für die Überarbeitung: Unter der alten Kurve
+                    (<code>Basis 100.000</code>, <code>1 + n^0.6 × 0.15</code>) hat der beste Spieler
+                    der Saison <strong>kein einziges Mal</strong> prestiged — es lohnte sich schlicht
+                    nicht. Der erste Nopal fällt jetzt bei 1 Mio. statt bei 100.000, und der Bonus
+                    wächst spürbarer.
                 </p>
 
                 <h3>Beispiel-Werte</h3>
@@ -334,17 +319,23 @@ neuerNopal = verfügbarerNopalGesamtwert − bereitsErarbeiteterNopal</code></pr
                     <table class="wiki-table">
                         <thead><tr><th>Nopal</th><th>Benötigtes totalEarned</th><th>Multiplikator</th></tr></thead>
                         <tbody>
-                            <tr><td>1</td><td>100.000</td><td>×1,15</td></tr>
-                            <tr><td>3</td><td>2,31 Mio</td><td>×1,29</td></tr>
-                            <tr><td>6</td><td>16,72 Mio</td><td>×1,44</td></tr>
-                            <tr><td>10</td><td>71,97 Mio</td><td>×1,60</td></tr>
-                            <tr><td>25</td><td>986,54 Mio</td><td>×2,03</td></tr>
-                            <tr><td>50</td><td>7,15 Mrd</td><td>×2,57</td></tr>
-                            <tr><td>100</td><td>51,79 Mrd</td><td>×3,38</td></tr>
-                            <tr><td>1.000</td><td>37,28 Bio</td><td>×10,46</td></tr>
+                            <tr><td>1</td><td>1 Mio</td><td>×1,25</td></tr>
+                            <tr><td>2</td><td>11,3 Mio</td><td>×1,33</td></tr>
+                            <tr><td>11</td><td>1 Mrd</td><td>×1,65</td></tr>
+                            <tr><td>125</td><td>1 Bio</td><td>×2,72</td></tr>
+                            <tr><td>1.412</td><td>1 Brd</td><td>×5,55</td></tr>
+                            <tr><td>15.848</td><td>1 Trio</td><td>×12,97</td></tr>
+                            <tr><td>177.827</td><td>1 Trd</td><td>×32,47</td></tr>
                         </tbody>
                     </table>
                 </div>
+                <p>
+                    Wann sich Prestige <em>lohnt</em>, beantwortet die Tabelle bewusst nicht — dafür
+                    gibt es den Prestige-Rechner im Spiel. Der Grund: <code>totalEarned</code> wird
+                    beim Prestige nie zurückgesetzt, deshalb ist „länger spielen bringt mehr" immer
+                    wahr und als Entscheidungshilfe wertlos. Die einzige sinnvolle Zielgröße ist der
+                    <code>totalEarned</code>-Stand am <strong>Saisonende</strong>.
+                </p>
 
                 <h3>Was bleibt / wird zurückgesetzt</h3>
                 <div class="reset-grid">
@@ -401,7 +392,7 @@ neuerNopal = verfügbarerNopalGesamtwert − bereitsErarbeiteterNopal</code></pr
   achievements: ["first-click", ...],
   prestige: { nopal: 0, totalNopalEarned: 0, prestiges: 0 },
   events: {
-    clickCharge: 0,           // 0..1000
+    clickCharge: 0,           // 0..250
     frenzyUntil: 0,           // timestamp
     frenzies: 0,
     goldenHits: 0,
@@ -434,5 +425,7 @@ neuerNopal = verfügbarerNopalGesamtwert − bereitsErarbeiteterNopal</code></pr
     <script src="../wiki.js"></script>
     <script type="module" src="/js/i18n.js"></script>
     <script type="module" src="/js/auth-nav.js"></script>
+    <!-- Baut die Gebäude-, Upgrade- und Abzeichen-Tabellen aus data.js. -->
+    <script type="module" src="./tables.js"></script>
 </body>
 </html>
