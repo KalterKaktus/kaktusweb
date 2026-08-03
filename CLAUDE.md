@@ -103,6 +103,10 @@ netlify.toml            Hosting-Config + Function-Schedules
 | `data-i18n-attr="attr:key,attr2:key2"` | setzt Attribute, z.B. `aria-label` oder `placeholder` |
 
 ### Wichtige Eigenheiten
+- ⚠️ **`DICT_VERSION` in `js/i18n.js` bei JEDER Änderung an de.json/ru.json
+  hochzählen.** Die Dictionaries werden mit `cache: "force-cache"` geladen —
+  ohne neue Version sieht der Browser die neuen Strings nie und `t()` liefert
+  weiter den rohen Key zurück.
 - **Der Flaggen-Switcher lebt in `i18n.js`, nicht in `auth-nav.js`.** Grund:
   `auth-nav.js` hängt über `supabase-client.js` an einem statischen `esm.sh`-Import.
   Ist das CDN langsam oder blockiert, wird `auth-nav.js` nie evaluiert und die

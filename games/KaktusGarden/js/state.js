@@ -1,48 +1,21 @@
-import { GUARANTEED_SEED, PLANTS, PLANT_ORDER, PRODUCTS, RESTOCK_MS, TOOLS } from "./data/plants.js";
+import { CROPS, CROP_ORDER } from "./data/crops.js";
+import { PLOT_CELLS } from "./data/world.js";
 
-export const SAVE_VERSION = 2;
-export const GRID_SIZE = 16;
+/** Save-Version 4 — Inventar mit Gewichten und Ladenbestand. */
+export const SAVE_VERSION = 4;
 
-const FIELD_STATES = new Set(["empty", "growing", "ready"]);
+/** So viele Fächer zeigt die Leiste unten. Der Rest wandert in die Tasche. */
+export const HOTBAR_SLOTS = 9;
+
+/** Der Laden füllt alle fünf Minuten auf, ausgerichtet an der vollen Stunde. */
+export const RESTOCK_MS = 5 * 60 * 1000;
 
 function number(value, fallback = 0) {
-  return Number.isFinite(Number(value)) ? Number(value) : fallback;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-function countMap(value, allowed) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
-  return Object.fromEntries(Object.entries(value)
-    .filter(([id]) => allowed.has(id))
-    .map(([id, count]) => [id, Math.max(0, Math.floor(number(count)))]));
-}
-
-export function emptyField(fieldId) {
-  return {
-    fieldId,
-    state: "empty",
-    plantId: null,
-    plantedAt: null,
-    readyAt: null,
-    lastHarvestAt: null,
-    nextHarvestAt: null,
-  };
-}
-
-function normalizeField(raw, fieldId) {
-  if (!raw || !FIELD_STATES.has(raw.state) || (raw.plantId && !PLANTS[raw.plantId])) {
-    return emptyField(fieldId);
-  }
-  if (raw.state !== "empty" && !PLANTS[raw.plantId]) return emptyField(fieldId);
-  return {
-    fieldId,
-    state: raw.state,
-    plantId: raw.state === "empty" ? null : raw.plantId,
-    plantedAt: raw.state === "empty" ? null : Math.max(0, number(raw.plantedAt, Date.now())),
-    readyAt: raw.state === "empty" ? null : Math.max(0, number(raw.readyAt, Date.now())),
-    lastHarvestAt: raw.lastHarvestAt == null ? null : Math.max(0, number(raw.lastHarvestAt)),
-    nextHarvestAt: raw.nextHarvestAt == null ? null : Math.max(0, number(raw.nextHarvestAt)),
-  };
-}
+/* ------------------------------------------------------------ Ladenbestand */
 
 function hashSeed(value) {
   let hash = 2166136261;
@@ -62,110 +35,109 @@ function randomFactory(seed) {
   };
 }
 
+export function restockSlot(now = Date.now()) {
+  return Math.floor(now / RESTOCK_MS);
+}
+
 /**
- * Würfelt das Angebot für die nächsten fünf Minuten aus. Jede Pflanze hat ihre
- * eigene Erscheinungschance (siehe RESTOCK_RULES in data/plants.js) — bei einem
- * Restock fehlen deshalb absichtlich viele Einträge, und epische oder legendäre
- * Samen sind echte Glücksfunde. Nur GUARANTEED_SEED liegt immer aus, sonst
- * könnten Spieler ohne Samen und ohne Münzen nicht weiterspielen.
+ * Der Bestand hängt allein am Zeitfenster, nicht am Spieler — dadurch sehen
+ * alle im Dorf dasselbe Angebot, so wie im Vorbild.
  */
-export function createRestock(now = Date.now(), identity = "local") {
-  const nextRestockAt = now + RESTOCK_MS;
-  const random = randomFactory(hashSeed(`${identity}:${Math.floor(now / 1000)}`));
+export function createStock(slot = restockSlot()) {
+  const random = randomFactory(hashSeed(`seedshop:${slot}`));
   const stock = {};
-  for (const plantId of PLANT_ORDER) {
-    const plant = PLANTS[plantId];
-    const available = plantId === GUARANTEED_SEED || random() < plant.restockChance;
-    stock[plantId] = available
-      ? plant.restockMin + Math.floor(random() * (plant.restockMax - plant.restockMin + 1))
+  for (const id of CROP_ORDER) {
+    const crop = CROPS[id];
+    const available = random() < crop.stockChance;
+    stock[id] = available
+      ? crop.stockMin + Math.floor(random() * (crop.stockMax - crop.stockMin + 1))
       : 0;
   }
-  return { stock, nextRestockAt, generatedAt: now };
+  return { slot, stock };
 }
 
-export function createInitialState(playerId = "local-player", now = Date.now()) {
+export function nextRestockAt(slot) {
+  return (slot + 1) * RESTOCK_MS;
+}
+
+/* ---------------------------------------------------------------- Zustand */
+
+export function createInitialState() {
   return {
     version: SAVE_VERSION,
-    playerId,
-    coins: 100,
-    gems: 0,
-    level: 1,
-    xp: 0,
-    inventories: {
-      seeds: { carrot: 3 },
-      harvests: {},
-      tools: {},
-    },
-    fields: Array.from({ length: GRID_SIZE }, (_, fieldId) => emptyField(fieldId)),
-    shop: createRestock(now, playerId),
-    stats: { totalHarvested: 0, totalSold: 0, totalCoinsEarned: 0 },
-    settings: { reducedMotion: false },
-    lastSavedAt: now,
+    coins: 50,
+    seeds: { carrot: 5 },
+    // Geerntete Früchte einzeln, weil jede ihr eigenes Gewicht hat.
+    harvest: [],
+    cells: Array.from({ length: PLOT_CELLS }, () => null),
+    shop: createStock(),
+    selectedSlot: 0,
+    lastSavedAt: Date.now(),
   };
 }
 
-export function normalizeState(raw, playerId = "local-player") {
-  const initial = createInitialState(playerId);
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return initial;
-  const fields = Array.from({ length: GRID_SIZE }, (_, fieldId) => normalizeField(raw.fields?.[fieldId], fieldId));
-  const shopStock = countMap(raw.shop?.stock, new Set(PLANT_ORDER));
-  const hasCompleteStock = PLANT_ORDER.every((plantId) => Object.hasOwn(raw.shop?.stock || {}, plantId));
-  const normalizedShop = hasCompleteStock ? {
-    stock: Object.fromEntries(PLANT_ORDER.map((id) => [id, shopStock[id] || 0])),
-    nextRestockAt: Math.max(0, number(raw.shop?.nextRestockAt, Date.now())),
-    generatedAt: Math.max(0, number(raw.shop?.generatedAt, Date.now())),
-  } : createRestock(Date.now(), playerId);
-  const state = {
-    ...initial,
+function normalizeCell(raw) {
+  if (!raw || !CROPS[raw.cropId]) return null;
+  return {
+    cropId: raw.cropId,
+    plantedAt: Math.max(0, number(raw.plantedAt, Date.now())),
+    readyAt: Math.max(0, number(raw.readyAt, Date.now())),
+    harvested: Math.max(0, Math.floor(number(raw.harvested))),
+  };
+}
+
+export function normalizeState(raw) {
+  const initial = createInitialState();
+  if (!raw || typeof raw !== "object" || number(raw.version) !== SAVE_VERSION) return initial;
+  const known = new Set(CROP_ORDER);
+  return {
     version: SAVE_VERSION,
-    playerId: String(raw.playerId || playerId),
-    coins: Math.max(0, Math.floor(number(raw.coins, 100))),
-    gems: Math.max(0, Math.floor(number(raw.gems))),
-    level: Math.max(1, Math.floor(number(raw.level, 1))),
-    xp: Math.max(0, Math.floor(number(raw.xp))),
-    inventories: {
-      seeds: countMap(raw.inventories?.seeds, new Set(PLANT_ORDER)),
-      harvests: countMap(raw.inventories?.harvests, new Set(Object.keys(PRODUCTS))),
-      tools: countMap(raw.inventories?.tools, new Set(Object.keys(TOOLS))),
-    },
-    fields,
-    shop: normalizedShop,
-    stats: {
-      totalHarvested: Math.max(0, Math.floor(number(raw.stats?.totalHarvested))),
-      totalSold: Math.max(0, Math.floor(number(raw.stats?.totalSold))),
-      totalCoinsEarned: Math.max(0, Math.floor(number(raw.stats?.totalCoinsEarned))),
-    },
-    settings: { reducedMotion: Boolean(raw.settings?.reducedMotion) },
+    coins: Math.max(0, Math.floor(number(raw.coins))),
+    seeds: Object.fromEntries(Object.entries(raw.seeds || {})
+      .filter(([id, count]) => known.has(id) && number(count) > 0)
+      .map(([id, count]) => [id, Math.max(0, Math.floor(number(count)))])),
+    harvest: Array.isArray(raw.harvest)
+      ? raw.harvest
+        .filter((item) => known.has(item?.cropId) && number(item?.weight) > 0)
+        .map((item) => ({ cropId: item.cropId, weight: number(item.weight) }))
+        .slice(0, 500)
+      : [],
+    cells: Array.from({ length: PLOT_CELLS }, (_, index) => normalizeCell(raw.cells?.[index])),
+    shop: createStock(),
+    selectedSlot: Math.max(0, Math.min(HOTBAR_SLOTS - 1, Math.floor(number(raw.selectedSlot)))),
     lastSavedAt: Math.max(0, number(raw.lastSavedAt, Date.now())),
   };
-  return advanceState(state).state;
 }
 
-export function advanceState(state, now = Date.now()) {
-  let changed = false;
-  for (const field of state.fields) {
-    if (field.state === "growing" && now >= field.readyAt) {
-      field.state = "ready";
-      changed = true;
-    }
+/* --------------------------------------------------------------- Inventar */
+
+/**
+ * Die Leiste zeigt erst Samen, dann Ernte — beides nach Pflanze gruppiert und
+ * in fester Reihenfolge, damit ein Fach nicht bei jedem Kauf springt.
+ */
+export function inventoryStacks(state) {
+  const stacks = [];
+  for (const id of CROP_ORDER) {
+    if (state.seeds[id] > 0) stacks.push({ kind: "seed", id, count: state.seeds[id] });
   }
-  if (now >= state.shop.nextRestockAt) {
-    state.shop = createRestock(now, state.playerId);
-    changed = true;
+  for (const id of CROP_ORDER) {
+    const items = state.harvest.filter((item) => item.cropId === id);
+    if (items.length) stacks.push({ kind: "crop", id, count: items.length, items });
   }
-  return { state, changed };
+  return stacks;
 }
 
-export function addExperience(state, amount) {
-  state.xp += Math.max(0, Math.floor(amount));
-  while (state.xp >= state.level * state.level * 20) state.level += 1;
+export function selectedStack(state) {
+  return inventoryStacks(state)[state.selectedSlot] || null;
 }
 
-export function farmSnapshot(state, playerId = state.playerId) {
-  return {
-    playerId,
-    gridSize: { columns: 4, rows: 4 },
-    fields: state.fields.map((field) => ({ ...field })),
-    capturedAt: Date.now(),
-  };
+export function takeSeed(state, cropId) {
+  if (!state.seeds[cropId]) return false;
+  state.seeds[cropId] -= 1;
+  if (state.seeds[cropId] <= 0) delete state.seeds[cropId];
+  return true;
+}
+
+export function addSeed(state, cropId, amount = 1) {
+  state.seeds[cropId] = (state.seeds[cropId] || 0) + amount;
 }
