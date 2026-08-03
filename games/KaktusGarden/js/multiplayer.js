@@ -334,6 +334,9 @@ function fromRpcError(error, fallbackCode = "multiplayer_failed") {
   if (combined.includes("garden_lease_expired") || combined.includes("lease_expired")) {
     return multiplayerError("lease_expired", "Die Server-Zuweisung ist abgelaufen.", error);
   }
+  if (combined.includes("garden_session_replaced") || combined.includes("session_replaced")) {
+    return multiplayerError("session_replaced", "Diese Sitzung wurde von einer neueren Verbindung übernommen.", error);
+  }
   if (combined.includes("garden_account_banned") || combined.includes("account_banned")) {
     return multiplayerError("account_banned", "Dieser Account ist gesperrt.", error);
   }
@@ -785,9 +788,9 @@ export class GardenMultiplayer {
       if (this.status === "degraded") this.setStatus("connected");
       return this.assignment;
     }).catch(async (error) => {
-      if (error.code === "lease_expired") {
+      if (["lease_expired", "session_replaced"].includes(error.code)) {
         this.setStatus("expired", { error });
-        await this.disconnect({ release: false });
+        await this.disconnect({ release: false, error });
       } else if (error.retryable) {
         this.setStatus("degraded", { error });
       }
@@ -902,11 +905,21 @@ export class GardenMultiplayer {
   receiveMovement(raw) {
     const movement = normalizeMovement(raw);
     if (!movement || movement.userId === this.user.id) return;
-    const presence = this.rosterByUser.get(movement.userId);
-    if (!presence
-      || presence.connectionId !== movement.connectionId
-      || presence.movementEpoch !== movement.movementEpoch
-      || presence.slotIndex !== movement.slotIndex) return;
+    const member = this.authoritativeMembers.get(movement.userId);
+    if (!member
+      || member.connectionId !== movement.connectionId
+      || member.slotIndex !== movement.slotIndex) return;
+    const livePresence = this.rosterByUser.get(movement.userId);
+    const presence = {
+      userId: member.userId,
+      connectionId: member.connectionId,
+      movementEpoch: movement.movementEpoch,
+      slotIndex: member.slotIndex,
+      displayName: member.displayName,
+      level: member.level,
+      skin: livePresence?.skin || member.skin || "",
+      onlineAt: livePresence?.onlineAt || movement.sentAt,
+    };
     const key = `${movement.userId}:${movement.connectionId}:${movement.movementEpoch}`;
     if (movement.sequence <= (this.remoteSequences.get(key) || -1)) return;
     this.remoteSequences.set(key, movement.sequence);
@@ -971,7 +984,7 @@ export class GardenMultiplayer {
     try { release?.(); } catch {}
   }
 
-  async disconnect({ release = true } = {}) {
+  async disconnect({ release = true, error = null } = {}) {
     if (this.status === "disconnected" || this.status === "idle") return;
     this.setStatus("disconnecting");
     window.clearInterval(this.heartbeatTimer);
@@ -993,7 +1006,7 @@ export class GardenMultiplayer {
     this.authoritativeMembers.clear();
     this.remoteSequences.clear();
     this.releaseTabLock();
-    this.setStatus("disconnected");
+    this.setStatus("disconnected", error ? { error } : {});
   }
 }
 

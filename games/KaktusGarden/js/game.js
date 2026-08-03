@@ -149,6 +149,14 @@ function redirectToLogin() {
 }
 
 function accessCopy(code) {
+  if (code === "session_replaced") {
+    return {
+      title: t("garden.session_replaced_title"),
+      message: t("garden.session_replaced_message"),
+      action: t("garden.retry_connection"),
+      href: window.location.href,
+    };
+  }
   if (code === "already_connected") {
     return {
       title: t("garden.already_connected_title"),
@@ -619,16 +627,11 @@ function ensureRemotePlayer(presence) {
 }
 
 function applyRoster(roster) {
-  const active = new Set();
   for (const presence of roster) {
     if (presence.userId === identity.id) continue;
-    active.add(presence.userId);
     ensureRemotePlayer(presence);
   }
-  for (const userId of remotePlayers.keys()) {
-    if (!active.has(userId)) remotePlayers.delete(userId);
-  }
-  roomPlayerCount = Math.max(1, roster.length);
+  roomPlayerCount = Math.max(1, roster.length, multiplayer?.snapshot?.members?.length || 0);
   renderRoomStatus();
   if (openShop === "crops") renderSheet();
   broadcastLocalMovement(true);
@@ -649,26 +652,34 @@ function applyRemoteMovement(movement) {
 
 function applyRoomSnapshot(snapshot) {
   const nextFarms = new Map();
+  const activePlayers = new Set();
   for (const member of snapshot.members) {
     if (member.userId === identity.id) continue;
+    activePlayers.add(member.userId);
     if (Array.isArray(member.cells)) {
       nextFarms.set(member.slotIndex, { userId: member.userId, cells: member.cells });
     }
-    const remote = remotePlayers.get(member.userId);
-    if (remote) remote.displayName = member.displayName || remote.displayName;
+    ensureRemotePlayer({
+      userId: member.userId,
+      slotIndex: member.slotIndex,
+      displayName: member.displayName,
+      skin: member.skin || skinFor(member.userId),
+    });
+  }
+  for (const userId of remotePlayers.keys()) {
+    if (!activePlayers.has(userId)) remotePlayers.delete(userId);
   }
   remoteFarms = nextFarms;
-  if (!roomPlayerCount) {
-    roomPlayerCount = Math.max(1, snapshot.members.length);
-    renderRoomStatus();
-  }
+  roomPlayerCount = Math.max(1, snapshot.members.length);
+  renderRoomStatus();
+  if (openShop === "crops") renderSheet();
 }
 
 function renderRoomStatus() {
   const assignment = multiplayer?.assignment;
   elements.serverStatus.hidden = !assignment;
   if (!assignment) return;
-  elements.serverName.textContent = t("garden.server_name", { name: assignment.roomLabel });
+  elements.serverName.textContent = t("garden.players_label");
   elements.serverCount.textContent = t("garden.server_players", {
     count: Math.max(1, Math.min(6, roomPlayerCount || assignment.occupancy || 1)),
   });

@@ -206,6 +206,8 @@ englischen Originalnamen (alle 132 abgedeckt).
 - **Matchmaking:** `garden_join_room()` priorisiert immer Server A und legt erst
   bei 6/6 den nächsten Raum an. Presence zeigt die Belegung, Broadcast verteilt
   Bewegungen; ein sicherer Snapshot liefert ausschließlich die 64 Farmzellen.
+  Pro Account existiert nur ein Slot; die neueste Session übernimmt ihn und
+  kann über einen Invite-Code in den gewünschten Raum wechseln.
 - **Daten:** `js/data/crops.js` (19 Pflanzen), Save-Version 4 in `js/state.js`,
   Cloud-/Outbox-Logik in `js/cloud.js`, Räume in `js/multiplayer.js`.
 - Jede persistierbare Aktion erhöht `revision`, wird sofort lokal in einer

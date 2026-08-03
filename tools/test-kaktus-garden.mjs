@@ -202,6 +202,9 @@ const remoteConnection = "00000000-0000-4000-8000-000000000030";
 multiplayer.rosterByUser.set(remoteId, {
   userId: remoteId, connectionId: remoteConnection, movementEpoch: "page-a", slotIndex: 1,
 });
+multiplayer.authoritativeMembers.set(remoteId, {
+  userId: remoteId, connectionId: remoteConnection, slotIndex: 1, displayName: "Servername", level: 7,
+});
 multiplayer.receiveMovement({
   userId: remoteId, connectionId: remoteConnection, movementEpoch: "page-a", slotIndex: 1,
   tileX: 22, tileY: 22, fromX: 22, fromY: 22, facing: "down", sequence: 99,
@@ -214,6 +217,17 @@ multiplayer.receiveMovement({
   tileX: 22, tileY: 22, fromX: 22, fromY: 22, facing: "down", sequence: 1,
 });
 assert.equal(remoteMovements.length, 2, "reload epoch must reset movement sequence safely");
+
+multiplayer.rosterByUser.clear();
+multiplayer.authoritativeMembers.set(remoteId, {
+  userId: remoteId, connectionId: remoteConnection, slotIndex: 1, displayName: "Snapshotspieler", level: 4,
+});
+multiplayer.receiveMovement({
+  userId: remoteId, connectionId: remoteConnection, movementEpoch: "snapshot-only", slotIndex: 1,
+  tileX: 23, tileY: 22, fromX: 22, fromY: 22, facing: "right", sequence: 1,
+});
+assert.equal(remoteMovements.length, 3, "authoritative snapshot must accept movement before Presence sync");
+assert.equal(remoteMovements[2].presence.displayName, "Snapshotspieler");
 
 multiplayer.authoritativeMembers.set(remoteId, {
   userId: remoteId, connectionId: remoteConnection, slotIndex: 1, displayName: "Servername", level: 7,
@@ -240,8 +254,8 @@ if (typeof BroadcastChannel === "function") {
 
 for (const dictionary of dictionaries) {
   for (const key of [
-    "inventory_full", "server_name", "server_players", "server_boost", "already_connected_title",
-    "room_full_title", "connection_failed_title", "copy_room_link",
+    "inventory_full", "players_label", "server_players", "server_boost", "already_connected_title",
+    "room_full_title", "connection_failed_title", "copy_room_link", "session_replaced_title",
   ]) {
     assert.ok(dictionary.garden?.[key], `missing garden translation: ${key}`);
   }
@@ -269,5 +283,14 @@ assert.ok(migration.includes("extract(epoch from clock_timestamp()) / 300"));
 assert.ok(!migration.includes("/ 300) - 1"), "past offline shop slots must remain saveable");
 assert.ok(migration.includes("9007199254740990"));
 assert.ok(migration.includes("'connectionId', member.connection_id::text"));
+
+const takeoverMigration = readFileSync(
+  resolve(root, "supabase", "migrations", "20260803153000_kaktus_garden_latest_session_wins.sql"),
+  "utf8",
+);
+assert.ok(takeoverMigration.includes("v_member.connection_id = p_connection_id"));
+assert.ok(takeoverMigration.includes("delete from public.kaktus_garden_room_members"));
+assert.ok(takeoverMigration.includes("v_current_room.invite_code = v_invite_code"));
+assert.ok(takeoverMigration.includes("garden_session_replaced"));
 
 console.log(`KaktusGarden checks passed: ${CROP_ORDER.length} crops, 6 plots, inventory, restock, i18n and multiplayer schema.`);

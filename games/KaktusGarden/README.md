@@ -109,14 +109,16 @@ Beim Join priorisiert `garden_join_room()` immer Server A. Erst wenn dessen
 sechs Slots belegt sind, wird der nächste Raum verwendet. Presence zeigt die
 Belegung, Broadcast überträgt Bewegungen und ein serverseitiger Snapshot lädt
 nur die sichtbaren Farmzellen der aktuellen Raummitglieder. Jeder Account kann
-nur einen aktiven Slot belegen. Fremde Grundstücke darf man betreten und
+nur einen aktiven Slot belegen; die neueste Browser-Session übernimmt diesen
+Slot und darf über einen Invite-Code in den gewünschten Raum wechseln. Fremde Grundstücke darf man betreten und
 ansehen, aber nicht bepflanzen oder ernten.
 
 Noch Platzhalter: Gems, Profil, Statistik, Werkzeugladen sowie die geschlossenen
 Eier- und Tierläden.
 
 Die Datenbankseite liegt in
-`supabase/migrations/20260803120000_kaktus_garden_multiplayer.sql`. Sie muss im
+`supabase/migrations/20260803120000_kaktus_garden_multiplayer.sql` plus der
+Takeover-Ergänzung `20260803153000_kaktus_garden_latest_session_wins.sql`. Sie müssen im
 Supabase-Projekt angewendet sein, bevor Join und Realtime lokal oder live
 funktionieren.
 

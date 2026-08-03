@@ -248,7 +248,8 @@ englischen Originalnamen (alle 132 abgedeckt).
   sechs Grundstücken à 8×8 = 64 Pflanzfeldern. Nur das eigene Grundstück ist
   veränderbar; fremde Grundstücke sind begehbar und read-only.
 - **Matchmaking:** `garden_join_room()` priorisiert Server A bis 6/6 und legt
-  erst danach Server B an. Ein Account kann nur einen aktiven Slot belegen.
+  erst danach Server B an. Ein Account kann nur einen aktiven Slot belegen;
+  die neueste Session übernimmt ihn und kann einem Invite in einen anderen Raum folgen.
   Presence synchronisiert die Belegung, Broadcast die Rasterbewegung.
 - **Cloud:** `js/cloud.js` schreibt Save v4 nach jeder Aktion mit monotoner
   `revision` in `game_saves`; eine localStorage-Outbox verhindert Verlust beim
