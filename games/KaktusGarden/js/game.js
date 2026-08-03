@@ -1,9 +1,9 @@
 import { onLanguageChange, ready as i18nReady, t } from "/js/i18n.js";
-import { TILE, VILLAGE_SPAWN, isWalkable } from "./data/world.js";
+import { PLOTS, TILE, VILLAGE_SPAWN, isWalkable } from "./data/world.js";
+import { CROPS, cropIcon } from "./data/crops.js";
 import { createCamera, focusCamera, resizeCamera } from "./engine/camera.js";
 import { createInput } from "./engine/input.js";
 import { bakeVillage } from "./render/village.js";
-import { createDebugGrid } from "./render/debugGrid.js";
 import {
   actorDrawOrigin,
   drawActor,
@@ -16,16 +16,34 @@ import { drawCrops, loadCropSheets } from "./render/crops.js";
 import { contextAt, teleportTarget } from "./systems/context.js";
 import { buySeed, cellState, harvestCell, plantSeed, sellHarvest } from "./systems/garden.js";
 import { loadIdentity } from "./systems/identity.js";
-import { createPlayer, playerWorldPosition, setPlayerTile, updatePlayer } from "./systems/player.js";
 import {
-  HOTBAR_SLOTS, createInitialState, createStock, inventoryStacks,
-  nextRestockAt, normalizeState, restockSlot, selectedStack,
+  STEP_MS,
+  createPlayer,
+  isMoving,
+  playerWorldPosition,
+  setPlayerTile,
+  updatePlayer,
+} from "./systems/player.js";
+import {
+  HOTBAR_SLOTS,
+  bumpRevision,
+  canAddInventoryStack,
+  createInitialState,
+  createStock,
+  inventoryStacks,
+  nextRestockAt,
+  normalizeState,
+  restockSlot,
+  selectedStack,
 } from "./state.js";
 import { createHotbar } from "./ui/hotbar.js";
 import { renderPlaceholder, renderSeedShop, renderSellShop } from "./ui/shopPanel.js";
 import { coins as formatCoins, duration, weight as formatWeight } from "./ui/format.js";
-import { CROPS, cropIcon, cropValue } from "./data/crops.js";
-import { PLOTS } from "./data/world.js";
+import { createGardenCloudStore, requireGardenSession } from "./cloud.js";
+import {
+  createGardenMultiplayer,
+  gardenRoomCodeFromUrl,
+} from "./multiplayer.js";
 
 const elements = {
   loader: document.getElementById("garden-loading"),
@@ -34,6 +52,9 @@ const elements = {
   teleports: document.querySelector(".hud-teleports"),
   coins: document.getElementById("coin-count"),
   gems: document.getElementById("gem-count"),
+  serverStatus: document.getElementById("server-status"),
+  serverName: document.getElementById("server-name"),
+  serverCount: document.getElementById("server-count"),
   interactButton: document.getElementById("interact-button"),
   interactLabel: document.getElementById("interact-label"),
   contextTag: document.getElementById("context-tag"),
@@ -50,42 +71,60 @@ const elements = {
   statsButton: document.getElementById("stats-button"),
   settingsButton: document.getElementById("settings-button"),
   settingsDialog: document.getElementById("settings-dialog"),
-  gridSetting: document.getElementById("setting-grid"),
+  access: document.getElementById("garden-access"),
+  accessTitle: document.getElementById("access-title"),
+  accessMessage: document.getElementById("access-message"),
+  accessAction: document.getElementById("access-action"),
   toast: document.getElementById("toast"),
 };
 
-/** Anzeige-Einstellungen sind Geräte-Sache und bleiben lokal. */
-const SETTINGS_KEY = "kaktus-garden-settings";
-const SAVE_KEY = "kaktus-garden-save-v4";
-
-/** Sichtbarer Weltausschnitt in Tiles — daraus ergibt sich der Zoom. */
 const TARGET_VIEW_TILES = 21;
 const MIN_ZOOM = 2;
 const MAX_ZOOM = 5;
+const RESETTABLE_SAVE_ERRORS = new Set([
+  "invalid_payload",
+  "unsupported_version",
+  "invalid_revision",
+  "invalid_cells",
+  "invalid_coins",
+  "invalid_seeds",
+  "invalid_harvest",
+  "invalid_shop",
+  "invalid_inventory",
+  "invalid_selection",
+  "invalid_saved_at",
+]);
 
 const ctx = elements.canvas.getContext("2d");
 const camera = createCamera();
 const input = createInput();
 const player = createPlayer(VILLAGE_SPAWN.x, VILLAGE_SPAWN.y);
-
-/** Kamera auf ganze Weltpixel gerundet — siehe draw(). */
 const view = { x: 0, y: 0, w: 0, h: 0 };
 
 let village = null;
-let identity = { id: "local", name: "", level: 1, signedIn: false };
-/** Bis das Multiplayer-Netz da ist, gehört jedem die erste Parzelle. */
-let ownPlotIndex = 0;
+let identity = { id: "", name: "", level: 1, signedIn: false };
+let ownPlotIndex = null;
 let save = createInitialState();
+let cloudStore = null;
+let multiplayer = null;
+let remoteFarms = new Map();
+const remotePlayers = new Map();
+let roomPlayerCount = 0;
 let renderHotbar = null;
-let saveTimer = null;
 let currentContext = { kind: "none", enabled: false };
+let openShop = null;
+let currentAccessIssue = null;
 let zoom = 3;
 let devicePixels = 1;
 let lastFrame = 0;
 let toastTimer = null;
-let debugGrid = null;
-let showGrid = false;
 let resizeRetry = null;
+let lastMovementSignature = "";
+let lastMultiplayerStatus = "idle";
+
+function gardenNow() {
+  return multiplayer?.now?.() ?? Date.now();
+}
 
 function showToast(message) {
   window.clearTimeout(toastTimer);
@@ -94,17 +133,65 @@ function showToast(message) {
   toastTimer = window.setTimeout(() => elements.toast.classList.remove("is-visible"), 2200);
 }
 
-/**
- * Zoom und Canvasgröße. Gezeichnet wird in Gerätepixeln, damit die Pixelkanten
- * scharf bleiben; der Zoom ist immer ganzzahlig.
- */
+function redirectToLogin() {
+  const next = `${window.location.pathname}${window.location.search}`;
+  window.location.replace(`/login.html?next=${encodeURIComponent(next)}`);
+}
+
+function accessCopy(code) {
+  if (code === "already_connected") {
+    return {
+      title: t("garden.already_connected_title"),
+      message: t("garden.already_connected_message"),
+      action: t("garden.back_to_games"),
+      href: "/games/",
+    };
+  }
+  if (code === "room_full") {
+    return {
+      title: t("garden.room_full_title"),
+      message: t("garden.room_full_message"),
+      action: t("garden.join_best_server"),
+      href: window.location.pathname,
+    };
+  }
+  return {
+    title: t("garden.connection_failed_title"),
+    message: t("garden.connection_failed_message"),
+    action: t("garden.retry_connection"),
+    href: window.location.href,
+  };
+}
+
+function showAccessIssue(code = "connection_failed") {
+  currentAccessIssue = code;
+  input.clear();
+  const copy = accessCopy(code);
+  elements.accessTitle.textContent = copy.title;
+  elements.accessMessage.textContent = copy.message;
+  elements.accessAction.textContent = copy.action;
+  elements.accessAction.href = copy.href;
+  elements.accessAction.hidden = false;
+  elements.access.hidden = false;
+  elements.loader.classList.add("is-done");
+}
+
+function handleRequiredConnectionError(error) {
+  if (error?.code === "login_required") {
+    redirectToLogin();
+    return;
+  }
+  if (error?.code === "account_banned") {
+    window.location.replace("/login.html?banned=1");
+    return;
+  }
+  showAccessIssue(error?.code);
+}
+
 function resize() {
   const width = elements.stage.clientWidth;
   const height = elements.stage.clientHeight;
   if (!width || !height) {
-    // In einem Hintergrund-Tab geöffnet meldet die Bühne 0. Ohne erneuten
-    // Versuch bliebe die Zeichenfläche für immer auf ihrer Standardgröße —
-    // beim Wechseln auf den Tab wäre das Bild dann winzig.
     window.clearTimeout(resizeRetry);
     resizeRetry = window.setTimeout(resize, 200);
     return;
@@ -113,7 +200,6 @@ function resize() {
   devicePixels = Math.min(window.devicePixelRatio || 1, 2);
   const fitting = Math.min(width, height) / (TARGET_VIEW_TILES * TILE);
   zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.round(fitting * devicePixels)));
-
   elements.canvas.width = Math.floor(width * devicePixels);
   elements.canvas.height = Math.floor(height * devicePixels);
   elements.canvas.style.width = `${width}px`;
@@ -125,14 +211,97 @@ function resize() {
   focusCamera(camera, spot.x, spot.y, 1);
 }
 
-function step(delta) {
-  updatePlayer(player, input.state.direction, delta, isWalkable);
-  if (input.consumeInteract()) interact();
+function uiBlocksMovement() {
+  return Boolean(
+    openShop
+    || elements.settingsDialog.open
+    || !elements.access.hidden
+    || (multiplayer && multiplayer.status !== "connected"),
+  );
+}
 
+function applyMultiplayerStatus({ status, error = null }) {
+  const previous = lastMultiplayerStatus;
+  lastMultiplayerStatus = status;
+
+  if (status === "connected") {
+    input.clear();
+    renderRoomStatus();
+    return;
+  }
+
+  input.clear();
+  if (["degraded", "reconnecting"].includes(status)) {
+    if (!["degraded", "reconnecting"].includes(previous)) {
+      showToast(t("garden.connection_reconnecting"));
+    }
+    return;
+  }
+
+  if (["expired", "error", "disconnected"].includes(status)) {
+    showAccessIssue(error?.code || "connection_failed");
+    renderRoomStatus();
+  }
+}
+
+function updateRemotePlayers(delta) {
+  for (const remote of remotePlayers.values()) {
+    if (!isMoving(remote.player)) {
+      remote.player.walkTime = 0;
+      continue;
+    }
+    remote.player.stepProgress = Math.min(1, remote.player.stepProgress + delta / remote.stepMs);
+    remote.player.walkTime += delta;
+    if (!isMoving(remote.player)) {
+      remote.player.fromX = remote.player.tileX;
+      remote.player.fromY = remote.player.tileY;
+    }
+  }
+}
+
+function movementSignature() {
+  return [
+    player.fromX,
+    player.fromY,
+    player.tileX,
+    player.tileY,
+    player.facing,
+    isMoving(player) ? 1 : 0,
+  ].join(":");
+}
+
+function broadcastLocalMovement(force = false) {
+  if (!multiplayer || multiplayer.status !== "connected") return;
+  const signature = movementSignature();
+  if (!force && signature === lastMovementSignature) return;
+  lastMovementSignature = signature;
+  multiplayer.sendMovement({
+    tileX: player.tileX,
+    tileY: player.tileY,
+    fromX: player.fromX,
+    fromY: player.fromY,
+    facing: player.facing,
+    stepMs: STEP_MS,
+  });
+}
+
+function step(delta) {
+  const blocked = uiBlocksMovement();
+  // Ein Dialog kann mitten in einem 180-ms-Schritt geöffnet werden. In diesem
+  // Fall sofort sauber auf dem bereits gewählten Zielfeld einrasten, damit die
+  // Figur hinter dem Menü nicht noch sichtbar weiterläuft.
+  if (blocked && isMoving(player)) {
+    setPlayerTile(player, player.tileX, player.tileY);
+    lastMovementSignature = "";
+  }
+  updatePlayer(player, blocked ? null : input.state.direction, delta, isWalkable);
+  updateRemotePlayers(delta);
+
+  const wantsInteraction = input.consumeInteract();
+  if (!blocked && wantsInteraction && !isMoving(player)) interact();
+
+  broadcastLocalMovement();
   const spot = playerWorldPosition(player);
-  // Hart mitziehen statt weich nachlaufen: Kamera und Figur werden beide auf
-  // ganze Pixel gerundet, und nur wenn sie exakt im Gleichschritt sind, bleibt
-  // die Figur relativ zur Welt ruhig stehen.
   focusCamera(camera, spot.x, spot.y, 1);
   renderContext();
 }
@@ -145,6 +314,21 @@ function frame(timestamp) {
   window.requestAnimationFrame(frame);
 }
 
+function drawActorWithName(entry) {
+  drawActor(ctx, entry.player, entry.skin, view);
+}
+
+function drawNameForActor(entry) {
+  const origin = actorDrawOrigin(entry.player);
+  drawNameTag(
+    ctx,
+    entry.name,
+    (origin.centerX - view.x) * zoom,
+    (origin.y - view.y) * zoom - 2 * devicePixels,
+    devicePixels,
+  );
+}
+
 function draw() {
   if (!village) return;
   view.x = Math.round(camera.x);
@@ -155,32 +339,27 @@ function draw() {
   ctx.imageSmoothingEnabled = false;
   ctx.setTransform(zoom, 0, 0, zoom, 0, 0);
   ctx.clearRect(0, 0, view.w, view.h);
+  ctx.drawImage(village.canvas, view.x, view.y, view.w, view.h, 0, 0, view.w, view.h);
 
-  // Kameraausschnitt aus der vorgebackenen Welt.
-  ctx.drawImage(
-    village.canvas,
-    view.x, view.y, view.w, view.h,
-    0, 0, view.w, view.h,
-  );
+  for (const plot of PLOTS) {
+    const cells = plot.index === ownPlotIndex ? save.cells : remoteFarms.get(plot.index)?.cells;
+    if (cells) drawCrops(ctx, cells, plot, view);
+  }
 
-  drawCrops(ctx, save.cells, PLOTS[ownPlotIndex], view);
-  drawActor(ctx, player, skinFor(identity.id), view);
-  if (showGrid && debugGrid) debugGrid(ctx, view);
+  const actors = [{ player, skin: skinFor(identity.id), name: identity.name }];
+  for (const remote of remotePlayers.values()) {
+    actors.push({
+      player: remote.player,
+      skin: remote.skin || skinFor(remote.userId),
+      name: remote.displayName,
+    });
+  }
+  actors.sort((left, right) => actorDrawOrigin(left.player).centerY - actorDrawOrigin(right.player).centerY);
+  actors.forEach(drawActorWithName);
 
-  // Namensschild in Gerätepixeln, nicht im Weltzoom — sonst wäre die Schrift
-  // ein hochskalierter Klotz.
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  const origin = actorDrawOrigin(player);
-  drawNameTag(
-    ctx,
-    identity.name,
-    (origin.centerX - view.x) * zoom,
-    (origin.y - view.y) * zoom - 2 * devicePixels,
-    devicePixels,
-  );
+  actors.forEach(drawNameForActor);
 }
-
-/* --------------------------------------------------------- Aktionskontext */
 
 function iconStyle(cropId) {
   const icon = cropIcon(cropId);
@@ -192,12 +371,11 @@ function cropName(cropId) {
   return t(`garden.plants.${cropId}.name`);
 }
 
-/**
- * Was gerade möglich ist, hängt an drei Dingen: dem Feld unter den Füßen, dem
- * Zustand der Pflanze darauf und dem gewählten Fach in der Leiste. Aktionsknopf
- * und Infoschild lesen beide nur dieses eine Ergebnis.
- */
-function resolveAction(now = Date.now()) {
+function resolveAction(now = gardenNow()) {
+  if (isMoving(player) || !Number.isInteger(ownPlotIndex)) {
+    return { kind: "none", enabled: false, action: null };
+  }
+
   const base = contextAt(player.tileX, player.tileY, { ownPlotIndex });
   if (base.kind === "shop") return { ...base, action: "shop", label: t(base.labelKey) };
   if (base.kind === "closedShop") return { ...base, action: null, tag: { title: t("garden.shop_closed") } };
@@ -205,20 +383,24 @@ function resolveAction(now = Date.now()) {
 
   const cell = save.cells[base.cell];
   const state = cellState(cell, now);
-
   if (state === "ready") {
     const crop = CROPS[cell.cropId];
+    const full = !canAddInventoryStack(save, "crop", cell.cropId);
     const sub = crop.harvest === "multi"
       ? t("garden.yields", { value: crop.slots })
       : t("garden.worth", { value: formatCoins(crop.sellPrice) });
     return {
-      ...base, action: "harvest", label: t("garden.action_harvest"),
+      ...base,
+      action: "harvest",
+      disabled: full,
+      label: t(full ? "garden.inventory_full" : "garden.action_harvest"),
       tag: { cropId: cell.cropId, title: cropName(cell.cropId), sub },
     };
   }
   if (state === "growing") {
     return {
-      ...base, action: null,
+      ...base,
+      action: null,
       tag: { cropId: cell.cropId, title: cropName(cell.cropId), sub: duration(cell.readyAt - now) },
     };
   }
@@ -226,37 +408,64 @@ function resolveAction(now = Date.now()) {
   const stack = selectedStack(save);
   if (stack?.kind === "seed") {
     return {
-      ...base, action: "plant", seedId: stack.id, label: t("garden.action_plant"),
-      tag: { cropId: stack.id, title: cropName(stack.id), sub: t("garden.grows_in", { value: duration(CROPS[stack.id].growSeconds * 1000) }) },
+      ...base,
+      action: "plant",
+      seedId: stack.id,
+      label: t("garden.action_plant"),
+      tag: {
+        cropId: stack.id,
+        title: cropName(stack.id),
+        sub: t("garden.grows_in", { value: duration(CROPS[stack.id].growSeconds * 1000) }),
+      },
     };
   }
   return { ...base, action: null };
 }
 
-function renderContext(now = Date.now()) {
+function renderContext(now = gardenNow()) {
   currentContext = resolveAction(now);
   const { action, tag } = currentContext;
-
   elements.interactButton.hidden = !action;
+  elements.interactButton.disabled = Boolean(currentContext.disabled);
   if (action) {
     elements.interactLabel.textContent = currentContext.label;
-    elements.interactButton.classList.toggle("is-harvest", action === "harvest");
+    elements.interactButton.classList.toggle("is-harvest", action === "harvest" && !currentContext.disabled);
   }
 
   elements.contextTag.hidden = !tag;
-  if (tag) {
-    elements.contextTitle.textContent = tag.title;
-    elements.contextSub.textContent = tag.sub || "";
-    elements.contextSub.hidden = !tag.sub;
-    if (tag.cropId) elements.contextIcon.setAttribute("style", iconStyle(tag.cropId));
-    elements.contextIcon.hidden = !tag.cropId;
+  if (!tag) return;
+  elements.contextTitle.textContent = tag.title;
+  elements.contextSub.textContent = tag.sub || "";
+  elements.contextSub.hidden = !tag.sub;
+  if (tag.cropId) elements.contextIcon.setAttribute("style", iconStyle(tag.cropId));
+  elements.contextIcon.hidden = !tag.cropId;
+}
+
+function renderHud() {
+  renderHotbar?.(save);
+  elements.coins.textContent = formatCoins(save.coins);
+}
+
+function persist(reason = "action") {
+  bumpRevision(save);
+  save.lastSavedAt = gardenNow();
+  renderHud();
+  if (!cloudStore) return;
+  try {
+    cloudStore.schedule(save, { reason, immediate: true });
+    cloudStore.flushBestEffort();
+  } catch (error) {
+    console.error("KaktusGarden save scheduling failed:", error);
+    showToast(t("garden.save_failed"));
   }
 }
 
 function interact() {
-  const now = Date.now();
+  if (isMoving(player) || uiBlocksMovement()) return;
+  const now = gardenNow();
+  currentContext = resolveAction(now);
   const { action } = currentContext;
-  if (!action) return;
+  if (!action || currentContext.disabled) return;
 
   if (action === "shop") {
     openSheet(currentContext.id);
@@ -265,28 +474,32 @@ function interact() {
   if (action === "plant") {
     if (plantSeed(save, currentContext.cell, currentContext.seedId, now)) {
       clampSelection();
-      persist();
+      persist("plant");
+      renderContext(now);
     }
     return;
   }
   if (action === "harvest") {
     const result = harvestCell(save, currentContext.cell, now);
-    if (!result) return;
+    if (result?.reason === "inventoryFull") {
+      showToast(t("garden.inventory_full"));
+      renderContext(now);
+      return;
+    }
+    if (!result?.ok) return;
     const heaviest = result.items.reduce((best, item) => Math.max(best, item.weight), 0);
     showToast(t("garden.harvested", {
       amount: result.items.length,
       product: cropName(result.cropId),
       weight: formatWeight(heaviest),
     }));
-    persist();
+    persist("harvest");
+    renderContext(now);
   }
 }
 
-/* -------------------------------------------------------------- Ladenmenü */
-
-let openShop = null;
-
 function openSheet(shopId) {
+  input.clear();
   openShop = shopId;
   renderSheet();
   elements.sheet.hidden = false;
@@ -294,6 +507,7 @@ function openSheet(shopId) {
 }
 
 function closeSheet() {
+  input.clear();
   openShop = null;
   elements.sheet.hidden = true;
   elements.scrim.hidden = true;
@@ -301,9 +515,7 @@ function closeSheet() {
 
 function renderSheet() {
   if (!openShop) return;
-  // Ausdrücklich pro Laden, nicht „alles außer Samen ist Verkaufen" — sonst
-  // zeigt jeder noch nicht gebaute Laden versehentlich den Verkaufsstand.
-  if (openShop === "seeds") elements.sheetContent.innerHTML = renderSeedShop(save);
+  if (openShop === "seeds") elements.sheetContent.innerHTML = renderSeedShop(save, gardenNow());
   else if (openShop === "crops") elements.sheetContent.innerHTML = renderSellShop(save);
   else elements.sheetContent.innerHTML = renderPlaceholder(openShop);
 }
@@ -311,105 +523,165 @@ function renderSheet() {
 function onSheetClick(event) {
   const buy = event.target.closest("[data-buy]");
   if (buy) {
-    if (buySeed(save, buy.dataset.buy)) {
+    const result = buySeed(save, buy.dataset.buy);
+    if (result?.reason === "inventoryFull") {
+      showToast(t("garden.inventory_full"));
+      return;
+    }
+    if (result === true) {
       showToast(t("garden.bought", { crop: cropName(buy.dataset.buy) }));
-      persist();
+      persist("buy-seed");
       renderSheet();
     }
     return;
   }
+
   const sell = event.target.closest("[data-sell]");
   if (sell) {
     const result = sellHarvest(save, sell.dataset.sell);
     if (result) {
       showToast(t("garden.sold", { amount: result.count, value: formatCoins(result.value) }));
-      persist();
+      persist("sell-crop");
       renderSheet();
     }
     return;
   }
+
   if (event.target.closest("[data-sell-all]")) {
     const result = sellHarvest(save);
     if (result) {
       showToast(t("garden.sold", { amount: result.count, value: formatCoins(result.value) }));
-      persist();
+      persist("sell-all");
       renderSheet();
     }
   }
 }
 
-/** Nach jedem Kauf oder Verbrauch darf die Auswahl nicht ins Leere zeigen. */
 function clampSelection() {
   const stacks = inventoryStacks(save);
   if (stacks.length && save.selectedSlot >= stacks.length) save.selectedSlot = stacks.length - 1;
+  if (!stacks.length) save.selectedSlot = 0;
   renderHotbar?.(save);
 }
 
 function selectSlot(index) {
-  if (index < 0 || index >= HOTBAR_SLOTS) return;
+  if (index < 0 || index >= HOTBAR_SLOTS || uiBlocksMovement()) return;
   save.selectedSlot = index;
   renderHotbar?.(save);
-  persist();
-}
-
-function persist() {
-  renderHotbar?.(save);
-  elements.coins.textContent = formatCoins(save.coins);
-  window.clearTimeout(saveTimer);
-  saveTimer = window.setTimeout(() => {
-    try {
-      save.lastSavedAt = Date.now();
-      localStorage.setItem(SAVE_KEY, JSON.stringify(save));
-    } catch {
-      // Ohne Speicher läuft die Sitzung trotzdem weiter.
-    }
-  }, 300);
-}
-
-function loadSave() {
-  try {
-    return normalizeState(JSON.parse(localStorage.getItem(SAVE_KEY)));
-  } catch {
-    return createInitialState();
-  }
+  persist("select-slot");
 }
 
 function teleport(id) {
-  const target = teleportTarget(id, { ownPlotIndex: ownPlotIndex ?? 0 });
+  if (!Number.isInteger(ownPlotIndex) || uiBlocksMovement()) return;
+  const target = teleportTarget(id, { ownPlotIndex });
   if (!target) return;
   setPlayerTile(player, target.x, target.y);
   const spot = playerWorldPosition(player);
   focusCamera(camera, spot.x, spot.y, 1);
+  lastMovementSignature = "";
+  broadcastLocalMovement(true);
   renderContext();
 }
 
-/* ------------------------------------------------------------ Einstellungen */
+function ensureRemotePlayer(presence) {
+  let remote = remotePlayers.get(presence.userId);
+  const plot = PLOTS[presence.slotIndex];
+  if (!plot) return null;
+  if (!remote) {
+    remote = {
+      userId: presence.userId,
+      slotIndex: presence.slotIndex,
+      displayName: presence.displayName,
+      skin: presence.skin || skinFor(presence.userId),
+      player: createPlayer(plot.spawn.x, plot.spawn.y),
+      stepMs: STEP_MS,
+    };
+    remotePlayers.set(presence.userId, remote);
+  } else {
+    if (remote.slotIndex !== presence.slotIndex) {
+      remote.slotIndex = presence.slotIndex;
+      setPlayerTile(remote.player, plot.spawn.x, plot.spawn.y);
+    }
+    remote.displayName = presence.displayName || remote.displayName;
+    remote.skin = presence.skin || remote.skin;
+  }
+  return remote;
+}
 
-function readSettings() {
-  try {
-    return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {};
-  } catch {
-    return {};
+function applyRoster(roster) {
+  const active = new Set();
+  for (const presence of roster) {
+    if (presence.userId === identity.id) continue;
+    active.add(presence.userId);
+    ensureRemotePlayer(presence);
+  }
+  for (const userId of remotePlayers.keys()) {
+    if (!active.has(userId)) remotePlayers.delete(userId);
+  }
+  roomPlayerCount = Math.max(1, roster.length);
+  renderRoomStatus();
+  broadcastLocalMovement(true);
+}
+
+function applyRemoteMovement(movement) {
+  const remote = ensureRemotePlayer(movement.presence);
+  if (!remote) return;
+  remote.player.fromX = movement.fromX;
+  remote.player.fromY = movement.fromY;
+  remote.player.tileX = movement.tileX;
+  remote.player.tileY = movement.tileY;
+  remote.player.facing = movement.facing;
+  remote.player.stepProgress = movement.fromX === movement.tileX && movement.fromY === movement.tileY ? 1 : 0;
+  remote.player.walkTime = remote.player.stepProgress === 1 ? 0 : movement.sequence * movement.stepMs;
+  remote.stepMs = movement.stepMs;
+}
+
+function applyRoomSnapshot(snapshot) {
+  const nextFarms = new Map();
+  for (const member of snapshot.members) {
+    if (member.userId === identity.id) continue;
+    if (Array.isArray(member.cells)) {
+      nextFarms.set(member.slotIndex, { userId: member.userId, cells: member.cells });
+    }
+    const remote = remotePlayers.get(member.userId);
+    if (remote) remote.displayName = member.displayName || remote.displayName;
+  }
+  remoteFarms = nextFarms;
+  if (!roomPlayerCount) {
+    roomPlayerCount = Math.max(1, snapshot.members.length);
+    renderRoomStatus();
   }
 }
 
-function setGridVisible(visible) {
-  showGrid = Boolean(visible);
-  elements.gridSetting.checked = showGrid;
-  elements.canvas.classList.toggle("is-editing", showGrid);
-  try {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...readSettings(), showGrid }));
-  } catch {
-    // Speichern ist Komfort, kein Muss.
-  }
+function renderRoomStatus() {
+  const assignment = multiplayer?.assignment;
+  elements.serverStatus.hidden = !assignment;
+  if (!assignment) return;
+  elements.serverName.textContent = t("garden.server_name", { name: assignment.roomLabel });
+  elements.serverCount.textContent = t("garden.server_players", {
+    count: Math.max(1, Math.min(6, roomPlayerCount || assignment.occupancy || 1)),
+  });
 }
 
-/* ------------------------------------------------------ Bildschirmsteuerung */
+async function copyRoomLink() {
+  const url = multiplayer?.inviteUrl();
+  if (!url) return;
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast(t("garden.room_link_copied"));
+  } catch (error) {
+    console.warn("Raumlink konnte nicht kopiert werden:", error);
+    showToast(t("garden.connection_failed_message"));
+  }
+}
 
 function bindTouchControls() {
   let pointerId = null;
-
   const setFromPoint = (event) => {
+    if (uiBlocksMovement()) {
+      input.clear();
+      return;
+    }
     const rect = elements.pad.getBoundingClientRect();
     const dx = event.clientX - (rect.left + rect.width / 2);
     const dy = event.clientY - (rect.top + rect.height / 2);
@@ -429,8 +701,7 @@ function bindTouchControls() {
     event.preventDefault();
   });
   elements.pad.addEventListener("pointermove", (event) => {
-    if (event.pointerId !== pointerId) return;
-    setFromPoint(event);
+    if (event.pointerId === pointerId) setFromPoint(event);
   });
   const stop = (event) => {
     if (event.pointerId !== pointerId) return;
@@ -441,18 +712,9 @@ function bindTouchControls() {
   elements.pad.addEventListener("pointercancel", stop);
 }
 
-/* ------------------------------------------------------------------- Start */
-
-async function boot() {
-  await i18nReady;
-  const [baked] = await Promise.all([bakeVillage(), loadActorSheets(), loadCropSheets()]);
-  village = baked;
-  readNameTagPalette(document.body);
-  save = loadSave();
-
+function bindUi() {
   renderHotbar = createHotbar(elements.hotbar, { onSelect: selectSlot });
-  renderHotbar(save);
-  elements.coins.textContent = formatCoins(save.coins);
+  renderHud();
   elements.sheetContent.addEventListener("click", onSheetClick);
   elements.sheetClose.addEventListener("click", closeSheet);
   elements.scrim.addEventListener("click", closeSheet);
@@ -460,20 +722,20 @@ async function boot() {
     if (event.key === "Escape" && openShop) closeSheet();
   });
 
-  // Der Laden füllt an festen Zeitfenstern auf — alle im Dorf sehen dasselbe.
   window.setInterval(() => {
-    const slot = restockSlot();
+    const now = gardenNow();
+    const slot = restockSlot(now);
     if (slot !== save.shop.slot) {
       save.shop = createStock(slot);
       renderSheet();
-      persist();
+      persist("shop-restock");
     }
     const timer = document.getElementById("restock-timer");
-    if (timer) timer.textContent = duration(nextRestockAt(save.shop.slot) - Date.now());
+    if (timer) timer.textContent = duration(nextRestockAt(save.shop.slot) - now);
   }, 1000);
-  // Fächer lassen sich auch mit den Zifferntasten wählen.
+
   window.addEventListener("keydown", (event) => {
-    if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || uiBlocksMovement()) return;
     const digit = Number(event.key);
     if (Number.isInteger(digit) && digit >= 1 && digit <= HOTBAR_SLOTS) selectSlot(digit - 1);
   });
@@ -484,11 +746,13 @@ async function boot() {
     if (button) teleport(button.dataset.teleport);
   });
   elements.interactButton.addEventListener("click", () => input.triggerInteract());
-  elements.settingsButton.addEventListener("click", () => elements.settingsDialog.showModal());
+  elements.serverStatus.addEventListener("click", copyRoomLink);
+  elements.settingsButton.addEventListener("click", () => {
+    input.clear();
+    elements.settingsDialog.showModal();
+  });
   elements.profileButton.addEventListener("click", () => showToast(t("garden.menu_soon")));
   elements.statsButton.addEventListener("click", () => showToast(t("garden.menu_soon")));
-  elements.gridSetting.addEventListener("change", () => setGridVisible(elements.gridSetting.checked));
-  setGridVisible(readSettings().showGrid);
 
   window.addEventListener("resize", resize);
   document.addEventListener("visibilitychange", () => {
@@ -497,17 +761,132 @@ async function boot() {
   new ResizeObserver(resize).observe(elements.stage);
   resize();
 
-  onLanguageChange(() => renderContext());
+  onLanguageChange(() => {
+    renderContext();
+    renderSheet();
+    renderRoomStatus();
+    if (currentAccessIssue) showAccessIssue(currentAccessIssue);
+  });
   renderContext();
+}
 
-  // ?debug erlaubt es, die Schleife von außen schrittweise zu treiben —
-  // automatisierte Tests laufen ohne requestAnimationFrame.
+async function initializeCloud(auth) {
+  cloudStore = await createGardenCloudStore({
+    client: auth.client,
+    session: auth.session,
+    user: auth.user,
+    debounceMs: 0,
+    onError: (error) => {
+      console.warn("KaktusGarden Cloud-Save:", error);
+      showToast(t("garden.save_failed"));
+    },
+  });
+  cloudStore.bindLifecycle();
+
+  let loaded = null;
+  let reset = false;
+  try {
+    loaded = await cloudStore.load();
+  } catch (error) {
+    if (!RESETTABLE_SAVE_ERRORS.has(error?.code)) throw error;
+    console.warn("Alter KaktusGarden-Testsave wird durch v4 ersetzt:", error.code);
+    reset = true;
+  }
+
+  save = normalizeState(loaded?.state || null);
+  if (!loaded?.state || reset) {
+    bumpRevision(save);
+    save.lastSavedAt = gardenNow();
+    cloudStore.schedule(save, { reason: reset ? "reset-old-save" : "initial-save", immediate: true });
+    await cloudStore.flushBestEffort();
+  }
+}
+
+async function initializeMultiplayer(auth) {
+  multiplayer = await createGardenMultiplayer({
+    client: auth.client,
+    session: auth.session,
+    user: auth.user,
+    onRoster: applyRoster,
+    onMovement: applyRemoteMovement,
+    onSnapshot: applyRoomSnapshot,
+    onStatus: applyMultiplayerStatus,
+    onError: (error) => console.warn("KaktusGarden Multiplayer:", error),
+  });
+  const assignment = await multiplayer.connect({
+    roomCode: gardenRoomCodeFromUrl(),
+    presence: {
+      displayName: identity.name,
+      level: identity.level,
+      skin: skinFor(identity.id),
+    },
+  });
+  ownPlotIndex = assignment.slotIndex;
+  const localShopSlot = save.shop.slot;
+  save = normalizeState(save, gardenNow());
+  if (save.shop.slot !== localShopSlot) persist("server-restock-sync");
+  else renderHud();
+  roomPlayerCount = Math.max(1, multiplayer.roster.length || assignment.occupancy || 1);
+  multiplayer.bindLifecycle();
+  renderRoomStatus();
+  broadcastLocalMovement(true);
+}
+
+async function boot() {
+  await i18nReady;
+
+  let auth;
+  try {
+    auth = await requireGardenSession();
+  } catch (error) {
+    handleRequiredConnectionError(error);
+    return;
+  }
+
+  const assetsPromise = Promise.all([bakeVillage(), loadActorSheets(), loadCropSheets()]);
+  const identityPromise = loadIdentity(auth);
+  try {
+    await initializeCloud(auth);
+  } catch (error) {
+    handleRequiredConnectionError(error);
+    return;
+  }
+
+  const [assets, loadedIdentity] = await Promise.all([assetsPromise, identityPromise]);
+  village = assets[0];
+  identity = loadedIdentity?.signedIn
+    ? loadedIdentity
+    : {
+      id: auth.user.id,
+      name: auth.user.email?.split("@")[0] || t("garden.guest"),
+      level: 1,
+      signedIn: true,
+    };
+  readNameTagPalette(document.body);
+  bindUi();
+
+  try {
+    await initializeMultiplayer(auth);
+  } catch (error) {
+    handleRequiredConnectionError(error);
+    return;
+  }
+
   if (new URLSearchParams(location.search).has("debug")) {
     window.__garden = {
-      player, camera, input, step, draw, teleport, setGridVisible, interact,
+      player,
+      camera,
+      input,
+      step,
+      draw,
+      teleport,
+      interact,
       get save() { return save; },
       get context() { return currentContext; },
       get identity() { return identity; },
+      get multiplayer() { return multiplayer; },
+      get remotePlayers() { return remotePlayers; },
+      get remoteFarms() { return remoteFarms; },
       get zoom() { return zoom; },
     };
   }
@@ -517,13 +896,9 @@ async function boot() {
     lastFrame = timestamp;
     window.requestAnimationFrame(frame);
   });
-
-  // Das Profil darf das Spiel nicht aufhalten — es wird nachgereicht.
-  identity = await loadIdentity();
 }
 
 boot().catch((error) => {
   console.error("KaktusGarden boot failed:", error);
-  elements.loader.classList.add("is-done");
-  showToast(t("garden.errors.load"));
+  handleRequiredConnectionError(error);
 });

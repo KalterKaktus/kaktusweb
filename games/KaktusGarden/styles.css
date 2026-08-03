@@ -188,10 +188,33 @@
 }
 
 .hud-teleports,
+.hud-server,
 .hud-wallet,
 .hud-menu,
 .hud-action,
 .touch-pad { position: absolute; z-index: 20; }
+
+/* --- Aktueller Multiplayer-Raum ------------------------------------------ */
+
+.hud-server {
+  top: 0.6rem;
+  left: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  border: var(--hud-edge) solid var(--line-hot);
+  border-radius: var(--hud-radius);
+  color: var(--on-accent);
+  background: var(--achievement);
+  box-shadow: 0 4px 0 var(--line-hot);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 950;
+  cursor: pointer;
+}
+.hud-server:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line-hot); }
+.hud-server span { opacity: 0.8; font-variant-numeric: tabular-nums; }
 
 /* --- Schnellreisen oben mittig -------------------------------------------- */
 
@@ -365,6 +388,13 @@
 }
 .hud-action:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--line-hot); }
 .hud-action.is-harvest { background: var(--gold-pale); color: var(--gold-ink); }
+.hud-action:disabled {
+  color: var(--on-accent);
+  background: var(--muted);
+  box-shadow: 0 2px 0 var(--line-hot);
+  cursor: not-allowed;
+  transform: none;
+}
 
 .hud-action-key {
   width: 2.2rem;
@@ -483,20 +513,9 @@
   font-weight: 900;
 }
 
-/* Was nicht mehr in die Leiste passt, wird vorerst nur gezählt. */
-.hotbar[data-overflow]:not([data-overflow=""])::after {
-  content: "+" attr(data-overflow);
-  align-self: center;
-  margin-left: 0.2rem;
-  padding: 0.3rem 0.5rem;
-  border-radius: 0.5rem;
-  color: var(--on-accent);
-  background: rgb(var(--on-accent-rgb) / 0.16);
-  font-size: 0.72rem;
-  font-weight: 950;
-}
-
 @media (max-width: 700px) {
+  .hud-server { top: 0.45rem; left: 0.45rem; padding: 0.38rem 0.55rem; font-size: 0.68rem; }
+  .hud-teleports { top: 4rem; }
   .hotbar-slot { width: 2.6rem; height: 2.6rem; }
   .hotbar-key { display: none; }
 }
@@ -697,8 +716,42 @@
 
 .asset-credit { margin: 1rem 0 0; padding-top: 0.75rem; border-top: 2px dashed var(--line); color: var(--muted); font-size: 0.75rem; }
 
-/* Beim Bearbeiten ist das Fadenkreuz hilfreicher als der Standardzeiger. */
-.game-canvas.is-editing { cursor: crosshair; }
+/* ----------------------------------------------------------- Zugangssperre */
+
+.garden-access {
+  position: fixed;
+  z-index: 12000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(var(--text-rgb) / 0.6);
+}
+
+.access-card {
+  width: min(28rem, 100%);
+  padding: 1.25rem;
+  border: 4px solid var(--line-hot);
+  border-radius: var(--hud-radius-box);
+  color: var(--text);
+  background: var(--panel-strong);
+  box-shadow: 0 8px 0 rgb(var(--text-rgb) / 0.42);
+  text-align: center;
+}
+.access-card h2 { margin: 0 0 0.55rem; }
+.access-card p { margin: 0; color: var(--muted); line-height: 1.5; }
+.access-action {
+  display: inline-flex;
+  margin-top: 1rem;
+  padding: 0.65rem 1rem;
+  border: 3px solid var(--line-hot);
+  border-radius: var(--hud-radius);
+  color: var(--on-accent);
+  background: var(--green);
+  box-shadow: 0 4px 0 var(--line-hot);
+  font-weight: 950;
+  text-decoration: none;
+}
 
 /* ------------------------------------------------------------------- Toast */
 

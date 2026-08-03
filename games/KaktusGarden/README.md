@@ -5,7 +5,7 @@
 - **Vorbild:** Magic Garden (magicgarden.wiki) — Dorf mit Läden, sechs
   Gartenparzellen, Charakter läuft im Raster
 
-Ein Dorf mit vier Läden in der Mitte, darum sechs eingezäunte Parzellen à
+Ein Dorf mit fünf Ladengebäuden in der Mitte, darum sechs eingezäunte Parzellen à
 8 × 8 = 64 Pflanzfelder. Wer den Server betritt, bekommt eine freie Parzelle
 zugewiesen. Bewegung ist rasterbasiert, interagiert wird immer mit dem Feld,
 auf dem man steht.
@@ -26,14 +26,24 @@ damit sie nie Verschiedenes behaupten.
 |---|---|
 | `js/data/crops.js` | Pflanzen, Wirtschaft, Sprites |
 | `js/state.js` | Spielstand v4: Münzen, Samen, Ernte, 64 Felder, Ladenbestand |
+| `js/cloud.js` | Login, Cloud-Save, Revisionen und persistente Offline-Outbox |
+| `js/multiplayer.js` | Räume, Presence, Bewegungs-Broadcast und Farm-Snapshots |
 | `js/systems/garden.js` | Pflanzen, Wachsen, Ernten, Kaufen, Verkaufen |
 | `js/render/crops.js` | Pflanzen auf der Parzelle zeichnen |
 | `js/ui/hotbar.js` | Die Leiste unten |
 | `js/ui/shopPanel.js` | Samenladen und Verkaufsstand |
 | `js/ui/format.js` | Münzen (K/M/B), Gewichte, Zeiten |
 
-Der Spielstand liegt vorerst nur lokal (`kaktus-garden-save-v4`); Cloud-Save
-kommt zusammen mit dem Multiplayer.
+Das Spiel ist loginpflichtig. Der Spielstand liegt als Save-Version 4 in
+`game_saves`. Jede persistierbare Aktion erhöht eine monotone `revision`, landet
+sofort in einer lokalen Outbox und wird ohne Gameplay-Debounce in die Cloud
+geschrieben. Ein Seitenwechsel kann deshalb höchstens den Upload verzögern,
+nicht den letzten ausgeführten Zustand verlieren. Alte Test-Saves werden
+bewusst einmalig durch einen frischen v4-Spielstand ersetzt.
+
+Das Inventar umfasst vorerst genau neun Stapel. Samen und Ernte derselben Sorte
+sind getrennte Stapel. Ist für eine neue Sorte kein Fach frei, bleiben Feld,
+Münzen und Ladenbestand unverändert und die Oberfläche zeigt „Inventar voll“.
 
 ## Wirtschaft
 
@@ -63,10 +73,14 @@ als Stückzahl.
 
 **Laden**
 
-Der Samenladen füllt alle fünf Minuten auf, ausgerichtet an der vollen Stunde.
-Der Bestand hängt allein am Zeitfenster und nicht am Spieler — dadurch sehen
-später alle im Dorf dasselbe Angebot. Jede Pflanze hat eine eigene
-Erscheinungschance (Karotte 100 %, Paprika 1 %) und eine Bestandsspanne.
+Der Samenladen füllt alle fünf Minuten auf, ausgerichtet an absoluten
+Fünf-Minuten-Grenzen der Supabase-Serverzeit. Das Angebot wird ausschließlich
+aus dem Zeitfenster deterministisch erzeugt und ist dadurch in allen Räumen
+identisch – auch bei einer falsch gestellten Geräteuhr. Der
+verbleibende Bestand ist dagegen persönlich: Käufe anderer Spieler verändern
+ihn nicht, und ein Reload füllt ihn im selben Zeitfenster nicht wieder auf.
+Jede Pflanze hat eine eigene Erscheinungschance (Karotte 100 %, Paprika 1 %)
+und eine Bestandsspanne.
 Gelistet werden **alle** Sorten, auch die gerade nicht lieferbaren — man soll
 sehen können, worauf sich das Warten lohnt.
 
@@ -87,13 +101,24 @@ Platz; die Werte stehen schon bereit.
 
 ## Stand
 
-Fertig: Weltkarte, Canvas-Engine mit Kamera, Charakter und Rasterbewegung
-inklusive Kollision, Touch-Steuerung.
+Fertig: Weltkarte, Canvas-Engine mit Kamera, Kollision und Touch-Steuerung;
+Pflanzen, Wachstum, Ernte, Samenladen, Verkauf, globaler Restock, 9-Stapel-
+Inventar, Cloud-Saves und ein 6-Spieler-Dorf über Supabase Realtime.
 
-Noch offen: Pflanzen und Interaktion auf den Parzellen, Multiplayer über
-Supabase Realtime, Läden und Economy. `state.js`, `storage.js` und `plants.js`
-enthalten noch das Datenmodell der Vorversion und werden dabei auf
-Save-Version 3 umgestellt.
+Beim Join priorisiert `garden_join_room()` immer Server A. Erst wenn dessen
+sechs Slots belegt sind, wird der nächste Raum verwendet. Presence zeigt die
+Belegung, Broadcast überträgt Bewegungen und ein serverseitiger Snapshot lädt
+nur die sichtbaren Farmzellen der aktuellen Raummitglieder. Jeder Account kann
+nur einen aktiven Slot belegen. Fremde Grundstücke darf man betreten und
+ansehen, aber nicht bepflanzen oder ernten.
+
+Noch Platzhalter: Gems, Profil, Statistik, Werkzeugladen sowie die geschlossenen
+Eier- und Tierläden.
+
+Die Datenbankseite liegt in
+`supabase/migrations/20260803120000_kaktus_garden_multiplayer.sql`. Sie muss im
+Supabase-Projekt angewendet sein, bevor Join und Realtime lokal oder live
+funktionieren.
 
 ## Karte bearbeiten
 
@@ -106,14 +131,9 @@ Die Karte ist von Hand gesetzt, nichts daran ist prozedural. Zwei Dateien:
 
 ### Koordinaten finden
 
-Im Spiel unter **Einstellungen → Koordinatenraster** einschalten. Dann liegt ein
-Raster über der Welt, alle vier Felder mit Koordinate beschriftet, das Feld
-unter der Maus wird hervorgehoben. **Ein Klick schreibt die fertige Code-Zeile
-in die Browser-Konsole** — von dort direkt kopieren. Der Schalter merkt sich
-seinen Zustand pro Gerät.
-
-(`?debug` in der Adresse gibt es weiterhin, das ist aber nur der Zugang für
-automatisierte Tests.)
+Der unfertige Koordinatenraster-Schalter wurde aus den Einstellungen entfernt.
+`?debug` stellt für lokale Tests weiterhin `window.__garden` mit Spieler,
+Kamera, Zustand und Multiplayer-Verbindung bereit, zeichnet aber kein Raster.
 
 ### Dekoration entfernen oder setzen
 
@@ -175,10 +195,10 @@ Welche, steht als `BED_TILE` in `village.js`:
 
 | Name | Aussehen |
 |---|---|
-| `bedDark` | dunkelbraun, kräftiger Kontrast (aktuell) |
+| `bedDark` | dunkelbraun, kräftiger Kontrast |
 | `bedDarkAlt` | dunkelbraun, andere Form |
 | `bedLight` | hell auf Sandton, dezenter |
-| `bedLightAlt` | hell, andere Form |
+| `bedLightAlt` | hell, andere Form (aktuell) |
 
 Der Übergang von Gras zu Erde liegt bewusst **unter dem Zaun**: `isGround()` in
 `world.js` zählt den ganzen Zaunring zur Erde, nicht nur die Pflanzfläche. Der
@@ -252,12 +272,13 @@ automatisch aus den Rechtecken.
 | `js/data/world.js` | Kartengeometrie, Kollision, Parzellen, Läden |
 | `js/render/village.js` | Backt die statische Welt einmalig; Deko und Grasflächen |
 | `js/render/actors.js` | Charakter-Sprites |
-| `js/render/debugGrid.js` | Bearbeitungsraster für `?debug` |
 | `js/engine/assets.js` | Sheets laden |
 | `js/engine/autotile.js` | Übergänge aus den 1 × 6-Strips |
 | `js/engine/camera.js` | Kamera mit Kartenbegrenzung |
 | `js/engine/input.js` | Tastatur und Touch |
 | `js/systems/player.js` | Rasterbewegung |
+| `js/cloud.js` | Cloud-Save und Outbox |
+| `js/multiplayer.js` | Raumzuweisung und Realtime |
 | `js/game.js` | Schleife, Zeichnen, Verdrahtung |
 
 ## Technik

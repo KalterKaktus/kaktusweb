@@ -54,10 +54,5 @@ export function createHotbar(root, { onSelect }) {
       slot.button.setAttribute("aria-label", `${stack.id} ×${stack.count}`);
     });
 
-    // Was nicht mehr in die Leiste passt, wird nur gezählt — die Tasche mit
-    // Sortieren und Suchen kommt später.
-    const overflow = Math.max(0, stacks.length - HOTBAR_SLOTS);
-    root.dataset.overflow = overflow ? String(overflow) : "";
-    return overflow;
   };
 }

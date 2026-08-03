@@ -12,6 +12,10 @@ const KEY_DIRECTIONS = {
 
 const INTERACT_KEYS = new Set(["Space", "Enter", "KeyE"]);
 
+function uiBlocksGameInput() {
+  return Boolean(document.querySelector(".garden-sheet:not([hidden]), dialog[open], .garden-access:not([hidden])"));
+}
+
 export function createInput(target = window) {
   const held = [];
   const state = { direction: null, interact: false };
@@ -29,10 +33,11 @@ export function createInput(target = window) {
 
   function onKeyDown(event) {
     if (event.repeat) return;
+    if (uiBlocksGameInput()) {
+      onBlur();
+      return;
+    }
     if (INTERACT_KEYS.has(event.code)) {
-      // Nicht abfangen, solange in einem Menü etwas fokussiert ist.
-      const active = document.activeElement;
-      if (active && active.closest?.(".garden-sheet, dialog")) return;
       state.interact = true;
       event.preventDefault();
       return;
@@ -51,6 +56,7 @@ export function createInput(target = window) {
   function onBlur() {
     held.length = 0;
     state.direction = null;
+    state.interact = false;
   }
 
   target.addEventListener("keydown", onKeyDown);
@@ -68,12 +74,18 @@ export function createInput(target = window) {
     /** Für die Bildschirmsteuerung auf dem Handy. */
     setDirection(direction) {
       held.length = 0;
+      if (uiBlocksGameInput()) {
+        state.direction = null;
+        return;
+      }
       if (direction) held.push(direction);
       state.direction = direction;
     },
     triggerInteract() {
+      if (uiBlocksGameInput()) return;
       state.interact = true;
     },
+    clear: onBlur,
     destroy() {
       target.removeEventListener("keydown", onKeyDown);
       target.removeEventListener("keyup", onKeyUp);

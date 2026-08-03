@@ -31,7 +31,7 @@ function harvestLine(crop) {
  * lieferbaren — man soll durchscrollen und sehen können, worauf sich das
  * Warten lohnt. Ausverkauftes ist ausgegraut und nicht anklickbar.
  */
-export function renderSeedShop(state) {
+export function renderSeedShop(state, now = Date.now()) {
   const rows = CROP_ORDER.map((id) => {
     const crop = CROPS[id];
     const stock = state.shop.stock[id] || 0;
@@ -56,7 +56,7 @@ export function renderSeedShop(state) {
 
   return `<header class="shop-head">
       <h2>${escapeHtml(t("garden.shop_seeds"))}</h2>
-      <span class="shop-timer" id="restock-timer">${escapeHtml(duration(nextRestockAt(state.shop.slot) - Date.now()))}</span>
+      <span class="shop-timer" id="restock-timer">${escapeHtml(duration(nextRestockAt(state.shop.slot) - now))}</span>
     </header>
     <div class="shop-list">${rows}</div>`;
 }

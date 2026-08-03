@@ -4,7 +4,7 @@ import { PLOT_CELLS } from "./data/world.js";
 /** Save-Version 4 — Inventar mit Gewichten und Ladenbestand. */
 export const SAVE_VERSION = 4;
 
-/** So viele Fächer zeigt die Leiste unten. Der Rest wandert in die Tasche. */
+/** Das komplette Inventar besteht vorerst aus diesen neun Stapel-Fächern. */
 export const HOTBAR_SLOTS = 9;
 
 /** Der Laden füllt alle fünf Minuten auf, ausgerichtet an der vollen Stunde. */
@@ -56,23 +56,44 @@ export function createStock(slot = restockSlot()) {
   return { slot, stock };
 }
 
+/**
+ * Stellt den persönlichen Restbestand für das aktuelle globale Zeitfenster
+ * wieder her. Nur ein neues Fünf-Minuten-Fenster erzeugt einen vollen Bestand.
+ * Dadurch sehen alle Spieler dasselbe Angebot, ohne einander etwas wegzukaufen.
+ */
+export function normalizeShop(raw, slot = restockSlot()) {
+  const fresh = createStock(slot);
+  if (!raw || typeof raw !== "object" || Math.floor(number(raw.slot, -1)) !== slot
+    || !raw.stock || typeof raw.stock !== "object") {
+    return fresh;
+  }
+
+  const stock = {};
+  for (const id of CROP_ORDER) {
+    const remaining = Math.max(0, Math.floor(number(raw.stock[id])));
+    stock[id] = Math.min(fresh.stock[id], remaining);
+  }
+  return { slot, stock };
+}
+
 export function nextRestockAt(slot) {
   return (slot + 1) * RESTOCK_MS;
 }
 
 /* ---------------------------------------------------------------- Zustand */
 
-export function createInitialState() {
+export function createInitialState(now = Date.now()) {
   return {
     version: SAVE_VERSION,
+    revision: 0,
     coins: 50,
     seeds: { carrot: 5 },
     // Geerntete Früchte einzeln, weil jede ihr eigenes Gewicht hat.
     harvest: [],
     cells: Array.from({ length: PLOT_CELLS }, () => null),
-    shop: createStock(),
+    shop: createStock(restockSlot(now)),
     selectedSlot: 0,
-    lastSavedAt: Date.now(),
+    lastSavedAt: now,
   };
 }
 
@@ -86,12 +107,13 @@ function normalizeCell(raw) {
   };
 }
 
-export function normalizeState(raw) {
-  const initial = createInitialState();
+export function normalizeState(raw, now = Date.now()) {
+  const initial = createInitialState(now);
   if (!raw || typeof raw !== "object" || number(raw.version) !== SAVE_VERSION) return initial;
   const known = new Set(CROP_ORDER);
   return {
     version: SAVE_VERSION,
+    revision: Math.max(0, Math.floor(number(raw.revision))),
     coins: Math.max(0, Math.floor(number(raw.coins))),
     seeds: Object.fromEntries(Object.entries(raw.seeds || {})
       .filter(([id, count]) => known.has(id) && number(count) > 0)
@@ -100,12 +122,11 @@ export function normalizeState(raw) {
       ? raw.harvest
         .filter((item) => known.has(item?.cropId) && number(item?.weight) > 0)
         .map((item) => ({ cropId: item.cropId, weight: number(item.weight) }))
-        .slice(0, 500)
       : [],
     cells: Array.from({ length: PLOT_CELLS }, (_, index) => normalizeCell(raw.cells?.[index])),
-    shop: createStock(),
+    shop: normalizeShop(raw.shop, restockSlot(now)),
     selectedSlot: Math.max(0, Math.min(HOTBAR_SLOTS - 1, Math.floor(number(raw.selectedSlot)))),
-    lastSavedAt: Math.max(0, number(raw.lastSavedAt, Date.now())),
+    lastSavedAt: Math.max(0, number(raw.lastSavedAt, now)),
   };
 }
 
@@ -131,6 +152,28 @@ export function selectedStack(state) {
   return inventoryStacks(state)[state.selectedSlot] || null;
 }
 
+/**
+ * Samen und geerntete Früchte derselben Sorte sind getrennte Stapel. Ein
+ * vorhandener Stapel darf beliebig wachsen; nur eine neue Kombination aus
+ * Art und Sorte belegt ein weiteres Fach.
+ */
+export function canAddInventoryStack(state, kind, cropId) {
+  const stacks = inventoryStacks(state);
+  return stacks.some((stack) => stack.kind === kind && stack.id === cropId)
+    || stacks.length < HOTBAR_SLOTS;
+}
+
+export function inventoryCapacity(state) {
+  const used = inventoryStacks(state).length;
+  return { used, total: HOTBAR_SLOTS, full: used >= HOTBAR_SLOTS };
+}
+
+/** Markiert eine vollständig ausgeführte, persistierbare Spielaktion. */
+export function bumpRevision(state) {
+  state.revision = Math.max(0, Math.floor(number(state.revision))) + 1;
+  return state.revision;
+}
+
 export function takeSeed(state, cropId) {
   if (!state.seeds[cropId]) return false;
   state.seeds[cropId] -= 1;
@@ -139,5 +182,8 @@ export function takeSeed(state, cropId) {
 }
 
 export function addSeed(state, cropId, amount = 1) {
+  if (!CROPS[cropId] || !Number.isFinite(amount) || amount <= 0) return false;
+  if (!canAddInventoryStack(state, "seed", cropId)) return false;
   state.seeds[cropId] = (state.seeds[cropId] || 0) + amount;
+  return true;
 }

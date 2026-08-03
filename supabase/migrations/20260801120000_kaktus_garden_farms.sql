@@ -1,4 +1,10 @@
 -- =============================================================================
+-- HISTORISCHER ZWISCHENSTAND (Garden v2 / 4x4).
+-- Diese Migration bleibt wegen der bereits vergebenen Versionsnummer im
+-- Verlauf. Die aktuelle 8x8-Raumansicht wird vollstaendig durch
+-- 20260803120000_kaktus_garden_multiplayer.sql ersetzt. Nicht als aktuellen
+-- Farm-View-Vertrag verwenden.
+--
 -- KaktusGarden: sichere öffentliche Farm-Snapshots für Besuche.
 --
 -- Der rohe game_saves.payload bleibt privat. Die View veröffentlicht nur die

@@ -243,37 +243,26 @@ englischen Originalnamen (alle 132 abgedeckt).
   bleibt intern `shop`). Unter 460 px Breite liegen die 5 Part-Tabs als 3+2.
 
 ### KaktusGarden
-- **Pfad:** `games/KaktusGarden/` · **Game-ID:** `kaktus-garden` · **Save-Version 2**
-- Statisches Klick-Farmspiel: 16 Beete, 19 Pflanzen, Shop mit 5-Minuten-Restock,
-  Schaufel, Ernte verkaufen, Besuch fremder Farmen (read-only).
-- **Zugang über drei Gebäude** auf dem Hofplatz: zwei Häuser (Laden, Verkauf)
-  und Briefkasten + Brett (Spieler).
-- **Welt = echte Tilemap.** `js/data/farmMap.js` beschreibt jedes Tile,
-  `js/render/worldRenderer.js` zeichnet es auf ein `<canvas>`; Beete, Gebäude,
-  Timer und Pflanzen liegen als DOM-Ebene darüber. Übergänge Gras→Erde→Beet
-  kommen aus den 1×6-Autotile-Strips (Zeilen: freistehend, senkrecht,
-  waagerecht, Innenecken, Füllung, Hintergrund; je 8×8-Viertel).
-- **`--px`** auf `.garden-world` rechnet Map-Pixel in CSS-Pixel um. Alles
-  Positionierte nutzt es. `FOCUS_VIEW` (Zaun + Gebäude) muss immer sichtbar
-  bleiben; überschüssiger Platz zeigt mehr Waldrand statt größerer Beete.
-- ⚠️ **Zwei Rückkopplungen beim Vermessen, beide gelöst — nicht zurückbauen:**
-  `.garden-shell` braucht `grid-template-columns: minmax(0, 1fr)`, sonst
-  bestimmt die Welt die Spaltenbreite und misst sich daran; und die verfügbare
-  Höhe darf nicht aus `rect.top` kommen (scrollabhängig), sondern aus
-  `rect.top + scrollY`. Sonst wächst die Karte bei jedem Resize weiter — sichtbar
-  als verrutschte Farm nach dem Drehen des Handys.
-- **Der Zaun umschließt nur die Anbaufläche.** Innen ausschließlich Erde und
-  Beete — jede Deko gehört nach außen.
-- **Keine CSS-Animation auf Pflanzen.** Wachstum läuft über die Sprite-Frames,
-  reife Pflanzen stehen still (Ausnahme: Mais hat ein `shake`-Sheet). Beete
-  hüpfen bei Hover/Klick nicht.
-- **Menüs sind mittige Overlays** (Shop, Verkauf, Spieler, Samen, Beet) mit
-  identischer Breite; standardmäßig ist alles geschlossen.
-- **Zentrale Render-/Balancing-Werte** stehen in `js/data/plants.js`
-  (`PLANT_RENDER`, `RESTOCK_RULES`, `GUARANTEED_SEED`), nicht im UI-Code.
-  Balancing-Tabelle im `README.md` des Spiels.
-- **`assets/pixel/` und `tools/build-garden-pixel-assets.py` sind tot** — der
-  Renderer schneidet direkt aus den Original-Sheets.
+- **Pfad:** `games/KaktusGarden/` · **Game-ID:** `kaktus-garden` · **Save-Version 4**
+- Loginpflichtiges Live-Pixel-Farming: bis zu 6 Spieler teilen ein Dorf mit
+  sechs Grundstücken à 8×8 = 64 Pflanzfeldern. Nur das eigene Grundstück ist
+  veränderbar; fremde Grundstücke sind begehbar und read-only.
+- **Matchmaking:** `garden_join_room()` priorisiert Server A bis 6/6 und legt
+  erst danach Server B an. Ein Account kann nur einen aktiven Slot belegen.
+  Presence synchronisiert die Belegung, Broadcast die Rasterbewegung.
+- **Cloud:** `js/cloud.js` schreibt Save v4 nach jeder Aktion mit monotoner
+  `revision` in `game_saves`; eine localStorage-Outbox verhindert Verlust beim
+  Schließen/Offline-Sein. Alte Test-Saves werden bewusst einmalig zurückgesetzt.
+- **Farm-Sichtbarkeit:** fremde Farmen kommen ausschließlich aus
+  `garden_room_snapshot()`/`kaktus_garden_farms`; Inventar und Währungen bleiben
+  privat. DB-Änderungen lösen das private Broadcast-Event `farm-changed` aus.
+- **Shop:** deterministisches, global gleiches Angebot nach Supabase-Serverzeit
+  an absoluten 5-Minuten-Grenzen, aber persönlicher Restbestand. Reloads füllen
+  ihn im selben Zeitfenster nicht auf. Das Inventar hat genau 9 Stapel.
+- **Daten/Renderer:** `js/data/crops.js`, `js/data/world.js`, Canvas-Renderer in
+  `js/render/`; keine CSS-Pflanzenanimation. Das Dorf nutzt ein 16-px-Raster.
+- Interagiert wird erst im Stillstand auf dem Zielfeld. Offene Menüs/Dialoge
+  löschen die Eingabe und halten die Figur an.
 - ⚠️ Die globale `styles.css` setzt `* { margin: 0 }` und nimmt `<dialog>` damit
   die Zentrierung. `margin: auto` muss lokal wieder gesetzt werden.
 
@@ -297,6 +286,8 @@ englischen Originalnamen (alle 132 abgedeckt).
 | `admin_messages` | Nachrichten an einzelne User |
 | `user_presence` | Wer ist online und wo |
 | `user_badges` | Freigeschaltete Badges |
+| `kaktus_garden_rooms` | Persistente Raum-IDs, A/B-Reihenfolge und Invite-Codes |
+| `kaktus_garden_room_members` | Race-sichere 6er-Slots mit 45-s-Verbindungs-Lease; ein Slot pro Account |
 
 ### Views — nicht direkt auf `game_saves` lesen!
 Das Security-Hardening (`20260525120000`) hat die alten Public-SELECT-Policies
@@ -305,6 +296,7 @@ Spalten exponieren:
 - `kaktus_clicker_leaderboard`
 - `my_fishing_kaktus_leaderboard`
 - `profiles_public` (inkl. berechnetem `level`, ohne Spendenbeträge)
+- `kaktus_garden_farms` (nur aktive Mitglieder des eigenen Raums, ausschließlich 64 Farmzellen)
 
 Gebannte User sind in den Views herausgefiltert (`20260525170000_ban_enforcement`).
 
@@ -315,6 +307,10 @@ Gebannte User sind in den Views herausgefiltert (`20260525170000_ban_enforcement
 - `game_saves_block_banned`, `profiles_ban_block_xp` — Ban-Durchsetzung.
 - `profiles_throttle_cols_protect` — XP-Throttle-Spalten gegen Client-Writes.
 - `cheat_flags_autoban` — Autoban bei Cheat-Flags.
+- `game_saves_validate_kaktus_garden_payload` — erzwingt Save v4, 64 Zellen,
+  höchstens 9 Inventarstapel und monotone Revisionen.
+- `garden_broadcast_farm_update` — sendet geänderte Farmzellen privat an den
+  aktuellen Garden-Raum.
 
 ### Migrations ausführen
 Migrations laufen **nicht** automatisch. Zwei Wege:
@@ -323,6 +319,10 @@ Migrations laufen **nicht** automatisch. Zwei Wege:
 
 Dateien sind idempotent (drop + create). Nach dem Anwenden gehört die `.sql`
 trotzdem ins Repo, damit ein Neuaufbau reproduzierbar bleibt.
+
+KaktusGarden Multiplayer benötigt
+`20260803120000_kaktus_garden_multiplayer.sql`; ohne diese Migration bleiben
+Join, Presence-Autorisierung und Cloud-v4-Validierung absichtlich gesperrt.
 
 ---
 

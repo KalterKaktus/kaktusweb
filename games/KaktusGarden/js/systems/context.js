@@ -17,7 +17,10 @@ export function contextAt(tileX, tileY, { ownPlotIndex = null } = {}) {
   const plot = plotAt(tileX, tileY);
   if (plot) {
     const cell = plotCellAt(plot, tileX, tileY);
-    const own = ownPlotIndex === null || plot.index === ownPlotIndex;
+    // Ohne eine vom Server bestätigte Slot-Zuweisung gehört dem Client kein
+    // Grundstück. So bleibt die Interaktion auch während des Verbindungsaufbaus
+    // konsequent read-only.
+    const own = Number.isInteger(ownPlotIndex) && plot.index === ownPlotIndex;
     return { kind: own ? "plot" : "foreignPlot", plotIndex: plot.index, cell, enabled: own };
   }
 

@@ -48,6 +48,12 @@
       <div class="garden-stage" id="garden-stage">
         <canvas class="game-canvas" id="game-canvas" data-i18n-attr="aria-label:garden.world_label" aria-label="Dorf und Gärten"></canvas>
 
+        <button class="hud-server" id="server-status" type="button" hidden
+                data-i18n-attr="title:garden.copy_room_link" title="Raumlink kopieren">
+          <strong id="server-name">Server –</strong>
+          <span id="server-count">0/6</span>
+        </button>
+
         <!-- Schnellreisen oben in der Mitte -->
         <nav class="hud-teleports" data-i18n-attr="aria-label:garden.teleports" aria-label="Schnellreise">
           <button class="hud-pill pill-shop" type="button" data-teleport="seeds">
@@ -118,16 +124,17 @@
           <h2 data-i18n="garden.settings">Einstellungen</h2>
           <button class="dialog-close" value="cancel" data-i18n-attr="aria-label:garden.close" aria-label="Schließen">×</button>
         </div>
-        <label class="setting-row">
-          <span>
-            <strong data-i18n="garden.show_grid">Koordinatenraster</strong>
-            <small data-i18n="garden.show_grid_hint">Blendet das Tile-Raster mit Koordinaten ein. Ein Klick auf ein Feld schreibt die Koordinate in die Browser-Konsole.</small>
-          </span>
-          <input id="setting-grid" type="checkbox" />
-        </label>
         <p class="asset-credit" data-i18n="garden.asset_credit">Pixel-Assets: Super Retro Ranch von Gif.</p>
       </form>
     </dialog>
+
+    <section class="garden-access" id="garden-access" role="alertdialog" aria-modal="true" hidden>
+      <div class="access-card">
+        <h2 id="access-title"></h2>
+        <p id="access-message"></p>
+        <a class="access-action" id="access-action" href="/games/" hidden></a>
+      </div>
+    </section>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 

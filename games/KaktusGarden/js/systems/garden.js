@@ -1,5 +1,5 @@
 import { CROPS, cropValue, rollWeight } from "../data/crops.js";
-import { addSeed, takeSeed } from "../state.js";
+import { addSeed, canAddInventoryStack, takeSeed } from "../state.js";
 
 /**
  * Pflanzen, Wachsen, Ernten, Kaufen, Verkaufen — die Spielregeln.
@@ -41,6 +41,9 @@ export function harvestCell(state, cellIndex, now = Date.now()) {
   const cell = state.cells[cellIndex];
   if (!cell || cellState(cell, now) !== "ready") return null;
   const crop = CROPS[cell.cropId];
+  if (!canAddInventoryStack(state, "crop", cell.cropId)) {
+    return { ok: false, reason: "inventoryFull" };
+  }
 
   const picked = [];
   for (let index = 0; index < crop.slots; index += 1) {
@@ -57,7 +60,12 @@ export function harvestCell(state, cellIndex, now = Date.now()) {
     state.cells[cellIndex] = null;
   }
 
-  return { cropId: cell.cropId, items: picked, value: picked.reduce((sum, item) => sum + cropValue(item.cropId, item.weight), 0) };
+  return {
+    ok: true,
+    cropId: cell.cropId,
+    items: picked,
+    value: picked.reduce((sum, item) => sum + cropValue(item.cropId, item.weight), 0),
+  };
 }
 
 /* ------------------------------------------------------------------ Laden */
@@ -67,8 +75,13 @@ export function buySeed(state, cropId) {
   if (!crop) return false;
   if ((state.shop.stock[cropId] || 0) < 1) return false;
   if (state.coins < crop.seedPrice) return false;
+  if (!canAddInventoryStack(state, "seed", cropId)) {
+    return { ok: false, reason: "inventoryFull" };
+  }
   state.coins -= crop.seedPrice;
   state.shop.stock[cropId] -= 1;
+  // Durch die Vorprüfung kann addSeed hier nicht mehr an der Kapazität
+  // scheitern; Geld und Bestand werden daher atomar zusammen verändert.
   addSeed(state, cropId);
   return true;
 }

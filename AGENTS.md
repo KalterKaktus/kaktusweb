@@ -200,18 +200,25 @@ englischen Originalnamen (alle 132 abgedeckt).
 
 ### KaktusGarden
 - **Pfad:** `games/KaktusGarden/` · **Game-ID:** `kaktus-garden`
-- Pixel-Farming mit festem 4×4-Grid und 19 einmalig erntbaren Nutzpflanzen.
-  Obstbäume sind vorerst nicht im Spiel; `berry` wird als Erdbeere angezeigt.
-- **Daten/Changelog:** `js/data/plants.js` bzw. `games/KaktusGarden/README.md`.
-- Wachstum und 5-Minuten-Shop-Restock laufen über echte Zeitstempel und werden
-  beim Laden nachgezogen. Gäste speichern lokal, Accounts in `game_saves`.
-- Fremde Farms sind read-only und kommen ausschließlich aus der sicheren View
-  `kaktus_garden_farms`; Inventare und Währungen werden nicht veröffentlicht.
-- Jede wachsende Pflanze kann mit einer verbrauchten Schaufel nach Bestätigung
-  entfernt werden.
+- Loginpflichtiges Live-Pixel-Farming für bis zu 6 Spieler pro Dorf. Sechs
+  Grundstücke mit je 8×8 = 64 Pflanzfeldern; jeder Account belegt genau einen
+  Slot und darf ausschließlich sein eigenes Grundstück verändern.
+- **Matchmaking:** `garden_join_room()` priorisiert immer Server A und legt erst
+  bei 6/6 den nächsten Raum an. Presence zeigt die Belegung, Broadcast verteilt
+  Bewegungen; ein sicherer Snapshot liefert ausschließlich die 64 Farmzellen.
+- **Daten:** `js/data/crops.js` (19 Pflanzen), Save-Version 4 in `js/state.js`,
+  Cloud-/Outbox-Logik in `js/cloud.js`, Räume in `js/multiplayer.js`.
+- Jede persistierbare Aktion erhöht `revision`, wird sofort lokal in einer
+  Outbox gesichert und in `game_saves` geschrieben. Alte Test-Saves werden auf
+  v4 zurückgesetzt; Gäste werden zum Login umgeleitet.
+- Der Samenladen hat anhand der Supabase-Serverzeit für alle Räume dasselbe
+  deterministische 5-Minuten-Angebot. Der Restbestand ist pro Spieler und
+  bleibt bei einem Reload im selben Slot erhalten. Das Inventar umfasst genau
+  9 Stapel.
+- Fremde Grundstücke sind begehbar und read-only. Interaktion ist nur im
+  Stillstand auf dem Zielfeld möglich; geöffnete Menüs stoppen die Bewegung.
 - Optik: `.theme-cozy.theme-pixel-garden`, Super Retro Ranch im 16-px-Raster.
-  Projekt-Tiles entstehen per `tools/build-garden-pixel-assets.py`; Credits und
-  Lizenzhinweise stehen in `ASSET_CREDITS.md`.
+  Credits und Lizenzhinweise stehen in `ASSET_CREDITS.md`.
 
 ---
 
@@ -233,6 +240,8 @@ englischen Originalnamen (alle 132 abgedeckt).
 | `admin_messages` | Nachrichten an einzelne User |
 | `user_presence` | Wer ist online und wo |
 | `user_badges` | Freigeschaltete Badges |
+| `kaktus_garden_rooms` | Persistente Raum-IDs, A/B-Reihenfolge und Invite-Codes |
+| `kaktus_garden_room_members` | Race-sichere 6er-Slots mit 45-s-Verbindungs-Lease; ein Slot pro Account |
 
 ### Views — nicht direkt auf `game_saves` lesen!
 Das Security-Hardening (`20260525120000`) hat die alten Public-SELECT-Policies
@@ -241,6 +250,7 @@ Spalten exponieren:
 - `kaktus_clicker_leaderboard`
 - `my_fishing_kaktus_leaderboard`
 - `profiles_public` (inkl. berechnetem `level`, ohne Spendenbeträge)
+- `kaktus_garden_farms` (nur aktive Mitglieder des eigenen Raums, ausschließlich 64 Farmzellen)
 
 Gebannte User sind in den Views herausgefiltert (`20260525170000_ban_enforcement`).
 
@@ -251,6 +261,10 @@ Gebannte User sind in den Views herausgefiltert (`20260525170000_ban_enforcement
 - `game_saves_block_banned`, `profiles_ban_block_xp` — Ban-Durchsetzung.
 - `profiles_throttle_cols_protect` — XP-Throttle-Spalten gegen Client-Writes.
 - `cheat_flags_autoban` — Autoban bei Cheat-Flags.
+- `game_saves_validate_kaktus_garden_payload` — erzwingt Save v4, 64 Zellen,
+  höchstens 9 Inventarstapel und monotone Revisionen.
+- `garden_broadcast_farm_update` — sendet geänderte Farmzellen privat an den
+  aktuellen Garden-Raum.
 
 ### Migrations ausführen
 Migrations laufen **nicht** automatisch. Zwei Wege:
@@ -259,6 +273,10 @@ Migrations laufen **nicht** automatisch. Zwei Wege:
 
 Dateien sind idempotent (drop + create). Nach dem Anwenden gehört die `.sql`
 trotzdem ins Repo, damit ein Neuaufbau reproduzierbar bleibt.
+
+KaktusGarden Multiplayer benötigt
+`20260803120000_kaktus_garden_multiplayer.sql`; ohne diese Migration bleiben
+Join, Presence-Autorisierung und Cloud-v4-Validierung absichtlich gesperrt.
 
 ---
 
