@@ -197,24 +197,30 @@
 /* --- Aktueller Multiplayer-Raum ------------------------------------------ */
 
 .hud-server {
-  top: 0.6rem;
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
   left: 0.6rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.45rem 0.75rem;
+  gap: 0.35rem;
+  padding: 0.3rem 0.55rem;
   border: var(--hud-edge) solid var(--line-hot);
   border-radius: var(--hud-radius);
   color: var(--on-accent);
   background: var(--achievement);
   box-shadow: 0 4px 0 var(--line-hot);
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 950;
   cursor: pointer;
 }
 .hud-server:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line-hot); }
 .hud-server span { opacity: 0.8; font-variant-numeric: tabular-nums; }
+.hud-server .server-boost {
+  padding-left: 0.35rem;
+  border-left: 2px solid rgb(var(--on-accent-rgb) / 0.45);
+  color: var(--on-accent);
+  opacity: 1;
+}
 
 /* --- Schnellreisen oben mittig -------------------------------------------- */
 
@@ -514,7 +520,7 @@
 }
 
 @media (max-width: 700px) {
-  .hud-server { top: 0.45rem; left: 0.45rem; padding: 0.38rem 0.55rem; font-size: 0.68rem; }
+  .hud-server { left: 0.45rem; padding: 0.26rem 0.45rem; font-size: 0.62rem; }
   .hud-teleports { top: 4rem; }
   .hotbar-slot { width: 2.6rem; height: 2.6rem; }
   .hotbar-key { display: none; }
@@ -526,6 +532,7 @@
 }
 @media (hover: none) and (pointer: coarse) {
   /* Platz für das Laufkreuz links neben der Tasche. */
+  .hud-server { bottom: calc(max(0.9rem, env(safe-area-inset-bottom)) + 9rem); }
   .hotbar { left: auto; right: 0.9rem; transform: none; }
   .hud-context { left: auto; right: 0.9rem; transform: none; }
 }
@@ -759,7 +766,7 @@
   position: fixed;
   z-index: 11000;
   left: 50%;
-  bottom: max(1rem, env(safe-area-inset-bottom));
+  bottom: calc(max(1rem, env(safe-area-inset-bottom)) + 8.8rem);
   max-width: min(32rem, calc(100% - 2rem));
   padding: 0.6rem 0.9rem;
   border: 3px solid var(--line-hot);

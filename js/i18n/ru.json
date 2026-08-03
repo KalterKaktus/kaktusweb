@@ -352,6 +352,7 @@
         "menu_soon": "Скоро будет.",
         "server_name": "Сервер {name}",
         "server_players": "{count}/6",
+        "server_boost": "+{percent}% монет",
         "copy_room_link": "Скопировать ссылку на комнату",
         "room_link_copied": "Ссылка на комнату скопирована.",
         "already_connected_title": "Уже подключено",

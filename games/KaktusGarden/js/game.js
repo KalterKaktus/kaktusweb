@@ -55,6 +55,7 @@ const elements = {
   serverStatus: document.getElementById("server-status"),
   serverName: document.getElementById("server-name"),
   serverCount: document.getElementById("server-count"),
+  serverBoost: document.getElementById("server-boost"),
   interactButton: document.getElementById("interact-button"),
   interactLabel: document.getElementById("interact-label"),
   contextTag: document.getElementById("context-tag"),
@@ -124,6 +125,15 @@ let lastMultiplayerStatus = "idle";
 
 function gardenNow() {
   return multiplayer?.now?.() ?? Date.now();
+}
+
+function roomMoneyBoostPercent() {
+  const players = Math.max(1, Math.min(6, roomPlayerCount || multiplayer?.assignment?.occupancy || 1));
+  return players * 10;
+}
+
+function roomMoneyMultiplier() {
+  return 1 + roomMoneyBoostPercent() / 100;
 }
 
 function showToast(message) {
@@ -516,7 +526,7 @@ function closeSheet() {
 function renderSheet() {
   if (!openShop) return;
   if (openShop === "seeds") elements.sheetContent.innerHTML = renderSeedShop(save, gardenNow());
-  else if (openShop === "crops") elements.sheetContent.innerHTML = renderSellShop(save);
+  else if (openShop === "crops") elements.sheetContent.innerHTML = renderSellShop(save, roomMoneyMultiplier());
   else elements.sheetContent.innerHTML = renderPlaceholder(openShop);
 }
 
@@ -538,7 +548,7 @@ function onSheetClick(event) {
 
   const sell = event.target.closest("[data-sell]");
   if (sell) {
-    const result = sellHarvest(save, sell.dataset.sell);
+    const result = sellHarvest(save, sell.dataset.sell, roomMoneyMultiplier());
     if (result) {
       showToast(t("garden.sold", { amount: result.count, value: formatCoins(result.value) }));
       persist("sell-crop");
@@ -548,7 +558,7 @@ function onSheetClick(event) {
   }
 
   if (event.target.closest("[data-sell-all]")) {
-    const result = sellHarvest(save);
+    const result = sellHarvest(save, null, roomMoneyMultiplier());
     if (result) {
       showToast(t("garden.sold", { amount: result.count, value: formatCoins(result.value) }));
       persist("sell-all");
@@ -620,6 +630,7 @@ function applyRoster(roster) {
   }
   roomPlayerCount = Math.max(1, roster.length);
   renderRoomStatus();
+  if (openShop === "crops") renderSheet();
   broadcastLocalMovement(true);
 }
 
@@ -661,6 +672,7 @@ function renderRoomStatus() {
   elements.serverCount.textContent = t("garden.server_players", {
     count: Math.max(1, Math.min(6, roomPlayerCount || assignment.occupancy || 1)),
   });
+  elements.serverBoost.textContent = t("garden.server_boost", { percent: roomMoneyBoostPercent() });
 }
 
 async function copyRoomLink() {

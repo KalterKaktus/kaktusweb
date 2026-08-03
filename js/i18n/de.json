@@ -317,6 +317,7 @@
         "menu_soon": "Kommt noch.",
         "server_name": "Server {name}",
         "server_players": "{count}/6",
+        "server_boost": "+{percent}% Münzen",
         "copy_room_link": "Raumlink kopieren",
         "room_link_copied": "Raumlink kopiert.",
         "already_connected_title": "Bereits verbunden",

@@ -87,7 +87,7 @@ export function buySeed(state, cropId) {
 }
 
 /** Verkauft alle Früchte einer Sorte, oder ohne Angabe die ganze Ernte. */
-export function sellHarvest(state, cropId = null) {
+export function sellHarvest(state, cropId = null, moneyMultiplier = 1) {
   const keep = [];
   let value = 0;
   let count = 0;
@@ -100,13 +100,15 @@ export function sellHarvest(state, cropId = null) {
     count += 1;
   }
   if (!count) return null;
+  value = Math.max(0, Math.round(value * Math.max(1, Number(moneyMultiplier) || 1)));
   state.harvest = keep;
   state.coins += value;
   return { count, value };
 }
 
-export function harvestValue(state, cropId = null) {
-  return state.harvest
+export function harvestValue(state, cropId = null, moneyMultiplier = 1) {
+  const value = state.harvest
     .filter((item) => !cropId || item.cropId === cropId)
     .reduce((sum, item) => sum + cropValue(item.cropId, item.weight), 0);
+  return Math.max(0, Math.round(value * Math.max(1, Number(moneyMultiplier) || 1)));
 }

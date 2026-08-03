@@ -12,7 +12,9 @@ import {
   createInitialState, createStock, inventoryCapacity, normalizeState,
   restockSlot,
 } from "../games/KaktusGarden/js/state.js";
-import { buySeed, harvestCell } from "../games/KaktusGarden/js/systems/garden.js";
+import {
+  buySeed, harvestCell, harvestValue, sellHarvest,
+} from "../games/KaktusGarden/js/systems/garden.js";
 import { contextAt } from "../games/KaktusGarden/js/systems/context.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -112,6 +114,13 @@ const harvestResult = harvestCell(harvestBlocked, 0, slotTime);
 assert.equal(harvestResult.reason, "inventoryFull");
 assert.equal(JSON.stringify(harvestBlocked.cells[0]), blockedCell, "blocked harvest must leave crop untouched");
 assert.equal(harvestBlocked.harvest.length, 0);
+
+const boostedSale = createInitialState(slotTime);
+boostedSale.harvest = [{ cropId: "carrot", weight: 1 }];
+const boostedValue = harvestValue(boostedSale, null, 1.2);
+const boostedResult = sellHarvest(boostedSale, null, 1.2);
+assert.equal(boostedResult.value, boostedValue, "two players must grant the displayed +20% sale boost");
+assert.equal(boostedSale.coins, 50 + boostedValue);
 
 assert.equal(bumpRevision(harvestBlocked), 1);
 assert.equal(normalizeState(harvestBlocked, slotTime).revision, 1);
@@ -231,7 +240,7 @@ if (typeof BroadcastChannel === "function") {
 
 for (const dictionary of dictionaries) {
   for (const key of [
-    "inventory_full", "server_name", "server_players", "already_connected_title",
+    "inventory_full", "server_name", "server_players", "server_boost", "already_connected_title",
     "room_full_title", "connection_failed_title", "copy_room_link",
   ]) {
     assert.ok(dictionary.garden?.[key], `missing garden translation: ${key}`);
@@ -240,7 +249,11 @@ for (const dictionary of dictionaries) {
 
 const gameHtml = readFileSync(resolve(gameRoot, "index.html"), "utf8");
 assert.ok(gameHtml.includes('id="server-status"'));
+assert.ok(gameHtml.includes('id="server-boost"'));
 assert.ok(!gameHtml.includes('id="setting-grid"'));
+
+const gamesHubHtml = readFileSync(resolve(root, "games", "index.html"), "utf8");
+assert.match(gamesHubHtml, /hub-card hub-card-disabled[\s\S]*Kaktus Garden[\s\S]*games\.coming_soon/);
 
 const migration = readFileSync(
   resolve(root, "supabase", "migrations", "20260803120000_kaktus_garden_multiplayer.sql"),

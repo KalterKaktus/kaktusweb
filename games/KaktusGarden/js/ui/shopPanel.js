@@ -68,11 +68,12 @@ export function renderPlaceholder(shopId) {
 }
 
 /** Verkaufsstand: Ernte nach Sorte, mit Gesamtgewicht und Erlös. */
-export function renderSellShop(state) {
+export function renderSellShop(state, moneyMultiplier = 1) {
   const groups = CROP_ORDER.map((id) => {
     const items = state.harvest.filter((item) => item.cropId === id);
     if (!items.length) return "";
-    const total = items.reduce((sum, item) => sum + cropValue(item.cropId, item.weight), 0);
+    const baseTotal = items.reduce((sum, item) => sum + cropValue(item.cropId, item.weight), 0);
+    const total = Math.max(0, Math.round(baseTotal * Math.max(1, Number(moneyMultiplier) || 1)));
     const heaviest = items.reduce((best, item) => Math.max(best, item.weight), 0);
     return `<article class="shop-row">
       <span class="shop-icon" style="${iconStyle(id)}" aria-hidden="true"></span>
@@ -86,7 +87,7 @@ export function renderSellShop(state) {
     </article>`;
   }).join("");
 
-  const total = harvestValue(state);
+  const total = harvestValue(state, null, moneyMultiplier);
   return `<header class="shop-head">
       <h2>${escapeHtml(t("garden.shop_crops"))}</h2>
       <span class="shop-timer">${escapeHtml(coins(total))}</span>
