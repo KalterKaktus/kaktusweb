@@ -21,9 +21,7 @@ function cropName(cropId) {
 }
 
 function harvestLine(crop) {
-  return crop.harvest === "multi"
-    ? t("garden.harvest_multi", { slots: crop.slots, time: duration(crop.regrowSeconds * 1000) })
-    : t("garden.harvest_single");
+  return t("garden.harvest_single");
 }
 
 /**
@@ -40,7 +38,7 @@ export function renderSeedShop(state, now = Date.now()) {
     // zwar in der Liste, damit man sie kennt, sind hier aber nie lieferbar.
     const stockLine = stock
       ? `<small class="shop-stock">${escapeHtml(t("garden.stock", { value: stock }))}</small>`
-      : `<small class="shop-out">${escapeHtml(t(crop.stockChance > 0 ? "garden.sold_out" : "garden.weather_only"))}</small>`;
+      : `<small class="shop-out">${escapeHtml(t("garden.sold_out"))}</small>`;
     return `<article class="shop-row rarity-${crop.rarity}${stock ? "" : " is-out"}">
       <span class="shop-icon" style="${iconStyle(id)}" aria-hidden="true"></span>
       <div class="shop-info">

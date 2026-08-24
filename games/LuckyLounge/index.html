@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title data-i18n="lounge.meta_title">LuckyLounge – KalterKaktus</title>
+  <link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/css/fonts.css"><link rel="stylesheet" href="/css/game-tokens.css"><link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-lucky-lounge lounge-page">
+  <nav class="nav lounge-nav"><div class="nav-container"><a class="logo" href="/">KK</a><div class="nav-links"><a class="nav-link" href="/games/" data-i18n="nav.games">Games</a><div id="auth-nav" class="auth-nav"></div></div></div></nav>
+  <main class="lounge-shell">
+    <header class="lounge-head"><div><p class="eyebrow">KALTERKAKTUS</p><h1>LuckyLounge</h1><p data-i18n="lounge.subtitle">Deine tägliche Dosis Glück – nur virtuelle Chips.</p></div><div class="wallet"><span data-i18n="lounge.chips">Chips</span><strong id="chips">0</strong><button id="claim" type="button" data-i18n="lounge.claim">+100 täglich</button></div></header>
+    <section class="game-picker" aria-label="Minispiele">
+      <button class="lounge-game is-selected" type="button" data-game="plinko"><span>●</span><strong>Plinko</strong><small data-i18n="lounge.available">Jetzt spielen</small></button>
+      <button class="lounge-game" type="button" data-game="mines"><span>◆</span><strong>Mines</strong><small data-i18n="lounge.coming">Kommt bald</small></button>
+      <button class="lounge-game" type="button" data-game="slots"><span>✦</span><strong>Slots</strong><small data-i18n="lounge.coming">Kommt bald</small></button>
+      <button class="lounge-game" type="button" data-game="cases"><span>▣</span><strong>Cases</strong><small data-i18n="lounge.coming">Kommt bald</small></button>
+    </section>
+    <section class="game-card" id="plinko-game"><div class="game-title"><span class="live-dot"></span><div><p class="eyebrow" data-i18n="lounge.plinko_kicker">GLÜCKSSPIEL</p><h2>Plinko</h2></div><p id="message" role="status"></p></div>
+      <div class="plinko" id="plinko"><div class="ball" id="ball" hidden></div><div class="pegs" id="pegs"></div><div class="bins" id="bins"></div></div>
+      <div class="controls"><label><span data-i18n="lounge.bet">Einsatz</span><input id="bet" type="number" min="1" step="1" value="10"></label><button id="drop" type="button" data-i18n="lounge.drop">Kugel fallen lassen</button></div>
+    </section>
+    <p class="notice" data-i18n="lounge.notice">Nur virtuelle Chips. Keine Einzahlungen, keine Auszahlungen und keine Echtgeldpreise.</p>
+  </main>
+  <script src="/js/config.js"></script><script type="module" src="/js/i18n.js"></script><script type="module" src="/js/auth-nav.js"></script><script type="module" src="js/game.js"></script>
+</body></html>

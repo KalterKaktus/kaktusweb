@@ -52,13 +52,7 @@ export function harvestCell(state, cellIndex, now = Date.now()) {
     state.harvest.push({ cropId: cell.cropId, weight });
   }
 
-  if (crop.harvest === "multi") {
-    cell.harvested += 1;
-    cell.plantedAt = now;
-    cell.readyAt = now + crop.regrowSeconds * 1000;
-  } else {
-    state.cells[cellIndex] = null;
-  }
+  state.cells[cellIndex] = null;
 
   return {
     ok: true,

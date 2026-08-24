@@ -463,3 +463,54 @@
 
   color-scheme: light;
 }
+
+/* LuckyLounge: dunkles Casino mit tiefrotem Neon statt Site-Grün. */
+.theme-lucky-lounge {
+  --bg: #16060b;
+  --bg-rgb: 22 6 11;
+  --bg-soft: #280a12;
+  --bg-soft-rgb: 40 10 18;
+  --panel-base: #300b15;
+  --panel-base-rgb: 48 11 21;
+  --panel-strong-base: #470f1d;
+  --panel-strong-base-rgb: 71 15 29;
+  --panel: rgb(var(--panel-base-rgb) / 0.9);
+  --panel-strong: rgb(var(--panel-strong-base-rgb) / 0.94);
+  --line-base: #d84055;
+  --line-base-rgb: 216 64 85;
+  --line: rgb(var(--line-base-rgb) / 0.44);
+  --line-hot-base: #ff8b98;
+  --line-hot-base-rgb: 255 139 152;
+  --line-hot: rgb(var(--line-hot-base-rgb) / 0.85);
+  --text: #fff0f1;
+  --text-rgb: 255 240 241;
+  --muted: #d49ba3;
+  --muted-rgb: 212 155 163;
+  --green: #e4485f;
+  --green-rgb: 228 72 95;
+  --green-hot: #ffb1ba;
+  --green-hot-rgb: 255 177 186;
+  --green-dark: #8f1d35;
+  --green-dark-rgb: 143 29 53;
+  --gold: #ffc857;
+  --gold-rgb: 255 200 87;
+  --gold-hot: #fff0b0;
+  --gold-hot-rgb: 255 240 176;
+  --gold-ink: #271500;
+  --gold-ink-rgb: 39 21 0;
+  --red-event: #ff405b;
+  --red-event-rgb: 255 64 91;
+  --red-event-hot: #ff9cab;
+  --red-event-hot-rgb: 255 156 171;
+  --red-event-ink: #30030b;
+  --red-event-ink-rgb: 48 3 11;
+  --on-accent: #fff7f7;
+  --on-accent-rgb: 255 247 247;
+  --shadow-rgb: 0 0 0;
+  --shadow: 0 0 32px rgb(var(--red-event-rgb) / 0.2);
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 24px;
+  --font-game: "Nunito", ui-rounded, "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}

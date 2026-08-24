@@ -1,5 +1,5 @@
 import { onLanguageChange, ready as i18nReady, t } from "/js/i18n.js";
-import { PLOTS, TILE, VILLAGE_SPAWN, isWalkable } from "./data/world.js";
+import { PLOTS, SHOPS, TILE, VILLAGE_SPAWN, isWalkable } from "./data/world.js";
 import { CROPS, cropIcon } from "./data/crops.js";
 import { createCamera, focusCamera, resizeCamera } from "./engine/camera.js";
 import { createInput } from "./engine/input.js";
@@ -9,6 +9,7 @@ import {
   drawActor,
   drawNameTag,
   loadActorSheets,
+  NAMETAG_PALETTE,
   readNameTagPalette,
   skinFor,
 } from "./render/actors.js";
@@ -347,6 +348,22 @@ function drawNameForActor(entry) {
   );
 }
 
+function drawShopNameTags() {
+  for (const shop of SHOPS) {
+    const centerX = (shop.sprite.x + shop.size.w / 2) * TILE;
+    const topY = shop.sprite.y * TILE;
+    drawNameTag(
+      ctx,
+      t(shop.labelKey),
+      (centerX - view.x) * zoom,
+      (topY - view.y) * zoom - 2 * devicePixels,
+      devicePixels,
+      NAMETAG_PALETTE,
+      7,
+    );
+  }
+}
+
 function draw() {
   if (!village) return;
   view.x = Math.round(camera.x);
@@ -376,6 +393,7 @@ function draw() {
   actors.forEach(drawActorWithName);
 
   ctx.setTransform(1, 0, 0, 1, 0, 0);
+  drawShopNameTags();
   actors.forEach(drawNameForActor);
 }
 
@@ -404,9 +422,7 @@ function resolveAction(now = gardenNow()) {
   if (state === "ready") {
     const crop = CROPS[cell.cropId];
     const full = !canAddInventoryStack(save, "crop", cell.cropId);
-    const sub = crop.harvest === "multi"
-      ? t("garden.yields", { value: crop.slots })
-      : t("garden.worth", { value: formatCoins(crop.sellPrice) });
+    const sub = t("garden.worth", { value: formatCoins(crop.sellPrice) });
     return {
       ...base,
       action: "harvest",

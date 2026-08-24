@@ -65,9 +65,9 @@ export function drawActor(ctx, player, skin, camera) {
  * gezeichnet: hochskalierter Text wäre bei Zoom 3 oder 4 ein Klotz. So bleibt
  * die Schrift in Gerätepixeln scharf, während die Welt pixelig bleibt.
  */
-export function drawNameTag(ctx, text, screenX, screenY, scale = 1, palette = NAMETAG_PALETTE) {
+export function drawNameTag(ctx, text, screenX, screenY, scale = 1, palette = NAMETAG_PALETTE, baseFontSize = 11) {
   if (!text) return;
-  const fontSize = Math.round(11 * scale);
+  const fontSize = Math.round(baseFontSize * scale);
   const padX = Math.round(6 * scale);
   const padY = Math.round(3 * scale);
   const radius = Math.round(4 * scale);

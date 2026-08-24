@@ -288,6 +288,8 @@
         "go_fish": "Angeln gehen",
         "garden_tag": "Cozy Farming",
         "garden_text": "Baue Nutzpflanzen an und teile ein Dorf live mit bis zu sechs Gärtnern.",
+        "lounge_tag": "Social Casino",
+        "lounge_text": "Hole tägliche Chips ab und lass eine Kugel durch Plinko fallen.",
         "grow": "Garten öffnen",
         "coming_soon": "Demnächst verfügbar",
         "more_later": "Mehr Games kommen später."
@@ -297,6 +299,15 @@
         "impressum": "Impressum",
         "datenschutz": "Datenschutz",
         "terms": "Nutzungsbedingungen"
+    },
+    "lounge": {
+        "meta_title": "LuckyLounge – KalterKaktus",
+        "subtitle": "Deine tägliche Dosis Glück – nur virtuelle Chips.",
+        "chips": "Chips", "claim": "+100 täglich", "claimed": "Heute abgeholt",
+        "claimed_message": "+{value} Chips gutgeschrieben.", "plinko_kicker": "GLÜCKSSPIEL",
+        "bet": "Einsatz", "drop": "Kugel fallen lassen", "invalid_bet": "Wähle einen gültigen Einsatz.",
+        "result": "{mult}× · +{value} Chips", "save_failed": "Speichern wird erneut versucht.",
+        "notice": "Nur virtuelle Chips. Keine Einzahlungen, keine Auszahlungen und keine Echtgeldpreise."
     },
     "garden": {
         "meta_title": "KaktusGarden - KalterKaktus",

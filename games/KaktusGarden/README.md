@@ -2,8 +2,8 @@
 
 - **Pfad:** `/games/KaktusGarden/`
 - **Game-ID:** `kaktus-garden`
-- **Vorbild:** Magic Garden (magicgarden.wiki) — Dorf mit Läden, sechs
-  Gartenparzellen, Charakter läuft im Raster
+- **Prinzip:** gemeinsames Dorf mit Läden, sechs Gartenparzellen und einer
+  Figur, die im Raster läuft
 
 Ein Dorf mit fünf Ladengebäuden in der Mitte, darum sechs eingezäunte Parzellen à
 8 × 8 = 64 Pflanzfelder. Wer den Server betritt, bekommt eine freie Parzelle
@@ -47,21 +47,11 @@ Münzen und Ladenbestand unverändert und die Oberfläche zeigt „Inventar voll
 
 ## Wirtschaft
 
-Die Zahlen sind von **Magic Garden** übernommen (magicgarden.wiki/Crops und
-/Seed_Shop). Elf unserer Pflanzen gibt es dort ebenfalls und tragen deren Werte
-unverändert; für die acht übrigen ist jeweils ein freier Platz derselben
-Preisleiter eingesetzt. Welche Vorlage benutzt wurde, steht als `template` an
-jeder Pflanze in `crops.js`.
-
-**Erntearten**
-
-- `single` — einmal ernten, danach ist das Feld frei
-- `multi` — die Pflanze bleibt stehen und wächst nach
-
-Eine Ernte liefert bei `multi` **alle Slots auf einmal** (z. B. 5 Erdbeeren),
-weil unsere Sprites keine einzeln abpflückbaren Früchte darstellen können. Jede
-Frucht bekommt trotzdem ihr eigenes gewürfeltes Gewicht. Die Nachwachszeit
-folgt der Wiki-Formel `(Slots + 2) / 3 × Wachstumszeit einer Frucht`.
+Die 19 Pflanzen-Assets sind zugleich die vollständige Spiel-Progression: von
+Karotte bis Paprika. Jede Pflanze wird einmal geerntet und macht ihr Beet
+anschließend wieder frei. Kaufpreis, Wachstumszeit und Verfügbarkeit steigen
+dabei stetig an; der durchschnittliche Verkaufserlös beträgt ungefähr das
+Doppelte des Saatgutpreises.
 
 **Gewicht und Preis**
 
@@ -79,25 +69,10 @@ aus dem Zeitfenster deterministisch erzeugt und ist dadurch in allen Räumen
 identisch – auch bei einer falsch gestellten Geräteuhr. Der
 verbleibende Bestand ist dagegen persönlich: Käufe anderer Spieler verändern
 ihn nicht, und ein Reload füllt ihn im selben Zeitfenster nicht wieder auf.
-Jede Pflanze hat eine eigene Erscheinungschance (Karotte 100 %, Paprika 1 %)
+Jede Pflanze hat eine eigene Erscheinungschance (Karotte immer, Paprika selten)
 und eine Bestandsspanne.
 Gelistet werden **alle** Sorten, auch die gerade nicht lieferbaren — man soll
 sehen können, worauf sich das Warten lohnt.
-
-**Abweichungen vom Original — und warum**
-
-Magic Garden bremst den Fortschritt vor allem über den anfangs winzigen Garten.
-Bei uns sind von Beginn an alle 64 Felder nutzbar, deshalb brauchen drei
-Pflanzen eine andere Behandlung:
-
-| Pflanze | Original | Bei uns | Grund |
-|---|---|---|---|
-| Lauch | Snow-Shop, nur bei Wetter-Event | `stockChance: 0` | 90 s Wachstum bei 35.000 Wert — mit Abstand größter Ausreißer |
-| Aubergine | Dawn-Shop, nur bei Wetter-Event | `stockChance: 0` | gehört ebenfalls nicht in den regulären Laden |
-| Sellerie | (frei zugeordnet: Tulpe) | Vorlage Echeveria | 8 s bei 767 Wert und bis zu 25 Samen je Lieferung war eine Gelddruckmaschine |
-
-Sobald es Wetter-Ereignisse gibt, bekommen Lauch und Aubergine dort ihren
-Platz; die Werte stehen schon bereit.
 
 ## Stand
 
