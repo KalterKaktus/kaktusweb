@@ -12,7 +12,7 @@
   SECRETS_SCAN_OMIT_KEYS = "ADMIN_EMAILS,SUPABASE_URL"
 
 [functions."check-free-games"]
-  schedule = "@hourly"
+  schedule = "0 0,6,12,18 * * *"
 
 # Bilder und Schriften einmal laden, danach ein Jahr aus dem Browsercache.
 # Ohne diesen Block liefert Netlify `max-age=0, must-revalidate` — der Browser
