@@ -140,6 +140,7 @@ async function sendDiscordMessage(webhookUrl, {
     body: JSON.stringify({
       username: "KalterKaktus Steam Deals",
       content: parts.join("\n"),
+      flags: 4,
       allowed_mentions: {
         parse: [],
       },
