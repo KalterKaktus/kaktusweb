@@ -1,0 +1,71 @@
+.mobile-bottom-nav {
+    display: none;
+}
+
+@media (max-width: 768px), (max-width: 932px) and (orientation: landscape) and (hover: none) {
+    .mobile-bottom-nav {
+        position: fixed;
+        z-index: 350;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: grid;
+        height: var(--mobile-nav-space);
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        padding: 4px 4px env(safe-area-inset-bottom);
+        border-top: 1px solid var(--border-subtle);
+        background: var(--bg-header);
+    }
+
+    .mobile-bottom-nav a {
+        display: flex;
+        min-width: 44px;
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 1px;
+        border-radius: 8px;
+        color: var(--text-secondary);
+        font-size: 10px;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    .mobile-bottom-nav a.active {
+        background: var(--primary-soft);
+        color: var(--primary-hover);
+    }
+
+    .mobile-navigation-drawer .ant-drawer-content {
+        background: var(--bg-sidebar);
+    }
+
+    .mobile-drawer-field,
+    .mobile-coming-soon,
+    .mobile-drawer-actions {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .mobile-drawer-field input,
+    .mobile-drawer-field select,
+    .mobile-drawer-actions button,
+    .mobile-coming-soon button {
+        min-height: 44px;
+        border: 1px solid var(--border-default);
+        border-radius: 8px;
+        background: var(--surface-1);
+        color: var(--text-primary);
+        font: inherit;
+    }
+
+    .mobile-coming-soon button {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        color: var(--text-disabled);
+    }
+}

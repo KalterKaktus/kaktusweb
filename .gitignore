@@ -13,3 +13,7 @@ games/MyFishingKaktus/js/systems/devPanel.js
 # Rohbilder für tools/optimize-assets.py — nur die optimierten Varianten
 # gehören ins Repo, nicht die Originale.
 tools/raw/
+
+# Isolated Lucky Lounge React development; compiled site assets are tracked.
+games/LuckyLounge/app/node_modules/
+games/LuckyLounge/app/dist/

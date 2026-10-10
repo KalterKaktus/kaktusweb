@@ -218,6 +218,31 @@ englischen Originalnamen (alle 132 abgedeckt).
 - Der **Fließtext** der Wiki-Seite (Formeln, Schwellen, Beispieltabellen) ist
   weiterhin Handarbeit in beiden Sprachen. Bei Balance-Änderungen mitziehen.
 
+### Lucky Lounge
+- **Pfad:** `games/LuckyLounge/`, Spiele unter `plinko/`, `mines/`, `crash/`, `dino/`; alte Game-ID `lucky-lounge`.
+- Isolierte React/Vite-Anwendung in `app/`, vollständiger OpenStake-Quellbaum als Basis. Native Mines-/Crash-/Dino-Oberflächen und Dark-Theme; Server-Adapter in `components/originalModels.jsx` und `components/originalDinoModel.jsx`.
+  Herkunft/Lizenzhinweise: `README.md`, `THIRD_PARTY_NOTICES.md`. Keine lokalen
+  Einzahlungen oder Reset-Wallet; ausschließlich kostenlose virtuelle Chips.
+- `pnpm build` in `app/` erzeugt fertige Website-Dateien; diese mitführen.
+  Der SPA-Fallback in Netlify gilt nur für diese Lounge, andere Spiele bleiben Vanilla.
+- Gemeinsame Wallet: `js/wallet.js`, synthetisiertes Audio: `js/audio.js`.
+  Plinko benutzt die ursprüngliche deterministische Kollisions-Engine mit festem
+  60-Hz-Schritt und vorberechneten Startpositionen; Einfach/Normal/Schwer mit 8/12/16 Reihen. 35 % schneller, bis zu 24 aktive/wartende Kugeln.
+  Mines (25 Felder), Crash (gemeinsame Server-Runden) und Dino (Phaser, 12 Stufen) sind ebenfalls spielbar. Slots und Cases sind vollständig aus Katalog und Navigation entfernt.
+- Migration `20261010030000_lucky_lounge_shared_crash.sql`: manuell nach Stundenbonus. Gemeinsame Server-Flüge bis 1.000×, 10 Sekunden Einsatzpause, RPCs `casino_crash_state` / `casino_crash_action`. Echte Teilnehmer und Online-Zählung (15-s-Lease). Private Crash-Punkte bleiben auch nach Cashout verborgen; persönliche Altrunden und Outbox bleiben erhalten. Ohne Besucher werden keine leeren Runden nachgeneriert; beim Wiederöffnen beginnt eine neue 10-s-Einsatzphase.
+- Migration `20261010020000_lucky_lounge_hourly_bonus.sql`: manuell nach `20261010010000_lucky_lounge_fun_economy.sql`. Ersetzt Daily durch 50 Chips alle rollenden 60 Minuten (`casino_claim_bonus`); alter Daily-RPC nutzt denselben Bonus. Originale Plinko-Auszahlungen, neue Mines/Crash/Dino-Runden mit Faktor 0,99. Aktive Runden und Guthaben bleiben erhalten. Keine Ertragsanzeigen in der UI; `snapshot.rules.economy = casino-v1`.
+- Migration `20261009230000_lucky_lounge_plinko_modes.sql`: manuell nach Decimal-Chips. RPC `casino_play_plinko_mode(uuid,numeric,text)`, originale symmetrische Auszahlungen, binomiale Chancen, atomare Burst-Begrenzung statt 180-ms-Pause. Bestehende Buchungen bleiben unverändert.
+- Migration `20261009220000_lucky_lounge_decimal_chips.sql`: manuell nach den beiden Basis-Migrationen. Exakte Beträge mit zwei Nachkommastellen, keine Guthaben-Skalierung oder rückwirkenden Auszahlungen. Plinko-RPC danach `(uuid,numeric)`; bestehende Guthaben und Idempotenz bleiben erhalten.
+- Neue Migration `20261009200000_lucky_lounge_originals.sql` manuell erforderlich: private `casino_rounds`/`casino_game_requests`, RPC `casino_game_action`; alle Entscheidungen/Auszahlungen sind serverseitig. Beide Migrationen müssen beim Neuaufbau in Reihenfolge ausgeführt werden.
+- Skins: Standard frei; weitere Looks über serverseitige Gewinnsummen. Ziele in
+  app/src/components/PlinkoGame/skins.js; nur kosmetisch, keine neue Migration.
+- Migration `20261009120000_lucky_lounge_v2.sql` (laut Besitzer bereits live; beim Neuaufbau manuell erforderlich):
+  `casino_wallets`/`casino_transactions`, atomare RPCs `casino_get_wallet`,
+  `casino_claim_daily`, `casino_play_plinko`; Browser schreiben keine Guthaben.
+  Ursprünglicher Daily durch den Stundenbonus ersetzt. Alte Saves werden erhalten/kopiert;
+  fehlende historische Einsatz-/Gewinnsummen werden ausdrücklich seit V2 erfasst.
+  Ohne angewendete Migration bleiben Claim und Gameplay gesperrt.
+
 ### My Fishing Kaktus
 - **Pfad:** `games/MyFishingKaktus/` · **Game-ID:** `my-fishing-kaktus`
 - Active Collection Fishing: 3 Areas (Pond/Lake/Ocean, Prestige-Cap 2),

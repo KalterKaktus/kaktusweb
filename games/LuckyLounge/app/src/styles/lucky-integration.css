@@ -1,0 +1,53 @@
+/* Only the required Lucky Lounge integrations. OpenStake styling is retained. */
+.lucky-daily{position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;max-width:1136px;margin:24px 32px 0;padding:22px 24px;border:1px solid var(--border-subtle);border-radius:var(--radius-md);background:var(--surface-1);overflow:hidden}
+.lucky-daily h2{font-size:22px;color:var(--text-primary);margin:4px 0}
+.lucky-daily p,.lucky-note{color:var(--text-secondary);font-size:13px;line-height:1.65}
+.lucky-daily .section-kicker{color:var(--cyan);font-size:12px;font-weight:800}
+.lucky-daily-action{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0}
+.lucky-daily-action small{font-size:11px;color:var(--text-secondary);font-variant-numeric:tabular-nums}
+.hero-primary-button:disabled{opacity:.45;cursor:default;transform:none}
+.in-wallet{margin:0;border:0;flex-direction:column;align-items:stretch;padding:16px}
+.in-wallet .lucky-daily-action{align-items:stretch}
+.in-wallet h2{font-size:17px}
+.lucky-claim-pop{position:absolute;right:26px;top:8px;color:var(--accent-warm);font-size:22px;font-weight:800;animation:lucky-claim 1s ease-out both;pointer-events:none}
+@keyframes lucky-claim{0%{opacity:0;transform:translateY(25px)}20%{opacity:1}100%{opacity:0;transform:translateY(-40px)}}
+.lucky-stats{width:100%;overflow:auto;color:var(--text-primary)}
+.lucky-stats-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.lucky-stat{display:flex;flex-direction:column;gap:12px;padding:16px;border:1px solid var(--border-subtle);border-radius:var(--radius-md);background:var(--surface-1)}
+.lucky-stat span,.lucky-stat small{color:var(--text-secondary);font-size:11px}
+.lucky-stat strong{font-size:24px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.positive{color:var(--success)}.negative{color:var(--danger)}
+.lucky-history-title{font-size:20px;margin:24px 0 12px}
+.lucky-history{border:1px solid var(--border-subtle);border-radius:var(--radius-md);background:var(--surface-1)}
+.lucky-history-row{display:grid;grid-template-columns:.7fr 1.7fr 1fr 1fr .7fr;gap:10px;padding:12px 16px;font-size:12px;border-bottom:1px solid var(--border-subtle);font-variant-numeric:tabular-nums}
+.lucky-history-row:last-child{border:0}.lucky-history>.lucky-note{padding:16px}.lucky-history time,.lucky-history span{color:var(--text-secondary)}
+.lucky-disclaimer{max-width:1136px;margin:0 auto;padding:0 32px 28px;color:var(--text-secondary);font-size:12px;line-height:1.6}
+.lucky-status{padding:12px 20px;background:var(--surface-2);color:var(--accent-warm);font-size:13px;line-height:1.5;flex-shrink:0}
+.lucky-status button,.lucky-status a{background:none;border:0;color:var(--primary-hover);text-decoration:underline;font:inherit;cursor:pointer;padding-left:8px}
+.lucky-game-top{display:flex;justify-content:space-between;gap:12px;padding:8px 16px;font-size:12px;color:var(--text-secondary);flex-shrink:0}
+.lucky-game-top a{color:var(--primary-hover);text-decoration:none}.lucky-setting{display:flex;align-items:center;justify-content:space-between;margin:12px 0 22px}
+.lucky-soon{font-size:9px;color:var(--text-muted);margin-left:auto;white-space:nowrap}
+.lucky-odds{width:100%;border-collapse:collapse;margin:16px 0;font-variant-numeric:tabular-nums}
+.lucky-odds th,.lucky-odds td{text-align:left;border-bottom:1px solid var(--border-subtle);padding:8px}
+.wallet-balance-display{display:flex!important}.logo{white-space:nowrap}
+.ant-modal-content{background:var(--bg-main)!important;color:var(--text-primary)!important}.ant-modal-title,.ant-modal-header{background:var(--bg-main)!important;color:var(--text-primary)!important}
+.ant-modal-close{color:var(--text-secondary)!important}.ant-modal-body p{line-height:1.7}
+.lucky-game-top+.plinko-container{min-height:0}.lucky-stats:not(.compact){padding-bottom:30px}
+@media(min-width:769px){.mobile-menu-button{display:none}.lucky-daily{margin-inline:auto;width:calc(100% - 64px)}}
+@media(max-width:768px){.header .logo{font-size:26px}.lucky-daily{margin:16px 20px 0;padding:16px;flex-direction:column;align-items:stretch;gap:16px}.lucky-daily-action{align-items:stretch}.lucky-daily-action small{text-align:center}.lucky-daily h2{font-size:20px}.lucky-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.lucky-stat:last-child{grid-column:1/-1}.lucky-stat strong{font-size:22px}.lucky-history-row{grid-template-columns:1fr 1.7fr;gap:6px}.lucky-history-row strong:last-child{text-align:right}.lucky-soon{display:none}.wallet-balance-display,.wallet-btn{display:none!important}.mobile-drawer-actions a{padding:12px;color:var(--text-primary);background:var(--surface-1);text-decoration:none}.lucky-game-top{font-size:11px;padding:7px 12px}.lucky-disclaimer{padding:0 20px 24px}.ant-modal .home-section{padding:0}.lucky-stats{padding-bottom:var(--mobile-nav-space)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* Keep flex children inside the viewport rather than their intrinsic canvas size. */
+.app-main-wrapper,.main-content{min-width:0;min-height:0}
+.sidebar-switcher{min-width:0}
+.sidebar-switcher .switch-btn{text-decoration:none;white-space:nowrap}
+.plinko-page .input-row,.plinko-page .input-row .ant-input-number-group-wrapper{min-width:0}
+.plinko-page .plinko-game-wrapper{container-type:inline-size}
+@container (max-width:560px){
+  .plinko-controls .logo{display:none}
+  .plinko-page .plinko-controls{padding-inline:8px}
+  .plinko-page .plinko-controls .fairness-btn{padding-inline:8px!important;font-size:11px}
+}
+@media(min-width:769px) and (max-width:1200px){.app-sidebar .sidebar-switcher{display:none}}
+
+.lucky-shared-crash-status{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 16px;color:var(--text-secondary);font-size:12px;flex-shrink:0;border-bottom:1px solid var(--border-subtle)}

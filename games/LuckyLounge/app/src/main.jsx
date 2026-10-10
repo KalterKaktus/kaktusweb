@@ -1,0 +1,25 @@
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ConfigProvider } from 'antd';
+import de from 'antd/locale/de_DE';
+import ru from 'antd/locale/ru_RU';
+import { LanguageProvider, useText } from './i18n';
+import { WalletProvider } from './context/WalletContext';
+import Layout from './components/Layout';
+import HomePage from './pages/HomePage';
+import PlinkoGame from './components/PlinkoGame/PlinkoGame';
+import { StatsHistory } from './components/CasinoExtras';
+import './styles/tokens.css';
+import './styles/index.css';
+import './styles/lucky-integration.css';
+import {ThemeProvider,useThemeSettings} from './context/ThemeContext';
+import {audio} from './audio';
+import {loadGame,ApplicationBoundary} from './components/GameViewBoundary';
+const MinesGame=React.lazy(()=>loadGame(()=>import('./components/MinesGame/MinesGame')));
+const CrashGame=React.lazy(()=>loadGame(()=>import('./components/CrashGame/CrashGame')));
+const DinoGame=React.lazy(()=>loadGame(()=>import('./components/DinoGame/DinoGame')));
+await import(/* @vite-ignore */ String('/js/config.js'));
+document.addEventListener('click',async e=>{if(e.target.closest('button,a')&&!e.target.closest('.bet-button,.lucky-daily-action')){try{await audio.unlock();audio.ui();}catch{}}});
+function App(){const {language}=useText();const {antdTheme}=useThemeSettings();return <ConfigProvider locale={language==='ru'?ru:de} theme={antdTheme}><BrowserRouter basename="/games/LuckyLounge"><WalletProvider><Routes><Route path="/" element={<Layout/>}><Route index element={<HomePage/>}/><Route path="plinko/*" element={<PlinkoGame/>}/><Route path="mines/*" element={<React.Suspense fallback={<div className="lucky-status">…</div>}><MinesGame/></React.Suspense>}/><Route path="crash/*" element={<React.Suspense fallback={<div className="lucky-status">…</div>}><CrashGame/></React.Suspense>}/><Route path="dino/*" element={<React.Suspense fallback={<div className="lucky-status">…</div>}><DinoGame/></React.Suspense>}/><Route path="statistics" element={<StatsHistory/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Route></Routes></WalletProvider></BrowserRouter></ConfigProvider>}
+ReactDOM.createRoot(document.getElementById('root')).render(<LanguageProvider><ThemeProvider><ApplicationBoundary><App/></ApplicationBoundary></ThemeProvider></LanguageProvider>);

@@ -1,0 +1,852 @@
+/* =================================================================
+   SIDEBAR COMPONENT - CLEAN & ORGANIZED STYLING
+   ================================================================= */
+
+.plinko-page {
+    /* Sidebar Spacing System */
+    --sidebar-padding: 16px;
+    --sidebar-gap: 16px;
+    --card-margin: 0 12px 12px 12px;
+    --card-padding: 12px;
+
+    /* Sidebar Colors */
+    --sidebar-bg: var(--bg-secondary);
+    --sidebar-border: var(--border-color);
+    --card-bg: var(--bg-tertiary);
+    --card-border: var(--border-color);
+
+    /* Special Card Colors - Professional & Formal */
+    --ball-selector-bg: var(--surface-1);
+    --ball-selector-border: var(--ll-source-color-46);
+    --ball-button-bg: var(--ll-source-color-60);
+    --ball-button-border: var(--ll-source-color-61);
+    --ball-button-hover-bg: var(--ll-source-color-62);
+    --ball-button-selected-bg: var(--ll-source-color-63);
+    --ball-button-selected-border: var(--ll-source-color-53);
+    /* streak variables removed */
+}
+
+/* =================================================================
+   MAIN SIDEBAR CONTAINER
+   ================================================================= */
+
+.plinko-page .sidebar {
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sidebar-gap);
+    padding: var(--sidebar-padding);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.plinko-page .sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+/* =================================================================
+   FORM ELEMENTS
+   ================================================================= */
+
+.plinko-page .difficulty-tabs { margin-top: 8px; }
+.plinko-page .difficulty-tabs .bet-mode-tab { min-width: 0; padding: 10px 4px; font-size: 12px; }
+.plinko-page .difficulty-description { color: var(--text-secondary); font-size: 12px; line-height: 1.5; margin: 8px 0 0; }
+
+/* Bet Mode Tabs - 3D Box Style */
+.plinko-page .bet-mode-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--surface-1);
+    border-radius: 10px;
+    border: none;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 0 var(--ll-source-color-4), 0 4px 8px var(--ll-source-color-15);
+    transition: all 0.15s ease;
+}
+
+.plinko-page .bet-mode-tab {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+}
+
+.plinko-page .bet-mode-tab:hover:not(:disabled):not(.active) {
+    color: var(--text-primary);
+    background: var(--surface-hover);
+}
+
+.plinko-page .bet-mode-tab.active {
+    background: var(--primary);
+    color: var(--ll-source-color-36);
+    font-weight: 700;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 0 var(--primary-active), 0 2px 6px var(--ll-source-color-13);
+}
+
+.plinko-page .bet-mode-tab.active:active {
+    transform: translateY(0);
+    box-shadow: 0 0 0 var(--primary-active);
+}
+
+.plinko-page .bet-mode-tab:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Form Groups */
+.plinko-page .form-group {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.plinko-page .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+}
+
+.plinko-page .form-label-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.plinko-page .help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    color: var(--bg-primary);
+    font-size: 9px;
+    font-weight: bold;
+    cursor: help;
+    transition: background-color 0.2s ease;
+}
+
+.plinko-page .help-icon:hover {
+    background: var(--text-primary);
+}
+
+/* Form header (used for compact right-aligned secondary text) */
+.plinko-page .form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+/* Input row: InputNumber + multiplier buttons */
+.plinko-page .input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.plinko-page .currency-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--ll-source-color-64), var(--ll-source-color-60));
+    color: var(--text-secondary);
+    font-weight: 700;
+}
+
+/* BTC icon like Crash's panel */
+.plinko-page .btc-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--ll-source-color-65), var(--ll-source-color-66));
+    color: var(--ll-source-color-29);
+    font-weight: 800;
+    font-size: 13px;
+    box-shadow: 0 2px 6px var(--ll-source-color-4);
+}
+
+.plinko-page .btc-icon.small {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+}
+
+/* Input Components - Ant Design Overrides & 3D Style */
+.plinko-page .sidebar .ant-input-number {
+    flex: 1;
+    border-radius: 8px;
+    border: none;
+    background: var(--surface-2);
+    transform: translateY(-4px);
+    box-shadow: 0 4px 0 var(--ll-source-color-15), 0 4px 8px var(--ll-source-color-13);
+    transition: all 0.15s ease;
+}
+
+.plinko-page .sidebar .ant-input-number-group-addon,
+.plinko-page .sidebar .ant-input-number-addon {
+    background: var(--surface-2) !important;
+    border: none !important;
+    border-radius: 8px 0 0 8px !important;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 0 var(--ll-source-color-15), 0 4px 8px var(--ll-source-color-13);
+    transition: all 0.15s ease;
+    padding: 0 12px !important;
+}
+
+.plinko-page .sidebar
+.ant-space-addon-compact-first-item.ant-input-number-addon
++ .ant-input-number-compact-last-item {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+
+.plinko-page .sidebar .ant-input-number-group-addon .btc-icon,
+.plinko-page .sidebar .ant-input-number-addon .btc-icon {
+    background: linear-gradient(135deg, var(--ll-source-color-65), var(--ll-source-color-66)) !important;
+}
+
+.plinko-page .sidebar .ant-input-number .ant-input-number-input {
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.plinko-page .sidebar .ant-input-number:focus,
+.plinko-page .sidebar .ant-input-number-focused {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 0 var(--ll-source-color-67), 0 2px 6px var(--ll-source-color-13);
+}
+
+.plinko-page .sidebar .ant-input-number-focused+.ant-input-number-group-addon,
+.plinko-page .sidebar .ant-input-number-group-wrapper:focus-within .ant-input-number-group-addon,
+.plinko-page .sidebar .ant-input-number-group:focus-within .ant-input-number-group-addon {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 0 var(--ll-source-color-67), 0 2px 6px var(--ll-source-color-13);
+}
+
+.plinko-page .sidebar .ant-input-number:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Button Group for ½ and 2× - 3D Pushable Style */
+.plinko-page .sidebar .ant-btn-group {
+    display: flex;
+    gap: 0;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 0 var(--ll-source-color-15), 0 4px 8px var(--ll-source-color-13);
+    border-radius: 8px;
+    transition: all 0.15s ease;
+}
+
+.plinko-page .sidebar .ant-btn-group .ant-btn {
+    border-radius: 0;
+    border: none;
+    background: var(--surface-2);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 13px;
+    min-width: 48px;
+    padding: 12px 16px;
+    transition: all 0.15s ease;
+    transform: translateY(0);
+}
+
+.plinko-page .sidebar .ant-btn-group .ant-btn:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.plinko-page .sidebar .ant-btn-group .ant-btn:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.plinko-page .sidebar .ant-btn-group .ant-btn:active:not(:disabled) {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.plinko-page .sidebar .ant-btn-group .ant-btn:hover:not(:disabled) {
+    background: var(--surface-hover);
+    color: var(--ll-source-color-68);
+}
+
+.plinko-page .sidebar .ant-btn-group .ant-btn:disabled {
+    opacity: 0.4;
+}
+
+.plinko-page .error-text {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    font-size: 11px;
+    color: var(--ll-source-color-24);
+    margin-top: 4px;
+    line-height: 1.2;
+}
+
+/* Select Component - 3D Box Style */
+.plinko-page .form-select {
+    width: 100%;
+    padding: 12px 36px 12px 12px;
+    background-color: var(--surface-2);
+    border: none;
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23b1b6c6' viewBox='0 0 16 16'%3E%3Cpath d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    outline: none;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 0 var(--ll-source-color-15), 0 4px 8px var(--ll-source-color-13);
+}
+
+.plinko-page .form-select:hover:not(:disabled) {
+    background-color: var(--surface-hover);
+    transform: translateY(-4px);
+}
+
+.plinko-page .form-select:active:not(:disabled),
+.plinko-page .form-select:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 0 var(--ll-source-color-67), 0 2px 6px var(--ll-source-color-13);
+    border: none;
+}
+
+.plinko-page .form-select:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    transform: none;
+    box-shadow: none;
+    background-image: none;
+}
+
+.plinko-page .form-select option {
+    background: var(--sidebar-bg);
+    color: var(--text-primary);
+    padding: 8px;
+}
+
+/* Auto Bet Input - 3D Style */
+.plinko-page .auto-bet-input {
+    position: relative;
+    transform: translateY(-4px);
+    transition: all 0.15s ease;
+}
+
+.plinko-page .auto-bet-input input {
+    width: 100%;
+    padding: 12px 36px 12px 12px;
+    background-color: var(--surface-2);
+    border: none;
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+    outline: none;
+    box-shadow: 0 4px 0 var(--ll-source-color-15), 0 4px 8px var(--ll-source-color-13);
+}
+
+.plinko-page .auto-bet-input input:focus {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--ll-source-color-67), 0 2px 6px var(--ll-source-color-13);
+    background-color: var(--surface-hover);
+}
+
+.plinko-page .auto-bet-input input.error {
+    box-shadow: 0 4px 0 var(--ll-source-color-24), 0 4px 8px var(--ll-source-color-13);
+}
+
+.plinko-page .auto-bet-input input.error:focus {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 var(--ll-source-color-24), 0 2px 6px var(--ll-source-color-13);
+}
+
+.plinko-page .auto-bet-input input:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.plinko-page .infinity-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-weight: bold;
+    font-size: 18px;
+    pointer-events: none;
+}
+
+/* Bet Button - Primary Action Button (3D Box Style like DinoGame) */
+.plinko-page .bet-button {
+    width: 100%;
+    padding: 16px;
+    background: var(--primary);
+    border: none;
+    border-radius: 8px;
+    color: var(--ll-source-color-36);
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transform: translateY(-6px);
+    box-shadow: 0 6px 0 var(--primary-active), 0 6px 10px var(--ll-source-color-15);
+}
+
+.plinko-page .bet-button:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 4px 0 var(--primary-active), 0 4px 8px var(--ll-source-color-15);
+}
+
+.plinko-page .bet-button:active:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 0 var(--primary-active), 0 2px 4px var(--ll-source-color-15);
+}
+
+.plinko-page .bet-button:disabled {
+    background: var(--ll-source-color-69);
+    color: var(--ll-source-color-70);
+    cursor: not-allowed;
+    transform: translateY(0);
+    box-shadow: none;
+    opacity: 0.6;
+}
+
+.plinko-page .bet-button.stop {
+    background: var(--ll-source-color-71);
+    box-shadow: 0 6px 0 var(--ll-source-color-72), 0 6px 10px var(--ll-source-color-15);
+}
+
+.plinko-page .bet-button.stop:hover:not(:disabled) {
+    background: var(--ll-source-color-73);
+    box-shadow: 0 4px 0 var(--ll-source-color-72), 0 4px 8px var(--ll-source-color-15);
+}
+
+.plinko-page .bet-button.stop:hover:not(:disabled) {
+    box-shadow: 0 6px 20px var(--ll-source-color-74);
+}
+
+.plinko-page .bet-button:disabled {
+    background: var(--ll-source-color-69);
+    color: var(--ll-source-color-70);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
+}
+
+/* =================================================================
+   CARD COMPONENTS
+   ================================================================= */
+
+/* Base Card Styles (3D Box Style like DinoGame) */
+.plinko-page .sidebar-card {
+    margin: var(--card-margin);
+    padding: var(--card-padding);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    transition: all 0.15s ease;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 0 var(--ll-source-color-13), 0 4px 8px var(--ll-source-color-75);
+}
+
+.plinko-page .sidebar-card:hover {
+    border-color: var(--ll-source-color-2);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 0 var(--ll-source-color-13), 0 2px 6px var(--ll-source-color-75);
+}
+
+/* Ball Selector Card */
+.plinko-page .ball-selector-card {
+    background: var(--ball-selector-bg);
+    border-color: var(--ball-selector-border);
+    border-width: 1px;
+    position: relative;
+}
+
+.plinko-page .ball-selector-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.plinko-page .ball-selector-header .anticon {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.plinko-page .ball-types-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    align-items: stretch;
+    width: 100%;
+}
+
+.plinko-page .ball-type-option {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: var(--surface-2);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 48px;
+    box-sizing: border-box;
+    overflow: hidden;
+    min-width: 0;
+    font: inherit;
+    text-align: left;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 0 var(--ll-source-color-15), 0 4px 8px var(--ll-source-color-13);
+}
+
+.plinko-page .ball-type-option:hover:not(.selected) {
+    background: var(--surface-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 0 var(--ll-source-color-15), 0 2px 6px var(--ll-source-color-13);
+}
+
+.plinko-page .ball-type-option:active:not(.selected) {
+    transform: translateY(0);
+    box-shadow: 0 0 0 var(--ll-source-color-15);
+}
+
+.plinko-page .ball-type-option.selected {
+    background: var(--surface-1);
+    border: 2px solid var(--primary);
+    transform: translateY(2px);
+    box-shadow: inset 0 2px 4px var(--ll-source-color-4);
+}
+
+.plinko-page .ball-type-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+    min-width: 0;
+}
+
+.plinko-page .ball-type-name {
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+}
+
+.plinko-page .ball-type-option.selected .ball-type-name {
+    font-weight: 700;
+    color: var(--ll-source-color-29);
+}
+
+.plinko-page .ball-type-cost {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+.plinko-page .ball-type-option.selected .ball-type-cost {
+    color: var(--ll-source-color-76);
+}
+
+/* Ball Color Circle */
+.plinko-page .ball-color-circle {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1.5px solid var(--ll-source-color-77);
+    box-shadow: 0 2px 4px var(--ll-source-color-15);
+}
+
+.plinko-page .ball-type-option.selected .ball-color-circle {
+    border-color: var(--ll-source-color-78);
+    box-shadow: 0 2px 6px var(--ll-source-color-4);
+}
+
+.plinko-page .ball-color-circle.small {
+    width: 16px;
+    height: 16px;
+    border-width: 1px;
+}
+
+/* Last Win Card */
+.plinko-page .last-win-card {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+}
+
+.plinko-page .last-win-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.plinko-page .last-win-multiplier {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    text-align: center;
+    background: var(--surface-1);
+    box-shadow: inset 0 2px 4px var(--ll-source-color-4);
+    border: 1px solid var(--ll-source-color-13);
+}
+
+.plinko-page .last-win-profit {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.plinko-page .last-win-profit.positive {
+    color: var(--primary);
+}
+
+.plinko-page .last-win-profit.negative {
+    color: var(--ll-source-color-12);
+}
+
+/* Streak Card */
+/* streak styles removed (moved to History/Statistics) */
+
+/* =================================================================
+   SIDEBAR FOOTER
+   ================================================================= */
+
+.plinko-page .sidebar-footer {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--sidebar-border);
+}
+
+.plinko-page .footer-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.plinko-page .footer-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.plinko-page .footer-btn:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+.plinko-page .footer-btn:active,
+.plinko-page .footer-btn.active {
+    background: var(--surface-1);
+    color: var(--text-primary);
+}
+
+.plinko-page .footer-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* =================================================================
+   RESPONSIVE DESIGN
+   ================================================================= */
+
+@media (max-width: 768px) {
+    .plinko-page .sidebar {
+        width: 100%;
+        min-width: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--sidebar-border);
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .plinko-page .sidebar-card {
+        margin: 0 0 12px 0;
+        padding: 10px;
+    }
+
+    .plinko-page .bet-amount-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .plinko-page .bet-amount-input input {
+        border-radius: 8px;
+        border-right: 1px solid var(--card-border);
+        padding-left: 32px;
+    }
+
+    .plinko-page .bet-adjust-btn {
+        border-left: none;
+        border-top: 1px solid var(--card-border);
+        border-radius: 0 0 8px 8px;
+        justify-content: space-between;
+    }
+
+    .plinko-page .bet-adjust-btn.last {
+        border-radius: 0;
+    }
+
+    .plinko-page .ball-types-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .plinko-page .streak-stats {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .plinko-page .footer-buttons {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .plinko-page .sidebar {
+        padding: 8px;
+        gap: 8px;
+    }
+
+    .plinko-page .form-group {
+        margin-bottom: 12px;
+    }
+
+    .plinko-page .sidebar-card {
+        margin: 0 0 8px 0;
+        padding: 8px;
+    }
+
+    .plinko-page .bet-button {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .plinko-page .streak-value {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 768px), (max-width: 932px) and (orientation: landscape) and (hover: none) {
+    .plinko-bet-sheet .sidebar {
+        padding: 10px 12px 16px;
+        overflow: visible;
+    }
+
+    .plinko-bet-sheet[data-state='collapsed'] .sidebar > .bet-button {
+        position: sticky;
+        z-index: 1;
+        bottom: 0;
+    }
+
+    .plinko-bet-sheet .bet-button {
+        min-height: 48px;
+    }
+
+    .plinko-bet-sheet .ball-types-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .plinko-bet-sheet .ball-type-option {
+        min-width: 0;
+    }
+}
+
+.plinko-page .ball-type-option.locked {
+    cursor: not-allowed;
+    opacity: .55;
+}
+.plinko-page .ball-type-lock {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+.plinko-page .ball-type-option:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}

@@ -1,0 +1,202 @@
+/* Plinko Component CSS - Proper scaling */
+
+.plinko-page {
+    --plinko-max-width: 880px;
+    /* increased canvas max width to give more space while keeping bins alignment */
+}
+
+.plinko-page .plinko {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+    min-height: 0;
+}
+
+.plinko-page .plinko-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    min-width: 0;
+    min-height: 0;
+}
+
+.plinko-page .plinko-board-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: var(--plinko-max-width);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+/* Canvas container - limited max size */
+.plinko-page .plinko-canvas-container {
+    position: relative;
+    width: 100%;
+    /* Match Svelte source */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+}
+
+.plinko-page .plinko-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    background: transparent !important;
+}
+
+.plinko-page .plinko-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+.plinko-page .loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--ll-source-color-2);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Bins Row - matches canvas width */
+.plinko-page .bins-row {
+    display: flex;
+    gap: 3px;
+    height: 28px;
+    margin: 4px auto 0 auto;
+    justify-content: center;
+    flex: 0 0 auto;
+}
+
+.plinko-page .bin {
+    flex: 1;
+    container-type: inline-size;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ll-source-color-3);
+    box-shadow: 0 2px var(--shadow-color);
+    transition: transform 0.2s ease;
+}
+
+/* Fit four-character factors even with 17 bins on a narrow phone. */
+.plinko-page .bin-label { white-space: nowrap; font-size: clamp(5px, 30cqw, 10px); }
+
+.plinko-page .bin.highlight {
+    transform: scale(1.08) translateY(-2px);
+    z-index: 1;
+}
+
+/* Last Wins */
+.plinko-page .last-wins {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    width: 40px;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px var(--ll-source-color-4);
+}
+
+.plinko-page .last-win-item {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ll-source-color-3);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .plinko-page .plinko-board-wrapper {
+        max-width: 600px;
+    }
+
+    .plinko-page .bins-row {
+        height: 24px;
+        gap: 2px;
+    }
+
+    .plinko-page .bin {
+        font-size: 9px;
+    }
+
+    .plinko-page .last-wins {
+        width: 32px;
+        right: 12px;
+    }
+
+    .plinko-page .last-win-item {
+        font-size: 9px;
+    }
+}
+
+@media (max-width: 600px) {
+    .plinko-page .plinko-content {
+        padding: 10px;
+    }
+
+    .plinko-page .plinko-board-wrapper {
+        max-width: 100%;
+    }
+
+    .plinko-page .bins-row {
+        height: 20px;
+        gap: 2px;
+    }
+
+    .plinko-page .bin {
+        font-size: 9px;
+        border-radius: 2px;
+    }
+
+    .plinko-page .last-wins {
+        width: 28px;
+        right: 8px;
+    }
+
+    .plinko-page .last-win-item {
+        font-size: 8px;
+    }
+}
+
+@media (max-width: 768px), (max-width: 932px) and (orientation: landscape) and (hover: none) {
+    .plinko-page .plinko-canvas-container {
+        width: 100%;
+        aspect-ratio: 760 / 570;
+    }
+
+    .plinko-page .plinko-canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+    }
+}
