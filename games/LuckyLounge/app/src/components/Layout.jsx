@@ -36,7 +36,6 @@ function Layout() {
                 drawerOpen={isMobileMenuOpen}
                 onClose={closeMobileMenu}
                 returnFocusRef={mobileMenuButtonRef}
-                onOpen={openMobileMenu}
             />
         </div>
     )

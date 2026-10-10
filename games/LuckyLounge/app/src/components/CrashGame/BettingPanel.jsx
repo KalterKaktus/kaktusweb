@@ -1,4 +1,5 @@
 import {roundChips,validBet} from '../../currency';
+import BetValidation from '../BetValidation';
 import {useText,upstreamText} from '../../i18n';
 import { useState, useEffect } from 'react';
 import { InputNumber, Button, Typography, Card, Switch, Tooltip, Slider } from 'antd';
@@ -66,7 +67,7 @@ function BettingPanel({
           }}>✦{Number(betAmount || 0).toFixed(2)}</Text>
                         </div>
                         <div className="input-row">
-                            <InputNumber disabled={betPlaced} value={betAmount} onChange={v => setBetAmount(Math.max(1, Math.min(100000, roundChips(Number(v) || 1))))} min={1} step={0.01} precision={2} decimalSeparator="," addonBefore={<div className="btc-icon" style={{
+                            <InputNumber disabled={betPlaced} value={betAmount} onChange={setBetAmount} changeOnBlur={false} step={0.01} precision={2} decimalSeparator="," addonBefore={<div className="btc-icon" style={{
             background: 'linear-gradient(135deg, #f7931a, #ffb347)'
           }}>✦</div>} controls={false} formatter={v => `${v}`} parser={v=>v.replace(',','.')} />
                             <Button.Group>
@@ -74,6 +75,7 @@ function BettingPanel({
                                 <Button disabled={betPlaced || pending} onClick={() => setBetAmount(prev => Math.min(100000,prev * 2))}>2×</Button>
                             </Button.Group>
                         </div>
+                        <BetValidation value={betAmount} balance={balance} active={!betPlaced}/>
                     </div>
 
                     {/* Cashout At */}

@@ -1,4 +1,5 @@
 import {roundChips,validBet} from '../../currency';
+import BetValidation from '../BetValidation';
 import { useText } from '../../i18n';
 // Sidebar Component - Direct port from Sidebar.svelte
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -128,8 +129,9 @@ function Sidebar({
                     <InputNumber
                         id="betAmount"
                         value={betAmount}
-                        onChange={(val) => setBetAmount(Math.max(1,Math.min(100000,Number(val)||1)))}
-                        min={1} max={100000} precision={2}
+                        onChange={setBetAmount}
+                        changeOnBlur={false}
+                        precision={2}
                         step={0.01} decimalSeparator=","
                         disabled={isAutoBetting}
                         style={{ flex: 1 }}
@@ -153,12 +155,7 @@ function Sidebar({
                         </Button>
                     </Button.Group>
                 </div>
-                {isBetAmountNegative && (
-                    <p className="error-text">{t('invalid_bet')}</p>
-                )}
-                {isBetExceedBalance && (
-                    <p className="error-text">{t('insufficient')}</p>
-                )}
+                <BetValidation value={betAmount} balance={balance}/>
             </div>
 
             {/* Three complete profiles; do not change geometry during a drop. */}

@@ -251,11 +251,7 @@ function CrashGame() {
     over10x: history.filter(x => x >= 10).length,
     over100x: history.filter(x => x >= 100).length
   };
-  return <>{error && <div className="lucky-status" role="alert">{error}</div>}<div className={`crash-game layout-${layout}`}>
-            {contextHolder}
-
-            <div className="game-container">
-                {/* Betting Panel + Player Bets */}
+  const betControls = (
                 <MobileBetSheet title={upstreamText("Crash bet controls")} className="crash-bet-sheet" collapseOn={betPlaced}>
                     <div className="crash-sidebar">
                         <BettingPanel balance={balance} unavailable={!available} pending={pending} stake={model.round?.stake} committedAuto={model.round?.params.auto??null} phase={phase} betPlaced={betPlaced} multiplier={multiplier} onBet={handleBet} onCashout={handleCashout} />
@@ -285,6 +281,13 @@ function CrashGame() {
                         </div>
                     </div>
                 </MobileBetSheet>
+  );
+  return <>{error && <div className="lucky-status" role="alert">{error}</div>}<div className={`crash-game layout-${layout}`}>
+            {contextHolder}
+
+            <div className="game-container">
+                {/* Betting Panel + Player Bets */}
+                {!isMobileLayout && betControls}
 
                 {/* Game Display */}
                 <div className="game-display" ref={gameDisplayRef}>
@@ -292,6 +295,7 @@ function CrashGame() {
 
                     <div className="lucky-shared-crash-status"><span>{t('crash_online',{count:model.onlineCount})}</span><span>{model.notice||t('crash_shared')}</span></div>
                     <GameChart connected={available} phase={model.chartPhase} multiplier={model.chartMultiplier} elapsedTime={model.chartElapsed} countdown={countdown} />
+                    {isMobileLayout && betControls}
 
                     {/* Player Results (floating on chart) */}
                     {showPlayerResults && !isMobileLayout && <PlayerResults cashouts={playerCashouts} />}

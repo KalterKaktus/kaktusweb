@@ -1,7 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import useCasinoRound from './useCasinoRound';
 import {useText} from '../i18n';
-import {roundChips} from '../currency';
 import Phaser from 'phaser';
 import DinoGameInstance from './DinoGame/DinoGameInstance';
 import CONFIG from './DinoGame/core/config/game';
@@ -14,7 +13,7 @@ export function useOriginalDino(){
  const {round,active,pending,available,run}=game;live.current={round,active,t};
  useEffect(()=>{
   let destroyed=false;
-  const phaser=new DinoGameInstance({type:Phaser.AUTO,parent:canvas.current,backgroundColor:'#fff',render:{antialias:false},scale:{width:CONFIG.GAME.WIDTH.LANDSCAPE,height:CONFIG.GAME.HEIGHT,mode:Phaser.Scale.ScaleModes.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},physics:{default:'arcade',arcade:{gravity:{y:0},debug:false}},fps:{target:60,forceSetTimeOut:true},audio:{noAudio:true}},{});
+  const phaser=new DinoGameInstance({type:Phaser.AUTO,parent:canvas.current,backgroundColor:'#fff',render:{antialias:false},scale:{width:CONFIG.GAME.WIDTH.LANDSCAPE,height:CONFIG.GAME.HEIGHT,mode:Phaser.Scale.ScaleModes.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},physics:{default:'arcade',arcade:{gravity:{y:0},debug:false}},input:{mouse:{preventDefaultWheel:false},touch:{capture:false}},fps:{target:60,forceSetTimeOut:true},audio:{noAudio:true}},{});
   instance.current=phaser;phaser.registry.set('luckyText',key=>live.current.t(key));
   const check=setInterval(()=>{
    if(destroyed)return;
@@ -40,7 +39,7 @@ export function useOriginalDino(){
  async function jump(){if(!waiting||pending||!scene.current)return;setWaiting(false);const result=await run('jump');if(!result){if(live.current.active)setWaiting(true);return;}scene.current?.events.emit(result.status==='lost'?CONFIG.EVENTS.JUMP_FAIL:CONFIG.EVENTS.JUMP_SUCCESS);}
  const cleared=round?.state.cleared||0,diff=active?round.params.difficulty:difficulty,p=CHANCES[diff];
 
- const setBet=value=>setBetState(old=>Math.max(1,Math.min(100000,roundChips(Number(typeof value==='function'?value(old):value)||1))));
+ const setBet=setBetState;
  const history=useHistory(game),terminal=round&&['won','lost'].includes(round.status);
  const gamePhase=active?(waiting?'waiting':'running'):round?.status==='won'?'cashed_out':round?.status==='lost'?'crashed':'idle';
  return {...game,...history,error:game.error||engineError,betAmount:active?round.stake:bet,setBetAmount:setBet,difficulty:diff,setDifficulty,gamePhase,obstaclesCleared:cleared,currentMultiplier:Number(round?.state.multiplier||1),potentialWin:Number(round?.state.potential||0),lastResult:terminal&&resultVisible?{type:round.status==='won'?'win':'loss',obstaclesCleared:cleared,amount:Number(round.payout),multiplier:Number(round.state.multiplier||1)}:null,gameContainerRef:container,phaserContainerRef:canvas,gameRef:instance,gameSceneRef:scene,placeBet:()=>ready?run('start',{stake:bet,difficulty}):null,handleJump:jump,cashOut:()=>cleared&&!pending?run('cashout'):null,getMultiplierForCleared:k=>k===0?1:Math.floor(100*game.returnFactor/Math.pow(p,k))/100,isPlaying:active,canBet:!active,ready};

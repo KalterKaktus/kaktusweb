@@ -165,8 +165,17 @@ ein gemeinsames Fenster von 10 Sekunden. Persönliche Altrunden laufen mit
 ihrem unveränderten Punkt aus; neue persönliche Runden sind gesperrt.
 Mobile Crash zeigt zuerst den großen Fluggraphen, darunter die aktuellen
 Teilnehmer. Dino nutzt auf schmalen Geräten die vorhandene 600-px-Ansicht.
-Kompakte Einsatzleisten lassen die Spielflächen sichtbar; Menüöffnen schließt
-offene Einsatzdialoge. Profilnamen werden aus dem vorhandenen Account geladen.
+Mobile Einsatzleisten liegen im Seitenfluss. Im Hochformat stehen sie bei
+Crash zwischen Flug und Teilnehmern. Querformat-Telefone ab 560 px zeigen
+bei allen vier Spielen eine schmale Einsatzspalte links und die Spielfläche
+rechts; das Crash-Feld richtet seine Höhe nach der Einsatzspalte und zeigt
+die Teilnehmer direkt darunter. Alle Seiten
+lassen sich vertikal scrollen, auch über dem Dino-Canvas. Nur aufgeklappte
+Einsatzdialoge überlagern die Seite; Menüöffnen schließt sie. Profilnamen
+werden aus dem vorhandenen Account geladen.
+Die mobile Navigation erfolgt ausschließlich über das Burger-Menü neben dem
+Guthaben. Mines passt das Raster im Querformat an die verfügbare Höhe an;
+der kompakte Plinko-Wurfbutton scrollt mit den Einsätzen ohne Überlagerung.
 Runden-Versionen schützen parallele Entscheidungen. Abbrechen ist nur vor der
 ersten Mines-/Dino-Entscheidung bzw. vor Crash-Start möglich. Erstattungen zählen
 nicht als Gewinne. Alte aktive Runden behalten ihre bisherigen Faktoren.

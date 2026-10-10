@@ -1,4 +1,5 @@
 import {roundChips,validBet} from '../../currency';
+import BetValidation from '../BetValidation';
 // DinoGame - React Wrapper integrating original Phaser game with betting
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Button, Space, Tooltip, Typography, Modal, Drawer, Statistic, Row, Col, Card, Tag, App, Progress, InputNumber, Radio, Input, Divider, Popover, Switch } from 'antd';
@@ -263,7 +264,7 @@ function DinoGame() {
                   }}>✦{(betAmount ?? 0).toFixed(2)}</Text>
                             </div>
                             <div className="input-row">
-                                <InputNumber value={betAmount} onChange={val => setBetAmount(Math.max(1, isNaN(Number(val)) ? 1 : Number(val)))} min={1} step={0.01} precision={2} decimalSeparator="," disabled={!canBet} style={{
+                                <InputNumber value={betAmount} onChange={setBetAmount} changeOnBlur={false} step={0.01} precision={2} decimalSeparator="," disabled={!canBet} style={{
                     flex: 1
                   }} controls={false} formatter={v => `${v}`} parser={v=>v.replace(',','.')} addonBefore={<div className="dino-currency-icon">✦</div>} />
                                 <Button.Group className="dino-btn-group">
@@ -275,7 +276,7 @@ function DinoGame() {
                                     </Button>
                                 </Button.Group>
                             </div>
-                            {betAmount > balance && <p className="error-text">{upstreamText("Can't bet more than your balance!")}</p>}
+                            <BetValidation value={betAmount} balance={balance} active={canBet}/>
                         </div>
 
                         {/* Difficulty Selector */}

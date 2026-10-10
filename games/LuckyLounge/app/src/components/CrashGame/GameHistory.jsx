@@ -29,8 +29,9 @@ function GameHistory({
   };
   return <>
             <div className="game-history-bar">
-                {/* History Pills - show all available */}
+                {/* Keep the newest result at the right edge; older results clip on the left. */}
                 <div className="history-pills-scroll">
+                  <div className="history-pills-track">
                     {history.map((m, i) => {
           const {
             color,
@@ -40,6 +41,7 @@ function GameHistory({
                                 {m.toFixed(2)}×
                             </Tag>;
         })}
+                  </div>
                 </div>
 
                 {/* View All Button */}

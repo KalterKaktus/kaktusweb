@@ -817,9 +817,8 @@
     }
 
     .plinko-bet-sheet[data-state='collapsed'] .sidebar > .bet-button {
-        position: sticky;
-        z-index: 1;
-        bottom: 0;
+        position: relative;
+        bottom: auto;
     }
 
     .plinko-bet-sheet .bet-button {

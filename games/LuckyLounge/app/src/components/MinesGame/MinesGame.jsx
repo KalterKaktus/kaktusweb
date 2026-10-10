@@ -1,4 +1,5 @@
 import {roundChips,validBet} from '../../currency';
+import BetValidation from '../BetValidation';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { SettingOutlined, SafetyCertificateOutlined, SoundOutlined, TrophyOutlined, FireOutlined, LineChartOutlined, CloseOutlined, ReloadOutlined, RightOutlined, ExpandOutlined, FullscreenExitOutlined, CheckCircleOutlined, BugOutlined } from '@ant-design/icons';
 import { Modal, Tooltip, Statistic, Row, Col, Space, Button, Typography, Tag, Divider, Input, InputNumber } from 'antd';
@@ -287,7 +288,7 @@ function MinesGame() {
                     }}>✦{(betAmount ?? 0).toFixed(2)}</Text>
                                 </div>
                                 <div className="input-row">
-                                    <InputNumber value={betAmount === 0 ? null : betAmount} onChange={val => setBetAmount(Math.max(0, isNaN(Number(val)) ? 0 : Number(val)))} min={1} step={0.01} precision={2} decimalSeparator="," disabled={isPlaying} style={{
+                                    <InputNumber value={betAmount} onChange={setBetAmount} changeOnBlur={false} step={0.01} precision={2} decimalSeparator="," disabled={isPlaying} style={{
                       flex: 1
                     }} controls={false} formatter={v => `${v}`} parser={v=>v.replace(',','.')} addonBefore={<div className="dino-currency-icon">✦</div>} />
                                     <Button.Group className="dino-btn-group">
@@ -302,6 +303,7 @@ function MinesGame() {
                             </div>
 
 
+                            <BetValidation value={betAmount} balance={balance} active={!isPlaying}/>
                             {/* Mines Selection */}
                             <div className="form-group mobile-sheet-secondary">
                                 <label className="form-label">{upstreamText("Mines")}</label>
@@ -341,7 +343,7 @@ function MinesGame() {
                                     </span>
                                 </div>
                                 <div className="input-with-controls">
-                                    <input type="text" className="mines-input" value={revealedTiles.length > 0 ? potentialWin.toFixed(2) : betAmount.toFixed(2)} readOnly />
+                                    <input type="text" className="mines-input" value={revealedTiles.length > 0 ? potentialWin.toFixed(2) : (betAmount ?? 0).toFixed(2)} readOnly />
                                     <div className="mines-input-addon">
                                         <div className="btc-icon-small">✦</div>
                                     </div>

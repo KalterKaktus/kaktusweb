@@ -61,7 +61,7 @@
     --transition-fast: 0.15s ease;
     --transition-normal: 0.3s ease;
     --mobile-header-height: 52px;
-    --mobile-nav-height: 56px;
+    --mobile-nav-height: 0px;
     --mobile-nav-space: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
 }
 

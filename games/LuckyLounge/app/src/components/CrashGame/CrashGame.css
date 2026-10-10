@@ -340,7 +340,7 @@
     overflow: hidden;
 }
 
-/* Game History Bar - Full Width Scrollable */
+/* Game History Bar - latest result stays visible on the right */
 .crash-game .game-history-bar {
     position: absolute;
     top: 0;
@@ -356,19 +356,20 @@
 
 .crash-game .game-history-bar .history-pills-scroll {
     flex: 1;
+    min-width: 0;
     display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    overflow-y: hidden;
+    justify-content: flex-end;
+    overflow: clip;
     padding-right: 8px;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    mask-image: linear-gradient(to right, black 90%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent, black 24px);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 24px);
 }
 
-.crash-game .game-history-bar .history-pills-scroll::-webkit-scrollbar {
-    display: none;
+.crash-game .game-history-bar .history-pills-track {
+    display: flex;
+    flex-shrink: 0;
+    gap: 6px;
+    margin-left: auto;
 }
 
 .crash-game .game-history-bar .history-tag {
@@ -383,7 +384,7 @@
     flex-shrink: 0;
 }
 
-.crash-game .game-history-bar .history-tag:first-child {
+.crash-game .game-history-bar .history-tag:last-child {
     animation: tagSlideIn 0.3s ease;
 }
 
@@ -1173,9 +1174,7 @@
     }
 
     .crash-game .game-history-bar .history-pills-scroll {
-        overflow-x: auto;
-        overscroll-behavior-inline: contain;
-        touch-action: pan-x;
+        touch-action: pan-y;
     }
 
     .crash-game .chart-container-antd .multiplier-title {

@@ -25,7 +25,23 @@
     }
 
     .mobile-bet-sheet[data-state='collapsed'] {
-        max-height: var(--mobile-sheet-collapsed-height);
+        position: relative;
+        z-index: auto;
+        right: auto;
+        bottom: auto;
+        left: auto;
+        order: 2;
+        flex-shrink: 0;
+        max-height: none;
+        margin: 12px;
+        border: 1px solid var(--border-default);
+        border-radius: 12px;
+        box-shadow: none;
+    }
+
+    .mobile-bet-sheet[data-state='collapsed'] .mobile-bet-sheet__content {
+        overflow: visible;
+        overscroll-behavior: auto;
     }
 
     .mobile-bet-sheet[data-state='expanded'] {
@@ -56,6 +72,7 @@
         color: var(--text-primary);
         font: inherit;
         font-weight: 800;
+        flex-shrink: 0;
     }
 
     .mobile-bet-sheet__content {

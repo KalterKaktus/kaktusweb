@@ -1,10 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import useCasinoRound from './useCasinoRound';
 import {useText} from '../i18n';
-import {roundChips} from '../currency';
-
-const clampBet=v=>Math.max(1,Math.min(100000,roundChips(Number(v)||1)));
-function useBet(initial=1){const [bet,set]=useState(initial);return [bet,value=>set(old=>clampBet(typeof value==='function'?value(old):value))];}
+function useBet(initial=1){return useState(initial);}
 // The source dashboards show only persisted, actual results in the server's
 // recent-result window. Their reset controls clear this view, never the wallet.
 export function useHistory(game){
