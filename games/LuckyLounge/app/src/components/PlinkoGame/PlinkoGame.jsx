@@ -14,20 +14,21 @@ import {StatsHistory} from '../CasinoExtras';
 import {SKINS,skinUnlocked,winningsTotal} from './skins';
 import './PlinkoGame.css';
 export default function PlinkoGame(){
- const {balance,available,play,snapshot}=useWallet(),{t,number}=useText();
- const [betAmount,setBetAmount]=useState(10),[records,setRecords]=useState([]),[ballType,setBallType]=useState('normal'),[settings,setSettings]=useState(false),[stats,setStats]=useState(false),[fairness,setFairness]=useState(false),[fullscreen,setFullscreen]=useState(false),[sound,setSound]=useState(audio.enabled),[volume,setVolume]=useState(audio.volume),[error,setError]=useState(''),[active,setActive]=useState(0);
+ const {balance,available,play,snapshot,revealPlinko}=useWallet(),{t,number}=useText();
+ const [betAmount,setBetAmount]=useState(1),[records,setRecords]=useState([]),[ballType,setBallType]=useState('normal'),[settings,setSettings]=useState(false),[stats,setStats]=useState(false),[fairness,setFairness]=useState(false),[fullscreen,setFullscreen]=useState(false),[sound,setSound]=useState(audio.enabled),[volume,setVolume]=useState(audio.volume),[error,setError]=useState(''),[active,setActive]=useState(0);
  const [difficulty,setDifficulty]=useState('normal'),[queued,setQueued]=useState(0);
  const profile=PLINKO_MODES[difficulty],multipliers=BIN_PAYOUTS[profile.rows][profile.risk],probabilities=binProbabilities(profile.rows);
  const engineRef=useRef(null),pending=useRef(0),reserved=useRef(0),dispatch=useRef(Promise.resolve()),mounted=useRef(true),rounds=useRef(new Map()),display=useRef(null);
  const earned=winningsTotal(snapshot?.wallet);
  const ballTypes=Object.fromEntries(Object.entries(SKINS).map(([id,{file,goal}])=>[id,{id,name:t('ball_'+id),unlocked:skinUnlocked(id,snapshot?.wallet),description:t(goal===0?'skin_standard':earned>=goal?'skin_unlocked':'skin_locked',{amount:number(goal)}),color:'var(--primary)',image:`/games/LuckyLounge/images/coins/${file}.svg`}]));
  useEffect(()=>{if(!skinUnlocked(ballType,snapshot?.wallet))setBallType('normal');},[ballType,earned]);
- useEffect(()=>()=>{mounted.current=false;},[]);
+ useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;revealPlinko();};},[]);
  useEffect(()=>{const listener=()=>setFullscreen(Boolean(document.fullscreenElement));document.addEventListener('fullscreenchange',listener);return()=>document.removeEventListener('fullscreenchange',listener);},[]);
  const land=useCallback(data=>{
   const round=rounds.current.get(data.ballType);
   if(!round)return;
   rounds.current.delete(data.ballType);
+  revealPlinko(round.request_id);
   if(data.binIndex!==round.slot){setError(t('engine_error'));requestAnimationFrame(()=>setActive(engineRef.current?.getActiveBallCount()||0));return;}
   const multiplier=round.path.multiplier;
   const record={...data,id:round.request_id,betAmount:round.stake,payout:{multiplier,value:round.payout},profit:round.payout-round.stake};
@@ -46,11 +47,13 @@ export default function PlinkoGame(){
   pending.current++;reserved.current+=betAmount;setQueued(pending.current);setError('');
   const skin=ballTypes[ballType]?.unlocked?ballTypes[ballType]:ballTypes.normal;
   const task=dispatch.current.catch(()=>{}).then(async()=>{
+   let requestId;
    try{
    if(!mounted.current||isCancelled())return 'cancelled';
    await audio.unlock();
-   const data=await play(betAmount,difficulty); // ONE authoritative transaction before animation.
-   if(!mounted.current||!engineRef.current)return 'dropped';
+   const data=await play(betAmount,difficulty,{deferPayout:true}); // ONE authoritative transaction before animation.
+   requestId=data.round.request_id;
+   if(!mounted.current||!engineRef.current){revealPlinko(requestId);return 'dropped';}
    const round=data.round;
    if(round.path?.difficulty!==difficulty||round.path?.rows!==profile.rows||round.path?.risk!==profile.risk
       ||round.path?.multiplier!==multipliers[round.slot])throw new Error('casino_engine');
@@ -62,7 +65,7 @@ export default function PlinkoGame(){
    const original=ball.onCollidePin;let lastContact=0;
    ball.onCollidePin=id=>{original?.(id);const now=performance.now();if(now-lastContact>35){lastContact=now;audio.pin(Number(id.split('_')[1]),Math.hypot(ball.vx,ball.vy)/10000,ball.x/10000*600/760);}};
    audio.drop();setActive(engine.getActiveBallCount());return 'dropped';
-   }catch(e){if(mounted.current)setError(t(/casino_engine/.test(e.message)?'engine_error':errorKey(e)));return 'insufficient-funds';}
+   }catch(e){if(requestId)revealPlinko(requestId);if(mounted.current)setError(t(/casino_engine/.test(e.message)?'engine_error':errorKey(e)));return 'insufficient-funds';}
    finally{pending.current--;reserved.current-=betAmount;if(mounted.current)setQueued(pending.current);}
   });
   dispatch.current=task;

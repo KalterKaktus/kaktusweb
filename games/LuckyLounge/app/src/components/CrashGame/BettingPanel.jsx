@@ -46,6 +46,7 @@ function BettingPanel({
       return upstreamText('Cash Out') + ' ✦' + (betAmount * multiplier).toFixed(2);
     }
     if(phase==='running')return t('crash_next');
+    if(phase==='crashed')return t('crash_results');
     return upstreamText('Place Bet');
   };
   const getButtonClass = () => {
@@ -123,7 +124,7 @@ function BettingPanel({
                     </div>
 
                     {/* Bet Button */}
-                    <button onClick={handleBetClick} className={getButtonClass()} disabled={pending || unavailable || !betPlaced && (!validBet(betAmount) || betAmount>balance) || phase === 'running' && !betPlaced}>
+                    <button onClick={handleBetClick} className={getButtonClass()} disabled={pending || unavailable || !betPlaced && (!validBet(betAmount) || betAmount>balance) || !(phase === 'waiting' || phase === 'running' && betPlaced)}>
                         <ThunderboltOutlined style={{
           marginRight: 6
         }} />

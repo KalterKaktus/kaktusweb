@@ -6,11 +6,11 @@ const service = new CasinoWallet();
 let started;
 export function WalletProvider({ children }) {
   const {t} = useText();
-  const [state, update] = useState({snapshot:null,available:false});
+  const [state, update] = useState({snapshot:null,available:false,balance:0});
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
-    const change = () => {update({snapshot:service.snapshot,available:service.available}); if(service.available)setError(null);};
+    const change = () => {update({snapshot:service.snapshot,available:service.available,balance:service.displayBalance,profile:service.profile}); if(service.available)setError(null);};
     const fail = e => setError(e.detail);
     service.addEventListener('change',change); service.addEventListener('failure',fail);
     started ||= service.init({redirectOnGuest:false});
@@ -29,7 +29,7 @@ export function WalletProvider({ children }) {
     } catch(e){setError(e);throw e;} finally{setBusy(false);}
   };
   const text = error ? t(errorKey(error)) : '';
-  return <Context.Provider value={{...state,error: text,busy,user:service.user,balance:state.snapshot?.wallet.chips ?? 0,
+  return <Context.Provider value={{...state,error: text,busy,user:service.user,revealPlinko:id=>service.revealPlinko(id),
     now:()=>service.now(),claim:()=>action('claim'),play:(...args)=>action('play',...args),game:(...args)=>action('game',...args),crashState:()=>service.refreshCrash(),crashAction:(...args)=>action('crashAction',...args),refresh:()=>action('refresh')}}>{children}</Context.Provider>;
 }
 export const useWallet = () => useContext(Context);

@@ -89,3 +89,6 @@ Phaser 3.90.0: Copyright (c) 2024 Richard Davey, Phaser Studio Inc., MIT License
 https://github.com/phaserjs/phaser/blob/v3.90.0/LICENSE.md
 The MIT permission/warranty text above applies. Original package legal comments
 are preserved in the generated Dino bundle. Phaser is loaded only on the Dino route.
+
+The GameIcon navigation vectors and lounge-icon.svg favicon are original
+Lucky Lounge assets created in this repository; no third-party artwork is used.

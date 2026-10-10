@@ -10,6 +10,31 @@ const loginGate = document.getElementById("admin-login-gate");
 const cheatFlagsRoot = document.getElementById("admin-cheat-flags");
 const cheatFlagsBody = document.getElementById("admin-cheat-flags-body");
 const cheatFlagsCount = document.getElementById("admin-cheat-flags-count");
+const casinoPendingKey = "kk-admin-casino-credits";
+const pendingCasinoCredits = readPendingCasinoCredits();
+let adminUsersById = new Map();
+
+function readPendingCasinoCredits() {
+    try {
+        const entries = JSON.parse(sessionStorage.getItem(casinoPendingKey) || "[]");
+        return new Map(entries.filter(([userId, credit]) => typeof userId === "string"
+            && /^[0-9a-f-]{36}$/i.test(credit?.requestId || "")
+            && /^[0-9]{1,7}(\.[0-9]{1,2})?$/.test(credit?.amount || "")));
+    } catch {
+        return new Map();
+    }
+}
+
+function savePendingCasinoCredits({ required = true } = {}) {
+    // A failed write prevents submission; a reload must retain the same request ID.
+    try {
+        sessionStorage.setItem(casinoPendingKey, JSON.stringify([...pendingCasinoCredits]));
+    } catch (error) {
+        if (required) throw new Error("Die Gutschrift konnte lokal nicht gesichert werden. Bitte Browserspeicher zulassen.");
+        // A stale persisted ID is safe: its next retry returns the original credit.
+        console.warn("Gutschrift-ID konnte nicht aus dem Browserspeicher entfernt werden.");
+    }
+}
 
 function setStatus(message, isError = false, showLogin = false) {
     status.textContent = message;
@@ -52,6 +77,11 @@ function escapeAttr(value) {
 
 function formatNumber(value) {
     return Intl.NumberFormat("de-DE", { maximumFractionDigits: 1 }).format(Number(value) || 0);
+}
+
+function formatChips(value) {
+    if (value == null || !Number.isFinite(Number(value))) return "—";
+    return Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value));
 }
 
 function formatDate(value) {
@@ -128,7 +158,9 @@ async function api(action, payload) {
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-        throw new Error(data.error || "Admin-Aktion fehlgeschlagen.");
+        const error = new Error(data.error || "Admin-Aktion fehlgeschlagen.");
+        error.status = response.status;
+        throw error;
     }
     return data;
 }
@@ -252,6 +284,44 @@ function renderGamePanel(save, index) {
     `;
 }
 
+function renderCasinoPanel(user) {
+    const wallet = user.casino_wallet;
+    const unavailable = !user.casino_wallet_available;
+    const pending = pendingCasinoCredits.get(user.id);
+    const wagered = wallet?.total_wagered ?? wallet?.tracked_wagered;
+    const won = wallet?.total_won ?? wallet?.tracked_won;
+    const archive = user.saves?.find((save) => save.game_id === "lucky-lounge");
+    const stats = [
+        ["Runden", wallet ? formatNumber(wallet.rounds) : "—"],
+        ["Eingesetzt", formatChips(wagered)],
+        ["Ausgezahlt", formatChips(won)],
+        ["Bilanz", wagered == null || won == null ? "—" : formatChips(Number(won) - Number(wagered))],
+        ["Höchster Gewinn", formatChips(wallet?.biggest_win)],
+    ];
+    return `<section class="admin-casino" data-casino-panel aria-label="Lucky Lounge Chips">
+        <div class="admin-casino-head">
+            <div><h3>Lucky Lounge</h3><p>Gemeinsames Guthaben für Plinko, Mines, Crash und Dino</p></div>
+            <div class="admin-casino-balance"><span>Aktuelles Chip-Guthaben</span><strong>${formatChips(wallet?.chips)}</strong></div>
+        </div>
+        ${unavailable ? `<p class="admin-empty">Casino-Wallet nicht verfügbar. Bitte Verbindung und Supabase-Migrationen prüfen.</p>`
+            : !wallet ? `<p class="admin-empty">Noch keine Casino-Wallet. Sie wird beim ersten Spiel oder der ersten Gutschrift angelegt.</p>` : ""}
+        <dl class="admin-casino-stats">${stats.map(([label, value]) => `<div><dt>${label}</dt><dd>${escapeHtml(value)}</dd></div>`).join("")}</dl>
+        ${wallet && (wallet.total_wagered == null || wallet.total_won == null)
+            ? `<p class="admin-empty">Einsatz, Auszahlung und Bilanz enthalten nur erfasste Ergebnisse. Ältere Summen sind nicht bekannt.</p>` : ""}
+        <div class="admin-inline admin-casino-grant">
+            <label class="admin-field"><span>Chips geben</span><input class="admin-input" data-casino-amount
+                type="text" inputmode="decimal" placeholder="100" maxlength="10" autocomplete="off"
+                value="${escapeAttr(pending?.amount || "")}" ${unavailable || pending ? "disabled" : ""}></label>
+            <button class="admin-button" data-action="grant-casino-chips" type="button" ${unavailable ? "disabled" : ""}>${pending ? "Gutschrift erneut prüfen" : "Chips geben"}</button>
+        </div>
+        <p class="admin-casino-status" data-casino-status role="status">${pending
+            ? "Die letzte Gutschrift ist noch ungeklärt. Erneutes Prüfen bucht dieselbe Gutschrift höchstens einmal."
+            : "Gutschriften werden protokolliert und zählen nicht als Spielgewinn."}</p>
+        ${archive ? `<details class="admin-json"><summary>Alter Lounge-Spielstand · Archiv vom ${escapeHtml(formatDate(archive.updated_at))}</summary>
+            <p>Diese Werte werden von der heutigen Casino-Wallet nicht verwendet.</p><pre class="admin-casino-archive">${escapeHtml(jsonText(archive.payload))}</pre></details>` : ""}
+    </section>`;
+}
+
 // ----- Cheat-Flag rendering ----------------------------------------------
 // Labels bewusst OHNE die exakten Anticheat-Schwellen. Die panel.js wird ohne
 // Auth ausgeliefert (statisches Asset) — ein Cheater könnte die Schwellen
@@ -330,13 +400,14 @@ function renderCheatFlags(groups) {
 }
 
 function renderUsers(users) {
+    adminUsersById = new Map(users.map((user) => [user.id, user]));
     if (!users.length) {
         usersRoot.innerHTML = `<p class="admin-empty">Keine User gefunden.</p>`;
         return;
     }
 
     usersRoot.innerHTML = users.map((user) => {
-        const saves = Array.isArray(user.saves) ? user.saves : [];
+        const saves = Array.isArray(user.saves) ? user.saves.filter((save) => save.game_id !== "lucky-lounge") : [];
         const presence = user.presence || {};
         const userLevel = levelFromXp(user.total_xp);
         const userBadges = new Set(Array.isArray(user.badges) ? user.badges : []);
@@ -360,6 +431,8 @@ function renderUsers(users) {
                         <span class="admin-ban">${user.is_banned ? "Gesperrt" : "Aktiv"}</span>
                     </div>
                 </div>
+
+                ${renderCasinoPanel(user)}
 
                 <details class="admin-games">
                     <summary>Games ${saves.length ? `(${saves.length})` : ""}</summary>
@@ -633,7 +706,7 @@ function toggleGamePanel(button, card) {
 usersRoot.addEventListener("click", async (event) => {
     const button = event.target.closest("[data-action]");
     const card = event.target.closest("[data-user-id]");
-    if (!button || !card) {
+    if (!button || !card || button.disabled) {
         return;
     }
 
@@ -648,6 +721,48 @@ usersRoot.addEventListener("click", async (event) => {
     button.disabled = true;
 
     try {
+        if (action === "grant-casino-chips") {
+            const panel = card.querySelector("[data-casino-panel]");
+            const input = panel.querySelector("[data-casino-amount]");
+            let credit = pendingCasinoCredits.get(userId);
+            if (!credit) {
+                const amount = input.value.trim().replace(",", ".");
+                if (!/^[0-9]{1,7}(\.[0-9]{1,2})?$/.test(amount)
+                    || Number(amount) < 0.01 || Number(amount) > 1000000) {
+                    throw new Error("Bitte 0,01 bis 1.000.000 Chips mit höchstens zwei Nachkommastellen eingeben.");
+                }
+                credit = { requestId: crypto.randomUUID(), amount };
+                pendingCasinoCredits.set(userId, credit);
+            }
+            savePendingCasinoCredits();
+            input.disabled = true;
+            panel.querySelector("[data-casino-status]").textContent = "Gutschrift wird geprüft …";
+            try {
+                const result = await api(action, { userId, ...credit });
+                pendingCasinoCredits.delete(userId);
+                savePendingCasinoCredits({ required: false });
+                const user = adminUsersById.get(userId);
+                user.casino_wallet = result.wallet;
+                user.casino_wallet_available = true;
+                panel.outerHTML = renderCasinoPanel(user);
+                const message = `${formatChips(result.credit.amount)} Chips ${result.replayed ? "bereits gutgeschrieben" : "gutgeschrieben"}. Guthaben: ${formatChips(result.wallet.chips)} Chips.`;
+                card.querySelector("[data-casino-status]").textContent = message;
+                setStatus(message);
+            } catch (error) {
+                // A server/network failure can happen AFTER a successful database commit.
+                // Retry the persisted UUID; never silently create a second credit.
+                if (error.status >= 400 && error.status < 500 && ![408, 429].includes(error.status)) {
+                    pendingCasinoCredits.delete(userId);
+                    savePendingCasinoCredits({ required: false });
+                    input.disabled = false;
+                }
+                button.textContent = pendingCasinoCredits.has(userId) ? "Gutschrift erneut prüfen" : "Chips geben";
+                panel.querySelector("[data-casino-status]").textContent = error.message;
+                throw error;
+            }
+            return;
+        }
+
         if (action === "save-fields" || action === "save-json") {
             const panel = getPanel(button);
             const payload = action === "save-json" ? readPayloadJson(panel) : readPayloadFields(panel);
@@ -741,6 +856,13 @@ usersRoot.addEventListener("click", async (event) => {
         setStatus(error.message, true);
     } finally {
         button.disabled = false;
+    }
+});
+
+usersRoot.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && event.target.matches("[data-casino-amount]")) {
+        event.preventDefault();
+        event.target.closest("[data-casino-panel]").querySelector("[data-action='grant-casino-chips']").click();
     }
 });
 

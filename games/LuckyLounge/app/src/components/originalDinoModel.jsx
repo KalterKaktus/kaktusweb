@@ -9,7 +9,7 @@ import {useHistory} from './originalModels';
 const CHANCES={easy:.85,medium:.65,hard:.45};
 
 export function useOriginalDino(){
- const {t,number}=useText(),game=useCasinoRound('dino'),container=useRef(null),canvas=useRef(null),instance=useRef(null),scene=useRef(null),live=useRef(null),[ready,setReady]=useState(false),[waiting,setWaiting]=useState(false),[bet,setBetState]=useState(10),[difficulty,setDifficulty]=useState('medium'),[engineError,setEngineError]=useState('');
+ const {t,number}=useText(),game=useCasinoRound('dino'),container=useRef(null),canvas=useRef(null),instance=useRef(null),scene=useRef(null),live=useRef(null),[ready,setReady]=useState(false),[waiting,setWaiting]=useState(false),[bet,setBetState]=useState(1),[difficulty,setDifficulty]=useState('medium'),[engineError,setEngineError]=useState('');
  const [resultVisible,setResultVisible]=useState(true);
  const {round,active,pending,available,run}=game;live.current={round,active,t};
  useEffect(()=>{

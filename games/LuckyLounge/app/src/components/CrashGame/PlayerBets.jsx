@@ -31,7 +31,7 @@ function PlayerBets({
             {/* Player List */}
             {expanded && <div className="player-bets-list">
                     {players.length===0&&<Text type="secondary">{t('crash_no_bets')}</Text>}
-                    {players.map((player, i) => <div key={player.id} className={`player-bet-row ${player.profit ? 'cashed-out' : ''}`}>
+                    {players.map((player, i) => <div key={player.id} className={`player-bet-row ${player.status==='won' ? 'cashed-out' : player.status==='lost' ? 'lost' : ''}`}>
                             <div className="player-info">
                                 {player.isHidden ? <Text type="secondary" className="hidden-name">
                                         <UserOutlined />{upstreamText("Hidden")}</Text> : <Text className="player-name">{player.name}</Text>}
@@ -48,8 +48,8 @@ function PlayerBets({
           }}>
                                     {player.currency.symbol}
                                 </span>
-                                <Text className={player.profit ? 'profit' : ''}>
-                                    {player.profit || number(player.amount,{minimumFractionDigits:2,maximumFractionDigits:2})}
+                                <Text className={player.status==='lost' ? 'loss' : player.profit ? 'profit' : ''}>
+                                    {player.status==='lost' ? '−'+number(player.amount,{minimumFractionDigits:2,maximumFractionDigits:2}) : player.profit || number(player.amount,{minimumFractionDigits:2,maximumFractionDigits:2})}
                                 </Text>
                             </div>
                         </div>)}

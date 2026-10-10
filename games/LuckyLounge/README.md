@@ -34,6 +34,10 @@ der SPA-Fallback ist auf die Lounge begrenzt.
 5. 20261010010000_lucky_lounge_fun_economy.sql — vorheriger Regelstand.
 6. 20261010020000_lucky_lounge_hourly_bonus.sql — aktuelle Regeln und Stundenbonus.
 7. 20261010030000_lucky_lounge_shared_crash.sql — gemeinsame Crash-Runden.
+8. 20261010040000_lucky_lounge_crash_results.sql — 5 Sekunden Ergebnisanzeige,
+   danach 10 Sekunden Einsatzzeit. Keine Rücksetzung bestehender Daten.
+9. 20261010050000_lucky_lounge_admin_chips.sql — protokollierte Chip-Gutschriften
+   im Adminpanel, ausschließlich über die bestehende Netlify-Admin-API.
 
 Die Dateien liegen in supabase/migrations/. Bereits angewendete ältere
 Migrationen nicht erneut außerhalb dieser Reihenfolge ausführen. Codex hat
@@ -58,7 +62,7 @@ Tab nacheinander gesendet. BroadcastChannel, Storage-Events und 15-s-Abgleich
 Browser können keine Guthabenstände, Gewinnfelder oder Auszahlungen speichern.
 Private Tabellen und Helper sind für Browser-Rollen gesperrt; Bans gelten.
 
-Mindesteinsatz überall 1, Höchsteinsatz 100.000 Chips. Einsätze und Guthaben
+Starteinsatz überall 1, Mindesteinsatz 1, Höchsteinsatz 100.000 Chips. Einsätze und Guthaben
 können zwei Nachkommastellen haben; Auszahlungen werden auf 0,01 Chips
 abgerundet. Der manuell eingesammelte Bonus gibt 50 Chips alle rollenden
 60 Minuten, serverseitig nach dem Wallet-Lock geprüft. Request-UUIDs verhindern
@@ -68,7 +72,20 @@ nicht als Spielgewinn oder für Skins.
 
 Legacy-Saves bleiben vollständig archiviert. Runden, Höchstgewinn und gültige
 Guthaben wurden übernommen. Historische Einsatz-/Gewinnsummen, die im alten
-Save fehlten, werden nicht erfunden; neue Summen sind als „seit V2“ markiert.
+Save fehlten, werden nicht erfunden. Die Spieleransicht nennt diese Summen
+„Gespeicherte Ergebnisse“ und zeigt keine Versions- oder Migrationshinweise.
+
+Das Adminpanel liest Guthaben und Statistiken aus casino_wallets; frühere
+game_saves-Werte sind nur ein schreibgeschütztes Archiv. „Chips geben“ akzeptiert
+0,01 bis 1.000.000 Chips mit höchstens zwei Nachkommastellen. Netlify prüft den
+angemeldeten Admin gegen ADMIN_EMAILS und ruft casino_admin_grant_chips mit
+dessen Account-ID auf. Nur service_role darf die RPC ausführen. Wallet-Lock,
+Request-UUID und casino_admin_credits schützen gegen doppelte oder verlorene
+Buchungen; nach unklaren Fehlern bleibt dieselbe UUID im Sitzungsspeicher.
+Gutschriften ändern keine Gewinn-/Einsatzstatistiken, Skins oder Bonus-Fristen.
+Offene Lounge-Tabs übernehmen die neue Wallet beim nächsten 15-s-Abgleich.
+Live Server stellt die Admin-API nicht bereit; lokal dafür netlify dev mit den
+bestehenden Server-Umgebungsvariablen verwenden.
 
 ## Plinko: Regeln und Darstellung
 
@@ -87,6 +104,10 @@ ohne Version-/Variant-Bits. Feld k hat Wahrscheinlichkeit C(n,k)/2^n.
 Bits, Modus, Reihen, Risiko und Faktor werden mit der Buchung gespeichert.
 Einsatz und volle Auszahlung werden atomar vor der Animation abgerechnet.
 Seitenwechsel oder Schließen können damit keinen bestätigten Gewinn verlieren.
+Die Guthabenanzeige zieht den Einsatz sofort ab und blendet jede bestätigte
+Auszahlung erst beim Landen der zugehörigen Kugel ein. Parallel fallende Kugeln
+und Guthabenabgleiche behalten diese Anzeigeverzögerung; beim Verlassen des
+Spiels oder einem Animationsfehler wird das tatsächliche Guthaben angezeigt.
 
 OpenStakes Kollisions-Engine und vorberechnete Startpositionen steuern die
 Darstellung: 16 vorhandene Positionen je Feld, insgesamt 624 für 8/12/16 Reihen.
@@ -119,8 +140,10 @@ Der Server entscheidet je Sprung über Erfolg/Verlust: 85/65/45 %.
 Nach k Erfolgen: floor(100 × 0,99/p^k)/100. Nach 12 Erfolgen automatische
 Auszahlung. Reload setzt eine aktive Runde mit der gespeicherten Stufe fort.
 
-Crash: gemeinsame Runden mit echtem Serverzeit-Verlauf und 10 Sekunden
-Einsatzpause nach jedem Crash. Echte Einsätze, Namen und Auszahlungen; keine
+Crash: gemeinsame Runden mit echtem Serverzeit-Verlauf. Nach dem Crash bleibt
+das Ergebnis 5 Sekunden stehen; Gewinner bleiben grün, Verlierer werden rot.
+Anschließend beginnt ein vollständiges Einsatzfenster von 10 Sekunden.
+Migration 8 aktiviert diese gemeinsame Ergebnisphase. Echte Einsätze, Namen und Auszahlungen; keine
 simulierten Multiplayer-Bots. Geheimer Punkt = max(1,min(1000,floor(100 × 0,99/(1−U))/100)).
 Nach der Einsatzpause wächst der Faktor mit exp(0,1 × Sekunden).
 Chance eines Auto-Ziels x: min(1,0,99/x). Auto-Auszahlung gilt
@@ -140,6 +163,10 @@ Ohne Besucher ist kein Hintergrundjob nötig: Nach längerer Leerlaufzeit
 werden keine fiktiven leeren Flüge nachgeneriert; die nächste Anfrage startet
 ein gemeinsames Fenster von 10 Sekunden. Persönliche Altrunden laufen mit
 ihrem unveränderten Punkt aus; neue persönliche Runden sind gesperrt.
+Mobile Crash zeigt zuerst den großen Fluggraphen, darunter die aktuellen
+Teilnehmer. Dino nutzt auf schmalen Geräten die vorhandene 600-px-Ansicht.
+Kompakte Einsatzleisten lassen die Spielflächen sichtbar; Menüöffnen schließt
+offene Einsatzdialoge. Profilnamen werden aus dem vorhandenen Account geladen.
 Runden-Versionen schützen parallele Entscheidungen. Abbrechen ist nur vor der
 ersten Mines-/Dino-Entscheidung bzw. vor Crash-Start möglich. Erstattungen zählen
 nicht als Gewinne. Alte aktive Runden behalten ihre bisherigen Faktoren.
@@ -187,6 +214,10 @@ gleicher Countdown/Flug, echte Namen/Einsätze, Auto- und manuelles Sichern,
 Offline-Abrechnung einschließlich Auto-Gleichstand und Verlust, geheime Punkte
 auch nach frühem Cashout, Replay/Konflikte, Storno, geschlossene Einsatzphase,
 private Tabellen/Helper und Erhalt persönlicher Altrunden. Build erfolgreich.
+Admin-Gutschriften lokal gegen PostgreSQL und die echte Admin-API geprüft:
+Cent-Beträge, Rechte, Request-Konflikte, unveränderte Statistiken und Replay
+nach verlorener Antwort und Reload. Mobile Admin-Anzeige und DE/RU-Statistik
+ohne Versionshinweise im kurzen Browser-Smoke-Test geprüft.
 Keine produktiven Supabase-Aktionen, Screenshot-Serien oder Testkampagnen.
 
 ## Herkunft

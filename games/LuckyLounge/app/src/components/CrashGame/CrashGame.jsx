@@ -63,6 +63,7 @@ function CrashGame() {
   const [fairnessModalOpen, setFairnessModalOpen] = useState(false);
   const [layout, setLayout] = useState('default');
   const [mobileDataTab, setMobileDataTab] = useState('bets');
+  useEffect(() => { if(phase==='crashed')setMobileDataTab('bets'); },[phase]);
   const [isMobileLayout, setIsMobileLayout] = useState(() => window.matchMedia(MOBILE_QUERY).matches);
   useEffect(() => {
     const media = window.matchMedia(MOBILE_QUERY);
@@ -255,7 +256,7 @@ function CrashGame() {
 
             <div className="game-container">
                 {/* Betting Panel + Player Bets */}
-                <MobileBetSheet title={upstreamText("Crash bet controls")} className="crash-bet-sheet">
+                <MobileBetSheet title={upstreamText("Crash bet controls")} className="crash-bet-sheet" collapseOn={betPlaced}>
                     <div className="crash-sidebar">
                         <BettingPanel balance={balance} unavailable={!available} pending={pending} stake={model.round?.stake} committedAuto={model.round?.params.auto??null} phase={phase} betPlaced={betPlaced} multiplier={multiplier} onBet={handleBet} onCashout={handleCashout} />
 

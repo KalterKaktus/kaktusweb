@@ -411,6 +411,38 @@
     color: var(--text-secondary);
 }
 
+.admin-casino {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+}
+
+.admin-casino-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+}
+
+.admin-casino-head h3 { color: var(--text-primary); }
+.admin-casino-head p { margin: 0.25rem 0 0; font-size: 0.8rem; }
+.admin-casino-balance { display: grid; gap: 0.25rem; }
+.admin-casino-balance span { color: var(--text-secondary); font-size: 0.8rem; }
+.admin-casino-balance strong { color: var(--accent-light); font-size: 1.55rem; font-variant-numeric: tabular-nums; }
+.admin-casino-stats { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; margin: 0.9rem 0; }
+.admin-casino-stats dt { color: var(--text-secondary); font-size: 0.75rem; }
+.admin-casino-stats dd { margin: 0.2rem 0 0; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.admin-casino-grant { align-items: end; }
+.admin-casino-grant .admin-field { flex: 1 1 180px; max-width: 320px; }
+.admin-casino-grant .admin-input { min-width: 0; }
+.admin-casino-status { margin: 0.65rem 0 0; font-size: 0.8rem; }
+.admin-casino-archive { margin: 0; padding: 0.75rem; max-height: 220px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-secondary); }
+.admin-casino .admin-json p { margin: 0; padding: 0.75rem; }
+.admin-casino button:disabled, .admin-casino input:disabled { opacity: 0.55; cursor: default; }
+
 /* === User-Header Erweiterungen === */
 .admin-user-level {
     display: inline-block;

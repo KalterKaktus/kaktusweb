@@ -27,6 +27,11 @@ function MobileBetSheet({ title, children, className = '', collapseOn = false })
     useEffect(() => {
         if (collapseOn) setExpanded(false)
     }, [collapseOn])
+    useEffect(() => {
+        const close = () => setExpanded(false)
+        document.addEventListener('kk:lounge-close-bet-sheet', close)
+        return () => document.removeEventListener('kk:lounge-close-bet-sheet', close)
+    }, [])
 
     useEffect(() => {
         if (!isMobile || !expanded) return
@@ -36,7 +41,7 @@ function MobileBetSheet({ title, children, className = '', collapseOn = false })
         let activeBranch = sheet
         while (activeBranch?.parentElement && activeBranch.parentElement !== document.body) {
             for (const sibling of activeBranch.parentElement.children) {
-                if (sibling !== activeBranch && !sibling.contains(activeBranch)) {
+                if (sibling !== activeBranch && !sibling.contains(activeBranch) && !sibling.matches('.header, .mobile-bottom-nav')) {
                     backgroundNodes.push(sibling)
                 }
             }

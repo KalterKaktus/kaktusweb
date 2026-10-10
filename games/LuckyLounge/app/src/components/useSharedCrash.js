@@ -29,12 +29,15 @@ export default function useSharedCrash(){
  const own=shared?.own_round||null;
  const feedback=own||game.round;
  const flight=legacy?{id:own.id,starts_at:own.state.starts_at}:globalFlight;
- const elapsed=flight?Math.max(0,(game.now()-Date.parse(flight.starts_at))/1000):0;
  const waiting=flight&&game.now()<Date.parse(flight.starts_at);
  const phase=flight?(waiting?'waiting':globalFlight?.phase==='crashed'&&!legacy?'crashed':'running'):'idle';
+ const elapsed=phase==='crashed'?Math.log(Number(globalFlight.point))/.1:flight?Math.max(0,(game.now()-Date.parse(flight.starts_at))/1000):0;
  const multiplier=phase==='running'?Math.min(1000,Math.floor(Math.exp(.1*elapsed)*100)/100):phase==='crashed'?Number(globalFlight.point):1;
  const active=own?.status==='active';
- const latest=shared?.history?.at(-1),flash=latest&&(game.now()-Date.parse(latest.ended_at))<1100&&phase==='waiting'&&!legacy;
+ const latest=shared?.history?.at(-1);
+ // Compatibility until the result-phase migration is applied. Updated servers
+ // retain the actual crashed flight for five seconds instead of advancing it.
+ const flash=latest&&(game.now()-Date.parse(latest.ended_at))<1100&&phase==='waiting'&&!legacy;
  useEffect(()=>{
   if(seen.current?.ownId===feedback?.id&&seen.current?.ownStatus==='active'&&feedback?.status==='won')audio.land(Number(feedback.payout)/Number(feedback.stake));
   if(seen.current&&latest?.id&&seen.current.flightId!==latest.id)audio.land(0);

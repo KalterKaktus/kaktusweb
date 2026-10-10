@@ -244,7 +244,7 @@ function DinoGame() {
             <div className="dino-main">
                 <div className="dino-container">
                     {/* Betting Sidebar */}
-                    <MobileBetSheet title={upstreamText("Dino bet controls")} className="dino-bet-sheet" collapseOn={gamePhase === 'running' || gamePhase === 'waiting'}>
+                    <MobileBetSheet title={upstreamText("Dino bet controls")} className={`dino-bet-sheet ${isPlaying?'is-playing':''}`} collapseOn={gamePhase === 'running' || gamePhase === 'waiting'}>
                         <div className="dino-sidebar">
                         {/* Bet Mode Tabs */}
                         <div className="bet-mode-tabs">

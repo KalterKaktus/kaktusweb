@@ -11,6 +11,10 @@ function Layout() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const mobileMenuButtonRef = useRef(null)
     const closeMobileMenu = useCallback(() => setIsMobileMenuOpen(false), [])
+    const openMobileMenu = useCallback(() => {
+        document.dispatchEvent(new Event('kk:lounge-close-bet-sheet'))
+        setIsMobileMenuOpen(true)
+    }, [])
 
     return (
         <div className="app-layout">
@@ -22,7 +26,7 @@ function Layout() {
                 <Header
                     menuOpen={isMobileMenuOpen}
                     menuButtonRef={mobileMenuButtonRef}
-                    onMenuClick={() => setIsMobileMenuOpen(true)}
+                    onMenuClick={openMobileMenu}
                 />
                 <WalletStatus/><main className="main-content">
                     <GameViewBoundary><Outlet /></GameViewBoundary>
@@ -32,6 +36,7 @@ function Layout() {
                 drawerOpen={isMobileMenuOpen}
                 onClose={closeMobileMenu}
                 returnFocusRef={mobileMenuButtonRef}
+                onOpen={openMobileMenu}
             />
         </div>
     )

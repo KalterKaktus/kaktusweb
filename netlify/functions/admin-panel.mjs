@@ -125,19 +125,22 @@ async function supabase(path, options = {}, query = "") {
     const body = await response.text();
     const data = body ? JSON.parse(body) : null;
     if (!response.ok) {
-        throw new Error(data?.message || `Supabase HTTP ${response.status}`);
+        const error = new Error(data?.message || `Supabase HTTP ${response.status}`);
+        error.code = data?.code;
+        throw error;
     }
     return data;
 }
 
 async function listUsers() {
-    const [profiles, saves, presenceRows, badges, autoBans, banLogs] = await Promise.all([
+    const [profiles, saves, presenceRows, badges, autoBans, banLogs, casino] = await Promise.all([
         supabase("profiles", {}, "?select=id,username,is_banned,avatar_url,updated_at,total_xp,equipped_badge,vip,vip_color,referral_code,donation_total_cents,donation_count&order=updated_at.desc"),
         supabase("game_saves", {}, "?select=user_id,game_id,display_name,total_earned,season_id,payload,updated_at&order=updated_at.desc"),
         listPresence(),
         supabase("user_badges", {}, "?select=user_id,badge_id,awarded_at"),
         listAutoBans(),
         listBanLogs(),
+        listCasinoWallets(),
     ]);
     const savesByUser = new Map();
     const presenceByUser = new Map((presenceRows || []).map((presence) => [presence.user_id, presence]));
@@ -165,11 +168,58 @@ async function listUsers() {
     return (profiles || []).map((profile) => ({
         ...profile,
         saves: savesByUser.get(profile.id) || [],
+        casino_wallet: casino.wallets.get(profile.id) || null,
+        casino_wallet_available: casino.available,
         presence: formatPresence(presenceByUser.get(profile.id)),
         badges: badgesByUser.get(profile.id) || [],
         auto_ban: autoBanByUser.get(profile.id) || null,
         ban_log: banLogByUser.get(profile.id) || [],
     }));
+}
+
+async function listCasinoWallets() {
+    try {
+        const rows = await supabase("casino_wallets", {},
+            "?select=user_id,chips,rounds,biggest_win,total_wagered,total_won,tracked_wagered,tracked_won,revision");
+        return { wallets: new Map((rows || []).map((wallet) => [wallet.user_id, wallet])), available: true };
+    } catch (error) {
+        // A missing migration must not disable administration of the other games.
+        console.error("Casino-Wallets konnten nicht geladen werden:", error.message);
+        return { wallets: new Map(), available: false };
+    }
+}
+
+async function grantCasinoChips(body, adminUser) {
+    const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuid.test(String(body.userId || "")) || !uuid.test(String(body.requestId || ""))) {
+        throw httpError("User oder Gutschrift-ID ungültig.", 400);
+    }
+    const amount = String(body.amount ?? "").trim();
+    if (!/^[0-9]{1,7}(\.[0-9]{1,2})?$/.test(amount)
+        || Number(amount) < 0.01 || Number(amount) > 1000000) {
+        throw httpError("Betrag muss zwischen 0,01 und 1.000.000 Chips liegen, mit höchstens zwei Nachkommastellen.", 400);
+    }
+    try {
+        return await supabase("rpc/casino_admin_grant_chips", {
+            method: "POST",
+            body: JSON.stringify({ p_request_id: body.requestId, p_user_id: body.userId,
+                p_admin_id: adminUser.id, p_amount: amount }),
+        });
+    } catch (error) {
+        if (error.code === "PGRST202" || error.code === "42883") {
+            throw httpError("Chips geben benötigt die Supabase-Migration 20261010050000_lucky_lounge_admin_chips.sql.", 503);
+        }
+        const errors = {
+            casino_invalid_credit: ["Ungültiger Chip-Betrag.", 400],
+            casino_invalid_user: ["Dieser Account wurde nicht gefunden.", 404],
+            casino_invalid_request: ["Ungültige Gutschrift-ID.", 400],
+            casino_request_conflict: ["Diese Gutschrift-ID gehört bereits zu einer anderen Buchung.", 409],
+            casino_balance_limit: ["Das maximale Chip-Guthaben würde überschritten.", 400],
+        };
+        const mapped = errors[error.message];
+        if (mapped) throw httpError(...mapped);
+        throw error;
+    }
 }
 
 // Liest die auto_banned_users View — enthält für jeden auto-banned User:
@@ -222,6 +272,10 @@ function requireGameId(gameId) {
     const value = String(gameId || "").trim();
     if (!value || value.length > 120) {
         throw httpError("Game fehlt.", 400);
+    }
+
+    if (value === "lucky-lounge") {
+        throw httpError("Der alte Lounge-Spielstand ist ein Archiv. Chips werden über die Casino-Wallet verwaltet.", 400);
     }
 
     return value;
@@ -725,7 +779,10 @@ export default async (req) => {
             return json({ error: "User fehlt." }, 400);
         }
 
-        if (body.action === "delete-save") {
+        if (body.action === "grant-casino-chips") {
+            const result = await grantCasinoChips(body, adminUser);
+            return json({ ok: true, ...result });
+        } else if (body.action === "delete-save") {
             await deleteSave(body.userId, body.gameId);
         } else if (body.action === "update-save") {
             await updateSave(body.userId, body.gameId, body);

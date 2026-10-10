@@ -17,7 +17,8 @@
         background: var(--bg-header);
     }
 
-    .mobile-bottom-nav a {
+    .mobile-bottom-nav a,
+    .mobile-bottom-nav button {
         display: flex;
         min-width: 44px;
         min-height: 44px;
@@ -30,6 +31,10 @@
         font-size: 10px;
         font-weight: 700;
         text-decoration: none;
+        border: 0;
+        background: transparent;
+        font-family: inherit;
+        cursor: pointer;
     }
 
     .mobile-bottom-nav a.active {
@@ -39,6 +44,17 @@
 
     .mobile-navigation-drawer .ant-drawer-content {
         background: var(--bg-sidebar);
+    }
+    .mobile-drawer-actions a {
+        display: flex;
+        min-height: 48px;
+        gap: 14px;
+        align-items: center;
+        border-radius: 10px;
+    }
+    .mobile-drawer-actions a.active {
+        background: var(--primary-soft);
+        color: var(--primary-hover);
     }
 
     .mobile-drawer-field,

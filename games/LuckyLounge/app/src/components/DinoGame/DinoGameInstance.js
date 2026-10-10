@@ -39,7 +39,7 @@ export default class DinoGameInstance extends Phaser.Game {
 
     resize(parentSize) {
         const { width: parentWidth, height: parentHeight } = parentSize;
-        const gameWidth = parentWidth < parentHeight
+        const gameWidth = parentWidth < 600 || parentWidth < parentHeight
             ? DinoGameInstance.CONFIG.WIDTH.PORTRAIT
             : DinoGameInstance.CONFIG.WIDTH.LANDSCAPE;
         const gameHeight = DinoGameInstance.CONFIG.HEIGHT;

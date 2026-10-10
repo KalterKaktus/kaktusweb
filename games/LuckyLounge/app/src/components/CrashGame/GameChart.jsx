@@ -1,5 +1,5 @@
 import {useText,upstreamText} from '../../i18n';
-import { useRef, useEffect, useMemo, useCallback } from 'react'
+import { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import { Tag, Typography, Badge } from 'antd'
 import { WifiOutlined } from '@ant-design/icons'
 
@@ -11,6 +11,8 @@ function GameChart({ phase, multiplier, elapsedTime, countdown, connected }) {
     const rocketRef = useRef(null)
     const exhaustRef = useRef(null)
     const explosionRef = useRef(null)
+    const exploded = useRef(false)
+    const [sizeRevision, resize] = useState(0)
     // Cache canvas dimensions to avoid expensive getBoundingClientRect every frame
     const canvasSizeRef = useRef({ width: 0, height: 0, dpr: 1 })
 
@@ -58,6 +60,7 @@ function GameChart({ phase, multiplier, elapsedTime, countdown, connected }) {
                 canvas.width = width * dpr
                 canvas.height = height * dpr
                 canvasSizeRef.current = { width, height, dpr }
+                resize(value => value + 1)
             }
         })
         observer.observe(canvas)
@@ -84,9 +87,9 @@ function GameChart({ phase, multiplier, elapsedTime, countdown, connected }) {
         // Reset transform and clear
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
         ctx.clearRect(0, 0, width, height)
-        if(phase==='waiting'){for(const ref of [rocketRef,exhaustRef,explosionRef])if(ref.current)ref.current.style.display='none';}
+        if(phase==='waiting'){exploded.current=false;for(const ref of [rocketRef,exhaustRef,explosionRef])if(ref.current)ref.current.style.display='none';}
 
-        const padding = { left: 60, right: 30, top: 50, bottom: 60 }
+        const padding = width<600 ? { left: 36, right: 52, top: 56, bottom: 42 } : { left: 60, right: 56, top: 60, bottom: 60 }
         const chartWidth = width - padding.left - padding.right
         const chartHeight = height - padding.top - padding.bottom
 
@@ -119,7 +122,7 @@ function GameChart({ phase, multiplier, elapsedTime, countdown, connected }) {
         ctx.setLineDash([])
 
         // Draw curve when game is running or crashed
-        if ((phase === 'running' || phase === 'crashed' || phase === 'cashed_out') && elapsedTime > 0) {
+        if (phase === 'running' || phase === 'crashed' || phase === 'cashed_out') {
             // OPTIMIZED: Cap points at 200 max, use adaptive sampling
             const numPoints = Math.min(200, Math.max(80, Math.floor(elapsedTime * 20)))
             const points = new Array(numPoints + 1)
@@ -221,11 +224,12 @@ function GameChart({ phase, multiplier, elapsedTime, countdown, connected }) {
 
             // Sync HTML Elements over Canvas (using will-change for GPU acceleration)
             if (rocketRef.current) {
-                if (phase === 'running') {
+                if (phase === 'running' || phase === 'crashed') {
                     rocketRef.current.style.display = 'block'
                     rocketRef.current.style.left = `${endX}px`
                     rocketRef.current.style.top = `${endY}px`
                     rocketRef.current.style.transform = `translate(-50%, -50%) rotate(${angle}rad) rotate(90deg)`
+                    rocketRef.current.style.opacity = phase === 'crashed' ? '.45' : '1'
                 } else {
                     rocketRef.current.style.display = 'none'
                 }
@@ -242,24 +246,20 @@ function GameChart({ phase, multiplier, elapsedTime, countdown, connected }) {
             }
             if (explosionRef.current) {
                 if (phase === 'crashed') {
-                    if (explosionRef.current.style.display !== 'block') {
+                    if (!exploded.current) {
+                        exploded.current=true
                         explosionRef.current.style.display = 'block'
                         explosionRef.current.style.left = `${endX}px`
                         explosionRef.current.style.top = `${endY}px`
                         explosionRef.current.src = '/games/LuckyLounge/images/explosions/normal_explosion.gif?' + Date.now()
 
-                        setTimeout(() => {
-                            if (explosionRef.current) {
-                                explosionRef.current.style.display = 'none'
-                            }
-                        }, 1000)
                     }
                 } else {
                     explosionRef.current.style.display = 'none'
                 }
             }
         }
-    }, [phase, multiplier, elapsedTime, maxTime, maxMultiplier])
+    }, [phase, multiplier, elapsedTime, maxTime, maxMultiplier, sizeRevision])
 
     const getStatusText = () => {
         if (phase === 'waiting') return t('crash_countdown',{seconds:countdown.toFixed(1)})
@@ -282,12 +282,14 @@ function GameChart({ phase, multiplier, elapsedTime, countdown, connected }) {
             {/* In-game Overlay Assets - will-change for GPU compositing */}
             <img
                 ref={rocketRef}
+                className="crash-rocket"
                 src="/games/LuckyLounge/images/spaceship.png"
                 alt={upstreamText('Rocket')}
                 style={{ position: 'absolute', width: '105px', height: 'auto', display: 'none', pointerEvents: 'none', zIndex: 10, filter: 'drop-shadow(0 0 10px rgba(247, 147, 26, 0.8))', willChange: 'transform, left, top' }}
             />
             <img
                 ref={exhaustRef}
+                className="crash-exhaust"
                 src="/games/LuckyLounge/images/exhaust/exhaust02_preview.gif"
                 alt={upstreamText('Exhaust')}
                 style={{ position: 'absolute', width: '150px', height: 'auto', display: 'none', pointerEvents: 'none', zIndex: 9, mixBlendMode: 'screen', filter: 'hue-rotate(340deg) saturate(2)', imageRendering: 'pixelated', willChange: 'transform, left, top' }}

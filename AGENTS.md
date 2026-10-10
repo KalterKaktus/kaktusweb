@@ -186,6 +186,7 @@ englischen Originalnamen (alle 132 abgedeckt).
   60-Hz-Schritt und vorberechneten Startpositionen; Einfach/Normal/Schwer mit 8/12/16 Reihen. 35 % schneller, bis zu 24 aktive/wartende Kugeln.
   Mines (25 Felder), Crash (gemeinsame Server-Runden) und Dino (Phaser, 12 Stufen) sind ebenfalls spielbar. Slots und Cases sind vollständig aus Katalog und Navigation entfernt.
 - Migration `20261010030000_lucky_lounge_shared_crash.sql`: manuell nach Stundenbonus. Gemeinsame Server-Flüge bis 1.000×, 10 Sekunden Einsatzpause, RPCs `casino_crash_state` / `casino_crash_action`. Echte Teilnehmer und Online-Zählung (15-s-Lease). Private Crash-Punkte bleiben auch nach Cashout verborgen; persönliche Altrunden und Outbox bleiben erhalten. Ohne Besucher werden keine leeren Runden nachgeneriert; beim Wiederöffnen beginnt eine neue 10-s-Einsatzphase.
+- Migration `20261010040000_lucky_lounge_crash_results.sql`: manuell nach Shared Crash. Ergebnis und Teilnehmer bleiben nach dem Crash 5 Sekunden sichtbar, danach volle 10 Sekunden Einsatzzeit. Einsatzvorgabe aller Spiele 1 Chip. Mobile Crash priorisiert den Graphen; Dino nutzt unter 600 px seine Portrait-Geometrie. Profilname aus `profiles.username`, eigene SVG-Navigation und Lounge-Favicon.
 - Migration `20261010020000_lucky_lounge_hourly_bonus.sql`: manuell nach `20261010010000_lucky_lounge_fun_economy.sql`. Ersetzt Daily durch 50 Chips alle rollenden 60 Minuten (`casino_claim_bonus`); alter Daily-RPC nutzt denselben Bonus. Originale Plinko-Auszahlungen, neue Mines/Crash/Dino-Runden mit Faktor 0,99. Aktive Runden und Guthaben bleiben erhalten. Keine Ertragsanzeigen in der UI; `snapshot.rules.economy = casino-v1`.
 - Migration `20261009230000_lucky_lounge_plinko_modes.sql`: manuell nach Decimal-Chips. RPC `casino_play_plinko_mode(uuid,numeric,text)`, originale symmetrische Auszahlungen, binomiale Chancen, atomare Burst-Begrenzung statt 180-ms-Pause. Bestehende Buchungen bleiben unverändert.
 - Migration `20261009220000_lucky_lounge_decimal_chips.sql`: manuell nach den beiden Basis-Migrationen. Exakte Beträge mit zwei Nachkommastellen, keine Guthaben-Skalierung oder rückwirkenden Auszahlungen. Plinko-RPC danach `(uuid,numeric)`; bestehende Guthaben und Idempotenz bleiben erhalten.
@@ -196,7 +197,7 @@ englischen Originalnamen (alle 132 abgedeckt).
   `casino_wallets`/`casino_transactions`, atomare RPCs `casino_get_wallet`,
   `casino_claim_daily`, `casino_play_plinko`; Browser schreiben keine Guthaben.
   Ursprünglicher Daily durch den Stundenbonus ersetzt. Alte Saves werden erhalten/kopiert;
-  fehlende historische Einsatz-/Gewinnsummen werden ausdrücklich seit V2 erfasst.
+  fehlende historische Summen werden nicht erfunden; die Spieleransicht nennt neue Summen „Gespeicherte Ergebnisse“.
   Ohne angewendete Migration bleiben Claim und Gameplay gesperrt.
 
 ### My Fishing Kaktus
@@ -328,8 +329,9 @@ Join, Presence-Autorisierung und Cloud-v4-Validierung absichtlich gesperrt.
 **Pfad:** `/adminpanel/` (nur eingetragene Admins)
 
 - **Per-Player-Editing:** Payload-Felder werden rekursiv als Inputs gerendert —
-  funktioniert automatisch für jedes Spiel in `game_saves`. Dazu: JSON direkt
+  funktioniert für aktive Spiele in `game_saves`; alte Lucky-Lounge-Saves sind nur Archiv. Dazu: JSON direkt
   editieren, Save löschen, Client-Reload erzwingen, Nachricht schicken, sperren.
+- **Lounge-Chips:** Guthaben/Statistiken aus `casino_wallets`, „Chips geben“ über die bestehende Admin-API und service_role-RPC `casino_admin_grant_chips`. Migration `20261010050000_lucky_lounge_admin_chips.sql` manuell nach Decimal-Chips: private `casino_admin_credits`, UUID-Idempotenz, Wallet-Lock, revisionsbasierter Abgleich. Gutschriften zählen nicht als Spielgewinn; vorhandene Daten bleiben erhalten.
 - **Live-Events:** Clicker (Gold-/Rubinkaktus) · Fishing (Wetter forcen inkl.
   der 5 neuen Events, Coin-Fisch, Broadcast, Force-Spawn Epic/Legendary, Karl)
 - **Cross-Game:** „Alle Spieler neu laden" (`force-reload`)

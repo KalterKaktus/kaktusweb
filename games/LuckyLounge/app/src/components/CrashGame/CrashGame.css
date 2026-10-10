@@ -1079,13 +1079,13 @@
 @media (max-width: 768px), (max-width: 932px) and (orientation: landscape) and (hover: none) {
     .crash-game {
         height: auto;
-        min-height: calc(100dvh - var(--mobile-header-height) - var(--mobile-nav-space) + 232px);
-        padding-bottom: 232px;
+        min-height: 0;
+        padding-bottom: 184px;
         overflow: visible;
     }
 
     .crash-bet-sheet {
-        --mobile-sheet-collapsed-height: 232px;
+        --mobile-sheet-collapsed-height: 184px;
     }
 
     .crash-game .game-container {
@@ -1095,9 +1095,34 @@
 
     .crash-game .game-display {
         width: 100%;
-        min-height: 420px;
+        min-height: 0;
         overflow: visible;
     }
+    .crash-game .chart-container-antd {
+        flex: none;
+        height: clamp(260px, 34svh, 380px);
+        min-height: 260px;
+        margin: 8px 12px 12px;
+        order: 1;
+        border-radius: 12px;
+        background: var(--bg-primary);
+    }
+    .crash-game .game-history-bar {
+        position: relative;
+        flex-shrink: 0;
+        min-height: 40px;
+    }
+    .crash-game .lucky-shared-crash-status { padding: 6px 12px; gap: 6px; font-size: 11px; flex-wrap: nowrap; }
+    .crash-game .lucky-shared-crash-status span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .crash-game .bottom-controls-antd { order: 2; flex-shrink: 0; height: 52px; padding: 0 12px; }
+    .crash-game .crash-rocket { width: 68px !important; }
+    .crash-game .crash-exhaust { width: 100px !important; }
+    .crash-game .chart-container-antd .y-axis-antd { left: 4px; top: 56px; bottom: 42px; }
+    .crash-game .chart-container-antd .x-axis-antd { left: 36px; right: 52px; bottom: 14px; }
+    .crash-game .chart-container-antd .multiplier-container { top: 28%; }
+    .crash-game .chart-container-antd .status-container { bottom: 42px; }
+    .crash-bet-sheet[data-state='collapsed'] .sidebar-footer { display: none; }
+    .crash-bet-sheet[data-state='collapsed'] .betting-panel-3d .bet-button { height: 48px; padding: 8px 12px; }
 
     .crash-bet-sheet .crash-sidebar {
         width: 100%;
@@ -1122,7 +1147,10 @@
     .crash-mobile-tabs {
         display: block;
         padding: 10px 12px 18px;
+        order: 3;
     }
+    .crash-mobile-tabs .player-bets-list { max-height: none; overflow: visible; }
+    .crash-mobile-tabs .player-results { position: static; width: auto; }
 
     .crash-mobile-tabs [role='tablist'] {
         display: grid;
@@ -1239,6 +1267,9 @@
 .crash-game .player-bet-row.cashed-out {
     background: var(--openstake-extra-217);
 }
+.crash-game .player-bet-row.lost { background: var(--danger-soft); }
+.crash-game .player-bet-row.lost .player-name,
+.crash-game .player-bet-row .bet-amount .loss { color: var(--danger) !important; font-weight: 600; }
 
 .crash-game .player-bet-row .player-info {
     display: flex;

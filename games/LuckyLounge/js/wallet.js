@@ -2,6 +2,7 @@
 export class CasinoWallet extends EventTarget {
   client = null;
   user = null;
+  profile = null;
   snapshot = null;
   crash = null;
   crashAt = 0;
@@ -10,6 +11,10 @@ export class CasinoWallet extends EventTarget {
   channel = null;
   prefix = '';
   operation = Promise.resolve();
+  // Presentation only: PostgreSQL has already settled these rounds. Keep each
+  // payout out of the visible balance until its ball reaches a bin.
+  plinkoPresentations = new Map();
+  displayBalance = 0;
   async init({ redirectOnGuest = true } = {}) {
     const module = await Promise.race([
       import('/js/supabase-client.js'),
@@ -25,6 +30,9 @@ export class CasinoWallet extends EventTarget {
       throw new Error('casino_login_required');
     }
     this.prefix = `kk-casino-pending:${this.user.id}:`;
+    // A slow profile read never prevents the wallet from becoming available.
+    this.client.from('profiles').select('username').eq('id', this.user.id).maybeSingle()
+      .then(({data}) => { this.profile = data; this.dispatchEvent(new Event('change')); }).catch(() => {});
     this.client.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || (session?.user && session.user.id !== this.user.id)) {
         this.available = false;
@@ -50,6 +58,8 @@ export class CasinoWallet extends EventTarget {
   }
   accept(data) {
     if (!data?.wallet) throw new Error('casino_network');
+    const presentation = this.plinkoPresentations.get(data.round?.request_id);
+    if (presentation) presentation.payoutCents = Math.round(Number(data.round.payout) * 100);
     const observed=Date.parse(data.server_now);
     const newCrash=data.crash&&observed>=this.crashAt;
     if(newCrash){this.crash=data.crash;this.crashAt=observed;}
@@ -58,8 +68,31 @@ export class CasinoWallet extends EventTarget {
       this.snapshot = {...data,crash:this.crash};
       this.offset = Date.parse(data.server_now) - Date.now();
       this.available = true;
+      this.updateDisplayBalance();
       this.dispatchEvent(new Event('change'));
-    }else if(newCrash){this.snapshot={...this.snapshot,crash:this.crash};this.dispatchEvent(new Event('change'));}
+    }else if(newCrash||presentation){this.snapshot={...this.snapshot,crash:this.crash};this.updateDisplayBalance();this.dispatchEvent(new Event('change'));}
+  }
+  updateDisplayBalance() {
+    let heldCents = 0;
+    for (const presentation of this.plinkoPresentations.values()) {
+      // A parallel refresh can include a booked win before the play response
+      // arrives. Retain the prior display until that response identifies it.
+      if (presentation.payoutCents === null) return;
+      heldCents += presentation.payoutCents;
+    }
+    this.displayBalance = Math.max(0, Math.round(Number(this.snapshot?.wallet.chips || 0) * 100) - heldCents) / 100;
+  }
+  revealPlinko(requestId) {
+    if (requestId === undefined) this.plinkoPresentations.clear();
+    else {
+      const presentation = this.plinkoPresentations.get(requestId);
+      if (!presentation) return;
+      this.plinkoPresentations.delete(requestId);
+      // Landing still reveals this win while another play response is pending.
+      if (presentation.payoutCents !== null) this.displayBalance = (Math.round(this.displayBalance * 100) + presentation.payoutCents) / 100;
+    }
+    this.updateDisplayBalance();
+    this.dispatchEvent(new Event('change'));
   }
   async rpc(name, args = {}) {
     const controller = new AbortController();
@@ -123,15 +156,23 @@ export class CasinoWallet extends EventTarget {
     this.dispatchEvent(new Event('change'));
     throw error;
   }
-  transact(name, args = {}) {
+  transact(name, args = {}, { deferPlinkoPayout = false } = {}) {
     // Serialize this tab's intents so recovery never re-submits an in-flight
     // request as another click. PostgreSQL serializes separate tabs as well.
     const next = this.operation.catch(() => {}).then(async () => {
       await this.recover();
       const id = crypto.randomUUID();
       const item = { key: this.prefix + id, name, args: { ...args, p_request_id: id } };
-      localStorage.setItem(item.key, JSON.stringify(item));
-      return this.submit(item);
+      if (deferPlinkoPayout) this.plinkoPresentations.set(id, { payoutCents: null });
+      try {
+        localStorage.setItem(item.key, JSON.stringify(item));
+        return await this.submit(item);
+      } catch (error) {
+        // No animation can be shown after a failed request. The usual outbox
+        // still recovers ambiguous bookings without a second credit.
+        if (deferPlinkoPayout) this.revealPlinko(id);
+        throw error;
+      }
     });
     this.operation = next;
     return next;
@@ -141,11 +182,11 @@ export class CasinoWallet extends EventTarget {
     if (!Number.isFinite(stake)||stake<1||stake>100000||Math.abs(stake*100-Math.round(stake*100))>1e-7) throw new Error('casino_invalid_bet');
     if (!Number.isInteger(stake)&&this.snapshot?.currency_decimals!==2) throw new Error('casino_precision_migration');
   }
-  play(stake, difficulty = 'normal') {
+  play(stake, difficulty = 'normal', { deferPayout = false } = {}) {
     this.validateStake(stake);
     if (!['easy','normal','hard'].includes(difficulty)) throw new Error('casino_invalid_bet');
     if (this.snapshot?.rules?.economy !== 'casino-v1') throw new Error('casino_bonus_migration');
-    return this.transact('casino_play_plinko_mode', { p_stake: stake, p_difficulty: difficulty });
+    return this.transact('casino_play_plinko_mode', { p_stake: stake, p_difficulty: difficulty }, { deferPlinkoPayout: deferPayout });
   }
   game(game, action, round, payload) { if(action==='start')this.validateStake(payload.stake);return this.transact('casino_game_action', {p_game:game,p_action:action,p_round_id:round,p_payload:payload}); }
   refreshCrash() { return this.rpc('casino_crash_state'); }

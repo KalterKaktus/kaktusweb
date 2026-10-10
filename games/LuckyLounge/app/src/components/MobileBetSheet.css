@@ -35,7 +35,7 @@
     .mobile-bet-sheet__backdrop {
         position: fixed;
         z-index: -1;
-        inset: 0 0 var(--mobile-nav-space);
+        inset: var(--mobile-header-height) 0 var(--mobile-nav-space);
         border: 0;
         background: var(--ll-source-color-1);
     }
