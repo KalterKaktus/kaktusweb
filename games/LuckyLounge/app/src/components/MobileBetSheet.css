@@ -1,0 +1,81 @@
+.mobile-bet-sheet {
+    display: contents;
+}
+
+.mobile-bet-sheet__handle,
+.mobile-bet-sheet__backdrop {
+    display: none;
+}
+
+@media (max-width: 768px), (max-width: 932px) and (orientation: landscape) and (hover: none) {
+    .mobile-bet-sheet {
+        --mobile-sheet-collapsed-height: 196px;
+        position: fixed;
+        z-index: 320;
+        right: 0;
+        bottom: var(--mobile-nav-space);
+        left: 0;
+        display: flex;
+        max-height: calc(100dvh - var(--mobile-header-height) - var(--mobile-nav-space));
+        flex-direction: column;
+        border-top: 1px solid var(--border-default);
+        border-radius: 16px 16px 0 0;
+        background: var(--bg-sidebar);
+        box-shadow: 0 -14px 40px var(--ll-source-color-0);
+    }
+
+    .mobile-bet-sheet[data-state='collapsed'] {
+        max-height: var(--mobile-sheet-collapsed-height);
+    }
+
+    .mobile-bet-sheet[data-state='expanded'] {
+        max-height: min(72dvh, 680px);
+    }
+
+    .mobile-bet-sheet__backdrop {
+        position: fixed;
+        z-index: -1;
+        inset: 0 0 var(--mobile-nav-space);
+        border: 0;
+        background: var(--ll-source-color-1);
+    }
+
+    .mobile-bet-sheet[data-state='expanded'] .mobile-bet-sheet__backdrop {
+        display: block;
+    }
+
+    .mobile-bet-sheet__handle {
+        display: flex;
+        min-height: 44px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        border: 0;
+        border-bottom: 1px solid var(--border-subtle);
+        background: transparent;
+        color: var(--text-primary);
+        font: inherit;
+        font-weight: 800;
+    }
+
+    .mobile-bet-sheet__content {
+        min-height: 0;
+        overflow: auto;
+        overscroll-behavior: contain;
+    }
+
+    .mobile-bet-sheet[data-state='collapsed'] .mobile-sheet-secondary {
+        display: none !important;
+    }
+
+    body.mobile-overlay-open,
+    body.mobile-overlay-open .main-content {
+        overflow: hidden;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mobile-bet-sheet {
+        transition: none;
+    }
+}

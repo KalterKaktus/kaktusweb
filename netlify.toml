@@ -14,6 +14,12 @@
 [functions."check-free-games"]
   schedule = "0 22,4,10,16 * * *"
 
+# Lucky Lounge is an isolated SPA. Existing static files keep precedence.
+[[redirects]]
+  from = "/games/LuckyLounge/*"
+  to = "/games/LuckyLounge/index.html"
+  status = 200
+
 # Bilder und Schriften einmal laden, danach ein Jahr aus dem Browsercache.
 # Ohne diesen Block liefert Netlify `max-age=0, must-revalidate` — der Browser
 # fragt bei JEDEM Seitenaufruf nach, bekommt zwar nur ein 304 zurück, zahlt aber
