@@ -4,7 +4,9 @@ Isolierte Casino-Anwendung unter /games/LuckyLounge/ mit dem vollständigen
 [OpenStake-Quellbaum](https://github.com/tanh1c/stake-originals-clone/tree/7f7065832cae8c898494ca7398f23d4a33a05c17)
 als Grundlage. Die originalen Oberflächen, Dark-Theme, Spielgrafiken und
 Animationen bleiben erhalten; Lucky-Lounge-Branding, DE/RU und eine gemeinsame
-Supabase-Wallet ergänzen sie. Plinko, Mines, Crash und Dino sind integriert.
+Supabase-Wallet ergänzen sie. Plinko, Mines, Crash, Dino, Color Roulette und
+Blackjack sind integriert. Roulette und Blackjack erweitern den bestehenden
+Look mit eigenen SVG-Grafiken und synthetisierten Sounds.
 Slots und Case Opening sind vollständig aus Katalog und Navigation entfernt.
 Ausschließlich kostenlose virtuelle Chips ohne Ein-/Auszahlungen, Handel,
 Echtgeldwert oder Robux-Anbindung.
@@ -13,14 +15,16 @@ Echtgeldwert oder Robux-Anbindung.
 
 Die Repository-Wurzel mit VS Code Live Server ausliefern:
 [Lobby](http://127.0.0.1:5500/games/LuckyLounge/) und
-[Plinko](http://127.0.0.1:5500/games/LuckyLounge/plinko/).
+[Plinko](http://127.0.0.1:5500/games/LuckyLounge/plinko/),
+[Roulette](http://127.0.0.1:5500/games/LuckyLounge/roulette/) und
+[Blackjack](http://127.0.0.1:5500/games/LuckyLounge/blackjack/).
 Die Lobby ist ohne Login sichtbar; Spielen verwendet das bestehende Website-Login.
 ES-Module benötigen HTTP, file:// funktioniert nicht.
 
 Alternativ in games/LuckyLounge/app: pnpm install, dann pnpm dev.
 Die Vite-URL lautet http://127.0.0.1:5173/games/LuckyLounge/.
 pnpm build erzeugt die statischen Website-Dateien einschließlich der Einstiege
-plinko/, mines/, crash/, dino/ und statistics/. Andere Website-Bereiche werden
+plinko/, mines/, crash/, dino/, roulette/, blackjack/ und statistics/. Andere Website-Bereiche werden
 nicht gebaut oder verändert. Netlify benötigt keinen zusätzlichen Vite-Build;
 der SPA-Fallback ist auf die Lounge begrenzt.
 
@@ -32,16 +36,26 @@ der SPA-Fallback ist auf die Lounge begrenzt.
 4. 20261009230000_lucky_lounge_plinko_modes.sql — drei Modi, bis 16 Reihen,
    neue RPC casino_play_plinko_mode(uuid,numeric,text), Burst statt 180-ms-Pause.
 5. 20261010010000_lucky_lounge_fun_economy.sql — vorheriger Regelstand.
-6. 20261010020000_lucky_lounge_hourly_bonus.sql — aktuelle Regeln und Stundenbonus.
+6. 20261010020000_lucky_lounge_hourly_bonus.sql — Stundenbonus und frühere Spielregeln.
 7. 20261010030000_lucky_lounge_shared_crash.sql — gemeinsame Crash-Runden.
 8. 20261010040000_lucky_lounge_crash_results.sql — 5 Sekunden Ergebnisanzeige,
    danach 10 Sekunden Einsatzzeit. Keine Rücksetzung bestehender Daten.
 9. 20261010050000_lucky_lounge_admin_chips.sql — protokollierte Chip-Gutschriften
    im Adminpanel, ausschließlich über die bestehende Netlify-Admin-API.
+10. 20261011010000_lucky_lounge_fair_economy.sql — neue Runden mit 100 % RTP,
+    rationale Auszahlungen und unverzerrte Cent-Rundung; alte Runden bleiben erhalten.
+11. 20261011020000_lucky_lounge_color_roulette.sql — gemeinsame Roulette-Runden,
+    atomare Wetten/Auszahlungen und sichere Realtime-Projektionen.
+12. 20261011030000_lucky_lounge_blackjack.sql — klassisches Blackjack,
+    private Karten, persistente Hände und öffentlicher Ergebnisfeed.
 
 Die Dateien liegen in supabase/migrations/. Bereits angewendete ältere
 Migrationen nicht erneut außerhalb dieser Reihenfolge ausführen. Codex hat
 keine produktive Migration ausgeführt. Migration 6 aktiviert den Stundenbonus; Migration 7 die gemeinsamen Crash-Runden.
+Für die neue Erweiterung sind die Dateien 10, 11 und 12 in genau dieser
+Reihenfolge manuell anzuwenden. Frontend und SQL werden nicht automatisch
+veröffentlicht. Die beiden neuen Spiele benötigen diese RPCs; ohne sie erscheint
+die bestehende verständliche Fehlermeldung statt einer unsicheren lokalen Wallet.
 Der Client prüft snapshot.rules.economy vor einem neuen Plinko-Einsatz und
 meldet eine fehlende Migration, bevor Chips gebucht werden.
 
@@ -63,8 +77,9 @@ Browser können keine Guthabenstände, Gewinnfelder oder Auszahlungen speichern.
 Private Tabellen und Helper sind für Browser-Rollen gesperrt; Bans gelten.
 
 Starteinsatz überall 1, Mindesteinsatz 1, Höchsteinsatz 100.000 Chips. Einsätze und Guthaben
-können zwei Nachkommastellen haben; Auszahlungen werden auf 0,01 Chips
-abgerundet. Der manuell eingesammelte Bonus gibt 50 Chips alle rollenden
+können zwei Nachkommastellen haben. Neue Auszahlungen werden auf 0,01 Chips
+mit einer serverseitigen, mathematisch unverzerrten Rundung abgerechnet.
+Der manuell eingesammelte Bonus gibt 50 Chips alle rollenden
 60 Minuten, serverseitig nach dem Wallet-Lock geprüft. Request-UUIDs verhindern
 Mehrfachbuchungen; auch der alte Daily-RPC nutzt denselben Bonus. Der letzte
 belegte Daily-Claim startet beim Umstieg den Countdown. Bonus-Chips zählen
@@ -95,7 +110,10 @@ bestehenden Server-Umgebungsvariablen verwenden.
 | Normal | 12 | 0,3× | 33× |
 | Schwer | 16 | 0,2× | 1.000× |
 
-Die originalen symmetrischen OpenStake-Tabellen gelten. Mehr Reihen bedeuten
+Die Tabelle zeigt die ursprünglichen Gewichtungen. Nach Migration 10 werden
+sie anhand ihrer echten Binomialverteilung auf exakt 100 % normalisiert;
+die UI liest die vollständigen Faktoren aus dem Server-Snapshot. Siehe
+[ECONOMY.md](ECONOMY.md) für Berechnung und Rundung. Mehr Reihen bedeuten
 höhere mögliche Gewinne und mehr Risiko, keine pauschal höhere Gewinnchance.
 Die UI zeigt Gewinnfaktoren und Feldchancen, keine theoretischen Erträge.
 
@@ -131,22 +149,23 @@ auch 17 Gewinnfelder bleiben auf schmalen Geräten innerhalb des Layouts.
 
 Mines: 25 Felder, 1–24 gleichverteilt platzierte Minen (Fisher-Yates mit
 kryptographischem Rejection Sampling). Minen bleiben während der Runde privat.
-Nach k sicheren Feldern: 0,99 × ∏(25−i)/(25−M−i), i=0…k−1. Die Auszahlung wird
+Nach k sicheren Feldern: C(25,k)/C(25−M,k). Die Auszahlung wird
 beim Sichern oder nach allen sicheren Feldern atomar gebucht. Kein wirkungsloser
 Auto-Tab und kein Eingabefeld für die reine Diamanten-Anzeige.
 
 Dino: originale Phaser-Szene mit laufenden Hindernissen und Sprunganimation.
 Der Server entscheidet je Sprung über Erfolg/Verlust: 85/65/45 %.
-Nach k Erfolgen: floor(100 × 0,99/p^k)/100. Nach 12 Erfolgen automatische
+Nach k Erfolgen: 1/p^k, als exakter Bruch mit fairer Cent-Rundung. Nach 12 Erfolgen automatische
 Auszahlung. Reload setzt eine aktive Runde mit der gespeicherten Stufe fort.
 
 Crash: gemeinsame Runden mit echtem Serverzeit-Verlauf. Nach dem Crash bleibt
 das Ergebnis 5 Sekunden stehen; Gewinner bleiben grün, Verlierer werden rot.
 Anschließend beginnt ein vollständiges Einsatzfenster von 10 Sekunden.
 Migration 8 aktiviert diese gemeinsame Ergebnisphase. Echte Einsätze, Namen und Auszahlungen; keine
-simulierten Multiplayer-Bots. Geheimer Punkt = max(1,min(1000,floor(100 × 0,99/(1−U))/100)).
+simulierten Multiplayer-Bots. Neue geheime Punkte verwenden die exakte
+inverse Verteilung auf dem Cent-Raster, begrenzt auf 1.000×.
 Nach der Einsatzpause wächst der Faktor mit exp(0,1 × Sekunden).
-Chance eines Auto-Ziels x: min(1,0,99/x). Auto-Auszahlung gilt
+Chance eines gültigen Auto-Ziels x: 1/x. Auto-Auszahlung gilt
 auch bei Gleichstand und nach Tab-Schließen, beim nächsten Wallet-RPC
 abgerechnet. Manuelles Sichern muss strikt vor dem Crash beim Server eingehen.
 Nur der funktionierende Auto-Cashout bleibt, kein unfertiger Auto-Bet-Tab.
@@ -180,6 +199,42 @@ Runden-Versionen schützen parallele Entscheidungen. Abbrechen ist nur vor der
 ersten Mines-/Dino-Entscheidung bzw. vor Crash-Start möglich. Erstattungen zählen
 nicht als Gewinne. Alte aktive Runden behalten ihre bisherigen Faktoren.
 
+## Color Roulette und Blackjack
+
+Roulette läuft gemeinsam für alle angemeldeten Spieler: 15 Sekunden setzen,
+8 Sekunden Spin, 5 Sekunden Ergebnis. Die horizontale Rollenleiste enthält
+200 gleich breite Positionen, davon 99 rot, 99 schwarz und 2 grün. Rot/Schwarz
+zahlen exakt 200/99 des Einsatzes aus, Grün 100×. Mehrere Wetten je Farbe sind
+möglich; Frist, Guthaben und Limits prüft der Server unter gemeinsamen Locks.
+Die Leiste läuft nach Serverzeit und stoppt auf demselben Ergebnis. Mechanische
+Ticks werden aus den tatsächlichen Segmentübergängen berechnet und über Web
+Audio termingenau geplant. Lautstärke und Mute verwenden die Lounge-Einstellungen.
+Die Auszahlung erfolgt erst nach Spin-Ende; Wiederholungen buchen nicht erneut.
+
+Realtime liest ausschließlich casino_roulette_live und casino_roulette_bets_live;
+private Ergebnisse werden erst bei geschlossenen Einsätzen veröffentlicht. Der
+sekündliche RPC-Abgleich und Wiederverbindung stellen den aktuellen Stand her.
+Teilnehmer und Beträge stammen aus echten Buchungen. Ohne Besucher werden keine
+vergangenen Runden erfunden. Disconnects löschen keine Einsätze; das nächste
+Wallet-/Roulette-Öffnen verarbeitet ausstehende Auszahlungen.
+
+Blackjack ist ein eigener Tisch gegen den Dealer: sechs frisch gemischte Decks,
+Dealer steht auf Soft 17, Dealer-Peek, Natural 3:2, Hit/Stand/Double und Push;
+kein Split, Insurance oder Surrender. Regeln bleiben auf ausdrücklichen Wunsch
+klassisch. Kartenfolge und Hole Card bleiben privat in PostgreSQL. Reload lädt
+die bestehende Hand, Runden-Versionen schützen parallele Aktionen. Eigene SVG-
+Karten werden animiert ausgeteilt und aufgedeckt; Gewinne erscheinen erst nach
+der Ergebnisanimation im sichtbaren Guthaben. Der öffentliche Realtime-Feed
+casino_blackjack_results enthält nur abgeschlossene Runden mit Spielernamen,
+Einsatz, Rückzahlung und Ergebnis. Er enthält keine Karten oder Account-IDs.
+
+[BLACKJACK_RULES.md](BLACKJACK_RULES.md) dokumentiert Regeln und Strategieprüfung:
+analytisches Infinite-Deck-Modell 99,0062 %, sechs Decks mit derselben Basic
+Strategy ungefähr 99,03 % über 2 Millionen reproduzierbare Hände. Das ist keine
+Behauptung eines exakten optimalen RTP jeder endlichen Kartenkombination.
+Die übrigen fünf Spiele erreichen für neue Runden 100 % theoretischen RTP;
+Formeln und Einschränkungen stehen in [ECONOMY.md](ECONOMY.md).
+
 ## Skins, Audio und Fehlerrückmeldung
 
 Standard frei; Bronze/Silber/Smaragd/Rubin/Saphir bei
@@ -187,7 +242,8 @@ Standard frei; Bronze/Silber/Smaragd/Rubin/Saphir bei
 Bonus-Chips zählen nicht. Ziele stehen in PlinkoGame/skins.js. Kosmetische Skins haben
 keinen Effekt auf Chancen oder Auszahlung. Gesperrte Looks zeigen das Ziel.
 
-Web-Audio-Effekte für Kontakte, Wurf, Landung, Gewinne, Bonus und UI. Sound
+Web-Audio-Effekte für Kontakte, Wurf, Landung, Gewinne, Roulette-Ticks,
+Kartenausgabe/-flip, Bonus und UI. Sound
 und Lautstärke werden gerätebezogen gespeichert; volle Master-Lautstärke mit
 Kompressor und begrenzten Stimmen verhindert störende Überlagerung.
 
@@ -228,6 +284,26 @@ Cent-Beträge, Rechte, Request-Konflikte, unveränderte Statistiken und Replay
 nach verlorener Antwort und Reload. Mobile Admin-Anzeige und DE/RU-Statistik
 ohne Versionshinweise im kurzen Browser-Smoke-Test geprüft.
 Keine produktiven Supabase-Aktionen, Screenshot-Serien oder Testkampagnen.
+
+Die aktuelle Erweiterung wurde gezielt mit diesen Befehlen geprüft:
+
+- pnpm build in app/ — fertiger Vite-Build und statische Routen.
+- node tools/test-lucky-economy.mjs — alle Plinko-Bins, 300 Mines- und
+  36 Dino-Kombinationen, Crash-Verteilung, Cent-Rundung und echte SQL-RPCs
+  mit zwei lokalen Konten, Fristen, Idempotenz, Geheimnissen und RLS.
+- node tools/test-lucky-blackjack.mjs — Ass/Natural/Peek/S17, Hit/Stand/Double,
+  Push, Reload, parallele Requests, Feed-Rechte und Erhalt bestehender Daten.
+- node tools/test-lucky-client.mjs — verzögerte Wallet-Anzeige sowie alle
+  200 Roulette-Ziele und synchron berechnete mechanische Klickzeitpunkte.
+- node tools/lucky-blackjack-math.mjs — analytisches Strategiemodell und
+  reproduzierbare Sechs-Deck-Simulation; Details im Blackjack-Regeldokument.
+
+Die SQL-Tests benötigen lokal @electric-sql/pglite. Die Test-Hilfsdatei lädt es
+aus games/LuckyLounge/_dev/sql-check/node_modules oder über die Umgebungsvariable
+PGLITE_MODULE (absoluter Pfad zu @electric-sql/pglite/dist/index.js). Es wird nicht
+in die veröffentlichte Anwendung eingebaut.
+Kurze Browser-Smoke-Tests verwenden ausschließlich lokale RPC-Fixtures mit
+der echten gebauten Oberfläche; keine Fake-Spieler im Produkt.
 
 ## Herkunft
 

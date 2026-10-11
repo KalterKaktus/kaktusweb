@@ -415,7 +415,7 @@ function MinesGame() {
           background: '#1a2c38',
           padding: 0
         }
-      }}><div className="fairness-header"><Title level={5}>{t('fairness')}</Title><Paragraph>{t('originals_server')}</Paragraph></div><div className="fairness-item"><Paragraph>{t('mines_fairness',{factor:number(model.returnFactor),rtp:number(model.returnFactor*100)})}</Paragraph><Paragraph>{t('rounding')}</Paragraph></div></Modal>
+      }}><div className="fairness-header"><Title level={5}>{t('fairness')}</Title><Paragraph>{t('originals_server')}</Paragraph></div><div className="fairness-item"><Paragraph>{t('mines_fairness',{factor:number(model.returnFactor),rtp:number(model.returnFactor*100)})}</Paragraph><Paragraph>{t((model.active?model.round?.params?.fair_version===1:model.snapshot?.rules?.fair_version===1)?'fair_rounding':'rounding')}</Paragraph></div></Modal>
 
             {/* Play History & Dashboard Modal */}
             <Modal title={null} open={historyModalOpen} onCancel={() => setHistoryModalOpen(false)} footer={null} width={700} centered closable={true} rootClassName="mines-history-modal-portal mobile-game-modal" className="box-modal-3d" closeIcon={<CloseOutlined />}>

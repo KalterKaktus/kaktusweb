@@ -30,7 +30,9 @@ export function WalletProvider({ children }) {
   };
   const text = error ? t(errorKey(error)) : '';
   return <Context.Provider value={{...state,error: text,busy,user:service.user,revealPlinko:id=>service.revealPlinko(id),
-    now:()=>service.now(),claim:()=>action('claim'),play:(...args)=>action('play',...args),game:(...args)=>action('game',...args),crashState:()=>service.refreshCrash(),crashAction:(...args)=>action('crashAction',...args),refresh:()=>action('refresh')}}>{children}</Context.Provider>;
+    now:()=>service.now(),claim:()=>action('claim'),play:(...args)=>action('play',...args),game:(...args)=>action('game',...args),crashState:()=>service.refreshCrash(),crashAction:(...args)=>action('crashAction',...args),refresh:()=>action('refresh'),
+    rouletteState:()=>service.refreshRoulette(),rouletteAction:(...args)=>action('rouletteAction',...args),subscribeRoulette:callback=>service.subscribeRoulette(callback),
+    blackjackAction:(...args)=>action('blackjackAction',...args),blackjackFeed:()=>service.blackjackFeed(),subscribeBlackjackFeed:callback=>service.subscribeBlackjackFeed(callback),releasePayout:id=>service.releasePayout(id)}}>{children}</Context.Provider>;
 }
 export const useWallet = () => useContext(Context);
 export function errorKey(error) {

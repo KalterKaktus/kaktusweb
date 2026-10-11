@@ -641,7 +641,7 @@ function DinoGame() {
           background: '#1a2c38',
           padding: 0
         }
-      }}><div className="fairness-header"><Title level={5}>{t('fairness')}</Title><Paragraph>{t('originals_server')}</Paragraph></div><div className="fairness-item"><Paragraph>{t('dino_fairness',{factor:number(model.returnFactor),rtp:number(model.returnFactor*100)})}</Paragraph><Paragraph>{t('rounding')}</Paragraph></div></Modal>
+      }}><div className="fairness-header"><Title level={5}>{t('fairness')}</Title><Paragraph>{t('originals_server')}</Paragraph></div><div className="fairness-item"><Paragraph>{t('dino_fairness',{factor:number(model.returnFactor),rtp:number(model.returnFactor*100)})}</Paragraph><Paragraph>{t((model.active?model.round?.params?.fair_version===1:model.snapshot?.rules?.fair_version===1)?'fair_rounding':'rounding')}</Paragraph></div></Modal>
         </div><SourceAudioSettings open={audioSettingsOpen} onClose={() => setAudioSettingsOpen(false)} enabled={soundEnabled} setEnabled={setSoundEnabled} /></>;
 }
 export default DinoGame;

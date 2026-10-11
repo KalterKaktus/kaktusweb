@@ -92,3 +92,14 @@ are preserved in the generated Dino bundle. Phaser is loaded only on the Dino ro
 
 The GameIcon navigation vectors and lounge-icon.svg favicon are original
 Lucky Lounge assets created in this repository; no third-party artwork is used.
+
+## Color Roulette and Blackjack additions
+
+`app/public/images/roulette-lounge.svg`, `blackjack-lounge.svg`, the new GameIcon
+vectors, and `PlayingCard.jsx` are original SVG artwork created for Lucky Lounge.
+Card suit symbols, court-card motifs and patterned backs are drawn in code;
+no imagery from the user's reference screenshots is redistributed. The Roulette
+strip is rendered directly on Canvas using the Lounge's own color tokens.
+Roulette mechanical ticks, start/stop effects and Blackjack deal/flip/win effects
+are synthesized with the existing Web Audio system; no third-party sound files
+or remote asset hotlinks were added. Existing OpenStake notices above remain.

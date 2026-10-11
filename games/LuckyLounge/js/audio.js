@@ -73,4 +73,22 @@ export class LoungeAudio {
     else this.tone(440, .16, .07, .04);
   }
   claim() { [523, 659, 784, 1046].forEach((f, i) => this.tone(f, .24, .13, i * .06)); }
+  rouletteStart() { this.tone(180,.16,.1); this.tone(360,.18,.045,.025); }
+  rouletteTick(delay=0,speed=1) {
+    const ctx=this.context;
+    if(!this.enabled||!ctx||ctx.state!=='running'||this.voices>=18)return;
+    this.voices++;
+    const length=.028,time=ctx.currentTime+Math.max(0,delay);
+    const buffer=ctx.createBuffer(1,Math.ceil(ctx.sampleRate*length),ctx.sampleRate),samples=buffer.getChannelData(0);
+    for(let i=0;i<samples.length;i++)samples[i]=(Math.random()*2-1)*Math.exp(-i/(ctx.sampleRate*.005));
+    const source=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+    source.buffer=buffer;filter.type='bandpass';filter.frequency.value=1600+Math.min(1,speed)*600;filter.Q.value=.7;
+    gain.gain.setValueAtTime(.11,time);gain.gain.exponentialRampToValueAtTime(.0001,time+length);
+    source.connect(filter);filter.connect(gain);gain.connect(this.master);source.start(time);source.stop(time+length);
+    source.onended=()=>{this.voices--;source.disconnect();filter.disconnect();gain.disconnect();};
+  }
+  rouletteStop(green=false) { this.tone(220,.14,.14);this.tone(440,.18,.07,.035);if(green)[659,880,1175,1568].forEach((f,i)=>this.tone(f,.3,.1,.08+i*.08)); }
+  cardDeal() { this.tone(900,.045,.05,0,'triangle');this.tone(240,.065,.06,.012); }
+  cardFlip() { this.tone(350,.07,.07);this.tone(700,.055,.04,.03); }
+  blackjackWin() { [523,659,784,1046].forEach((f,i)=>this.tone(f,.26,.09,i*.075)); }
 }

@@ -1,5 +1,31 @@
 {
   "current": [
+    "BarChartOutlined-CMejZgOb.js",
+    "BetValidation-l-VVaQ-v.js",
+    "BlackjackGame-Ba_j8nxg.js",
+    "BlackjackGame-DgUZrW1U.css",
+    "CrashGame-BGQ2OnEQ.css",
+    "CrashGame-CFBGan59.js",
+    "DinoGame-BYZGXWJH.js",
+    "DinoGame-DTihooHh.css",
+    "Drawer-C8mfv1Oq.js",
+    "index-66Q2W8p8.js",
+    "index-CZNYiPs4.css",
+    "index-skBzh6aj.js",
+    "MinesGame-BBGdwHW0.css",
+    "MinesGame-CMxN06OQ.js",
+    "MobileBetSheet-BkHRitDk.css",
+    "MobileBetSheet-Px4wTOsI.js",
+    "originalModels-CC0X2YOc.js",
+    "RouletteGame-BnLbjLr2.css",
+    "RouletteGame-DKQZUw5p.js",
+    "row-DjH02-W2.js",
+    "SourceAudioSettings-D0UkEDX7.js",
+    "StarOutlined-CB-_ywlh.js",
+    "ThunderboltOutlined-DphQHyzS.js",
+    "TrophyOutlined-qpAQN2QF.js"
+  ],
+  "previous": [
     "BarChartOutlined-C4mZALq_.js",
     "CrashGame-BGQ2OnEQ.css",
     "CrashGame-CJipCVEh.js",
@@ -16,23 +42,5 @@
     "SourceAudioSettings-D8LkB8B5.js",
     "ThunderboltOutlined-Dspgm_TI.js",
     "TrophyOutlined-B0ZNv4QS.js"
-  ],
-  "previous": [
-    "BarChartOutlined-B42POW0G.js",
-    "CrashGame-2IvToxVD.css",
-    "CrashGame-DkMiyKve.js",
-    "DinoGame-DJCajM3J.js",
-    "DinoGame-DTihooHh.css",
-    "Drawer-Ch-q8c9F.js",
-    "index-BuGif_ej.css",
-    "index-CNnhF1en.js",
-    "MinesGame-BBGdwHW0.css",
-    "MinesGame-bPi1ygYu.js",
-    "MobileBetSheet-Dp50FpsO.css",
-    "MobileBetSheet-DzuZBZS4.js",
-    "row-BoerzNG0.js",
-    "SourceAudioSettings-x8L_PlEA.js",
-    "ThunderboltOutlined-asERwnz7.js",
-    "TrophyOutlined-odu6-vkW.js"
   ]
 }

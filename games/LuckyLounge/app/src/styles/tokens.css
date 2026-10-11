@@ -1,4 +1,17 @@
 :root {
+  --roulette-red: #ed355a;
+  --roulette-red-top: #ff5576;
+  --roulette-red-bottom: #98213d;
+  --roulette-red-rgb: 237 53 90;
+  --roulette-green: #4ed32b;
+  --roulette-green-top: #85ed4d;
+  --roulette-green-bottom: #238f20;
+  --roulette-green-rgb: 78 211 43;
+  --roulette-black: #243647;
+  --roulette-black-top: #3b5268;
+  --roulette-black-bottom: #152330;
+  --roulette-marker: #f7cf67;
+  --roulette-glass: #112433;
   --ll-source-color-0: rgba(0, 8, 20, 0.36);
   --ll-source-color-1: rgba(0, 8, 20, 0.58);
   --ll-source-color-2: rgba(255, 255, 255, 0.1);

@@ -51,7 +51,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
                             <span className="nav-icon">
                                 <GameIcon name={item.icon}/>
                             </span>
-                            <span>{item.navLabel}</span>
+                            <span>{item.nameKey?t(item.nameKey):item.navLabel}</span>
                         </NavLink>
                     ))}
                 </div>

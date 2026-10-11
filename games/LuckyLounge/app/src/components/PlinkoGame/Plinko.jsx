@@ -15,13 +15,13 @@ function loadOutcomes() {
     return outcomesPromise;
 }
 
-function BinsRow({ rowCount, riskLevel, winRecords, binsWidthPercentage }) {
+function BinsRow({ rowCount, riskLevel, multipliers, winRecords, binsWidthPercentage }) {
  const {number}=useText();
     const binsRef = useRef([]);
     const [highlightedBin, setHighlightedBin] = useState(null);
 
     const binColors = useMemo(() => getBinColors(rowCount), [rowCount]);
-    const payouts = BIN_PAYOUTS[rowCount][riskLevel];
+    const payouts = multipliers || BIN_PAYOUTS[rowCount][riskLevel];
 
     // Play animation when new win record
     useEffect(() => {
@@ -68,7 +68,7 @@ function BinsRow({ rowCount, riskLevel, winRecords, binsWidthPercentage }) {
                         '--shadow-color': binColors.shadow[binIndex],
                     }}
                 >
-                    <span className="bin-label">{number(payout)}{payout < 100 ? '×' : ''}</span>
+                    <span className="bin-label" title={`${number(payout,{maximumFractionDigits:8})}×`}>{number(payout,{maximumFractionDigits:2})}{payout < 100 ? '×' : ''}</span>
                 </div>
             ))}
         </div>
@@ -102,6 +102,7 @@ function LastWins({ winRecords, winCount = 4 }) {
 function Plinko({
     rowCount,
     riskLevel,
+    multipliers,
     betAmount,
     winRecords,
     onBallEnterBin,
@@ -225,6 +226,7 @@ function Plinko({
                     <BinsRow
                         rowCount={rowCount}
                         riskLevel={riskLevel}
+                        multipliers={multipliers}
                         winRecords={winRecords}
                         binsWidthPercentage={binsWidthPercentage}
                     />
