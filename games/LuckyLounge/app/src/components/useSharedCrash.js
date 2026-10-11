@@ -58,7 +58,7 @@ export default function useSharedCrash(){
  const players=(shared?.players||[]).map(p=>({id:p.id,name:p.user_id===game.user?.id?t('you'):p.name,amount:Number(p.stake),currency,cashoutAt:p.status==='won'?number(Number(p.cashout),{minimumFractionDigits:2,maximumFractionDigits:2}):null,profit:p.status==='won'?number(Number(p.payout),{minimumFractionDigits:2,maximumFractionDigits:2}):null,payout:Number(p.payout),status:p.status}));
  const cashouts=(shared?.cashouts||[]).map(p=>({id:p.id,name:p.user_id===game.user?.id?t('you'):p.name,amount:number(Number(p.payout),{minimumFractionDigits:2,maximumFractionDigits:2}),currency,at:p.at}));
  let streak=0,maxStreak=0;for(const r of historyData.records){streak=r.profit>=0?streak+1:0;maxStreak=Math.max(maxStreak,streak);}
- return {...game,...historyData,round:own,phase,multiplier,countdown:flight?Math.max(0,(Date.parse(flight.starts_at)-game.now())/1000):0,elapsedTime:elapsed,
+ return {...game,...historyData,round:own,phase,multiplier,payoutFactor:Number(own?.status==='active'?((Number(own.params.rtp)>=1)?own.params.rtp:1):(globalFlight?.payout_factor??1)),countdown:flight?Math.max(0,(Date.parse(flight.starts_at)-game.now())/1000):0,elapsedTime:elapsed,
   chartPhase:flash?'crashed':phase,chartMultiplier:flash?Number(latest.point):multiplier,chartElapsed:flash?Math.log(Number(latest.point))/.1:elapsed,
   history:(shared?.history||[]).map(h=>Number(h.point)),betPlaced:active,pending:pending||game.pending,available:game.available&&shared?.version===1,
   error:error||game.error,notice:legacy?t('crash_legacy'):null,onlineCount:shared?.online_count??0,players,playerCount:shared?.player_count??0,totalBet:Number(shared?.total_staked||0),

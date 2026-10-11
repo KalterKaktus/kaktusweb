@@ -146,7 +146,7 @@ export class CasinoWallet extends EventTarget {
   }
   async recover() {
     for (const item of this.pending()) {
-      if (!['casino_claim_bonus', 'casino_claim_daily', 'casino_play_plinko', 'casino_play_plinko_mode', 'casino_game_action', 'casino_crash_action', 'casino_roulette_action', 'casino_blackjack_action'].includes(item.name)) continue;
+      if (!['casino_claim_bonus', 'casino_claim_daily', 'casino_play_plinko', 'casino_play_plinko_mode', 'casino_game_action', 'casino_crash_action', 'casino_roulette_action', 'casino_blackjack_action', 'casino_play_coinflip'].includes(item.name)) continue;
       try { await this.submit(item); }
       catch (error) {
         if (!/casino_(invalid|insufficient|account|login|request|rate|balance)/.test(error.message || '')) throw error;
@@ -223,6 +223,11 @@ export class CasinoWallet extends EventTarget {
   blackjackAction(action,round,payload={},options={}) {
     if (action === 'start') this.validateStake(payload.stake);
     return this.transact('casino_blackjack_action',{p_action:action,p_round_id:round,p_payload:payload},options);
+  }
+  coinflip(stake,position,options={}) {
+    this.validateStake(stake);
+    if (!Number.isInteger(position)||position < -95||position > 95) throw new Error('casino_invalid_bet');
+    return this.transact('casino_play_coinflip',{p_stake:stake,p_position:position},options);
   }
   async blackjackFeed() {
     if (!this.client || !this.user) return [];

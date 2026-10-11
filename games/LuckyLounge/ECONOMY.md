@@ -5,18 +5,20 @@ liegt zwischen 1 und 100.000 Chips, mit höchstens zwei Nachkommastellen. Eine
 Auszahlung bezeichnet die gesamte Rückgabe einschließlich des Einsatzes.
 
 Die folgenden Regeln gelten ausschließlich für neu gestartete Runden nach
-`20261011010000_lucky_lounge_fair_economy.sql`. Bestehende Guthaben, Buchungen
+`20261011040000_lucky_lounge_game_returns.sql` und für Coinflip
+`20261011050000_lucky_lounge_coinflip.sql`. Bestehende Guthaben, Buchungen
 und bereits laufende Runden werden nicht neu berechnet. Jede laufende Runde
 trägt ihre eigenen Regeln; alte Crash-Flüge erhalten lediglich das neue
 Metadatenfeld `rtp = 0.99`, ohne Änderung ihres Ergebnisses.
 
 | Spiel | Theoretische Rückgabe neuer Runden | Berechnung |
 |---|---:|---|
-| Plinko, Einfach/Normal/Schwer | 100 % | Binomialverteilung und exakte Normalisierung der ursprünglichen Tabellen |
+| Plinko, Einfach/Normal/Schwer | 101 % | Binomialverteilung und exakte Normalisierung der ursprünglichen Tabellen |
 | Mines, alle 1–24 Minen | 100 % | Rückgabe ist der Kehrwert der Überlebenswahrscheinlichkeit |
-| Dino, alle drei Schwierigkeiten und 1–12 Sprünge | 100 % | Rückgabe ist der Kehrwert der Überlebenswahrscheinlichkeit |
-| Crash, vorher festgelegtes Ziel bis 1.000× | 100 % | `P(Punkt ≥ Ziel) = 1 / Ziel`; Restwahrscheinlichkeit bei 1.000× bleibt erhalten |
-| Color Roulette, jede Farbe | 100 % | Rot/Schwarz je `99/200 × 200/99`; Grün `2/200 × 100` |
+| Dino, alle drei Schwierigkeiten und 1–12 Sprünge | 101 % | Rückgabe ist 1,01 mal der Kehrwert der Überlebenswahrscheinlichkeit |
+| Crash, vorher festgelegtes Ziel bis 1.000× | 101 % | `P(Punkt ≥ Ziel) = 1 / Ziel`; Restwahrscheinlichkeit bei 1.000× bleibt erhalten |
+| Color Roulette | Rot/Schwarz 99 %, Grün 100 % | Rot/Schwarz je `99/200 × 2`; Grün `2/200 × 100` |
+| Coinflip, 1–95 % Chance | 100 % | `Chance/100 × 100/Chance` |
 | Blackjack | Strategieabhängig | Klassische Regeln, ausdrücklich keine Anpassung auf 100 %; siehe Blackjack-Dokumentation |
 
 Diese Erwartungswerte garantieren keinen Gewinn. Verluste und lange Pechserien
@@ -37,8 +39,7 @@ und entfernt Modulo-Bias durch Rejection Sampling. Der Rundungsentscheid
 wird einmal innerhalb der Auszahlung getroffen und im Ledger gespeichert.
 UUID-Wiederholungen erzeugen weder neue Runden noch einen neuen Rundungswurf.
 
-Beispiele: 1 Chip auf Rot gewinnt 2,02 oder 2,03 Chips; die zusätzliche
-Cent-Chance beträgt `2/99`. Ein natürlicher Blackjack mit 1,01 Chips Einsatz
+Beispiele: 1 Chip auf Rot gewinnt genau 2 Chips. Ein natürlicher Blackjack mit 1,01 Chips Einsatz
 gibt 2,52 oder 2,53 Chips zurück, jeweils mit 50 % Wahrscheinlichkeit.
 
 ## Plinko
@@ -47,13 +48,13 @@ Für `n` Reihen erreicht Bin `k` die Wahrscheinlichkeit `C(n,k) / 2^n`.
 Die ursprünglichen symmetrischen Multiplikatoren bleiben als Gewichtung
 erhalten. Auszahlungsfaktor eines Bins ist nun exakt:
 
-`Gewicht[k] × 2^n / Σ(C(n,j) × Gewicht[j])`
+`1,01 × Gewicht[k] × 2^n / Σ(C(n,j) × Gewicht[j])`
 
 | Modus | Reihen | Vorherige Rückgabe vor zusätzlicher Cent-Abrundung | Gewichtssumme | Neue Rückgabe |
 |---|---:|---:|---:|---:|
-| Einfach | 8 | 98,984375 % | 2.534 | 100 % |
-| Normal | 12 | 98,9892578125 % | 40.546 | 100 % |
-| Schwer | 16 | 98,9764404296875 % | 648.652 | 100 % |
+| Einfach | 8 | 98,984375 % | 2.534 | 101 % |
+| Normal | 12 | 98,9892578125 % | 40.546 | 101 % |
+| Schwer | 16 | 98,9764404296875 % | 648.652 | 101 % |
 
 Gewichte sind ursprüngliche Faktoren mal 10. Darstellung kann Faktoren
 verkürzen; die Auszahlung benutzt den vollständigen Bruch. API und Spielfeld
@@ -74,10 +75,15 @@ besitzt dieselbe Chance wie jede andere unbekannte Position. Das Muster
 bereits gewählter Felder erzeugt keinen geheimen Vorteil.
 
 Dino hat unverändert 85 %, 65 % beziehungsweise 45 % Erfolgschance pro
-Sprung. Nach `k` Sprüngen ist die Auszahlung `Einsatz / p^k`, ohne vorab
+Sprung. Nach `k` Sprüngen ist die Auszahlung `1,01 × Einsatz / p^k`, ohne vorab
 abgerundeten Multiplikator. Alle 36 Kombinationen werden geprüft.
 
 ## Crash
+
+Neue erfolgreiche Auszahlungen sind `1,01 × Einsatz × Cashout-Ziel`. Die
+Flugverteilung bleibt unverändert: auch bei frühem Cashout sind Verluste
+möglich. Der Graph zeigt das Cashout-Ziel; die Auszahlungsanzeige berücksichtigt
+den 1-%-Bonus. Der Faktor ist pro Flug gespeichert und vorab sichtbar in der API.
 
 Neue Crash-Punkte liegen weiter auf einem Cent-Raster zwischen 1,00× und
 1.000×. Der Server wendet die inverse Verteilung `floor(100 / U) / 100` an
@@ -134,3 +140,7 @@ gemeinsame Runde, geheime Ergebnisse, Auszahlungen, Rollenrechte und RLS.
 
 Ausführungsreihenfolge der neuen Migrationen: Fair Economy, Color Roulette,
 Blackjack. Keine Migration wird automatisch in Produktion ausgeführt.
+
+## Coinflip
+
+Sliderposition -95 bis 95 (ganze Zahlen): negative Positionen und 0 wählen Kopf, positive Zahl. `Chance = max(1, abs(Position))`. 0 und -1 wählen beide Kopf mit 1 %. Der private Server zieht gleichverteilt eine Zahl 0–99; Kopf erhält bei Kopf-Auswahl die gewählte Chance, bei Zahl-Auswahl die verbleibende Chance. Beide Seiten werden korrekt dargestellt. Bei Gewinn wird `casino_round_ratio(Einsatz × 100 × 100, Chance)` einmalig gebucht. Wiederholte UUIDs replayen das vorhandene Ergebnis, widersprüchliche Einsätze werden abgelehnt. Ein Wallet-Lock verhindert Überziehungen auch bei mehreren Tabs. Kein Client übermittelt Multiplikatoren, Ergebnisse oder Guthaben.

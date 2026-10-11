@@ -46,7 +46,7 @@ export default function RouletteStrip({round,history,now}) {
     ctx.fillStyle=colors.bottom;ctx.beginPath();ctx.roundRect(x,top+5,tileWidth,tileHeight,6);ctx.fill();
     ctx.fillStyle=gradient;ctx.beginPath();ctx.roundRect(x,top,tileWidth,tileHeight,6);ctx.fill();
     ctx.strokeStyle=palette.highlight;ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle=palette.text;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`800 ${c==='green'?17:14}px Inter, sans-serif`;ctx.fillText(c==='green'?'100×':'2.02×',x+tileWidth/2,top+tileHeight*.34);
+    ctx.fillStyle=palette.text;ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`800 ${c==='green'?17:14}px Inter, sans-serif`;ctx.fillText(c==='green'?'100×':`${Number(live.current.round?.red_black_multiplier??200/99).toFixed(2).replace(/\.00$/,'')}×`,x+tileWidth/2,top+tileHeight*.34);
     ctx.font='700 18px Inter, sans-serif';ctx.fillText(c==='green'?'✦':String(((i%200)+200)%200),x+tileWidth/2,top+tileHeight*.74);
    }
    frame=requestAnimationFrame(draw);

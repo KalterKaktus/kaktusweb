@@ -587,7 +587,7 @@
             "you_lost": "Verloren: −{value} Chips",
             "you_push": "Zurück: {value} Chips",
             "color": "Farbe",
-            "rules": "Alle spielen dieselbe Runde: 15 Sekunden setzen, 8 Sekunden drehen und 5 Sekunden Ergebnis. Die 200 gleich breiten Positionen bestehen aus 99 roten, 99 schwarzen und 2 grünen Feldern. Ein Server-Zufallswert wählt eine Position. Rot und Schwarz zahlen genau 200/99 des Einsatzes aus, Grün 100×, jeweils einschließlich Einsatz. Du kannst mehrfach und auf mehrere Farben setzen. Neue Einsätze sind erst wieder in der nächsten Einsatzphase möglich."
+            "rules": "Alle spielen dieselbe Runde: 15 Sekunden setzen, 8 Sekunden drehen und 5 Sekunden Ergebnis. Die 200 gleich breiten Positionen bestehen aus 99 roten, 99 schwarzen und 2 grünen Feldern. Ein Server-Zufallswert wählt eine Position. Rot und Schwarz zahlen genau {multiplier}× des Einsatzes aus, Grün 100×, jeweils einschließlich Einsatz. Du kannst mehrfach und auf mehrere Farben setzen. Neue Einsätze sind erst wieder in der nächsten Einsatzphase möglich."
         },
         "blackjack": {
             "name": "Blackjack",
@@ -638,6 +638,22 @@
             "rules_double": "Verdoppeln ist bei deinen ersten zwei Karten möglich, solange du den zusätzlichen Einsatz bezahlen kannst. Du erhältst genau eine weitere Karte und hältst danach automatisch.",
             "rules_limits": "Kein Split, keine Versicherung und kein Aufgeben. Mindesteinsatz 1 Chip, Höchsteinsatz 100.000 Chips. Beim Verdoppeln beträgt der Gesamteinsatz bis zu 200.000 Chips.",
             "rules_server": "Karten und Auszahlungen werden auf dem Server verarbeitet. Ein Reload verändert deine Karten nicht. Im Ergebnis-Feed erscheinen ausschließlich abgeschlossene Runden mit Name, Einsatz und Ergebnis."
+        },
+        "coinflip": {
+            "name": "Coinflip",
+            "heads": "Kopf",
+            "tails": "Zahl",
+            "choose": "Seite & Gewinnchance",
+            "slider_hint": "Links Kopf, rechts Zahl. Näher zur Mitte: mehr Risiko, höherer Gewinn.",
+            "selection": "{side}: {chance} % Gewinnchance · {multiplier}× Auszahlung.",
+            "selection_short": "{chance} % Chance · {multiplier}×",
+            "flip": "Münze werfen",
+            "again": "Noch einmal werfen",
+            "flipping": "Die Münze fliegt …",
+            "ready": "Kopf oder Zahl?",
+            "win": "Gewonnen!",
+            "loss": "Leider verloren",
+            "rules": "Der Balken wählt die Seite und ihre Gewinnchance von 1 bis 95 %. Links spielst du auf Kopf, rechts auf Zahl; in der Mitte gilt Kopf mit 1 %. Die andere Seite erhält die übrige Wahrscheinlichkeit. Der Multiplikator ist 100 geteilt durch die gewählte Prozentzahl, einschließlich Einsatz. Der Server bestimmt das Ergebnis und bucht die Runde einmalig. Die Animation zeigt genau dieses Ergebnis."
         }
     },
     "garden": {

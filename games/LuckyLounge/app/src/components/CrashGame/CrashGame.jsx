@@ -254,7 +254,7 @@ function CrashGame() {
   const betControls = (
                 <MobileBetSheet title={upstreamText("Crash bet controls")} className="crash-bet-sheet" collapseOn={betPlaced}>
                     <div className="crash-sidebar">
-                        <BettingPanel balance={balance} unavailable={!available} pending={pending} stake={model.round?.stake} committedAuto={model.round?.params.auto??null} phase={phase} betPlaced={betPlaced} multiplier={multiplier} onBet={handleBet} onCashout={handleCashout} />
+                        <BettingPanel payoutFactor={model.payoutFactor} balance={balance} unavailable={!available} pending={pending} stake={model.round?.stake} committedAuto={model.round?.params.auto??null} phase={phase} betPlaced={betPlaced} multiplier={multiplier} onBet={handleBet} onCashout={handleCashout} />
 
                         {/* Player Bets List */}
                         {showPlayerBets && !isMobileLayout && <PlayerBets players={model.players} playerCount={model.playerCount} totalBet={model.totalBet} />}

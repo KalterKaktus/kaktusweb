@@ -103,3 +103,10 @@ strip is rendered directly on Canvas using the Lounge's own color tokens.
 Roulette mechanical ticks, start/stop effects and Blackjack deal/flip/win effects
 are synthesized with the existing Web Audio system; no third-party sound files
 or remote asset hotlinks were added. Existing OpenStake notices above remain.
+
+## Coinflip addition
+
+`app/public/images/coinflip-lounge.svg`, `Coin.jsx` and the Coinflip navigation
+vector are original artwork drawn for Lucky Lounge. Coin throw/spin/landing
+sounds are synthesized using Web Audio. No external images, audio files or
+assets from reference websites are included.

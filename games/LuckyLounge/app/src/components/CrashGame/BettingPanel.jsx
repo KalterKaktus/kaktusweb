@@ -17,7 +17,8 @@ function BettingPanel({
   pending,
   balance,
   stake,
-  committedAuto
+  committedAuto,
+  payoutFactor = 1
 }) {
   const {t}=useText();
   const [betAmount, setBetAmount] = useState(1);
@@ -26,7 +27,7 @@ function BettingPanel({
   useEffect(()=>{if(!betPlaced)return;setBetAmount(stake);setAutoCashout(committedAuto!==null);if(committedAuto!==null)setCashoutAt(committedAuto);},[betPlaced,stake,committedAuto]);
 
   // Calculate profit
-  const profit = betAmount * (cashoutAt - 1);
+  const profit = betAmount * (cashoutAt * payoutFactor - 1);
 
   // Auto Cashout Logic
 
@@ -44,7 +45,7 @@ function BettingPanel({
       return betPlaced ? upstreamText('Cancel Bet') : upstreamText('Place Bet');
     }
     if (phase === 'running' && betPlaced) {
-      return upstreamText('Cash Out') + ' ✦' + (betAmount * multiplier).toFixed(2);
+      return upstreamText('Cash Out') + ' ✦' + (betAmount * multiplier * payoutFactor).toFixed(2);
     }
     if(phase==='running')return t('crash_next');
     if(phase==='crashed')return t('crash_results');

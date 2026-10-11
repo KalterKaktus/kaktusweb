@@ -89,6 +89,17 @@ export class LoungeAudio {
   }
   rouletteStop(green=false) { this.tone(220,.14,.14);this.tone(440,.18,.07,.035);if(green)[659,880,1175,1568].forEach((f,i)=>this.tone(f,.3,.1,.08+i*.08)); }
   cardDeal() { this.tone(900,.045,.05,0,'triangle');this.tone(240,.065,.06,.012); }
+  coinThrow() { this.tone(420,.12,.12,0,'triangle');this.tone(1680,.2,.06,.015);this.tone(2520,.14,.025,.015); }
+  coinSpin(progress=0) {
+    const f=1250+(1-progress)*650;
+    this.tone(f,.055,.055,0,'sine',Math.sin(progress*18)*.35);
+    this.tone(f*2.37,.035,.018,.004);
+  }
+  coinLand(won,multiplier=1) {
+    this.tone(190,.11,.18);this.tone(1760,.24,.09,.008);this.tone(2610,.17,.03,.01);
+    if(won)[659,830,988,multiplier>=10?1568:1318].forEach((f,i)=>this.tone(f,.24,.085,.09+i*.07));
+    else this.tone(330,.16,.065,.08);
+  }
   cardFlip() { this.tone(350,.07,.07);this.tone(700,.055,.04,.03); }
   blackjackWin() { [523,659,784,1046].forEach((f,i)=>this.tone(f,.26,.09,i*.075)); }
 }

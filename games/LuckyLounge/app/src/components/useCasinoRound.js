@@ -26,6 +26,6 @@ export default function useCasinoRound(gameName){
   }catch(e){if(mounted.current)setError(t(errorKey(e)));await wallet.refresh().catch(()=>{});return null;}
   finally{lock.current=false;if(mounted.current)setPending(false);}
  };
- const returnFactor=Number(round?.status==='active'?(round.params.rtp??.99):(wallet.snapshot?.rules?.target_rtp??.99));
+ const returnFactor=Number(round?.status==='active'?(round.params.rtp??.99):(wallet.snapshot?.rules?.game_rtp?.[gameName]??wallet.snapshot?.rules?.target_rtp??.99));
  return {...wallet,gameName,round,returnFactor,active:round?.status==='active',run,pending,error};
 }

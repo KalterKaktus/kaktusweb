@@ -4,8 +4,8 @@ Isolierte Casino-Anwendung unter /games/LuckyLounge/ mit dem vollständigen
 [OpenStake-Quellbaum](https://github.com/tanh1c/stake-originals-clone/tree/7f7065832cae8c898494ca7398f23d4a33a05c17)
 als Grundlage. Die originalen Oberflächen, Dark-Theme, Spielgrafiken und
 Animationen bleiben erhalten; Lucky-Lounge-Branding, DE/RU und eine gemeinsame
-Supabase-Wallet ergänzen sie. Plinko, Mines, Crash, Dino, Color Roulette und
-Blackjack sind integriert. Roulette und Blackjack erweitern den bestehenden
+Supabase-Wallet ergänzen sie. Plinko, Mines, Crash, Dino, Color Roulette,
+Blackjack und Coinflip sind integriert. Die neuen Spiele erweitern den bestehenden
 Look mit eigenen SVG-Grafiken und synthetisierten Sounds.
 Slots und Case Opening sind vollständig aus Katalog und Navigation entfernt.
 Ausschließlich kostenlose virtuelle Chips ohne Ein-/Auszahlungen, Handel,
@@ -17,14 +17,15 @@ Die Repository-Wurzel mit VS Code Live Server ausliefern:
 [Lobby](http://127.0.0.1:5500/games/LuckyLounge/) und
 [Plinko](http://127.0.0.1:5500/games/LuckyLounge/plinko/),
 [Roulette](http://127.0.0.1:5500/games/LuckyLounge/roulette/) und
-[Blackjack](http://127.0.0.1:5500/games/LuckyLounge/blackjack/).
+[Blackjack](http://127.0.0.1:5500/games/LuckyLounge/blackjack/) sowie
+[Coinflip](http://127.0.0.1:5500/games/LuckyLounge/coinflip/).
 Die Lobby ist ohne Login sichtbar; Spielen verwendet das bestehende Website-Login.
 ES-Module benötigen HTTP, file:// funktioniert nicht.
 
 Alternativ in games/LuckyLounge/app: pnpm install, dann pnpm dev.
 Die Vite-URL lautet http://127.0.0.1:5173/games/LuckyLounge/.
 pnpm build erzeugt die statischen Website-Dateien einschließlich der Einstiege
-plinko/, mines/, crash/, dino/, roulette/, blackjack/ und statistics/. Andere Website-Bereiche werden
+plinko/, mines/, crash/, dino/, roulette/, blackjack/, coinflip/ und statistics/. Andere Website-Bereiche werden
 nicht gebaut oder verändert. Netlify benötigt keinen zusätzlichen Vite-Build;
 der SPA-Fallback ist auf die Lounge begrenzt.
 
@@ -111,7 +112,7 @@ bestehenden Server-Umgebungsvariablen verwenden.
 | Schwer | 16 | 0,2× | 1.000× |
 
 Die Tabelle zeigt die ursprünglichen Gewichtungen. Nach Migration 10 werden
-sie anhand ihrer echten Binomialverteilung auf exakt 100 % normalisiert;
+sie anhand ihrer echten Binomialverteilung auf exakt 101 % normalisiert;
 die UI liest die vollständigen Faktoren aus dem Server-Snapshot. Siehe
 [ECONOMY.md](ECONOMY.md) für Berechnung und Rundung. Mehr Reihen bedeuten
 höhere mögliche Gewinne und mehr Risiko, keine pauschal höhere Gewinnchance.
@@ -204,7 +205,7 @@ nicht als Gewinne. Alte aktive Runden behalten ihre bisherigen Faktoren.
 Roulette läuft gemeinsam für alle angemeldeten Spieler: 15 Sekunden setzen,
 8 Sekunden Spin, 5 Sekunden Ergebnis. Die horizontale Rollenleiste enthält
 200 gleich breite Positionen, davon 99 rot, 99 schwarz und 2 grün. Rot/Schwarz
-zahlen exakt 200/99 des Einsatzes aus, Grün 100×. Mehrere Wetten je Farbe sind
+zahlen exakt 2× des Einsatzes aus, Grün 100×. Mehrere Wetten je Farbe sind
 möglich; Frist, Guthaben und Limits prüft der Server unter gemeinsamen Locks.
 Die Leiste läuft nach Serverzeit und stoppt auf demselben Ergebnis. Mechanische
 Ticks werden aus den tatsächlichen Segmentübergängen berechnet und über Web
@@ -232,7 +233,7 @@ Einsatz, Rückzahlung und Ergebnis. Er enthält keine Karten oder Account-IDs.
 analytisches Infinite-Deck-Modell 99,0062 %, sechs Decks mit derselben Basic
 Strategy ungefähr 99,03 % über 2 Millionen reproduzierbare Hände. Das ist keine
 Behauptung eines exakten optimalen RTP jeder endlichen Kartenkombination.
-Die übrigen fünf Spiele erreichen für neue Runden 100 % theoretischen RTP;
+Neue Plinko-/Dino-/Crash-Runden erreichen 101 %, Mines 100 %, Roulette Rot/Schwarz 99 % und Grün 100 %. Coinflip erreicht 100 %;
 Formeln und Einschränkungen stehen in [ECONOMY.md](ECONOMY.md).
 
 ## Skins, Audio und Fehlerrückmeldung
@@ -313,3 +314,11 @@ Lizenzgrundlage stehen in THIRD_PARTY_NOTICES.md; eine unabhängige Rechtekette
 für fremde Artwork-Bestandteile ist dadurch nicht nachgewiesen.
 Keine Stake-Logos, Tracking-IDs, upstream MP3s, Telegram-Anbindung oder lokalen
 Einzahlungs-/Wallet-Reset-Funktionen sind in der aktiven Anwendung enthalten.
+
+## Aktuelle Ergänzungen
+
+Nach den bisherigen Migrationen manuell in dieser Reihenfolge anwenden:
+13. `20261011040000_lucky_lounge_game_returns.sql` — neue Rückgaben; alte Runden bleiben unverändert.
+14. `20261011050000_lucky_lounge_coinflip.sql` — Coinflip-RPC, ohne Änderung vorhandener Guthaben.
+
+Coinflip: `/games/LuckyLounge/coinflip/`. Ein signierter Slider wählt Kopf/Zahl und 1–95 % Gewinnchance. Der Server bestimmt Ergebnis und Auszahlung `100/Chance`; UUID-Idempotenz und die gemeinsame Wallet sichern die Buchung. Eine eigene 3D-Münze mit Web-Audio-Klängen zeigt genau das Ergebnis. Sichtbare Gewinne werden erst bei der Landung freigegeben. Alle Coin- und Cover-Vektoren sind eigene Illustrationen ohne externe Assets.

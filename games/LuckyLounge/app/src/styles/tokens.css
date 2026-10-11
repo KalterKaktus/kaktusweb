@@ -1,4 +1,12 @@
 :root {
+  --coin-gold: #e8bb57;
+  --coin-gold-rgb: 232 187 87;
+  --coin-highlight: #fff0b5;
+  --coin-shadow: #9a6a23;
+  --coin-engraving: #845718;
+  --coin-blue: #175dba;
+  --coin-blue-light: #75c9ff;
+  --coin-blue-rgb: 23 93 186;
   --roulette-red: #ed355a;
   --roulette-red-top: #ff5576;
   --roulette-red-bottom: #98213d;

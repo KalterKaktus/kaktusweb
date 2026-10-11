@@ -1,5 +1,6 @@
 // Small original vectors: consistent at navigation and touch-control sizes.
 const shapes = {
+ coinflip: <><circle cx="12" cy="12" r="8"/><path d="m12 7 2 3 3 2-3 2-2 3-2-3-3-2 3-2 2-3ZM5 4 3 6m16 12 2-2"/></>,
  lobby: <><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,
  plinko: <><circle cx="12" cy="3" r="1.5"/><path d="m4 19 8-13 8 13M4 21h16"/><circle cx="12" cy="11" r=".8"/><circle cx="9" cy="16" r=".8"/><circle cx="15" cy="16" r=".8"/></>,
  mines: <><circle cx="10" cy="14" r="7"/><path d="m15 9 2-2c2-2 0-4 2-5M6 12a4 4 0 0 1 4-2M20 5l2 1M18 2l-1-1"/></>,
