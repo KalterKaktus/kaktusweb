@@ -21,14 +21,15 @@ Der Benutzer hat Veröffentlichung und Weiterarbeit ausdrücklich autorisiert. S
 - [x] Supabase-Erweiterung tatsächlich hinzufügen/anmelden; Projektzugriff bestätigt.
 
 - [x] Migration `20261105120000_kaktuslife.sql` produktiv anwenden und Rechte/RPCs prüfen (Version `20261105214557`).
-- [ ] Veröffentlichung/Deployment der geprüften Änderungen.
+- [x] Veröffentlichung/Deployment der geprüften Änderungen (PR2, Deploy `6aecf9d6988ea08038ae537b`, live 2026-11-05).
+- [x] Live-Erreichbarkeit, API-Auth-Schutz, Desktop-/RU-Mobilansicht und lokale Snor-Spielfigur prüfen.
 - [ ] Echte Online-Abnahme mit zwei unterschiedlichen Site-Accounts, möglichst PC und Smartphone, inklusive Unterbrechung, Abschluss und neuer Partie.
 
 ## Bekannte Grenzen
 
 - Aktuell kein offener Kernspiel-Browserfehler. Der frühere Klickstabilitätsbefund betraf Maus-Hover in Mobil-Emulation und ist im erfolgreichen Touch-Vollpartientest geklärt.
 
-- Online-Betrieb ist lokal integriert und SQL-geprüft, **noch nicht produktiv abgenommen**. Ein lokal simulierter Auth-Dienst ersetzt diesen Nachweis nicht.
+- Spiel und Backend sind produktiv veröffentlicht und geprüft. Eine vollständige menschliche Online-Partie mit zwei echten angemeldeten Site-Accounts wurde durch den Agenten nicht gespielt; dieser letzte Nutzertest bleibt offen. Eine vollständige lokale Zweikontextpartie und produktive SQL-RPC-Tests sind separat bestanden.
 - Beide Lebensstile liegen auf demselben sichtbaren Hauptweg. Unterschiede betreffen Ereignisse und Anlagen; es gibt keine physisch getrennten Brettzweige.
 - Snapshot-Abgleich ist adaptives Polling, keine durchgehende WebSocket-Presence. Bei Abwesenheit bleibt die Partie warten; niemand übernimmt automatisch einen Zug.
 - Automatische Säuberung abgelaufener Räume ist bewusst nicht aktiv. Räume laufen nach 30 Tagen ab, Zeilen bleiben zur bewussten administrativen Bereinigung erhalten.

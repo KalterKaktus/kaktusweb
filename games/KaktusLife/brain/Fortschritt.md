@@ -1,11 +1,11 @@
 # Fortschritt
 
-Aktualisiert: **2026-11-05, 22:49 Uhr (Europe/Berlin)**. Branch: `feature/kaktuslife`, auf GitHub hochgeladen. Veröffentlichung und Migration sind ausdrücklich freigegeben. **Produktive Migration angewendet und geprüft; GitHub-Merge und Netlify-Veröffentlichung werden jetzt ausgeführt.** Produkt-Meilensteine: `4de6a52c` (Grundimplementierung), `595aad16` (Wiederverbindung und Balancing), `7a880944` (vollständige Browserabnahme), `017ead2c` (Lobby-Schließen, Snor-Figur und finale Prüfungen).
+Aktualisiert: **2026-11-05, 22:52 Uhr (Europe/Berlin)**. **KaktusLife ist veröffentlicht:** https://kalterkaktus.de/games/KaktusLife/ . Produktive Migration und Live-Prüfungen sind bestanden. PR2 wurde als `428963fe25f7e1a612eecac4a0b06aff3e25422f` zusammengeführt; Netlify-Deploy `6aecf9d6988ea08038ae537b` ist seit 22:49:45 Uhr veröffentlicht und ready. Genau ein Produktionsbuild für die Veröffentlichung. Produkt-Meilensteine: `4de6a52c`, `595aad16`, `7a880944`, `017ead2c`; Migration dokumentiert in `f848547b`.
 
 ## Wiederaufnahme nach Unterbrechung
 
 1. `git status --short`, `git log -4 --oneline` und diese Notiz lesen; vorhandene Änderungen nicht verwerfen.
-2. [[Offene Aufgaben]] lesen. Kernspiel, vollständige Browserpartie, finales Balancing, Lobby-Schließen und gewünschte Snor-Spielfigur sind implementiert und bestanden. Supabase-Verbindung und produktive Migration sind erledigt. Nächster Schritt ist der GitHub-Merge mit anschließendem Netlify-Deploy und Live-Prüfung.
+2. [[Offene Aufgaben]] lesen. Kernspiel, vollständige Browserpartie, finales Balancing, Lobby-Schließen, Snor-Spielfigur, Supabase-Migration, GitHub-Merge und Netlify-Veröffentlichung sind erledigt. Nicht erneut migrieren oder deployen. Für weitere Änderungen einen passenden Feature-Stand verwenden.
 3. Bereits bestandene Prüfungen unten nicht erneut als Entwicklungsaufgaben behandeln. Bei weiteren Codeänderungen nur betroffene Prüfungen und abschließend die Gesamtsuite ausführen.
 4. Die unten genannten konkreten nächsten Schritte fortsetzen. Nach jedem sinnvollen Meilenstein diese Notiz aktualisieren und lokal auf dem Feature-Branch committen.
 
@@ -37,6 +37,10 @@ Aktualisiert: **2026-11-05, 22:49 Uhr (Europe/Berlin)**. Branch: `feature/kaktus
 | Produktive SQL-Migration | `20261105214557_kaktuslife` erfolgreich; Quelle `20261105120000_kaktuslife.sql`, nur neue Spielobjekte |
 | Produktive Rechte und RPCs | Beide Tabellen RLS an, keine direkten Rechte für anon/authenticated/service_role; nur 3 entry-RPCs für service_role, 2 Helfer gesperrt, Owner postgres mit festem leeren search_path |
 | Produktiver Lobby-Smoke | Create/replay/join/ready/close/expired-replay und Gast-404 bestanden; alle Testschreibvorgänge zurückgerollt, keine Testzimmer verbleiben |
+| Produktion | Deploy ready, neue Node22-Funktion `/api/kaktuslife` korrekt paketiert und veröffentlicht, keine Secrets-Scan-Treffer |
+| Live-HTTP | Homepage, Spiele-Hub, KaktusLife, Clicker, Fishing, Garden und LuckyLounge jeweils HTTP200; KaktusLife-Link im Hub vorhanden |
+| Live-API | Nicht angemeldete POST-Aktionen erhalten HTTP401 mit `life.errors.auth` und `Cache-Control:no-store` |
+| Live-Browser | Desktop1440×1050 und Mobil390×844/RU ohne Überlauf oder Browserausnahmen, lokales Spiel und Snor-Spielfigur auf der produktiven Website geprüft |
 
 ## Aktueller Arbeitsstand
 
@@ -51,12 +55,10 @@ Aktualisiert: **2026-11-05, 22:49 Uhr (Europe/Berlin)**. Branch: `feature/kaktus
 
 ## Nächste konkrete Schritte
 
-1. Der geprüfte Stand ist auf `origin/feature/kaktuslife` gesichert. Pull Request: https://github.com/KalterKaktus/kaktusweb/pull/2 . Diese Arbeit ist erledigt, keinen zweiten PR anlegen.
-2. Supabase-Verbindung ist bestätigt: Projekt `KaktusWeb`, Ref `rdqbkpowntebcrsnwyqp`, ACTIVE_HEALTHY. Keine erneute Einrichtung erforderlich.
-3. Migration und Rechteprüfung sind abgeschlossen. Nicht erneut anwenden; andere Spieltabellen blieben unverändert.
-4. PR2 mit exakt geprüftem aktuellem Feature-HEAD in main integrieren (keine Entwicklungsänderungen direkt auf main), einmal Netlify veröffentlichen und Deploy bis ready verfolgen. PR-Titel enthält `[skip netlify]`, um einen zusätzlichen Preview-Build zu sparen. Beim Merge expliziten Commit-Titel **ohne** Skip-Marker verwenden. Site `kalterkaktus`, ID `e9dfb899-049b-468e-84e9-f32b834efb73`, Ziel `https://kalterkaktus.de/games/KaktusLife/`.
-5. Produktive Erreichbarkeit, Auth-Schutz und echte Zwei-Account-Funktionen soweit mit verfügbaren Sessions möglich prüfen; fehlenden menschlichen Abschlussnachweis ehrlich nennen.
-6. Nach Migration/Deploy diese Notiz, BACKEND/README und offene Aufgaben auf tatsächlichen Status aktualisieren; neue sinnvolle lokale Commits. Bereits bestandene Simulationen/Grundimplementierung nicht wiederholen.
+1. Veröffentlichung ist abgeschlossen, kein weiterer Release-Schritt nötig. Site `kalterkaktus`, ID `e9dfb899-049b-468e-84e9-f32b834efb73`, Supabase-Projekt `rdqbkpowntebcrsnwyqp`.
+2. Als noch ausstehende menschliche Abnahme eine produktive Partie mit zwei unterschiedlichen angemeldeten Site-Accounts auf PC/Smartphone bis zum Ende spielen. Agent hatte keine zwei echten Benutzersitzungen; dies wurde nicht als erledigt behauptet. Vollständige lokale Zweikontextpartie, produktive SQL-RPCs und Live-Auth-Schutz sind separat bestanden.
+3. Weitere Wünsche/Fehler anhand des aktuellen Git-Standes bearbeiten, betroffene Prüfungen ausführen und Notizen pflegen. Simulation/Grundimplementierung nur bei relevanten Änderungen wiederholen.
+4. Nachträgliche Dokumentationscommits mit `[skip netlify]` veröffentlichen, damit keine zusätzlichen Builds für reine Prüfprotokolle entstehen.
 
 ## Datenbankzugang
 
@@ -66,8 +68,9 @@ Advisors melden für KaktusLife lediglich INFO „RLS Enabled No Policy“: hier
 
 ## Veröffentlichung: bereits geprüfte Wege
 
-- Lokales `git push` nutzt die vorhandene Repository-Anmeldung erfolgreich. Main stand vor diesem Release auf `c4106492`; aktuellen Merge-/Deploy-Stand vor einer Wiederaufnahme prüfen.
-- GitHub-Plugin kann Repository-Metadaten lesen, PR-Anlage lieferte 403 „Resource not accessible by integration“. Sicherer Fallback über vorhandene Git-Anmeldung und GitHub-API ist geprüft: Skript im Sitzungsordner `work/github-release.mjs`. Es hält Zugangsdaten ausschließlich im Speicher, schreibt/zeigt keine Secrets. PR2 wurde damit erfolgreich angelegt. Für Merge kann es mit `merge 2 <aktuelle-exakte-HEAD-SHA>` verwendet werden; zuerst SQL-Zugang und Migration abschließen.
-- Netlify-Verbindung und bestehende serverseitige Umgebungsvariablen sind verfügbar. Bisher veröffentlichter Deploy bleibt `6acb717c4ca0ea0008595fe5` (ready). Nicht fälschlich als KaktusLife-Deploy melden.
+- Lokales `git push` nutzt die vorhandene Repository-Anmeldung erfolgreich. Main wurde aus dem Feature-Branch über PR2 integriert; keine Entwicklungsarbeit direkt auf main.
+- GitHub-Plugin konnte Repository-Metadaten lesen, PR-Anlage lieferte 403. Sicherer Fallback über die vorhandene Git-Anmeldung und GitHub-API ist geprüft: Sitzungsdatei `work/github-release.mjs`, Zugangsdaten ausschließlich im Speicher. PR2 wurde damit angelegt und mit exakt erwarteter Head-SHA erfolgreich zusammengeführt.
+- Netlify-Verbindung und vorhandene serverseitige Umgebungsvariablen funktionieren. Verifizierter veröffentlichter KaktusLife-Deploy: `6aecf9d6988ea08038ae537b`; Runtime-Commit `428963fe`. Spätere reine Dokumentationscommits können ohne neuen Deploy folgen.
+- Live-Prüfskript/Protokoll im Sitzungsordner: `work/live-smoke.mjs`, `outputs/KaktusLife-Live-Pruefung.json`; Screenshots `outputs/kaktuslife-live-desktop.png` und `outputs/kaktuslife-live-mobile-ru.png`. Keine echten Zugangsdaten oder privaten Kontoinhalte darin.
 
 Die statische Vorschau läuft derzeit auf `http://127.0.0.1:4178/games/KaktusLife/`. Bei einer späteren Sitzung gegebenenfalls mit `node games/KaktusLife/tools/preview.mjs` neu starten.
