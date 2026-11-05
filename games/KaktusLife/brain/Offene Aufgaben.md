@@ -11,11 +11,14 @@
 - [x] Gewünschte Relaxo-artige Auto-Ersatzfigur für snor implementieren und im normalen/vergrößerten Brett prüfen.
 - [x] Finale Balancing-Simulation von 10.000 Partien samt statistischen Grenzen dokumentieren.
 - [x] DE/RU-Dictionaries nach endgültigen Text-/Zahlenänderungen synchronisieren.
-- [ ] Fortsetzungsfähigen lokalen Git-Abschlussstand mit aktuellen Notizen herstellen.
+- [x] Fortsetzungsfähige lokale Git-Meilensteine mit aktuellen Notizen herstellen.
+- [x] Feature-Branch auf GitHub sichern und Pull Request2 vorbereiten.
 
 ## Veröffentlichung – Freigabe inzwischen erteilt
 
 Der Benutzer hat Veröffentlichung und Weiterarbeit ausdrücklich autorisiert. Supabase-Verbindung ist als nächster technischer Zugang gewählt, aber noch nicht bestätigt.
+
+- [ ] Supabase-Erweiterung tatsächlich hinzufügen/anmelden; letzter bestätigter Status `installed:false`.
 
 - [ ] Vorbereitete Migration `20261105120000_kaktuslife.sql` auf dem produktiven Supabase-Projekt anwenden.
 - [ ] Veröffentlichung/Deployment der geprüften Änderungen.
