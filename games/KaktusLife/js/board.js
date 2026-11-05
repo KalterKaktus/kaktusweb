@@ -22,6 +22,7 @@ const defs = `<defs>
  <g id="life-cactus"><ellipse class="map-shadow" cy="5" rx="15" ry="4"/><path class="map-cactus" d="M-4 4v-40a5 5 0 0 1 10 0v19h5v-11a4 4 0 0 1 8 0v14a5 5 0 0 1-5 5H6V4Zm0-17h-8a6 6 0 0 1-6-6v-10a4 4 0 0 1 8 0v8h6Z"/><path class="map-cactus-line" d="M1-35V0"/><circle class="map-flower" cx="1" cy="-42" r="4"/></g>
  <g id="life-boat"><ellipse class="map-water-dark" cy="7" rx="24" ry="5"/><path class="map-wall" d="m-23 0 46-4-10 12h-23Z"/><path class="map-trunk-stroke" d="M0-37V0"/><path class="map-sail" d="M-3-36-3-4-23-4Z"/><path class="map-roof" d="M2-35 2-7 19-7Z"/></g>
  <g id="life-car"><ellipse class="car-shadow" cy="7" rx="23" ry="8"/><circle class="car-wheel" cx="-13" cy="4" r="5"/><circle class="car-wheel" cx="13" cy="4" r="5"/><path class="car-body" d="m-23-6 5-6 6-1 5-10h15l8 10 6 3v11h-45Z"/><path class="car-window" d="m-8-14 4-7h9l5 7Z"/><path class="car-detail" d="M1-21v7m-16 6h7m6 0h7"/><path class="car-light" d="M17-6h4v4h-4"/></g>
+ <g id="life-sleepy-giant"><ellipse class="car-shadow" cy="8" rx="26" ry="8"/><g class="sleepy-breath"><path class="sleepy-shadow" d="m-21-43-3-22 16 13m28 9 3-22-16 13"/><path class="sleepy-body" d="M-29-18c-1-15 4-23 10-30-3-10 4-16 19-16s22 6 19 16c6 7 11 15 10 30C28 3 17 10 0 10S-28 3-29-18Z"/><path class="sleepy-face" d="M-18-47c0-10 10-11 18-5 8-6 18-5 18 5 0 9-8 13-18 13s-18-4-18-13Z"/><ellipse class="sleepy-face" cy="-13" rx="21" ry="23"/><path class="sleepy-arm" d="M-21-32q-15 7-10 20 4 6 11 0m41-20q15 7 10 20-4 6-11 0"/><path class="sleepy-feet" d="M-15-4q-16-3-14 9 1 9 14 7l7-3m23-13q16-3 14 9-1 9-14 7L8 9"/><path class="sleepy-toes" d="m-24 3 4 1m-5 4 4 0m45-5-4 1m5 4h-4"/><path class="sleepy-eyes" d="M-13-46q4 4 8 0m10 0q4 4 8 0"/><path class="sleepy-nose" d="m-2-41 2 2 2-2Z"/><path class="sleepy-smile" d="M-5-35q5 4 10 0"/><path class="sleepy-belly" d="M-5-8q5 2 10 0"/></g></g>
  </defs>`;
 
 function scenery() {
@@ -67,8 +68,10 @@ export function createBoard(container, players = [], { preview = false, expandab
   const pawnElements = new Map();
   players.forEach((player,index) => {
     const g = document.createElementNS(NS,'g');
-    g.setAttribute('class', `map-pawn pawn-${index}`);
-    g.innerHTML = `<title>${esc(player.name)}</title><use href="#life-car"/><g class="pawn-badge" transform="translate(0 -35)"><circle r="10"/><text text-anchor="middle" y="4">${index+1}</text></g>`;
+    const sleepy = String(player.name).normalize('NFKC').trim().toLowerCase() === 'snor';
+    g.setAttribute('class', `map-pawn pawn-${index}${sleepy?' pawn-sleepy':''}`);
+    g.setAttribute('data-player-id',player.id);
+    g.innerHTML = `<title>${esc(player.name)}</title><use href="#life-${sleepy?'sleepy-giant':'car'}"/>${sleepy?'<g class="sleepy-zzz" aria-hidden="true"><text x="23" y="-55">z</text><text x="32" y="-68">z</text><text x="42" y="-81">Z</text></g>':''}<g class="pawn-badge" transform="translate(${sleepy?-23:0} ${sleepy?-69:-35})"><circle r="10"/><text text-anchor="middle" y="4">${index+1}</text></g>`;
     layer.append(g); pawnElements.set(player.id,g);
   });
   function place(id, position, index = players.findIndex(player => player.id === id)) {
@@ -76,7 +79,7 @@ export function createBoard(container, players = [], { preview = false, expandab
     const p = points[Math.min(80,Math.max(0,position))];
     const row = Math.floor(position / 17);
     element.setAttribute('transform', `translate(${p.x+(index ? 5 : -4)} ${p.y+(index ? -12 : -29)})`);
-    element.classList.toggle('pawn-reverse', row % 2 === 1);
+    element.classList.toggle('pawn-reverse', row % 2 === 1 && !element.classList.contains('pawn-sleepy'));
   }
   players.forEach((player,index) => place(player.id,player.position,index));
   return {

@@ -12,6 +12,10 @@ Glücksrad, Figuren und Karten erklären den Zug visuell. Anzeigen bündeln Geld
 
 Reduzierte Bewegung wird über `prefers-reduced-motion` berücksichtigt. Töne entstehen mit Web Audio erst nach einer Nutzergeste und können gerätebezogen abgeschaltet werden.
 
+## Gewünschtes Easter Egg
+
+Für den normalisierten Profil-/Spielernamen `snor` ersetzt eine eigene Relaxo-artige Schlafriesen-SVG die Auto-Spielfigur auf dem Brett und im vergrößerten Brett. Der Spielername wird nicht geändert. Atembewegung, Schlafbuchstaben und kleine Bewegungsschritte sind rein kosmetisch und respektieren reduzierte Bewegung. Andere Namen behalten das Auto; Spielwerte und Chancen bleiben identisch. Diese Figur wurde vom Besitzer ausdrücklich gewünscht und soll erhalten bleiben.
+
 ## Sprachen
 
 DE und RU verwenden das vorhandene Sprachsystem. Zahlen folgen der aktiven Sprache. Eigennamen bleiben erkennbar, dynamische Spielernamen werden vor HTML-Ausgabe maskiert.

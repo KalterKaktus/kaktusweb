@@ -1,6 +1,6 @@
 import { createGame, applyAction, scorePlayer } from '../shared/engine.mjs';
-import { CAREERS, HOUSES } from '../shared/catalog.mjs';
-import { t, ready, onLanguageChange, money, esc, label, icon } from './text.js';
+import { CAREERS, HOUSES, RULES } from '../shared/catalog.mjs';
+import { t, ready, onLanguageChange, money, esc, label, icon, formatNumber } from './text.js';
 import { createBoard, wheelMarkup, spinWheel, points } from './board.js';
 import { soundEnabled, toggleSound, play } from './audio.js';
 
@@ -61,7 +61,7 @@ function lobbyView() {
   const host = identity?.id === room.hostId;
   const guest = Boolean(room.guestId);
   const hint = !guest ? 'waitingGuest' : !room.guestReady ? 'waitingReady' : 'waitingHost';
-  return `${header()}${banner()}<section class="lobby-layout"><div class="lobby-map"><p class="eyebrow">${text('onlineRoom')}</p><h1>${text('waitingRoom')}</h1><p>${text('waitingIntro')}</p><div id="board" class="board-container"></div></div><section class="lobby-card"><p class="eyebrow">${text('roomCode')}</p><div class="room-code-display"><input readonly aria-label="${text('code')}" value="${esc(room.code)}">${tool('copy-code','copyCode','copy')}</div>${button('copy-link','copyLink','button-secondary button-full',false,'link')}<p class="privacy-hint">${icon('shield')}${text('linkPrivacy')}</p><div class="lobby-seats"><div class="lobby-seat seat-0"><span class="seat-avatar">1</span><div><small>${text('host')}</small><strong>${esc(room.hostName || identity?.name || t('life.ui.host'))}</strong></div><span class="seat-status">${icon('check')}${text('ready')}</span></div><div class="lobby-seat seat-1 ${guest?'':'is-empty'}"><span class="seat-avatar">${guest?'2':'+'}</span><div><small>${text('guest')}</small><strong>${esc(room.guestName || t('life.ui.emptySeat'))}</strong></div>${guest?`<span class="seat-status">${room.guestReady?icon('check'):icon('clock')}${text(room.guestReady?'ready':'notReady')}</span>`:''}</div></div><p class="lobby-hint">${text(hint)}</p>${host?button('start-online','startOnline','button-primary button-full',busy||!guest||!room.guestReady,'arrow'):button('ready',room.guestReady?'unready':'makeReady','button-primary button-full',busy,'check')}<button class="text-button lobby-return" data-action="home">${text('leave')}</button><small class="save-hint">${text('leaveHint')}</small></section></section>`;
+  return `${header()}${banner()}<section class="lobby-layout"><div class="lobby-map"><p class="eyebrow">${text('onlineRoom')}</p><h1>${text('waitingRoom')}</h1><p>${text('waitingIntro')}</p><div id="board" class="board-container"></div></div><section class="lobby-card"><p class="eyebrow">${text('roomCode')}</p><div class="room-code-display"><input readonly aria-label="${text('code')}" value="${esc(room.code)}">${tool('copy-code','copyCode','copy')}</div>${button('copy-link','copyLink','button-secondary button-full',false,'link')}<p class="privacy-hint">${icon('shield')}${text('linkPrivacy')}</p><div class="lobby-seats"><div class="lobby-seat seat-0"><span class="seat-avatar">1</span><div><small>${text('host')}</small><strong>${esc(room.hostName || identity?.name || t('life.ui.host'))}</strong></div><span class="seat-status">${icon('check')}${text('ready')}</span></div><div class="lobby-seat seat-1 ${guest?'':'is-empty'}"><span class="seat-avatar">${guest?'2':'+'}</span><div><small>${text('guest')}</small><strong>${esc(room.guestName || t('life.ui.emptySeat'))}</strong></div>${guest?`<span class="seat-status">${room.guestReady?icon('check'):icon('clock')}${text(room.guestReady?'ready':'notReady')}</span>`:''}</div></div><p class="lobby-hint">${text(hint)}</p>${host?button('start-online','startOnline','button-primary button-full',busy||!guest||!room.guestReady,'arrow'):button('ready',room.guestReady?'unready':'makeReady','button-primary button-full',busy,'check')}<button class="text-button lobby-return" data-action="home">${text('leave')}</button><small class="save-hint">${text('leaveHint')}</small>${host?`<button type="button" class="text-button close-room-link" data-action="close-room" ${busy?'disabled':''}>${text('closeRoom')}</button>`:''}</section></section>`;
 }
 function playerCard(player,index) {
   const active = state.status === 'playing' && state.turn === index;
@@ -154,7 +154,19 @@ async function acceptState(next) {
 }
 function watchRoom() {
   stopRoom?.();
-  connection().then(api=>{stopRoom=api.subscribeRoom(room.id,next=>{if(!animation)acceptRoom(next);},cause=>{connectionStatus='reconnecting';error=classifyError(cause);render();});});
+  const watchedId=room.id;
+  connection().then(api=>{
+    if(room?.id!==watchedId)return;
+    stopRoom=api.subscribeRoom(watchedId,next=>{if(!animation)acceptRoom(next);},cause=>{
+      if(room?.id!==watchedId)return;
+      if(cause?.status===404){
+        stopRoom?.();stopRoom=null;api.forgetRoom(watchedId);busy=false;animation=false;
+        document.querySelector('#life-close-room')?.close();
+        goHome();toast(t('life.ui.roomClosedOrExpired'));return;
+      }
+      connectionStatus='reconnecting';error=classifyError(cause);render();
+    });
+  });
 }
 async function enterRoom(nextRoom) {
   stopRoom?.();state=null;room=null;mode='online';room=nextRoom;error=null;connectionStatus='connected';
@@ -195,7 +207,8 @@ async function copy(value) {
 function showHelp() {
   document.querySelector('#life-help')?.remove();
   const dialog=document.createElement('dialog');dialog.id='life-help';dialog.className='help-dialog';
-  dialog.innerHTML=`<div class="dialog-head"><span class="section-icon">${icon('route')}</span>${tool('close-help','dismiss','close')}</div><h2>${text('helpTitle')}</h2><p>${text('helpIntro')}</p><ol>${['helpTurns','helpEconomy','helpEnd','helpSave'].map(key=>`<li>${text(key)}</li>`).join('')}</ol>${button('close-help','understood','button-primary button-full')}`;
+  const values={happiness:money(RULES.happinessValue),partner:money(RULES.partnerValue),child:money(RULES.childValue),loanUnit:money(RULES.loanUnit),interest:formatNumber(RULES.loanInterest*100),checkpoints:[20,40,60,80].map(value=>formatNumber(value)).join(' / ')};
+  dialog.innerHTML=`<div class="dialog-head"><span class="section-icon">${icon('route')}</span>${tool('close-help','dismiss','close')}</div><h2>${text('helpTitle')}</h2><p>${text('helpIntro')}</p><ol>${['helpTurns','helpEconomy','helpScore','helpCredit','helpEnd','helpSave'].map(key=>`<li>${label(`life.ui.${key}`,values)}</li>`).join('')}</ol>${button('close-help','understood','button-primary button-full')}`;
   document.body.append(dialog);dialog.addEventListener('click',event=>{if(event.target.closest('[data-action="close-help"]'))dialog.close();});dialog.addEventListener('close',()=>dialog.remove());dialog.showModal();
 }
 function showBoard() {
@@ -208,6 +221,31 @@ function showBoard() {
   dialog.addEventListener('close',()=>dialog.remove());dialog.showModal();
   const scroll=dialog.querySelector('.board-scroll');
   if(state)scroll.scrollLeft=Math.max(0,points[currentPlayer().position].x/1120*1050-scroll.clientWidth/2);
+}
+function showCloseRoom() {
+  if(mode!=='online'||state||room?.hostId!==identity?.id||busy)return;
+  document.querySelector('#life-close-room')?.remove();
+  const closingRoom=room;
+  const dialog=document.createElement('dialog');dialog.id='life-close-room';dialog.className='help-dialog close-room-dialog';
+  dialog.innerHTML=`<div class="dialog-head"><span class="section-icon">${icon('close')}</span>${tool('cancel-close','dismiss','close')}</div><h2>${text('closeRoomTitle')}</h2><p>${label('life.ui.closeRoomDescription',{code:closingRoom.code})}</p><div class="close-room-actions">${button('cancel-close','keepRoom','button-quiet button-full')}${button('confirm-close','confirmCloseRoom','button-danger button-full')}</div>`;
+  dialog.addEventListener('click',async event=>{
+    if(event.target.closest('[data-action="cancel-close"]')){if(!busy)dialog.close();return;}
+    if(!event.target.closest('[data-action="confirm-close"]')||busy)return;
+    busy=true;
+    dialog.querySelectorAll('button').forEach(control=>control.disabled=true);
+    try{
+      const api=await connection();await api.closeRoom(closingRoom);
+      stopRoom?.();stopRoom=null;api.forgetRoom(closingRoom.id);busy=false;
+      dialog.close();goHome();toast(t('life.ui.roomClosed'));
+    }catch(cause){
+      busy=false;dialog.close();error=classifyError(cause);
+      if(cause?.status===409){try{const api=await connection();await acceptRoom(await api.loadRoom(closingRoom.id));}catch{}}
+      render();
+    }
+  });
+  dialog.addEventListener('cancel',event=>{if(busy)event.preventDefault();});
+  dialog.addEventListener('close',()=>dialog.remove());
+  document.body.append(dialog);dialog.showModal();
 }
 
 app.addEventListener('submit',event=>{
@@ -222,6 +260,7 @@ app.addEventListener('click',async event=>{
   if(action==='sound'){toggleSound();if(!animation)render();}
   if(action==='help')showHelp();
   if(action==='expand-board')showBoard();
+  if(action==='close-room')showCloseRoom();
   if(action==='dismiss'){error=null;render();}
   if(action==='home')goHome();
   if(action==='create')runOnline(api=>api.createRoom());

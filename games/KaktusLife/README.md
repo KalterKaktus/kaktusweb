@@ -33,11 +33,12 @@ Für lokale PostgreSQL- und Browserintegration zuerst im Spielordner `pnpm insta
 pnpm test:sql
 pnpm test:integration
 pnpm test:browser
+pnpm test:ui
 ```
 
 Der Browsertest verwendet unter Windows installiertes Chrome, andernfalls Playwright Chromium. Optional `KAKTUSLIFE_BROWSER_EXECUTABLE` setzen. Das Testsystem nutzt eine lokale PGlite/PostgreSQL-Instanz, die tatsächliche Migration und Netlify-Funktion, künstliche Accounts und isolierte Auth-Antworten. Es kontaktiert keine produktiven Dienste. Im beschleunigten Fixture werden ausschließlich Test-Anfragezeitstempel zurückgesetzt, damit die produktive Schreibbegrenzung vollständige Schnelltests nicht absichtlich stoppt. Die Begrenzung selbst wird im SQL-Test überprüft.
 
-Screenshots entstehen in `test-results/` oder `KAKTUSLIFE_QA_OUTPUT`. Sie sind nicht versioniert.
+`test:ui` prüft zusätzlich die produktive Navigation bei 320/390/1440 px, normale Touch-Animationen, das Schließen ungestarteter Lobbys und die besondere Spielfigur für `snor`. Screenshots entstehen in `test-results/` oder `KAKTUSLIFE_QA_OUTPUT`. Sie sind nicht versioniert.
 
 ## Projektgedächtnis
 

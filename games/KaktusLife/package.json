@@ -9,6 +9,7 @@
     "test:sql": "node tests/sql.integration.mjs",
     "test:integration": "node tests/multiplayer.integration.mjs",
     "test:browser": "node tests/browser.integration.mjs",
+    "test:ui": "node --test tests/ui.integration.mjs",
     "sync:translations": "node tests/sync-translations.mjs"
   },
   "devDependencies": {

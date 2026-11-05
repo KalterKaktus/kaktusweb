@@ -6,13 +6,16 @@
 - [x] Desktop-/Mobil-Browsertest mit zwei getrennten Sitzungen erfolgreich abschließen.
 - [x] Screenshots visuell prüfen; Überläufe und unaufgelöste Übersetzungen korrigieren.
 - [x] Bewegung und Rad mit normaler Bewegung prüfen; vollständige Partie läuft im schnellen Test mit reduzierter Bewegung.
-- [ ] Ungenutzte Lobbys sicher schließen, Raumlimit-Platz freigeben und gezielt prüfen.
-- [ ] Portable UI-Prüfung inklusive letzter Hilfetexte und Lobby-Schließen abschließen.
+- [x] Ungenutzte Lobbys sicher schließen, Raumlimit-Platz freigeben und gezielt prüfen.
+- [x] Portable UI-Prüfung inklusive letzter Hilfetexte und Lobby-Schließen abschließen.
+- [x] Gewünschte Relaxo-artige Auto-Ersatzfigur für snor implementieren und im normalen/vergrößerten Brett prüfen.
 - [x] Finale Balancing-Simulation von 10.000 Partien samt statistischen Grenzen dokumentieren.
-- [ ] DE/RU-Dictionaries nach endgültigen Text-/Zahlenänderungen synchronisieren.
+- [x] DE/RU-Dictionaries nach endgültigen Text-/Zahlenänderungen synchronisieren.
 - [ ] Fortsetzungsfähigen lokalen Git-Abschlussstand mit aktuellen Notizen herstellen.
 
-## Erfordert ausdrückliche Freigabe
+## Veröffentlichung – Freigabe inzwischen erteilt
+
+Der Benutzer hat Veröffentlichung und Weiterarbeit ausdrücklich autorisiert. Supabase-Verbindung ist als nächster technischer Zugang gewählt, aber noch nicht bestätigt.
 
 - [ ] Vorbereitete Migration `20261105120000_kaktuslife.sql` auf dem produktiven Supabase-Projekt anwenden.
 - [ ] Veröffentlichung/Deployment der geprüften Änderungen.

@@ -12,7 +12,7 @@ export class ConnectionError extends Error {
 
 export function createConnection({ getSession, fetchImpl = globalThis.fetch, storage = defaultStorage(),
     uuid = () => globalThis.crypto.randomUUID(), endpoint = '/api/kaktuslife', timeout = 15000 } = {}) {
-    let inFlight = false, pendingReceipt = null, useStorage = Boolean(storage);
+    let inFlight = false, pendingReceipt = null, useStorage = Boolean(storage), currentActorId = null;
     const memory = new Map();
     const read = key => {
         if (useStorage) { try { const value = storage.getItem(key); if (value == null) memory.delete(key); else memory.set(key, value); return value; } catch { useStorage = false; } }
@@ -42,6 +42,7 @@ export function createConnection({ getSession, fetchImpl = globalThis.fetch, sto
                 timer = setTimeout(() => reject(new ConnectionError('life.errors.network')), timeout);
             })]);
             if (!session?.access_token || !session.user?.id) throw new ConnectionError('life.errors.auth', 401);
+            currentActorId = session.user.id;
             return session;
         } catch (error) {
             if (error instanceof ConnectionError) throw error;
@@ -87,7 +88,7 @@ export function createConnection({ getSession, fetchImpl = globalThis.fetch, sto
             pendingReceipt = receipt;
             saveReceipt(receipt);
             // Retry the exact body, including its original revision, even after a newer snapshot arrives.
-            const room = await request({ ...receipt.body, requestId: receipt.requestId }, { session });
+            const room = await request({ ...receipt.body, requestId: receipt.requestId }, { session, remember: body.op !== 'close' });
             clearReceipt(receipt, room);
             return room;
         } catch (error) {
@@ -111,8 +112,20 @@ export function createConnection({ getSession, fetchImpl = globalThis.fetch, sto
         loadRoom: roomId => request({ op: 'snapshot', roomId }),
         roomAction: (room, action) => mutate({ op: 'action', roomId: room.id, revision: room.revision, action }),
         rematchRoom: room => mutate({ op: 'rematch', roomId: room.id, revision: room.revision }),
+        async closeRoom(room) {
+            const closed = await mutate({ op: 'close', roomId: room.id, revision: room.revision });
+            if (closed.closed && read(ROOM_KEY) === closed.id) remove(ROOM_KEY);
+            return closed;
+        },
         getSavedRoomId: () => read(ROOM_KEY),
-        forgetRoom: () => { remove(ROOM_KEY); remove(PENDING_KEY); pendingReceipt = null; },
+        forgetRoom: roomId => {
+            if (!roomId) { remove(ROOM_KEY); remove(PENDING_KEY); pendingReceipt = null; return; }
+            if (read(ROOM_KEY) === roomId) remove(ROOM_KEY);
+            if (currentActorId) {
+                persistReceipts(readReceipts().filter(value => !(value?.actorId === currentActorId && value.body?.roomId === roomId)));
+                if (pendingReceipt?.actorId === currentActorId && pendingReceipt.body?.roomId === roomId) pendingReceipt = null;
+            }
+        },
         subscribeRoom(roomId, onRoom, onError = () => {}) {
             let stopped = false, timer, failures = 0, lastRevision = -1, polling = false, wakeAfterPoll = false, controller;
             async function poll() {
@@ -164,6 +177,7 @@ export const joinRoom = (...args) => connection.joinRoom(...args);
 export const loadRoom = (...args) => connection.loadRoom(...args);
 export const roomAction = (...args) => connection.roomAction(...args);
 export const rematchRoom = (...args) => connection.rematchRoom(...args);
+export const closeRoom = (...args) => connection.closeRoom(...args);
 export const subscribeRoom = (...args) => connection.subscribeRoom(...args);
 export const getSavedRoomId = () => connection.getSavedRoomId();
-export const forgetRoom = () => connection.forgetRoom();
+export const forgetRoom = (...args) => connection.forgetRoom(...args);

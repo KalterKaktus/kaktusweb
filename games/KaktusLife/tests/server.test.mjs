@@ -17,9 +17,9 @@ function fixture() {
     const calls = [];
     let queue = Promise.resolve();
     let failNext = null;
-    const roomFor = (actor, id) => {
+    const roomFor = (actor, id, allowClosed = false) => {
         const room = rooms.get(id);
-        if (!room) fail("notFound");
+        if (!room || room.closed && !allowClosed) fail("notFound");
         if (![room.hostId, room.guestId].includes(actor)) fail("forbidden");
         return room;
     };
@@ -28,7 +28,7 @@ function fixture() {
         if (!receipt) return null;
         if (JSON.stringify(receipt.intent) !== JSON.stringify(args.p_intent)) fail("requestConflict");
         if (args.p_room_id && args.p_room_id !== receipt.roomId) fail("requestConflict");
-        return roomFor(args.p_actor, receipt.roomId);
+        return roomFor(args.p_actor, receipt.roomId, args.p_intent?.op === "close");
     };
     const snapshot = (room, replayed = false) => ({ room: clone(room), replayed });
     const rpc = (name, args) => {
@@ -41,11 +41,11 @@ function fixture() {
         let room;
         if (name === "kaktuslife_lobby") {
             if (args.p_operation === "create") {
-                if ([...rooms.values()].filter((r) => r.hostId === args.p_actor && r.state?.status !== "finished").length >= 3) fail("rateLimit");
-                room = { id: randomUUID(), code: args.p_code, hostId: args.p_actor, guestId: null, hostName: profile.name, guestName: null, guestReady: false, revision: 0, state: null };
+                if ([...rooms.values()].filter((r) => r.hostId === args.p_actor && !r.closed && r.state?.status !== "finished").length >= 3) fail("rateLimit");
+                room = { id: randomUUID(), code: args.p_code, hostId: args.p_actor, guestId: null, hostName: profile.name, guestName: null, guestReady: false, revision: 0, state: null, closed: false };
                 rooms.set(room.id, room);
             } else if (args.p_operation === "join") {
-                room = [...rooms.values()].find((r) => r.code === args.p_code);
+                room = [...rooms.values()].find((r) => r.code === args.p_code && !r.closed);
                 if (!room) fail("notFound");
                 if (![room.hostId, room.guestId].includes(args.p_actor)) {
                     if (room.guestId) fail("full");
@@ -59,6 +59,10 @@ function fixture() {
                     if (args.p_actor !== room.guestId) fail("forbidden");
                     if (room.state) fail("alreadyStarted");
                     room.guestReady = args.p_ready; room.revision++;
+                } else if (args.p_operation === "close") {
+                    if (args.p_actor !== room.hostId) fail("forbidden");
+                    if (room.state) fail("alreadyStarted");
+                    room.closed = true; room.revision++;
                 } else if (args.p_operation === "rematch") {
                     if (room.state?.status !== "finished") fail("notFinished");
                     room.state = null; room.guestReady = false; room.revision++;
@@ -232,4 +236,35 @@ test("server randomness uses crypto integer dice hook with exact inclusive/exclu
         const value = secureRandom(); assert(value >= 0 && value < 1);
         const die = secureRandom.int(1, 11); assert(Number.isInteger(die) && die >= 1 && die <= 10);
     }
+});
+
+test("host can close an abandoned lobby to recover capacity; exact UUID replay works after expiry", async () => {
+    const f=fixture();const room=await f.create();await f.create();await f.create();
+    assert.equal((await f.send(HOST,{op:'create',requestId:randomUUID()})).status,429);
+    const body={op:'close',roomId:room.id,revision:room.revision,requestId:randomUUID()};
+    const results=await Promise.all([f.send(HOST,body),f.send(HOST,body)]);
+    assert(results.every(result=>result.status===200&&result.body.room.closed));
+    assert.equal(f.rooms.get(room.id).revision,room.revision+1);
+    assert.equal(f.rooms.size,3);assert.equal(f.rooms.get(room.id).state,null);
+    assert.equal((await f.send(HOST,{...body,revision:999})).status,200);
+    assert.equal((await f.send(HOST,{op:'snapshot',roomId:room.id})).status,404);
+    assert.equal((await f.send(GUEST,{op:'join',code:room.code,requestId:randomUUID()})).status,404);
+    assert.equal((await f.send(HOST,{op:'create',requestId:randomUUID()})).status,200);
+    assert(f.receipts.has(`${HOST}/${body.requestId}`));
+});
+
+test("guests and outsiders cannot close; active and finished matches remain intact", async () => {
+    const f=fixture();let room=await f.create();
+    room=(await f.send(GUEST,{op:'join',code:room.code,requestId:randomUUID()})).body.room;
+    const close=(actor,revision=room.revision)=>f.send(actor,{op:'close',roomId:room.id,revision,requestId:randomUUID()});
+    assert.equal((await close(GUEST)).status,403);assert.equal((await close(OUTSIDER)).status,403);
+    assert.equal((await close(HOST,0)).body.error,'life.errors.conflict');
+    room=(await f.action(GUEST,room,{type:'ready'})).body.room;
+    room=(await f.action(HOST,room,{type:'start'})).body.room;
+    let before=clone(f.rooms.get(room.id));
+    assert.equal((await close(HOST)).body.error,'life.errors.alreadyStarted');
+    assert.deepEqual(f.rooms.get(room.id),before);
+    f.rooms.get(room.id).state.status='finished';before=clone(f.rooms.get(room.id));
+    assert.equal((await close(HOST)).body.error,'life.errors.alreadyStarted');
+    assert.deepEqual(f.rooms.get(room.id),before);
 });

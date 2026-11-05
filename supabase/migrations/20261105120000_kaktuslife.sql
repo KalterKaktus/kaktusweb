@@ -13,10 +13,12 @@ create table if not exists public.kaktuslife_rooms (
  created_at timestamptz not null default clock_timestamp(),
  updated_at timestamptz not null default clock_timestamp(),
  expires_at timestamptz not null default clock_timestamp() + interval '30 days',
+ closed_at timestamptz,
  check (guest_id is null or guest_id <> host_id),
  check (not guest_ready or guest_id is not null),
  check (state is null or (jsonb_typeof(state) = 'object' and state->>'status' in ('playing','finished')))
 );
+alter table public.kaktuslife_rooms add column if not exists closed_at timestamptz;
 create index if not exists kaktuslife_rooms_host on public.kaktuslife_rooms(host_id, created_at desc);
 create index if not exists kaktuslife_rooms_guest on public.kaktuslife_rooms(guest_id);
 
@@ -52,7 +54,7 @@ language sql stable security definer set search_path='' as $$
  select jsonb_build_object('id',p_room.id,'code',p_room.code,'hostId',p_room.host_id,'guestId',p_room.guest_id,
   'hostName',coalesce(nullif(left(regexp_replace(h.username,'[[:cntrl:]]','','g'),40),''),'Kaktus'),
   'guestName',case when p_room.guest_id is null then null else coalesce(nullif(left(regexp_replace(g.username,'[[:cntrl:]]','','g'),40),''),'Kaktus') end,
-  'guestReady',p_room.guest_ready,'revision',p_room.revision,'state',p_room.state)
+  'guestReady',p_room.guest_ready,'revision',p_room.revision,'state',p_room.state,'closed',p_room.closed_at is not null)
  from public.profiles h left join public.profiles g on g.id=p_room.guest_id where h.id=p_room.host_id
 $$;
 
@@ -68,7 +70,9 @@ begin
    replay := true;
   end if;
  end if;
- select * into r from public.kaktuslife_rooms where id=p_room_id and expires_at>clock_timestamp();
+ -- Only the exact successful close receipt may replay after closing has expired the lobby.
+ select * into r from public.kaktuslife_rooms where id=p_room_id and (expires_at>clock_timestamp()
+  or (replay and p_intent->>'op'='close' and closed_at is not null));
  if not found then raise exception 'life.errors.notFound'; end if;
  if p_actor is distinct from r.host_id and p_actor is distinct from r.guest_id then raise exception 'life.errors.forbidden'; end if;
  return jsonb_build_object('room',public.kaktuslife_public_room(r),'replayed',replay);
@@ -102,7 +106,7 @@ begin
    if (select count(*) from public.kaktuslife_rooms where guest_id=p_actor and expires_at>clock_timestamp() and (state is null or state->>'status'='playing')) >= 5 then raise exception 'life.errors.rateLimit'; end if;
    update public.kaktuslife_rooms set guest_id=p_actor,guest_ready=false,revision=revision+1,updated_at=clock_timestamp() where id=r.id returning * into r;
   end if;
- elsif p_operation in ('ready','rematch') then
+ elsif p_operation in ('ready','rematch','close') then
   select * into r from public.kaktuslife_rooms where id=p_room_id and expires_at>clock_timestamp() for update;
   if not found then raise exception 'life.errors.notFound'; end if;
   if p_actor is distinct from r.host_id and p_actor is distinct from r.guest_id then raise exception 'life.errors.forbidden'; end if;
@@ -112,6 +116,11 @@ begin
    if p_actor is distinct from r.guest_id then raise exception 'life.errors.forbidden'; end if;
    if r.state is not null then raise exception 'life.errors.alreadyStarted'; end if;
    update public.kaktuslife_rooms set guest_ready=p_ready,revision=revision+1,updated_at=clock_timestamp() where id=r.id returning * into r;
+  elsif p_operation='close' then
+   if p_intent is distinct from jsonb_build_object('op','close','roomId',p_room_id) then raise exception 'life.errors.invalidRequest'; end if;
+   if p_actor is distinct from r.host_id then raise exception 'life.errors.forbidden'; end if;
+   if r.state is not null then raise exception 'life.errors.alreadyStarted'; end if;
+   update public.kaktuslife_rooms set closed_at=clock_timestamp(),expires_at=clock_timestamp(),revision=revision+1,updated_at=clock_timestamp() where id=r.id returning * into r;
   else
    if p_intent is distinct from jsonb_build_object('op','rematch','roomId',p_room_id) then raise exception 'life.errors.invalidRequest'; end if;
    if r.state->>'status' is distinct from 'finished' then raise exception 'life.errors.notFinished'; end if;

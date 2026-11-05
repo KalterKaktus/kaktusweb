@@ -167,3 +167,34 @@ test('visibility wake never overlaps polling and stopped stale polls cannot rest
         stop?.();finishPoll(Response.json({room:{id:'old-room',revision:99}}));globalThis.document=previousDocument;
     }
 });
+
+test('closing retries the durable original UUID and removes only the matching saved room', async () => {
+    const {client,calls,values,reload}=harness([{body:{room:{id:'r',revision:1}}},new Error('lost close'),{body:{room:{id:'r',revision:2,closed:true}}}]);
+    await client.loadRoom('r');
+    await assert.rejects(client.closeRoom({id:'r',revision:1}),{key:'life.errors.network'});
+    const closed=await reload().closeRoom({id:'r',revision:8});
+    assert.equal(closed.closed,true);assert.deepEqual(calls[1].body,calls[2].body);
+    assert.equal(calls[2].body.op,'close');assert.equal(client.getSavedRoomId(),undefined);
+    assert.equal(values.has('kk-life-pending-v1'),false);
+});
+
+test('closing another room preserves a newer saved room and unrelated pending receipts', async () => {
+    const {client,values}=harness([new Error('lost action'),{body:{room:{id:'other',revision:4}}},{body:{room:{id:'r',revision:2,closed:true}}}]);
+    await assert.rejects(client.roomAction({id:'other',revision:3},{type:'roll'}));
+    await client.loadRoom('other');
+    await client.closeRoom({id:'r',revision:1});
+    assert.equal(client.getSavedRoomId(),'other');
+    assert.equal(JSON.parse(values.get('kk-life-pending-v1')).receipts[0].body.roomId,'other');
+});
+
+test('scoped forgetting keeps other rooms and account receipts', async () => {
+    const {client,values,calls,setSession}=harness([new Error('a first room'),new Error('a other room'),new Error('b first room')]);
+    await assert.rejects(client.roomAction({id:'r',revision:1},{type:'roll'}));
+    await assert.rejects(client.roomAction({id:'other',revision:1},{type:'roll'}));
+    setSession({access_token:'b-token',user:{id:'b'}});
+    await assert.rejects(client.roomAction({id:'r',revision:1},{type:'roll'}));
+    values.set('kk-life-room','other');client.forgetRoom('r');
+    const kept=JSON.parse(values.get('kk-life-pending-v1')).receipts;
+    assert.equal(kept.length,2);assert(kept.every(receipt=>receipt.actorId==='a'));
+    assert.equal(client.getSavedRoomId(),'other');assert.equal(calls.length,3);
+});

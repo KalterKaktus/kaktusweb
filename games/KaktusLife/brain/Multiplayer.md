@@ -14,6 +14,8 @@ Der Browser gleicht den autoritativen Snapshot in aktiven Tabs etwa alle 2,5 Sek
 
 Verlassen der Oberfläche löscht keinen Raum. Es gibt keine automatische Entscheidung oder Zugübernahme bei Abwesenheit. Die wartende Person kann nach Wiederverbindung weiterspielen.
 
+Eine ungestartete Lobby kann der Host ausdrücklich über einen Bestätigungsdialog schließen. Einladung und weitere Snapshots sind danach ungültig, der Raumlimit-Platz wird frei. Daten und Anfragebelege bleiben erhalten; eine verlorene Erfolgsantwort lässt sich mit derselben UUID wiederholen. Laufende oder abgeschlossene Spiele werden durch diese Funktion niemals geschlossen.
+
 ## Integration
 
 Migration und benötigte Umgebungsvariablen sind in `../BACKEND.md` beschrieben. Produktive Anwendung und Veröffentlichung erfordern ausdrückliche Freigabe. Details des tatsächlich verifizierten Standes: [[Fortschritt]], [[Offene Aufgaben]].

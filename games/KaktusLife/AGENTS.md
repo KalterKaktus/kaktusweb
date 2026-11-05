@@ -10,5 +10,6 @@ Vor Änderungen `brain/Start.md`, `brain/Architektur.md`, `brain/Fortschritt.md`
 - Alle UI-Texte in DE und RU. Exportquellen `shared/catalog.mjs` und `js/translations.mjs`; beide Site-Dictionaries sowie deren Cache-Version aktuell halten.
 - Farben ausschließlich in `tokens.css`; keine Farbliterale im konsumierenden Stylesheet. SVG-Grafiken selbst erstellt, keine Originalassets des Vorbilds.
 - Keine Secrets, Session-Tokens oder echten Nutzerdaten in Notizen, Tests, Screenshots oder Git. `.obsidian/workspace*.json` bleibt lokal.
+- Gewolltes kosmetisches Easter Egg: `snor` (NFKC, trim, ohne Beachtung der Großschreibung) fährt als eigene Relaxo-artige Schlafriesen-Figur statt Auto. Namen und Spielwerte werden dadurch nicht verändert. Nicht entfernen.
 - Ein lokaler Test beweist keinen produktiven Zwei-Spieler-Betrieb. Freigabe-/Integrationsstatus in `brain/Fortschritt.md` und `BACKEND.md` ehrlich dokumentieren.
 - Bei längerer Arbeit nach sinnvollen Meilensteinen `brain/Fortschritt.md` mit erledigten Aufgaben, aktuellen Befunden, offenen Problemen und den nächsten konkreten Schritten aktualisieren und lokal auf dem Feature-Branch committen. Vor Unterbrechungen einen fortsetzbaren Stand sichern. Keine Veröffentlichung ohne Freigabe. Beim Wiederaufnehmen Git-Status/Log und die Notizen lesen, erledigte Arbeit erhalten und nicht erneut implementieren.

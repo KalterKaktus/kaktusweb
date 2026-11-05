@@ -16,6 +16,7 @@ try {
  const request=randomUUID(),intent={op:'create'};
  let result=await rpc('kaktuslife_lobby',{p_actor:ids[0],p_operation:'create',p_request_id:request,p_intent:intent,p_code:'ABCDEFGH23'});
  const room=result.room;
+ const closeLobby=(actor,target,revision,requestId=randomUUID())=>rpc('kaktuslife_lobby',{p_actor:actor,p_operation:'close',p_request_id:requestId,p_intent:{op:'close',roomId:target},p_room_id:target,p_revision:revision});
  assert.equal(room.hostName,'Mila');assert.equal(room.guestId,null);
  result=await rpc('kaktuslife_lobby',{p_actor:ids[0],p_operation:'create',p_request_id:request,p_intent:intent,p_code:'ZZZZZZZZ23'});
  assert.equal(result.replayed,true);assert.equal(result.room.id,room.id);
@@ -34,6 +35,8 @@ try {
  await assert.rejects(commit(ids[1],randomUUID(),current.revision,{type:'start'},state),/forbidden/);
  result=await commit(ids[0],startRequest,current.revision,{type:'start'},state);
  current=result.room;assert.equal(current.revision,3);assert.equal(current.state.status,'playing');
+ await assert.rejects(closeLobby(ids[0],room.id,current.revision),/alreadyStarted/);
+ assert.deepEqual((await rpc('kaktuslife_snapshot',{p_actor:ids[0],p_room_id:room.id})).room.state,current.state);
  result=await commit(ids[0],randomUUID(),current.revision,{type:'roll'},{...state,stage:'end'});
  current=result.room;assert.equal(current.revision,4);
  // Response loss plus a subsequent turn: the old request must replay before checking stale revision.
@@ -50,9 +53,33 @@ try {
  const rematch=()=>rpc('kaktuslife_lobby',{p_actor:ids[1],p_operation:'rematch',p_request_id:randomUUID(),p_intent:{op:'rematch',roomId:room.id},p_room_id:room.id,p_revision:current.revision});
  await assert.rejects(rematch(),/notFinished/);
  result=await commit(ids[0],randomUUID(),current.revision,{type:'roll'},{...state,status:'finished'});current=result.room;
+ await assert.rejects(closeLobby(ids[0],room.id,current.revision),/alreadyStarted/);
+ assert.deepEqual((await rpc('kaktuslife_snapshot',{p_actor:ids[0],p_room_id:room.id})).room.state,current.state);
  result=await rematch();current=result.room;
  assert.equal(current.state,null);assert.equal(current.guestReady,false);assert.equal(current.guestId,ids[1]);
  await assert.rejects(commit(ids[0],randomUUID(),current.revision,{type:'start'},state),/notReady/);
+
+ // Abandoned lobbies can be closed safely without deleting rows, games, or receipt history.
+ const makeHostRoom=(code)=>rpc('kaktuslife_lobby',{p_actor:ids[0],p_operation:'create',p_request_id:randomUUID(),p_intent:{op:'create'},p_code:code});
+ let closable=(await makeHostRoom('CABCDEF234')).room;
+ await makeHostRoom('DABCDEF234');
+ await assert.rejects(makeHostRoom('EABCDEF234'),/rateLimit/);
+ closable=(await rpc('kaktuslife_lobby',{p_actor:ids[1],p_operation:'join',p_request_id:randomUUID(),p_intent:{op:'join',code:closable.code},p_code:closable.code})).room;
+ await assert.rejects(closeLobby(ids[1],closable.id,closable.revision),/forbidden/);
+ await assert.rejects(closeLobby(ids[2],closable.id,closable.revision),/forbidden/);
+ await assert.rejects(closeLobby(ids[0],closable.id,0),/conflict/);
+ const closeRequest=randomUUID();
+ const closeResults=await Promise.all([1,2].map(()=>closeLobby(ids[0],closable.id,closable.revision,closeRequest)));
+ assert(closeResults.every(value=>value.room.closed&&value.room.revision===closable.revision+1));
+ assert.equal(closeResults.filter(value=>value.replayed).length,1);
+ const kept=(await db.query('select closed_at is not null as closed,expires_at<=clock_timestamp() as expired,state from public.kaktuslife_rooms where id=$1',[closable.id])).rows[0];
+ assert.deepEqual(kept,{closed:true,expired:true,state:null});
+ assert.equal(Number((await db.query('select count(*) n from public.kaktuslife_requests where actor_id=$1 and request_id=$2',[ids[0],closeRequest])).rows[0].n),1);
+ for(const actor of [ids[0],ids[1],ids[2]])await assert.rejects(rpc('kaktuslife_snapshot',{p_actor:actor,p_room_id:closable.id}),/notFound/);
+ await assert.rejects(rpc('kaktuslife_lobby',{p_actor:ids[2],p_operation:'join',p_request_id:randomUUID(),p_intent:{op:'join',code:closable.code},p_code:closable.code}),/notFound/);
+ assert.equal((await closeLobby(ids[0],closable.id,999,closeRequest)).replayed,true);
+ await assert.rejects(closeLobby(ids[0],room.id,current.revision,closeRequest),/requestConflict/);
+ assert.equal((await makeHostRoom('EABCDEF234')).room.closed,false);
 
  // Three unfinished rooms per host; even finished rooms still count toward ten creations per hour.
  const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -79,10 +106,10 @@ try {
  await assert.rejects(rpc('kaktuslife_snapshot',{p_actor:ids[1],p_room_id:room.id}),/banned/);
  await assert.rejects(rpc('kaktuslife_snapshot',{p_actor:randomUUID(),p_room_id:room.id}),/auth/);
 
- const beforeRows=(await db.query('select id,revision,state from public.kaktuslife_rooms order by id')).rows;
+ const beforeRows=(await db.query('select id,revision,state,closed_at from public.kaktuslife_rooms order by id')).rows;
  const beforeReceipts=(await db.query('select actor_id,request_id,intent from public.kaktuslife_requests order by actor_id,request_id')).rows;
  await db.exec(migration); // Applying twice must preserve actual saved rooms and receipts, not only schema.
- assert.deepEqual((await db.query('select id,revision,state from public.kaktuslife_rooms order by id')).rows,beforeRows);
+ assert.deepEqual((await db.query('select id,revision,state,closed_at from public.kaktuslife_rooms order by id')).rows,beforeRows);
  assert.deepEqual((await db.query('select actor_id,request_id,intent from public.kaktuslife_requests order by actor_id,request_id')).rows,beforeReceipts);
  for(const role of ['anon','authenticated']){
   const permissions=(await db.query(`select has_table_privilege($1,'public.kaktuslife_rooms','select') as rooms,has_table_privilege($1,'public.kaktuslife_requests','select') as receipts,has_function_privilege($1,'public.kaktuslife_snapshot(uuid,uuid,uuid,jsonb)','execute') as snapshot,has_function_privilege($1,'public.kaktuslife_commit(uuid,uuid,uuid,jsonb,bigint,jsonb)','execute') as commit,has_function_privilege($1,'public.kaktuslife_lobby(uuid,text,uuid,jsonb,uuid,text,bigint,boolean)','execute') as lobby`,[role])).rows[0];
@@ -98,5 +125,5 @@ try {
  await db.exec('reset role;set role service_role');
  await assert.rejects(db.query('select * from public.kaktuslife_rooms'),/permission denied/);
  result=await rpc('kaktuslife_snapshot',{p_actor:ids[0],p_room_id:room.id});assert.equal(result.room.id,room.id);
- console.log('SQL migration PASS: data-preserving reapply, create/replay, two seats, readiness/host start, CAS writer race, stale-version replay, UUID intent conflict, turn/seat checks, rematch consent, create/write limits, bans, outsider isolation, anon/authenticated table+RPC deny, service-role RPC-only.');
+ console.log('SQL migration PASS: data-preserving reapply, create/replay, two seats, readiness/host start, CAS writer race, stale-version replay, UUID intent conflict, turn/seat checks, rematch consent, host lobby-close/capacity recovery/expired-receipt replay, active+finished game preservation, create/write limits, bans, outsider isolation, anon/authenticated table+RPC deny, service-role RPC-only.');
 }finally{await db.close();}

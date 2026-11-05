@@ -38,12 +38,12 @@ function onlyKeys(value, keys) {
 function normalizeInput(value) {
     if (!onlyKeys(value, ["op", "roomId", "code", "requestId", "revision", "action"])) throw failure("invalidRequest");
     const { op } = value;
-    if (!["create", "join", "snapshot", "action", "rematch"].includes(op)) throw failure("invalidRequest");
-    const fields = { create: ["op", "requestId"], join: ["op", "requestId", "code"], snapshot: ["op", "roomId"], action: ["op", "roomId", "requestId", "revision", "action"], rematch: ["op", "roomId", "requestId", "revision"] };
+    if (!["create", "join", "snapshot", "action", "rematch", "close"].includes(op)) throw failure("invalidRequest");
+    const fields = { create: ["op", "requestId"], join: ["op", "requestId", "code"], snapshot: ["op", "roomId"], action: ["op", "roomId", "requestId", "revision", "action"], rematch: ["op", "roomId", "requestId", "revision"], close: ["op", "roomId", "requestId", "revision"] };
     if (!onlyKeys(value, fields[op])) throw failure("invalidRequest");
     if (op !== "snapshot" && !UUID.test(value.requestId || "")) throw failure("invalidRequest");
-    if (["snapshot", "action", "rematch"].includes(op) && !UUID.test(value.roomId || "")) throw failure("invalidRequest");
-    if (["action", "rematch"].includes(op) && (!Number.isSafeInteger(value.revision) || value.revision < 0)) throw failure("invalidRequest");
+    if (["snapshot", "action", "rematch", "close"].includes(op) && !UUID.test(value.roomId || "")) throw failure("invalidRequest");
+    if (["action", "rematch", "close"].includes(op) && (!Number.isSafeInteger(value.revision) || value.revision < 0)) throw failure("invalidRequest");
     const normalized = { op, roomId: value.roomId?.toLowerCase() || null, requestId: value.requestId?.toLowerCase() || null, revision: value.revision ?? null };
     if (op === "join") {
         normalized.code = typeof value.code === "string" ? value.code.trim().toUpperCase() : "";
@@ -63,7 +63,7 @@ function normalizeInput(value) {
 function intentFor(input) {
     if (input.op === "create") return { op: "create" };
     if (input.op === "join") return { op: "join", code: input.code };
-    if (input.op === "rematch") return { op: "rematch", roomId: input.roomId };
+    if (["rematch", "close"].includes(input.op)) return { op: input.op, roomId: input.roomId };
     return { op: "action", roomId: input.roomId, action: input.action };
 }
 
@@ -126,7 +126,7 @@ export function createHandler({ fetchImpl = globalThis.fetch, getEnv = (name) =>
                 return data;
             };
             let result;
-            if (["create", "join", "rematch"].includes(input.op) || input.action?.type === "ready") {
+            if (["create", "join", "rematch", "close"].includes(input.op) || input.action?.type === "ready") {
                 const intent = intentFor(input);
                 result = await rpc("kaktuslife_lobby", {
                     p_operation: input.op === "action" ? "ready" : input.op,
