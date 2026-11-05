@@ -287,6 +287,8 @@
         "fishing_text": "Fange Fische aktiv, fülle deinen Fish Index und schalte neue Gewässer frei.",
         "go_fish": "Angeln gehen",
         "garden_tag": "Cozy Farming",
+        "life_tag": "Online-Brettspiel",
+        "life_text": "Zwei Menschen, ein Lebensweg: Karriere, Familie und große Entscheidungen.",
         "garden_text": "Baue Nutzpflanzen an und teile ein Dorf live mit bis zu sechs Gärtnern.",
         "lounge_tag": "Social Casino",
         "lounge_text": "Hole tägliche Chips ab und lass eine Kugel durch Plinko fallen.",
@@ -1762,6 +1764,1082 @@
         "referrer": {
             "name": "Werber",
             "desc": "Wirb 1 Freund der Level 5 erreicht"
+        }
+    },
+    "life": {
+        "careers": {
+            "maker": {
+                "title": "Werkstattprofi",
+                "description": "25.000 je Zahltag. Dein Haus kostet 15.000 weniger."
+            },
+            "ranger": {
+                "title": "Naturhüter",
+                "description": "25.000 je Zahltag. Versicherung ist inklusive."
+            },
+            "creator": {
+                "title": "Kreativstudio",
+                "description": "22.000 plus 0–8.000 Auftragsbonus je Zahltag."
+            },
+            "engineer": {
+                "title": "Energie-Ingenieur",
+                "description": "36.000 je Zahltag. Anlagen erhalten zusätzlich 2 % Rendite."
+            },
+            "doctor": {
+                "title": "Kaktus-Medizin",
+                "description": "35.000 je Zahltag. Versicherung ist inklusive."
+            },
+            "scientist": {
+                "title": "Zukunftsforschung",
+                "description": "34.000 je Zahltag. Je 17.000 Forschungsprämie auf Feld 48 und 64."
+            }
+        },
+        "houses": {
+            "cottage": {
+                "title": "Kleines Gartenhaus",
+                "description": "70.000 Kaufpreis · 2.000 Unterhalt je Zahltag · 110.000 Endwert · +1 Glück."
+            },
+            "townhouse": {
+                "title": "Buntes Stadthaus",
+                "description": "130.000 Kaufpreis · 3.000 Unterhalt je Zahltag · 185.000 Endwert · +2 Glück."
+            },
+            "villa": {
+                "title": "Sonnenvilla",
+                "description": "200.000 Kaufpreis · 4.000 Unterhalt je Zahltag · 270.000 Endwert · +3 Glück."
+            }
+        },
+        "milestones": {
+            "departure": {
+                "title": "Dein erster eigener Weg",
+                "description": "Direkt Geld verdienen oder mit einem Studienkredit starten?"
+            },
+            "qualification": {
+                "title": "Ein Beruf fürs Leben?",
+                "description": "Ein neuer Abschluss oder ein erster beruflicher Meilenstein."
+            },
+            "firstRoute": {
+                "title": "Welche Richtung fühlt sich richtig an?",
+                "description": "Sicherheit federt Verluste ab. Abenteuer verstärkt Gewinne und Risiken."
+            },
+            "partner": {
+                "title": "Zu zweit oder ganz bei dir?",
+                "description": "Eine Partnerschaft und ein unabhängiges Leben können beide reich machen."
+            },
+            "home": {
+                "title": "Ein Ort zum Ankommen",
+                "description": "Kaufen oder weiter mieten? Fehlendes Geld wird transparent als Kredit verbucht."
+            },
+            "family": {
+                "title": "Deine kleine große Familie",
+                "description": "Kinder bringen Erinnerungen, kosten aber 12.000 zum Start und 2.500 je Zahltag."
+            },
+            "careerChange": {
+                "title": "Zeit für ein neues Kapitel",
+                "description": "Mehr Verantwortung, mehr freie Zeit oder ein eigenes kleines Unternehmen?"
+            },
+            "secondRoute": {
+                "title": "Noch einmal neu abbiegen",
+                "description": "Du kannst deinen Lebensstil jetzt ändern. Bestehende Versicherungen bleiben bestehen."
+            },
+            "investment": {
+                "title": "Was soll aus deinem Geld werden?",
+                "description": "Anlagen schwanken an jedem Zahltag. Liquidität und Schuldentilgung bieten Alternativen."
+            },
+            "legacy": {
+                "title": "Was bleibt, ist deine Geschichte",
+                "description": "Geld, Gemeinschaft und Erinnerungen zählen im Finale."
+            },
+            "retirement": {
+                "title": "Hallo, goldene Jahre!",
+                "description": "Alle Lebenswerte werden am Ende zusammengerechnet. Wer zuerst ankommt, erhält keinen Zeitbonus."
+            }
+        },
+        "tiles": {
+            "event": {
+                "title": "Lebensmoment",
+                "description": "Eine neue Geschichte wartet auf dich."
+            },
+            "payday": {
+                "title": "Zahltag",
+                "description": "Gehalt wird auch beim Überqueren ausgezahlt; Unterhalt wird abgezogen."
+            },
+            "tax": {
+                "title": "Gemeinschaftskasse",
+                "description": "8.000 Beitrag; auf dem sicheren Weg 20 % weniger."
+            },
+            "market": {
+                "title": "Kleine Geldanlage",
+                "description": "Einlegen, auszahlen oder Geld verfügbar halten."
+            },
+            "opportunity": {
+                "title": "Eine offene Tür",
+                "description": "Ein Lebensmoment mit einer neuen Entscheidung."
+            }
+        },
+        "routes": {
+            "safe": {
+                "title": "Der ruhige Gartenweg",
+                "description": "20 % kleinere Ereignisverluste, normale Gewinne. Einmalig 10.000 Planungspuffer."
+            },
+            "adventure": {
+                "title": "Die Abenteuerstraße",
+                "description": "50 % größere Ereignisgewinne und 40 % größere Verluste. Einmalig +2 Glück."
+            }
+        },
+        "choices": {
+            "career": {
+                "title": "Direkt ins Berufsleben",
+                "description": "20.000 Startbonus, sofort Gehalt, kein Studienkredit."
+            },
+            "study": {
+                "title": "Erst studieren",
+                "description": "60.000 Studienkredit; Abschluss auf Feld 8 eröffnet höher bezahlte Berufe."
+            },
+            "training": {
+                "title": "In Können investieren",
+                "description": "20.000 Weiterbildungskosten. Ab jetzt +3.000 Gehalt je Zahltag."
+            },
+            "bonus": {
+                "title": "Erste Erfolge feiern",
+                "description": "20.000 Erfolgsprämie für einen guten Start."
+            },
+            "mentor": {
+                "title": "Zeit mit einem Mentor",
+                "description": "+4 Glück durch Menschen, die an dich glauben."
+            },
+            "insure": {
+                "title": "Sicherheit dazubuchen",
+                "description": "Einmalig 18.000. Bei versicherten Schäden entfällt der Geldverlust komplett."
+            },
+            "uninsured": {
+                "title": "Risiko selbst tragen",
+                "description": "Keine Prämie. Unfälle und Schäden bezahlst du selbst."
+            },
+            "partner": {
+                "title": "Gemeinsam weiterreisen",
+                "description": "15.000 für die Hochzeit, +2 Glück, 25.000 Partnerschaftswert im Finale."
+            },
+            "solo": {
+                "title": "Mein eigener Rhythmus",
+                "description": "+4 Glück durch Freiheit und Freundschaften."
+            },
+            "rent": {
+                "title": "Flexibel bleiben",
+                "description": "Kein Kaufpreis. Miete kostet weiter 3.000 je Zahltag, +11 Glück durch Ortsfreiheit."
+            },
+            "children0": {
+                "title": "Ein Leben voller Freiraum",
+                "description": "Keine Kinderkosten, +2 Glück. Dein Weg ist genauso viel wert."
+            },
+            "children1": {
+                "title": "Ein Kind willkommen heißen",
+                "description": "12.000 Startkosten, 2.500 Unterhalt je Zahltag, +2 Glück und 35.000 Familienwert."
+            },
+            "children2": {
+                "title": "Zwillinge, doppeltes Leben",
+                "description": "24.000 Startkosten, 5.000 Unterhalt je Zahltag, +2 Glück und 70.000 Familienwert."
+            },
+            "promotion": {
+                "title": "Die nächste Karrierestufe",
+                "description": "25.000 Einsatz, −1 Glück. Dafür +7.000 Gehalt an allen weiteren Zahltagen."
+            },
+            "sabbatical": {
+                "title": "Raum zum Durchatmen",
+                "description": "5.000 Auszeitbudget für +4 Glück."
+            },
+            "venture": {
+                "title": "Mein eigener kleiner Laden",
+                "description": "20.000 Einsatz. 60 % Chance auf 60.000 Erlös, sonst kein Erlös."
+            },
+            "invest20": {
+                "title": "20.000 breit anlegen",
+                "description": "Kauf von Anlagen für 20.000. Wertentwicklung an jedem weiteren Zahltag."
+            },
+            "invest60": {
+                "title": "60.000 für die Zukunft",
+                "description": "Kauf von Anlagen für 60.000. Schwankungen gehören dazu."
+            },
+            "invest120": {
+                "title": "120.000 langfristig anlegen",
+                "description": "Großes Portfolio für 120.000; dieselbe Rendite und dasselbe Verlustrisiko."
+            },
+            "cashout": {
+                "title": "Anlagen auszahlen",
+                "description": "Alle Anlagen zum aktuellen Wert verkaufen. Keine Gebühr."
+            },
+            "repay": {
+                "title": "Kredit zurückzahlen",
+                "description": "So viel wie möglich aus vorhandenem Bargeld tilgen. Keine neuen Kredite."
+            },
+            "hold": {
+                "title": "Geld verfügbar halten",
+                "description": "Nichts ausgeben und ohne neue Verpflichtung weiterreisen."
+            },
+            "community": {
+                "title": "Einen Gemeinschaftsgarten stiften",
+                "description": "20.000 spenden, +6 Glück. 50 % Chance auf 12.000 Förderzuschuss."
+            },
+            "memories": {
+                "title": "Eine letzte große Reise",
+                "description": "10.000 Reisebudget, +4 Glück."
+            },
+            "retire": {
+                "title": "Das Leben feiern",
+                "description": "Dein Bargeld, Haus, Anlagen, Familie und Glück zählen; Schulden werden abgezogen."
+            }
+        },
+        "events": {
+            "bicycle": {
+                "options": {
+                    "buy": {
+                        "title": "Lieblingsrad kaufen",
+                        "description": "8.000 ausgeben, +3 Glück."
+                    },
+                    "repair": {
+                        "title": "Das alte Rad reparieren",
+                        "description": "+2.000 Nachbarschaftsbonus und +1 Glück."
+                    }
+                },
+                "title": "Ein Rad für die Stadt",
+                "description": "Der tägliche Weg darf schöner werden."
+            },
+            "roof": {
+                "options": {
+                    "repair": {
+                        "title": "Sorgfältig reparieren",
+                        "description": "Versicherter Schaden: 18.000, +1 Glück."
+                    },
+                    "patch": {
+                        "title": "Selbst abdichten",
+                        "description": "6.000 Material, −1 Glück; nicht versichert."
+                    }
+                },
+                "title": "Ein undichtes Dach",
+                "description": "Der Regen kommt leider bis ins Wohnzimmer."
+            },
+            "festival": {
+                "options": {
+                    "visit": {
+                        "title": "Den Abend genießen",
+                        "description": "5.000 für +3 Glück."
+                    },
+                    "stand": {
+                        "title": "Einen Stand betreiben",
+                        "description": "+12.000 Einnahmen."
+                    }
+                },
+                "title": "Lichterfest im Viertel",
+                "description": "Zwischen Musik und Lampions entstehen Geschichten."
+            },
+            "grant": {
+                "options": {
+                    "cash": {
+                        "title": "Die Förderung nutzen",
+                        "description": "+16.000."
+                    },
+                    "share": {
+                        "title": "Wissen kostenlos weitergeben",
+                        "description": "+5.000 und +3 Glück."
+                    }
+                },
+                "title": "Eine gute Idee wird gefördert",
+                "description": "Dein nachhaltiges Projekt hat die Jury überzeugt."
+            },
+            "dentist": {
+                "options": {
+                    "full": {
+                        "title": "Die Behandlung abschließen",
+                        "description": "Versicherte Rechnung: 14.000."
+                    },
+                    "plan": {
+                        "title": "Kleine Behandlung wählen",
+                        "description": "4.000 bezahlen und −2 Glück; nicht versichert."
+                    }
+                },
+                "title": "Eine überraschende Zahnarztrechnung",
+                "description": "Auch Kaktusmenschen müssen zum Kontrolltermin."
+            },
+            "solar": {
+                "options": {
+                    "join": {
+                        "title": "Solar-Anteile kaufen",
+                        "description": "15.000 bezahlen, Anlagenwert +18.000."
+                    },
+                    "help": {
+                        "title": "Beim Aufbau helfen",
+                        "description": "+7.000 und +1 Glück."
+                    }
+                },
+                "title": "Sonne auf dem Dach",
+                "description": "Eine Energiegenossenschaft sucht neue Mitglieder."
+            },
+            "storm": {
+                "options": {
+                    "claim": {
+                        "title": "Den Schaden beseitigen",
+                        "description": "Versicherter Schaden: 25.000."
+                    },
+                    "neighbors": {
+                        "title": "Mit Nachbarn anpacken",
+                        "description": "12.000 Material, +2 Glück; nicht versichert."
+                    }
+                },
+                "title": "Sturm über Kaktusstadt",
+                "description": "Ein umgestürzter Baum hat einiges beschädigt."
+            },
+            "award": {
+                "options": {
+                    "prize": {
+                        "title": "Das Preisgeld annehmen",
+                        "description": "+20.000."
+                    },
+                    "party": {
+                        "title": "Das ganze Team einladen",
+                        "description": "+7.000 und +3 Glück."
+                    }
+                },
+                "title": "Du wirst ausgezeichnet",
+                "description": "Dein Einsatz ist nicht unbemerkt geblieben."
+            },
+            "friend": {
+                "options": {
+                    "support": {
+                        "title": "Unkompliziert helfen",
+                        "description": "10.000 geben, +4 Glück."
+                    },
+                    "time": {
+                        "title": "Zeit schenken",
+                        "description": "+2 Glück."
+                    }
+                },
+                "title": "Ein Freund braucht einen Neustart",
+                "description": "Manchmal ist Hilfe der Anfang von etwas Gutem."
+            },
+            "heirloom": {
+                "options": {
+                    "sell": {
+                        "title": "Das Sammlerstück verkaufen",
+                        "description": "+18.000."
+                    },
+                    "keep": {
+                        "title": "Die Geschichte bewahren",
+                        "description": "+4 Glück."
+                    }
+                },
+                "title": "Ein Familienfund",
+                "description": "Auf dem Dachboden liegt mehr als alte Kartons."
+            },
+            "startup": {
+                "options": {
+                    "back": {
+                        "title": "Den Versuch finanzieren",
+                        "description": "12.000 Einsatz; 50 % Chance auf 34.000, sonst 0."
+                    },
+                    "consult": {
+                        "title": "Mit Erfahrung helfen",
+                        "description": "+6.000 Honorar."
+                    }
+                },
+                "title": "Ein mutiger Prototyp",
+                "description": "Ein kleines Team glaubt an eine große Idee."
+            },
+            "weekend": {
+                "options": {
+                    "trip": {
+                        "title": "Raus in die Berge",
+                        "description": "7.000 Reisekosten, +3 Glück."
+                    },
+                    "work": {
+                        "title": "Einen Auftrag fertigstellen",
+                        "description": "+10.000, −1 Glück."
+                    }
+                },
+                "title": "Ein freies Wochenende",
+                "description": "Der Kalender ist ausnahmsweise leer."
+            },
+            "repairCafe": {
+                "options": {
+                    "build": {
+                        "title": "Einen Abend mithelfen",
+                        "description": "+2 Glück und +4.000 Aufwandsentschädigung."
+                    },
+                    "sponsor": {
+                        "title": "Die Werkbank finanzieren",
+                        "description": "8.000 spenden, +4 Glück."
+                    }
+                },
+                "title": "Ein Repair-Café entsteht",
+                "description": "Werkzeug, Kuchen und eine gemeinsame Idee."
+            },
+            "taxRefund": {
+                "options": {
+                    "take": {
+                        "title": "Erstattung auszahlen",
+                        "description": "+14.000."
+                    },
+                    "invest": {
+                        "title": "Direkt für später anlegen",
+                        "description": "Anlagenwert +17.000."
+                    }
+                },
+                "title": "Post vom Finanzamt",
+                "description": "Diesmal darf der Brief Freude machen."
+            },
+            "lostPhone": {
+                "options": {
+                    "replace": {
+                        "title": "Zuverlässig ersetzen",
+                        "description": "Versicherter Schaden: 9.000."
+                    },
+                    "simple": {
+                        "title": "Ein einfaches Gerät nehmen",
+                        "description": "3.000 bezahlen, −1 Glück."
+                    }
+                },
+                "title": "Das Handy ist verschwunden",
+                "description": "Ein leerer Platz in der Tasche, ein voller Tag."
+            },
+            "garden": {
+                "options": {
+                    "market": {
+                        "title": "Ableger auf dem Markt verkaufen",
+                        "description": "+11.000."
+                    },
+                    "give": {
+                        "title": "Mit der Nachbarschaft teilen",
+                        "description": "+3 Glück."
+                    }
+                },
+                "title": "Dein Garten blüht auf",
+                "description": "Aus ein paar Samen wird ein kleines Paradies."
+            },
+            "course": {
+                "options": {
+                    "learn": {
+                        "title": "Den Kurs belegen",
+                        "description": "12.000 Kosten, ab jetzt +1.500 Gehalt."
+                    },
+                    "library": {
+                        "title": "Die Bibliothek entdecken",
+                        "description": "+2 Glück."
+                    }
+                },
+                "title": "Ein Kurs, der dich weiterbringt",
+                "description": "Eine neue Fähigkeit könnte Türen öffnen."
+            },
+            "pet": {
+                "options": {
+                    "adopt": {
+                        "title": "Einziehen lassen",
+                        "description": "9.000 Startbudget, +4 Glück."
+                    },
+                    "walk": {
+                        "title": "Regelmäßig Gassi gehen",
+                        "description": "+2 Glück."
+                    }
+                },
+                "title": "Eine Pfote findet ein Zuhause",
+                "description": "Im Tierheim wartet ein sehr neugieriger Mitbewohner."
+            },
+            "marketStall": {
+                "options": {
+                    "sell": {
+                        "title": "Einen Stand aufbauen",
+                        "description": "+9.000 und +1 Glück."
+                    },
+                    "browse": {
+                        "title": "Nach Schätzen stöbern",
+                        "description": "4.000 ausgeben, +3 Glück."
+                    }
+                },
+                "title": "Flohmarkt unter Kastanien",
+                "description": "Was du nicht mehr brauchst, freut jemand anderen."
+            },
+            "flood": {
+                "options": {
+                    "service": {
+                        "title": "Fachleute rufen",
+                        "description": "Versicherter Schaden: 20.000."
+                    },
+                    "diy": {
+                        "title": "Selbst trocknen und reparieren",
+                        "description": "8.000, −1 Glück; nicht versichert."
+                    }
+                },
+                "title": "Wasser im Keller",
+                "description": "Die Waschmaschine hat eigene Pläne gemacht."
+            },
+            "book": {
+                "options": {
+                    "publish": {
+                        "title": "Das Angebot unterschreiben",
+                        "description": "+15.000 Honorar."
+                    },
+                    "free": {
+                        "title": "Ein offenes Lesecafé starten",
+                        "description": "+4 Glück."
+                    }
+                },
+                "title": "Deine Geschichte wird ein Buch",
+                "description": "Jemand möchte deine Erfahrungen lesen."
+            },
+            "concert": {
+                "options": {
+                    "tickets": {
+                        "title": "Ganz vorne dabei sein",
+                        "description": "8.000 für +4 Glück."
+                    },
+                    "stream": {
+                        "title": "Mit Freunden zu Hause hören",
+                        "description": "+2 Glück."
+                    }
+                },
+                "title": "Deine Lieblingsband kommt",
+                "description": "Ein Lied kann einen ganzen Sommer zurückbringen."
+            },
+            "overtime": {
+                "options": {
+                    "accept": {
+                        "title": "Die Extrameile gehen",
+                        "description": "+22.000, −2 Glück."
+                    },
+                    "decline": {
+                        "title": "Grenzen setzen",
+                        "description": "+2 Glück."
+                    }
+                },
+                "title": "Ein wichtiger Großauftrag",
+                "description": "Der Kunde zahlt gut, doch der Kalender ist schon voll."
+            },
+            "contest": {
+                "options": {
+                    "risk": {
+                        "title": "Bis ins Finale spielen",
+                        "description": "50 % Chance auf +30.000, sonst −5.000."
+                    },
+                    "leave": {
+                        "title": "Den kleinen Preis mitnehmen",
+                        "description": "+10.000."
+                    }
+                },
+                "title": "Das große Kaktus-Quiz",
+                "description": "Du weißt überraschend viel über stachelige Dinge."
+            },
+            "train": {
+                "options": {
+                    "travel": {
+                        "title": "Einfach einsteigen",
+                        "description": "6.000, +3 Glück."
+                    },
+                    "refund": {
+                        "title": "Die Reisekasse behalten",
+                        "description": "+5.000."
+                    }
+                },
+                "title": "Ein Zug ins Unbekannte",
+                "description": "Ein günstiges Ticket, ein freier Platz am Fenster."
+            },
+            "neighborhood": {
+                "options": {
+                    "fund": {
+                        "title": "Einen Baum finanzieren",
+                        "description": "7.000, +4 Glück."
+                    },
+                    "hands": {
+                        "title": "An einem Samstag helfen",
+                        "description": "+2 Glück."
+                    }
+                },
+                "title": "Ein Platz wird neu belebt",
+                "description": "Die Nachbarschaft träumt von Bäumen statt Asphalt."
+            },
+            "device": {
+                "options": {
+                    "replace": {
+                        "title": "Ein neues Gerät kaufen",
+                        "description": "Versicherter Schaden: 10.000, +1 Glück."
+                    },
+                    "repair": {
+                        "title": "Einen Ersatzteilversuch wagen",
+                        "description": "3.000 Kosten."
+                    }
+                },
+                "title": "Die Kaffeemaschine streikt",
+                "description": "Der Morgen beginnt heute etwas langsamer."
+            },
+            "reunion": {
+                "options": {
+                    "host": {
+                        "title": "Alle zu dir einladen",
+                        "description": "5.000, +4 Glück."
+                    },
+                    "picnic": {
+                        "title": "Ein Picknick organisieren",
+                        "description": "+2 Glück."
+                    }
+                },
+                "title": "Ein Wiedersehen nach Jahren",
+                "description": "Alte Freunde haben neue Geschichten."
+            },
+            "windfall": {
+                "options": {
+                    "cash": {
+                        "title": "Den Betrag auszahlen lassen",
+                        "description": "+24.000."
+                    },
+                    "portfolio": {
+                        "title": "Den Betrag anlegen",
+                        "description": "Anlagenwert +28.000."
+                    }
+                },
+                "title": "Ein unerwarteter Geldsegen",
+                "description": "Ein alter Vertrag zahlt sich spät aus."
+            },
+            "health": {
+                "options": {
+                    "retreat": {
+                        "title": "Eine Gesundheitswoche buchen",
+                        "description": "10.000, +5 Glück."
+                    },
+                    "walk": {
+                        "title": "Jeden Tag ein Spaziergang",
+                        "description": "+2 Glück."
+                    }
+                },
+                "title": "Zeit, auf dich zu achten",
+                "description": "Dein Körper freut sich über einen freundlicheren Alltag."
+            },
+            "museum": {
+                "options": {
+                    "lend": {
+                        "title": "Ein Erinnerungsstück verleihen",
+                        "description": "+8.000 und +1 Glück."
+                    },
+                    "guide": {
+                        "title": "Eine Führung mitgestalten",
+                        "description": "+3 Glück."
+                    }
+                },
+                "title": "Ein Museum für kleine Dinge",
+                "description": "Die Stadt sucht besondere Alltagsgeschichten."
+            },
+            "scam": {
+                "options": {
+                    "check": {
+                        "title": "Die Unterlagen prüfen",
+                        "description": "2.000 Beratung, danach +10.000 sichere Ersparnis."
+                    },
+                    "risk": {
+                        "title": "Trotzdem ausprobieren",
+                        "description": "25 % Chance auf 35.000, sonst −12.000."
+                    }
+                },
+                "title": "Ein verdächtig gutes Angebot",
+                "description": "Nicht jede glänzende Idee hält, was sie verspricht."
+            },
+            "school": {
+                "options": {
+                    "donate": {
+                        "title": "Material finanzieren",
+                        "description": "9.000, +4 Glück."
+                    },
+                    "teach": {
+                        "title": "Einen Workshop geben",
+                        "description": "+4.000 und +2 Glück."
+                    }
+                },
+                "title": "Ein Projekt für die nächste Generation",
+                "description": "Eine Schule baut ein Gewächshaus."
+            },
+            "commute": {
+                "options": {
+                    "pass": {
+                        "title": "Ein Jahresticket organisieren",
+                        "description": "5.000 Kosten, +2 Glück."
+                    },
+                    "remote": {
+                        "title": "Flexibel arbeiten",
+                        "description": "+7.000 Ersparnis."
+                    }
+                },
+                "title": "Eine neue Strecke zur Arbeit",
+                "description": "Die Stadt baut um. Du denkst gleich mit."
+            },
+            "harvest": {
+                "options": {
+                    "sell": {
+                        "title": "Die Ernte vermarkten",
+                        "description": "+15.000."
+                    },
+                    "feast": {
+                        "title": "Ein Erntefest ausrichten",
+                        "description": "+4 Glück."
+                    }
+                },
+                "title": "Ein Rekordjahr im Gemeinschaftsgarten",
+                "description": "Die Tomaten haben dieses Jahr alles gegeben."
+            },
+            "familyDay": {
+                "options": {
+                    "outing": {
+                        "title": "Einen Ausflug planen",
+                        "description": "6.000 plus 2.000 je Kind, +4 Glück."
+                    },
+                    "home": {
+                        "title": "Zusammen kochen und spielen",
+                        "description": "+2 Glück."
+                    }
+                },
+                "title": "Ein Tag für deine Lieblingsmenschen",
+                "description": "Nähe braucht manchmal einfach einen freien Nachmittag."
+            },
+            "scholarship": {
+                "options": {
+                    "fund": {
+                        "title": "Ein Stipendium ermöglichen",
+                        "description": "12.000, +5 Glück."
+                    },
+                    "mentor": {
+                        "title": "Persönlich begleiten",
+                        "description": "+3 Glück."
+                    }
+                },
+                "title": "Du darfst jemanden fördern",
+                "description": "Ein junges Talent braucht eine erste Chance."
+            },
+            "photo": {
+                "options": {
+                    "license": {
+                        "title": "Das Motiv lizenzieren",
+                        "description": "+17.000."
+                    },
+                    "exhibit": {
+                        "title": "Eine freie Ausstellung machen",
+                        "description": "+4 Glück."
+                    }
+                },
+                "title": "Ein Foto wird zum Stadtmotiv",
+                "description": "Dein Blick für den Alltag trifft einen Nerv."
+            },
+            "move": {
+                "options": {
+                    "renovate": {
+                        "title": "Mit Freunden renovieren",
+                        "description": "9.000, +4 Glück."
+                    },
+                    "reuse": {
+                        "title": "Möbel tauschen statt kaufen",
+                        "description": "+3.000 Ersparnis, +1 Glück."
+                    }
+                },
+                "title": "Frischer Wind in deiner Wohnung",
+                "description": "Ein wenig Farbe verändert mehr als nur Wände."
+            },
+            "bonusJob": {
+                "options": {
+                    "take": {
+                        "title": "Den Auftrag übernehmen",
+                        "description": "+13.000."
+                    },
+                    "share": {
+                        "title": "Eine Freundin empfehlen",
+                        "description": "+5.000 Vermittlung und +2 Glück."
+                    }
+                },
+                "title": "Ein Angebot für dein Können",
+                "description": "Ein besonderer Auftrag liegt genau auf deiner Wellenlänge."
+            }
+        },
+        "pending": {
+            "path": {
+                "title": "Dein Leben beginnt",
+                "description": "Jeder Weg bietet andere Chancen. Geld und Glück zählen beide."
+            },
+            "directCareer": {
+                "title": "Wähle deinen ersten Beruf",
+                "description": "Alle drei Wege stehen dir offen. Gehälter werden beim Überqueren der goldenen Felder gezahlt."
+            },
+            "degreeCareer": {
+                "title": "Dein Abschluss öffnet Türen",
+                "description": "Wähle einen der drei Studienberufe."
+            },
+            "insurance": {
+                "title": "Ein Sicherheitsnetz für deinen Weg",
+                "description": "Die Versicherung gilt bis zum Lebensende. Sie schützt nur ausdrücklich versicherte Ereignisse."
+            },
+            "market": {
+                "title": "Dein Geld, deine Entscheidung",
+                "description": "Anlagen ändern ihren Wert je Zahltag: 20 % Chance auf −10 %, 50 % auf +4 %, 30 % auf +8 %. Sichere Route: −5 %, +3 %, +6 %."
+            }
+        },
+        "log": {
+            "start": "Die Reise beginnt.",
+            "roll": "{name} würfelt {value} und erreicht Feld {to}.",
+            "payday": "Zahltag: {amount} Gehalt, {upkeep} Unterhalt.",
+            "interest": "Kreditzinsen: {amount}.",
+            "loan": "Automatischer Kredit: {amount}. Restgeld bleibt verfügbar.",
+            "tuition": "Studienkredit aufgenommen: {amount}.",
+            "career": "Ein neuer Beruf: {career}.",
+            "choice": "Entscheidung: {choice}.",
+            "cash": "Geld verändert sich um {amount}.",
+            "insured": "Die Versicherung übernimmt {amount}.",
+            "investment": "Anlagenentwicklung: {amount}.",
+            "repayment": "Kredit getilgt: {amount}.",
+            "grant": "Forschungsprämie: {amount}.",
+            "retire": "{name} ist im Ruhestand.",
+            "finished": "Alle sind angekommen. Zeit für eure Lebensbilanz!"
+        },
+        "errors": {
+            "invalidAction": "Diese Aktion ist gerade nicht möglich.",
+            "notYourTurn": "Die andere Person ist am Zug.",
+            "finished": "Diese Partie ist bereits beendet.",
+            "invalidChoice": "Diese Entscheidung steht nicht zur Verfügung.",
+            "invalidPlayers": "Genau zwei verschiedene Spieler werden benötigt.",
+            "invalidRandom": "Die Zufallsquelle hat einen ungültigen Wert geliefert.",
+            "invalidState": "Der Spielstand ist ungültig.",
+            "staleAction": "Der Spielstand hat sich inzwischen geändert.",
+            "auth": "Bitte melde dich an, um online mitzuspielen.",
+            "invalidRequest": "Diese Anfrage ist ungültig. Lade den Raum neu und versuche es erneut.",
+            "forbidden": "Du bist hier nicht spielberechtigt oder gerade nicht am Zug.",
+            "banned": "Mit diesem Account ist Spielen derzeit nicht möglich.",
+            "notFound": "Dieser Raum wurde nicht gefunden oder ist abgelaufen.",
+            "full": "In diesem Raum spielen bereits zwei Personen.",
+            "conflict": "Der Spielstand hat sich inzwischen geändert. Der aktuelle Stand wird geladen.",
+            "requestConflict": "Diese Anfrage wurde bereits für eine andere Aktion verwendet. Lade den Raum neu.",
+            "notReady": "Zum Start müssen zwei Personen im Raum und beide bereit sein.",
+            "alreadyStarted": "Diese Partie hat bereits begonnen.",
+            "notFinished": "Eine neue Partie ist erst nach dem Spielende möglich.",
+            "rateLimit": "Du hast viele Anfragen gesendet. Warte bitte kurz und versuche es erneut.",
+            "unavailable": "Online-Spiel ist gerade nicht erreichbar. Falls KaktusLife neu eingerichtet wird, fehlen möglicherweise noch die Serverfreigabe oder die Datenbankmigration.",
+            "network": "Die Verbindung ist unterbrochen. Dein bestätigter Spielstand bleibt gespeichert. Versuche dieselbe Aktion erneut.",
+            "busy": "Deine letzte Aktion wird noch verarbeitet."
+        },
+        "ui": {
+            "metaTitle": "KaktusLife · Dein Leben. Dein Weg.",
+            "skip": "Zum Spiel",
+            "allGames": "Alle Spiele",
+            "signIn": "Anmelden",
+            "loading": "Dein nächstes Abenteuer wächst …",
+            "footer": "Mit Liebe gewachsen bei KalterKaktus.",
+            "privacy": "Datenschutz",
+            "eyebrow": "ZWEI MENSCHEN. TAUSEND MÖGLICHKEITEN.",
+            "title": "Das Leben spielt",
+            "titleAccent": "mit deinen Plänen.",
+            "intro": "Ein Studium oder direkt ins Berufsleben? Ein kleines Zuhause oder das große Abenteuer? Dreht am Rad und findet euren eigenen Weg.",
+            "players": "2 Spieler",
+            "duration": "20–30 Minuten",
+            "decisions": "Eure Entscheidungen",
+            "original": "DAS KAKTUSLIFE BRETT",
+            "mapTag": "Jeder Weg erzählt eine Geschichte.",
+            "mapCaption": "81 Felder · kleine Umwege · große Momente",
+            "playTogether": "Ein Leben voller Möglichkeiten.",
+            "lobbyIntro": "Lade einen Freund ein. Euer nächstes Kapitel beginnt hier.",
+            "online": "Online mit Freunden",
+            "privateRoom": "Ein privater Raum, nur für euch zwei.",
+            "createRoom": "Raum erstellen",
+            "joinLabel": "Du hast einen Einladungscode?",
+            "code": "Raumcode",
+            "codePlaceholder": "ABCDEFGH23",
+            "join": "Beitreten",
+            "or": "oder",
+            "needLogin": "Für private Online-Räume meldet ihr euch beide mit eurem KalterKaktus-Konto an.",
+            "signedAs": "Angemeldet als {name}",
+            "onlineHint": "Zwei Konten, zwei Geräte. Ein gemeinsames Spiel.",
+            "practice": "Gemeinsam an einem Gerät",
+            "practiceHint": "Lokales Übungsspiel für zwei Menschen. Ihr gebt euch das Gerät nach jedem Zug weiter.",
+            "playerOne": "Name · Spieler 1",
+            "playerTwo": "Name · Spieler 2",
+            "defaultOne": "Kaktusfreund 1",
+            "defaultTwo": "Kaktusfreund 2",
+            "startPractice": "Lokales Spiel starten",
+            "resumePractice": "Lokales Spiel fortsetzen",
+            "localSaved": "Euer lokales Spiel ist auf diesem Gerät gespeichert.",
+            "localOnly": "LOKALES ÜBUNGSSPIEL",
+            "onlineRoom": "PRIVATER ONLINE-RAUM",
+            "how": "So spielt sich das Leben",
+            "howOne": "Wählt euren Anfang",
+            "howOneText": "Beruf oder Studium: Der erste Schritt öffnet andere Möglichkeiten.",
+            "howTwo": "Dreht das Lebensrad",
+            "howTwoText": "Jede Zahl von 1 bis 10 hat dieselbe Chance. Wichtige Lebensmomente halten euch an.",
+            "howThree": "Schreibt eure Geschichte",
+            "howThreeText": "Karriere, Familie, Zuhause und Abenteuer – wägt Chancen und Kosten ab.",
+            "howFour": "Ankommen & vergleichen",
+            "howFourText": "Im Ruhestand zählen Bargeld, Haus, Anlagen, Familie und Glück. Schulden werden abgezogen.",
+            "setupTitle": "Online-Spiel noch nicht eingerichtet",
+            "setupMessage": "Der Spielserver ist hier noch nicht verfügbar. Für Online-Räume muss KaktusLife auf dem Server eingerichtet werden. Das lokale Übungsspiel könnt ihr bereits zu zweit spielen.",
+            "networkTitle": "Verbindung unterbrochen",
+            "networkMessage": "Wir konnten den Raum gerade nicht erreichen. Euer letzter bestätigter Spielstand bleibt erhalten. Versucht es erneut.",
+            "authTitle": "Bitte anmelden",
+            "authMessage": "Melde dich mit deinem KalterKaktus-Konto an, um einen privaten Raum zu öffnen oder beizutreten.",
+            "fullTitle": "Dieser Raum ist bereits voll",
+            "fullMessage": "In jedem Spiel ist Platz für zwei Menschen. Prüfe den Code oder erstellt einen neuen Raum.",
+            "invalidTitle": "Raum nicht gefunden",
+            "invalidMessage": "Prüfe den Einladungscode. Der Raum ist möglicherweise nicht mehr verfügbar.",
+            "actionTitle": "Dieser Zug wurde nicht übernommen",
+            "actionMessage": "Der Spielstand wurde aktualisiert. Bitte führe die gewünschte Aktion erneut aus.",
+            "genericTitle": "Das hat gerade nicht geklappt",
+            "genericMessage": "Bitte versuche es erneut. Dein bestätigter Spielstand bleibt erhalten.",
+            "retry": "Erneut verbinden",
+            "dismiss": "Schließen",
+            "waitingRoom": "Euer kleines Wartezimmer.",
+            "waitingIntro": "Ein guter Weg beginnt mit guter Gesellschaft.",
+            "roomCode": "EINLADUNGSCODE",
+            "copyCode": "Code kopieren",
+            "copyLink": "Einladungslink kopieren",
+            "copied": "Kopiert!",
+            "copyFailed": "Bitte kopiere den Code aus dem Eingabefeld.",
+            "linkPrivacy": "Teilt den Link privat. Wer den Code kennt und angemeldet ist, kann den freien Platz belegen.",
+            "host": "Gastgeber",
+            "guest": "Mitspieler",
+            "emptySeat": "Wartet auf deinen Freund …",
+            "ready": "Bereit",
+            "notReady": "Noch nicht bereit",
+            "makeReady": "Ich bin bereit",
+            "unready": "Doch noch warten",
+            "startOnline": "Gemeinsame Reise starten",
+            "waitingGuest": "Teile den Code, um den zweiten Platz zu besetzen.",
+            "waitingReady": "Dein Mitspieler bestätigt noch seine Bereitschaft.",
+            "waitingHost": "Du bist bereit. Der Gastgeber kann das Spiel jetzt starten.",
+            "connected": "Verbunden",
+            "reconnecting": "Verbindung wird wiederhergestellt",
+            "checking": "Verbindung wird geprüft",
+            "leave": "Zur Übersicht",
+            "leaveHint": "Der Raum bleibt gespeichert. Über euren Link könnt ihr zurückkehren.",
+            "resumeRoom": "Zum gespeicherten Raum",
+            "room": "Raum {code}",
+            "round": "Runde {round}",
+            "rules": "Spielregeln",
+            "soundOn": "Ton ausschalten",
+            "soundOff": "Ton einschalten",
+            "yourTurn": "Du bist am Zug",
+            "turnOf": "{name} ist am Zug",
+            "passTo": "Gebt das Gerät an {name}",
+            "localTurnHint": "Zwei Menschen · ein Gerät · abwechselnd spielen",
+            "opponentTurnHint": "Dein Mitspieler entscheidet gerade. Das Spiel aktualisiert sich automatisch.",
+            "spinTitle": "Was bringt der nächste Schritt?",
+            "spinHint": "Dreht das Rad und lasst euch überraschen.",
+            "spin": "Lebensrad drehen",
+            "spinning": "Das Rad dreht sich …",
+            "moving": "Auf dem Weg …",
+            "chance": "1–10 · jede Zahl gleich wahrscheinlich",
+            "landed": "{name} dreht {value} und erreicht Feld {to}.",
+            "milestoneStop": "Ein wichtiger Lebensmoment hält euch an.",
+            "endTitle": "Ein neues Kapitel ist geschrieben.",
+            "endHint": "Alles erledigt? Dann ist der nächste Spieler dran.",
+            "endTurn": "Zug beenden",
+            "waitOpponent": "Warte auf Mitspieler",
+            "chooseHint": "Eure Entscheidung verändert euren Weg.",
+            "choose": "Wählen",
+            "unavailable": "Nicht verfügbar",
+            "cost": "Kosten",
+            "gain": "Ertrag",
+            "salary": "Gehalt",
+            "risk": "Risiko",
+            "noCost": "Ohne Kosten",
+            "boardLabel": "Illustriertes KaktusLife-Spielbrett mit 81 Feldern vom Lebensanfang bis zum Ruhestand",
+            "start": "DEIN ANFANG",
+            "retirement": "RUHESTAND",
+            "routeLabel": "EURE REISE",
+            "routeTitle": "Ein Weg. Eure Geschichte.",
+            "overview": "Brettübersicht",
+            "legend": "Die Felder",
+            "legendPayday": "Zahltag",
+            "legendEvent": "Ereignis",
+            "legendChoice": "Lebensentscheidung",
+            "legendTax": "Ausgaben",
+            "legendMarket": "Anlagen",
+            "position": "Feld {position} / 80",
+            "retired": "Im Ruhestand",
+            "progress": "Lebensweg",
+            "cash": "Bargeld",
+            "debt": "Schulden",
+            "career": "Beruf",
+            "noCareer": "Noch offen",
+            "house": "Zuhause",
+            "noHouse": "Zur Miete",
+            "family": "Familie",
+            "solo": "Eigener Weg",
+            "partner": "Partnerschaft",
+            "children": "{count} Kinder",
+            "child": "1 Kind",
+            "education": "Bildung",
+            "educationNone": "Direkter Berufseinstieg",
+            "educationStudying": "Im Studium",
+            "educationDegree": "Studienabschluss",
+            "insurance": "Versicherung",
+            "insured": "Abgesichert",
+            "uninsured": "Keine",
+            "investments": "Anlagen",
+            "happiness": "Lebensglück",
+            "happinessPoints": "{count} Punkte",
+            "details": "Lebenslauf ansehen",
+            "playerLabel": "SPIELER {number}",
+            "active": "Am Zug",
+            "money": "{amount} K",
+            "journal": "Euer Reisetagebuch",
+            "journalHint": "Die kleinen und großen Momente.",
+            "journalEmpty": "Eure Geschichte beginnt gerade.",
+            "showAll": "Alle Momente",
+            "hideAll": "Weniger anzeigen",
+            "unknownLog": "Ein neues Kapitel auf eurem Lebensweg.",
+            "finishEyebrow": "ANGEKOMMEN. MIT EINER GESCHICHTE.",
+            "finishTitle": "Was für ein Leben.",
+            "winner": "{name} gewinnt!",
+            "draw": "Zwei Wege. Ein Gleichstand.",
+            "finishIntro": "Jeder Weg war anders. Das habt ihr daraus gemacht.",
+            "finalScore": "LEBENSWERT",
+            "scoreCash": "Bargeld",
+            "scoreHouse": "Hauswert",
+            "scoreInvestments": "Anlagen",
+            "scoreFamily": "Familienbonus",
+            "scoreHappiness": "Lebensglück",
+            "scoreDebt": "Schulden",
+            "total": "Gesamt",
+            "rematch": "Noch ein Leben spielen",
+            "newPractice": "Neue lokale Runde",
+            "rematchHint": "Ein neues Spiel beginnt erst, wenn ihr beide wieder bereit seid.",
+            "returnHome": "Zur Spielübersicht",
+            "helpTitle": "Ein kleiner Wegweiser.",
+            "helpIntro": "KaktusLife ist ein rundenbasiertes Brettspiel für genau zwei Menschen. Es gibt keine Computergegner.",
+            "helpTurns": "Am Zug: Entscheidet, dreht einmal das Rad, erledigt das Feld und beendet den Zug. Entscheidungen an Meilensteinen sind Pflicht – auch wenn die gedrehte Zahl weiter reichen würde.",
+            "helpEconomy": "Gehalt gibt es beim Überqueren von Zahltagen. Ausgaben können Schulden erzeugen. Achtet bei Entscheidungen auf Kosten, Gehalt und den angezeigten Effekt.",
+            "helpEnd": "Wer den Ruhestand erreicht, wartet auf den anderen. Anschließend wird euer Lebenswert verglichen. Alle Werte stehen in der Abrechnung.",
+            "helpSave": "Online wird jeder bestätigte Zug im privaten Raum gespeichert. Ein lokales Übungsspiel wird nur in diesem Browser gespeichert.",
+            "understood": "Alles klar",
+            "storageUnavailable": "Der Browser kann das lokale Spiel nicht speichern. Lasst dieses Fenster geöffnet.",
+            "helpScore": "Für die Abrechnung zählt jeder Glückspunkt {happiness}, eine Partnerschaft {partner} und jedes Kind {child}. Dazu kommen Bargeld, der Endwert des Hauses und Anlagen. Schulden werden abgezogen.",
+            "helpCredit": "Fehlt Bargeld, entsteht automatisch ein Kredit in Schritten von {loanUnit}. Auf den Feldern {checkpoints} werden {interest} % Zinsen auf bestehende Schulden fällig. Tilgung verringert spätere Zinsen.",
+            "closeRoom": "Unbenutzten Raum schließen",
+            "closeRoomTitle": "Diesen Raum schließen?",
+            "closeRoomDescription": "Der noch nicht gestartete Raum {code} wird geschlossen. Euer Code und der Einladungslink sind danach ungültig. Du kannst später einen neuen Raum erstellen.",
+            "keepRoom": "Raum behalten",
+            "confirmCloseRoom": "Raum schließen",
+            "roomClosed": "Der Raum ist geschlossen.",
+            "roomClosedOrExpired": "Der Raum wurde geschlossen oder ist abgelaufen. Ihr könnt einen neuen Raum erstellen.",
+            "zoomBoard": "Brett vergrößern",
+            "panBoard": "Verschiebt die Karte, um euren Lebensweg in Ruhe anzusehen.",
+            "mapMilestone": {
+                "departure": "Dein Anfang",
+                "qualification": "Ausbildung & Beruf",
+                "firstRoute": "Dein Lebensstil",
+                "partner": "Liebe",
+                "home": "Dein Zuhause",
+                "family": "Familie",
+                "careerChange": "Neues Kapitel",
+                "secondRoute": "Wendepunkt",
+                "investment": "Vorsorge",
+                "legacy": "Erinnerungen",
+                "retirement": "Ruhestand"
+            },
+            "tile": {
+                "start": "Lebensanfang",
+                "event": "Ereignis",
+                "payday": "Zahltag",
+                "tax": "Ausgaben",
+                "market": "Markt",
+                "opportunity": "Gelegenheit",
+                "milestone": "Lebensentscheidung",
+                "retirement": "Ruhestand"
+            }
         }
     }
 }

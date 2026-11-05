@@ -13,7 +13,7 @@ const DEFAULT_LANG = "de";
 //
 // ⚠️ Bei JEDER Änderung an de.json/ru.json hochzählen. Eine neue URL ist ein
 // neuer Cache-Eintrag — das ist genau der Zweck.
-const DICT_VERSION = "2026-10-11-lounge-coinflip";
+const DICT_VERSION = "2026-11-05-kaktuslife-v1";
 
 const state = {
     lang: DEFAULT_LANG,
