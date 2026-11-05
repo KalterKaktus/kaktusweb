@@ -16,7 +16,7 @@ node games/KaktusLife/tools/preview.mjs
 
 Die bestehende Site-Anmeldung wird übernommen. Serverautorität liegt in `netlify/functions/kaktuslife.mjs`, atomare Persistenz in der vorbereiteten Supabase-Migration. Browser haben keine direkten Spieltabellenrechte.
 
-Die produktive Migration wurde am 2026-11-05 auf dem bestehenden Supabase-Projekt angewendet und geprüft (`20261105214557_kaktuslife`). Die Veröffentlichung erfolgt gesammelt über PR2 und Netlify. Aktueller Deploy- und Abnahmestatus: [brain/Fortschritt.md](brain/Fortschritt.md). Vorgehen, API und Umgebungsvariablen: [BACKEND.md](BACKEND.md).
+Live: [kalterkaktus.de/games/KaktusLife/](https://kalterkaktus.de/games/KaktusLife/). Die produktive Migration wurde am 2026-11-05 angewendet und geprüft (`20261105214557_kaktuslife`), PR2 zusammengeführt und Netlify-Deploy `6aecf9d6988ea08038ae537b` erfolgreich veröffentlicht. Aktueller Prüfstand: [brain/Fortschritt.md](brain/Fortschritt.md). Vorgehen, API und Umgebungsvariablen: [BACKEND.md](BACKEND.md).
 
 ## Tests
 

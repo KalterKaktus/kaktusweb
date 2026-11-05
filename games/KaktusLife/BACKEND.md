@@ -1,6 +1,6 @@
 # KaktusLife online setup
 
-The production migration was applied to the existing Supabase project on 2026-11-05 as `20261105214557_kaktuslife` (source: `supabase/migrations/20261105120000_kaktuslife.sql`). Table/RPC privileges and a rolled-back production lobby smoke test passed. Deployment is proceeding through PR2; the current release result is recorded in `brain/Fortschritt.md`. Local practice also works independently.
+The production migration was applied to the existing Supabase project on 2026-11-05 as `20261105214557_kaktuslife` (source: `supabase/migrations/20261105120000_kaktuslife.sql`). Table/RPC privileges and a rolled-back production lobby smoke test passed. PR2 was merged as `428963fe25f7e1a612eecac4a0b06aff3e25422f`; Netlify production deploy `6aecf9d6988ea08038ae537b` is published and ready. Live URL: https://kalterkaktus.de/games/KaktusLife/ . Release verification is recorded in `brain/Fortschritt.md`. Local practice also works independently.
 
 1. On a fresh database, review and apply `supabase/migrations/20261105120000_kaktuslife.sql` to the existing Supabase project. It is already applied in production; do not reapply it merely to repeat the completed release. Reapplying preserves rooms and request receipts when intentionally needed.
 2. Netlify uses the existing server-only `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` environment variables. Never add the service-role key to static JavaScript or browser configuration. No new secret is needed.
