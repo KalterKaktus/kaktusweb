@@ -2,10 +2,12 @@
 
 ## Für die laufende lokale Umsetzung
 
-- [ ] UI-Detailkorrekturen und Produktions-Auth-Navigation fertig prüfen.
-- [ ] Desktop-/Mobil-Browsertest mit zwei getrennten Sitzungen erfolgreich abschließen.
-- [ ] Screenshots visuell prüfen; Überläufe, unlesbare Felder oder unaufgelöste Übersetzungen korrigieren.
-- [ ] Bewegung und Rad mit normaler Bewegung prüfen; vollständige Partie läuft im schnellen Test mit reduzierter Bewegung.
+- [x] UI-Detailkorrekturen und Produktions-Auth-Navigation prüfen.
+- [x] Desktop-/Mobil-Browsertest mit zwei getrennten Sitzungen erfolgreich abschließen.
+- [x] Screenshots visuell prüfen; Überläufe und unaufgelöste Übersetzungen korrigieren.
+- [x] Bewegung und Rad mit normaler Bewegung prüfen; vollständige Partie läuft im schnellen Test mit reduzierter Bewegung.
+- [ ] Ungenutzte Lobbys sicher schließen, Raumlimit-Platz freigeben und gezielt prüfen.
+- [ ] Portable UI-Prüfung inklusive letzter Hilfetexte und Lobby-Schließen abschließen.
 - [x] Finale Balancing-Simulation von 10.000 Partien samt statistischen Grenzen dokumentieren.
 - [ ] DE/RU-Dictionaries nach endgültigen Text-/Zahlenänderungen synchronisieren.
 - [ ] Fortsetzungsfähigen lokalen Git-Abschlussstand mit aktuellen Notizen herstellen.
@@ -18,7 +20,7 @@
 
 ## Bekannte Grenzen
 
-- Aktueller Browser-Befund: zweite mobile Radaktion im automatisierten Vollpartientest meldet instabile Elementposition. Fokus/Scroll/Touch werden untersucht, noch kein erfolgreicher vollständiger Browserdurchlauf. Diagnose und nächste Schritte stehen in [[Fortschritt]].
+- Aktuell kein offener Kernspiel-Browserfehler. Der frühere Klickstabilitätsbefund betraf Maus-Hover in Mobil-Emulation und ist im erfolgreichen Touch-Vollpartientest geklärt.
 
 - Online-Betrieb ist lokal integriert und SQL-geprüft, **noch nicht produktiv abgenommen**. Ein lokal simulierter Auth-Dienst ersetzt diesen Nachweis nicht.
 - Beide Lebensstile liegen auf demselben sichtbaren Hauptweg. Unterschiede betreffen Ereignisse und Anlagen; es gibt keine physisch getrennten Brettzweige.

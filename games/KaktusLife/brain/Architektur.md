@@ -14,11 +14,11 @@ Die Website liefert statische Dateien über Netlify aus. LuckyLounge demonstrier
 | `js/connection.js` | Session, authentifizierte API, Wiederholungen und Abgleich |
 | `shared/catalog.mjs` | Brett, Ereignisse, Berufe und Häuser |
 | `shared/engine.mjs` | reine Zustandsmaschine, für Server und Übung identisch |
-| `../../netlify/functions/kaktuslife.mjs` | authentifizierter Serverendpunkt |
-| `../../supabase/migrations/20261105120000_kaktuslife.sql` | private Spielräume und atomare Mutationen |
+| `netlify/functions/kaktuslife.mjs` (Repository-Stamm) | authentifizierter Serverendpunkt |
+| `supabase/migrations/20261105120000_kaktuslife.sql` (Repository-Stamm) | private Spielräume und atomare Mutationen |
 | `tests/` | Regeln, Server, Verbindung und Simulation |
 
-Die beiden Infrastrukturpfade sind vom Repository-Stamm aus zu lesen; sie liegen außerhalb des Spielordners.
+Die beiden Infrastrukturpfade liegen außerhalb des Spielordners; alle übrigen Tabellenpfade beziehen sich auf `games/KaktusLife/`.
 
 ## Datenfluss
 

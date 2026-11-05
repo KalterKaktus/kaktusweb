@@ -98,7 +98,7 @@ export function wheelMarkup(value = null) {
     const mid = (a+b)/2, x = 130+84*Math.cos(mid), y = 130+84*Math.sin(mid);
     return `<g class="wheel-segment segment-${index%5}"><path d="M130 130L${x1} ${y1}A112 112 0 0 1 ${x2} ${y2}Z"/><text x="${x}" y="${y+6}" transform="rotate(${index*36} ${x} ${y})" text-anchor="middle">${index+1}</text></g>`;
   }).join('');
-  return `<div class="wheel-wrap"><svg class="spin-wheel" viewBox="0 0 260 260" aria-hidden="true"><circle class="wheel-shadow" cx="130" cy="135" r="122"/><circle class="wheel-rim" cx="130" cy="130" r="122"/><g class="wheel-disc">${wedges}<circle class="wheel-center" cx="130" cy="130" r="31"/><path class="wheel-center-leaf" d="M119 142c-10-18 3-32 22-26 4 19-9 33-22 26Zm0 3 15-20"/></g><path class="wheel-pointer" d="m118 5 12 27 12-27Z"/><circle class="wheel-rim-dot" cx="130" cy="13" r="3"/></svg><span class="wheel-result ${value ? 'has-result' : ''}" aria-live="polite">${value || ''}</span></div>`;
+  return `<div class="wheel-wrap"><svg class="spin-wheel" viewBox="0 0 260 260" aria-hidden="true"><circle class="wheel-shadow" cx="130" cy="135" r="122"/><circle class="wheel-rim" cx="130" cy="130" r="122"/><g class="wheel-disc" style="transform:rotate(${value ? -(value-1)*36 : 0}deg)">${wedges}<circle class="wheel-center" cx="130" cy="130" r="31"/><path class="wheel-center-leaf" d="M119 142c-10-18 3-32 22-26 4 19-9 33-22 26Zm0 3 15-20"/></g><path class="wheel-pointer" d="m118 5 12 27 12-27Z"/><circle class="wheel-rim-dot" cx="130" cy="13" r="3"/></svg><span class="wheel-result ${value ? 'has-result' : ''}" aria-live="polite">${value || ''}</span></div>`;
 }
 
 export async function spinWheel(container,value) {

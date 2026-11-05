@@ -9,11 +9,13 @@ const fixture=await startIntegrationServer({port:0});
 const base=`http://127.0.0.1:${fixture.server.address().port}`;
 const browser=await chromium.launch({headless:true,...(process.env.KAKTUSLIFE_BROWSER_EXECUTABLE?{executablePath:process.env.KAKTUSLIFE_BROWSER_EXECUTABLE}:process.platform==='win32'?{channel:'chrome'}:{})});
 const errors=[],responses=[];
+const touchPages=new WeakSet();
 const context=async(person,mobile=false)=>{
  const context=await browser.newContext({viewport:mobile?{width:390,height:844}:{width:1440,height:1050},reducedMotion:'reduce',locale:'de-DE',...(mobile?{isMobile:true,hasTouch:true}:{} )});
  await context.route('**/*',route=>new URL(route.request().url()).hostname==='127.0.0.1'?route.continue():route.abort());
  if(person)await context.addInitScript(person=>localStorage.setItem('fixture-person',JSON.stringify(person)),person);
  const page=await context.newPage();page.setDefaultTimeout(12000);
+ if(mobile)touchPages.add(page);
  page.on('pageerror',error=>errors.push(error.message));
  page.on('response',response=>{if(response.status()>=400&&!response.url().endsWith('favicon.ico'))responses.push({url:new URL(response.url()).pathname,status:response.status()});});
  await page.goto(`${base}/games/KaktusLife/`);await page.locator('#practice-form').waitFor({state:'attached'});
@@ -27,7 +29,8 @@ async function clickMutation(page,selector,op='action'){
   if(!response.url().endsWith('/api/kaktuslife')||response.request().method()!=='POST')return false;
   try{return response.request().postDataJSON()?.op===op;}catch{return false;}
  },{timeout:30000});
- const touch=await page.evaluate(()=>matchMedia('(pointer: coarse)').matches);
+ const touch=touchPages.has(page);
+ await page.mouse.move(0,0);
  const [result]=await Promise.all([response,touch?page.locator(selector).tap():page.locator(selector).click()]);
  assert.equal(result.status(),200,await result.text());
  return (await result.json()).room;
