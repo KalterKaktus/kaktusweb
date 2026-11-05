@@ -6,6 +6,8 @@ export const esc = value => String(value ?? '').replace(/[&<>"']/g, character =>
 export const label = (key, vars) => esc(t(key, vars));
 export const icon = (name, className = '') => {
   const paths = {
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    expand: '<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M3 3l6 6m12-6-6 6M3 21l6-6m12 6-6-6"/>',
     arrow: '<path d="M5 12h14m-5-5 5 5-5 5"/>',
     back: '<path d="m14 6-6 6 6 6"/>',
     people: '<circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2m2-15a3 3 0 0 1 0 6m1 3a5 5 0 0 1 3 5"/>',

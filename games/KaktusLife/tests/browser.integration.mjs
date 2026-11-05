@@ -16,18 +16,20 @@ const context=async(person,mobile=false)=>{
  const page=await context.newPage();page.setDefaultTimeout(12000);
  page.on('pageerror',error=>errors.push(error.message));
  page.on('response',response=>{if(response.status()>=400&&!response.url().endsWith('favicon.ico'))responses.push({url:new URL(response.url()).pathname,status:response.status()});});
- await page.goto(`${base}/games/KaktusLife/`);await page.locator('#practice-form').waitFor();
+ await page.goto(`${base}/games/KaktusLife/`);await page.locator('#practice-form').waitFor({state:'attached'});
  return {context,page};
 };
 const noOverflow=async page=>assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'page must fit viewport');
 const noRawKeys=async page=>assert.ok(!/\blife\.[a-zA-Z]+\./.test(await page.locator('body').innerText()),'no unresolved UI translations');
 async function clickMutation(page,selector,op='action'){
+ await page.bringToFront();
  const response=page.waitForResponse(response=>{
   if(!response.url().endsWith('/api/kaktuslife')||response.request().method()!=='POST')return false;
   try{return response.request().postDataJSON()?.op===op;}catch{return false;}
- });
- await page.locator(selector).click();
- const result=await response;assert.equal(result.status(),200,await result.text());
+ },{timeout:30000});
+ const touch=await page.evaluate(()=>matchMedia('(pointer: coarse)').matches);
+ const [result]=await Promise.all([response,touch?page.locator(selector).tap():page.locator(selector).click()]);
+ assert.equal(result.status(),200,await result.text());
  return (await result.json()).room;
 }
 async function snapshot(person,roomId){
@@ -60,7 +62,11 @@ try{
    const choice=preferences.find(id=>state.pending.options.some(option=>option.id===id))||state.pending.options[0].id;
    selector=`[data-choice="${choice}"]:enabled`;
   }else selector=`[data-action="${state.stage==='roll'?'roll':'end-turn'}"]:enabled`;
-  room=await clickMutation(owner.page,selector);turns++;
+  if(process.env.KAKTUSLIFE_QA_VERBOSE)console.log(`Action ${turns}: seat ${state.turn} ${state.stage}/${state.pending?.type||''} rev${room.revision} ${selector}`);
+  try{room=await clickMutation(owner.page,selector);}catch(error){
+   const boxes=await owner.page.evaluate(async selector=>{const samples=[];for(let i=0;i<8;i++){const button=document.querySelector(selector.replace(':enabled','')),r=button?.getBoundingClientRect();samples.push({y:r?.y,x:r?.x,width:r?.width,height:r?.height,scrollY,animations:document.getAnimations().length,hidden:document.hidden});await new Promise(yes=>setTimeout(yes,100));}return samples;},selector);
+   console.error(JSON.stringify({action:turns,stage:state.stage,pending:state.pending?.type,revision:room.revision,errors,boxes,visible:(await owner.page.locator('body').innerText()).slice(0,5000)},null,2));throw error;
+  }turns++;
   if(turns===20){
    await guest.page.reload();await guest.page.locator('.player-card').first().waitFor();
    const restored=await snapshot(PEOPLE[1],room.id);assert.deepEqual(restored.state,room.state);

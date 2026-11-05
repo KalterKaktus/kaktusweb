@@ -227,6 +227,15 @@ englischen Originalnamen (alle 132 abgedeckt).
   bleibt intern `shop`). Unter 460 px Breite liegen die 5 Part-Tabs als 3+2.
 
 ### KaktusGarden
+
+### KaktusLife
+- **Pfad:** `games/KaktusLife/` · URL `/games/KaktusLife/`; isolierte native ES-Module ohne Frontend-Build.
+- Zwei Menschen, SVG-Lebensweg mit 81 Feldern, Karriere/Familie/Wohnen/Vorsorge, DE/RU und lokales Übungsspiel. Gemeinsame Regeln in `shared/engine.mjs` und `shared/catalog.mjs`.
+- Online serverautoritativ über `netlify/functions/kaktuslife.mjs` und vorbereitete Migration `20261105120000_kaktuslife.sql`; bestehendes Login. Private Zwei-Personen-Räume, Bereitschaft, Revisionen und atomare UUID-Idempotenz. **Keine produktive Migration oder Veröffentlichung ohne ausdrückliche Freigabe.**
+- Projektgedächtnis ist der vorhandene Obsidian-Vault `games/KaktusLife/brain/`. Vor Wiederaufnahme `AGENTS.md` im Spiel sowie `brain/Start.md`, `brain/Fortschritt.md` und `brain/Offene Aufgaben.md` lesen. Auf Feature-Branch arbeiten, sinnvolle lokale Zwischencommits erstellen, Befunde und nächste Schritte regelmäßig pflegen.
+- Tests und Integration: Spiel-`README.md`, Regeln/Simulation: `shared/RULES.md`, Freigabe/Setup: `BACKEND.md`. Aktueller Abnahmestatus steht ausschließlich im Fortschritt, lokale Testnachweise sind keine produktive Online-Abnahme.
+
+### KaktusGarden (Fortsetzung)
 - **Pfad:** `games/KaktusGarden/` · **Game-ID:** `kaktus-garden`
 - Loginpflichtiges Live-Pixel-Farming für bis zu 6 Spieler pro Dorf. Sechs
   Grundstücke mit je 8×8 = 64 Pflanzfeldern; jeder Account belegt genau einen

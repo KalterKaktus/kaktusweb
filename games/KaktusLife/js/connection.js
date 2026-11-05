@@ -1,22 +1,60 @@
 // The browser sends intentions only. All online state and randomness come from the server.
 const ROOM_KEY = 'kk-life-room';
 const PENDING_KEY = 'kk-life-pending-v1';
+const defaultStorage = () => { try { return globalThis.localStorage; } catch { return null; } };
+const stable = value => Array.isArray(value) ? value.map(stable) : value && typeof value === 'object'
+    ? Object.fromEntries(Object.keys(value).sort().map(key => [key, stable(value[key])])) : value;
+const fingerprintFor = body => { const { revision, ...intent } = body; return JSON.stringify(stable(intent)); };
 
 export class ConnectionError extends Error {
     constructor(key, status = 0) { super(key); this.key = key; this.status = status; }
 }
 
-export function createConnection({ getSession, fetchImpl = globalThis.fetch, storage = globalThis.localStorage,
+export function createConnection({ getSession, fetchImpl = globalThis.fetch, storage = defaultStorage(),
     uuid = () => globalThis.crypto.randomUUID(), endpoint = '/api/kaktuslife', timeout = 15000 } = {}) {
-    let inFlight = false;
-    const read = key => { try { return storage?.getItem(key); } catch { return null; } };
-    const write = (key, value) => { try { storage?.setItem(key, value); } catch { /* restricted browser */ } };
-    const remove = key => { try { storage?.removeItem(key); } catch { /* restricted browser */ } };
+    let inFlight = false, pendingReceipt = null, useStorage = Boolean(storage);
+    const memory = new Map();
+    const read = key => {
+        if (useStorage) { try { const value = storage.getItem(key); if (value == null) memory.delete(key); else memory.set(key, value); return value; } catch { useStorage = false; } }
+        return memory.get(key);
+    };
+    const write = (key, value) => { memory.set(key, value); if (useStorage) { try { storage.setItem(key, value); } catch { useStorage = false; } } };
+    const remove = key => { memory.delete(key); if (useStorage) { try { storage.removeItem(key); } catch { useStorage = false; } } };
+    const readReceipts = () => {
+        try { const value = JSON.parse(read(PENDING_KEY) || 'null'); return Array.isArray(value?.receipts) ? value.receipts : value?.requestId ? [value] : []; }
+        catch { return []; }
+    };
+    const persistReceipts = receipts => { if (receipts.length) write(PENDING_KEY, JSON.stringify({ version: 2, receipts })); else remove(PENDING_KEY); };
+    function saveReceipt(receipt) {
+        const others = readReceipts().filter(value => value?.requestId !== receipt.requestId && !(value?.actorId === receipt.actorId && value.fingerprint === receipt.fingerprint));
+        persistReceipts([...others, receipt]);
+    }
+    function clearReceipt(receipt, room) {
+        if (pendingReceipt?.requestId === receipt.requestId) pendingReceipt = null;
+        // A second tab may have persisted a different request while this one was in flight.
+        persistReceipts(readReceipts().filter(value => value?.requestId !== receipt.requestId &&
+            !(room && value?.actorId === receipt.actorId && value.body?.roomId === room.id && value.body.revision < room.revision)));
+    }
+    async function sessionForRequest() {
+        let timer;
+        try {
+            const session = await Promise.race([Promise.resolve().then(getSession), new Promise((_, reject) => {
+                timer = setTimeout(() => reject(new ConnectionError('life.errors.network')), timeout);
+            })]);
+            if (!session?.access_token || !session.user?.id) throw new ConnectionError('life.errors.auth', 401);
+            return session;
+        } catch (error) {
+            if (error instanceof ConnectionError) throw error;
+            throw new ConnectionError('life.errors.network');
+        } finally { clearTimeout(timer); }
+    }
 
-    async function request(body) {
-        const session = await getSession();
-        if (!session?.access_token) throw new ConnectionError('life.errors.auth', 401);
+    async function request(body, { session, remember = true, signal } = {}) {
+        session ||= await sessionForRequest();
         const controller = new AbortController();
+        const abort = () => controller.abort();
+        if (signal?.aborted) controller.abort();
+        else signal?.addEventListener('abort', abort, { once: true });
         const timer = setTimeout(() => controller.abort(), timeout);
         try {
             const response = await fetchImpl(endpoint, {
@@ -28,29 +66,34 @@ export function createConnection({ getSession, fetchImpl = globalThis.fetch, sto
             if (!response.ok) throw new ConnectionError(
                 /^life\.errors\.[a-zA-Z_]+$/.test(data.error || '') ? data.error : 'life.errors.unavailable', response.status);
             if (!data.room?.id || !Number.isSafeInteger(data.room.revision)) throw new ConnectionError('life.errors.unavailable');
-            write(ROOM_KEY, data.room.id);
+            if (remember) write(ROOM_KEY, data.room.id);
             return data.room;
         } catch (error) {
             if (error instanceof ConnectionError) throw error;
             throw new ConnectionError('life.errors.network');
-        } finally { clearTimeout(timer); }
+        } finally { clearTimeout(timer); signal?.removeEventListener('abort', abort); }
     }
 
     async function mutate(body) {
         if (inFlight) throw new ConnectionError('life.errors.busy');
         inFlight = true;
-        const fingerprint = JSON.stringify(body);
         let receipt;
-        try { receipt = JSON.parse(read(PENDING_KEY) || 'null'); } catch { /* discard corrupted receipt */ }
-        if (receipt?.fingerprint !== fingerprint) receipt = { fingerprint, requestId: uuid() };
-        write(PENDING_KEY, JSON.stringify(receipt));
         try {
-            const room = await request({ ...body, requestId: receipt.requestId });
-            remove(PENDING_KEY);
+            const session = await sessionForRequest();
+            const fingerprint = fingerprintFor(body);
+            const actorId = session.user.id;
+            receipt = [pendingReceipt, ...readReceipts()].find(value => value?.actorId === actorId && value.fingerprint === fingerprint && value.body && value.requestId);
+            if (!receipt) receipt = { actorId, fingerprint, requestId: uuid(), body: JSON.parse(JSON.stringify(body)) };
+            pendingReceipt = receipt;
+            saveReceipt(receipt);
+            // Retry the exact body, including its original revision, even after a newer snapshot arrives.
+            const room = await request({ ...receipt.body, requestId: receipt.requestId }, { session });
+            clearReceipt(receipt, room);
             return room;
         } catch (error) {
             // Keep ambiguous network/5xx outcomes so a retry cannot apply an action twice.
-            if (error.status >= 400 && error.status < 500) remove(PENDING_KEY);
+            // An expired session does not prove that an earlier lost request was rejected.
+            if (receipt && error.status >= 400 && error.status < 500 && error.status !== 401) clearReceipt(receipt);
             throw error;
         } finally { inFlight = false; }
     }
@@ -58,7 +101,7 @@ export function createConnection({ getSession, fetchImpl = globalThis.fetch, sto
     return {
         async getIdentity() {
             try {
-                const session = await getSession();
+                const session = await sessionForRequest();
                 const user = session?.user;
                 return user ? { id: user.id, name: String(user.user_metadata?.username || user.user_metadata?.full_name || 'Kaktus').slice(0,40) } : null;
             } catch { return null; }
@@ -69,13 +112,15 @@ export function createConnection({ getSession, fetchImpl = globalThis.fetch, sto
         roomAction: (room, action) => mutate({ op: 'action', roomId: room.id, revision: room.revision, action }),
         rematchRoom: room => mutate({ op: 'rematch', roomId: room.id, revision: room.revision }),
         getSavedRoomId: () => read(ROOM_KEY),
-        forgetRoom: () => { remove(ROOM_KEY); remove(PENDING_KEY); },
+        forgetRoom: () => { remove(ROOM_KEY); remove(PENDING_KEY); pendingReceipt = null; },
         subscribeRoom(roomId, onRoom, onError = () => {}) {
-            let stopped = false, timer, failures = 0, lastRevision = -1;
+            let stopped = false, timer, failures = 0, lastRevision = -1, polling = false, wakeAfterPoll = false, controller;
             async function poll() {
-                if (stopped) return;
+                if (stopped || polling) return;
+                polling = true;
+                controller = new AbortController();
                 try {
-                    const room = await request({ op: 'snapshot', roomId });
+                    const room = await request({ op: 'snapshot', roomId }, { remember: false, signal: controller.signal });
                     if (stopped) return;
                     failures = 0;
                     if (room.revision >= lastRevision) { lastRevision = room.revision; onRoom(room); }
@@ -83,14 +128,17 @@ export function createConnection({ getSession, fetchImpl = globalThis.fetch, sto
                     if (stopped) return;
                     failures++;
                     onError(error);
+                } finally {
+                    polling = false;
+                    if (!stopped) timer = setTimeout(poll, wakeAfterPoll ? 50 :
+                        globalThis.document?.hidden ? 15000 : Math.min(2500 * 2 ** Math.min(failures, 3), 20000));
+                    wakeAfterPoll = false;
                 }
-                if (!stopped) timer = setTimeout(poll,
-                    globalThis.document?.hidden ? 15000 : Math.min(2500 * 2 ** Math.min(failures, 3), 20000));
             }
-            const wake = () => { if (!globalThis.document?.hidden && !stopped) { clearTimeout(timer); timer = setTimeout(poll, 50); } };
+            const wake = () => { if (!globalThis.document?.hidden && !stopped) { clearTimeout(timer); if (polling) wakeAfterPoll = true; else timer = setTimeout(poll, 50); } };
             globalThis.document?.addEventListener('visibilitychange', wake);
             timer = setTimeout(poll, 0);
-            return () => { stopped = true; clearTimeout(timer); globalThis.document?.removeEventListener('visibilitychange', wake); };
+            return () => { stopped = true; clearTimeout(timer); controller?.abort(); globalThis.document?.removeEventListener('visibilitychange', wake); };
         },
     };
 }
@@ -98,10 +146,11 @@ export function createConnection({ getSession, fetchImpl = globalThis.fetch, sto
 let clientPromise;
 async function siteSession() {
     // Lazy import lets the local two-person table work even when the auth CDN is unavailable.
-    if (!clientPromise) clientPromise = import('/js/supabase-client.js').then(module => module.getSupabase());
+    if (!clientPromise) clientPromise = import('/js/supabase-client.js').catch(error => { clientPromise = undefined; throw error; });
     let timer;
     try {
-        const client = await Promise.race([clientPromise, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('auth timeout')), 8000); })]);
+        const module = await Promise.race([clientPromise, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('auth timeout')), 8000); })]);
+        const client = module.getSupabase();
         if (!client) return null;
         const { data, error } = await client.auth.getSession();
         if (error) throw error;

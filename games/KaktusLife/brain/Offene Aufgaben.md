@@ -6,7 +6,7 @@
 - [ ] Desktop-/Mobil-Browsertest mit zwei getrennten Sitzungen erfolgreich abschließen.
 - [ ] Screenshots visuell prüfen; Überläufe, unlesbare Felder oder unaufgelöste Übersetzungen korrigieren.
 - [ ] Bewegung und Rad mit normaler Bewegung prüfen; vollständige Partie läuft im schnellen Test mit reduzierter Bewegung.
-- [ ] Finale Balancing-Simulation von 10.000 Partien samt statistischen Grenzen dokumentieren.
+- [x] Finale Balancing-Simulation von 10.000 Partien samt statistischen Grenzen dokumentieren.
 - [ ] DE/RU-Dictionaries nach endgültigen Text-/Zahlenänderungen synchronisieren.
 - [ ] Fortsetzungsfähigen lokalen Git-Abschlussstand mit aktuellen Notizen herstellen.
 
@@ -17,6 +17,8 @@
 - [ ] Echte Online-Abnahme mit zwei unterschiedlichen Site-Accounts, möglichst PC und Smartphone, inklusive Unterbrechung, Abschluss und neuer Partie.
 
 ## Bekannte Grenzen
+
+- Aktueller Browser-Befund: zweite mobile Radaktion im automatisierten Vollpartientest meldet instabile Elementposition. Fokus/Scroll/Touch werden untersucht, noch kein erfolgreicher vollständiger Browserdurchlauf. Diagnose und nächste Schritte stehen in [[Fortschritt]].
 
 - Online-Betrieb ist lokal integriert und SQL-geprüft, **noch nicht produktiv abgenommen**. Ein lokal simulierter Auth-Dienst ersetzt diesen Nachweis nicht.
 - Beide Lebensstile liegen auf demselben sichtbaren Hauptweg. Unterschiede betreffen Ereignisse und Anlagen; es gibt keine physisch getrennten Brettzweige.

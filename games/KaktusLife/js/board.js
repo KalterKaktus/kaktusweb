@@ -1,5 +1,5 @@
 import { BOARD, MILESTONES } from '../shared/catalog.mjs';
-import { t, esc } from './text.js';
+import { t, esc, icon } from './text.js';
 import { play } from './audio.js';
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -48,7 +48,7 @@ function scenery() {
 
 const tileGlyph = type => ({payday:'◈',tax:'−',event:'✦',market:'↗',opportunity:'✧',milestone:'★',retirement:'⚑',start:'•'}[type] || '•');
 
-export function createBoard(container, players = [], { preview = false } = {}) {
+export function createBoard(container, players = [], { preview = false, expandable = true } = {}) {
   const road = points.map((p,index) => `${index ? 'L' : 'M'}${p.x} ${p.y}`).join(' ');
   const tiles = BOARD.map(tile => {
     const p = points[tile.index];
@@ -62,7 +62,7 @@ export function createBoard(container, players = [], { preview = false } = {}) {
     const dy = index % 2 ? 44 : -45;
     return `<g class="map-label" transform="translate(${p.x + dx} ${p.y+dy})"><path class="map-label-stem" d="M${-dx} ${-dy} 0 ${dy>0?-10:10}"/><rect x="-83" y="-14" width="166" height="28" rx="14"/><text text-anchor="middle" y="5">${esc(t(`life.ui.mapMilestone.${m.id}`))}</text></g>`;
   }).join('');
-  container.innerHTML = `<svg class="life-board ${preview ? 'board-preview' : ''}" viewBox="0 0 1120 680" role="img" aria-label="${esc(t('life.ui.boardLabel'))}">${defs}<rect class="map-base" width="1120" height="680" rx="22"/>${scenery()}<path class="map-road-shadow" d="${road}"/><path class="map-road" d="${road}"/>${tiles}${labels}<g class="map-start-sign" transform="translate(103 605)"><rect x="-55" y="-15" width="110" height="30" rx="15"/><text text-anchor="middle" y="5">${esc(t('life.ui.start'))}</text></g><g class="map-finish-sign" transform="translate(815 56)"><rect x="-75" y="-17" width="150" height="34" rx="17"/><text text-anchor="middle" y="5">${esc(t('life.ui.retirement'))}</text></g><g class="board-pawns"></g><g class="map-compass" transform="translate(1035 590)"><circle r="27"/><path d="m0-20 7 20-7 20-7-20Z"/><text y="-34" text-anchor="middle">N</text></g></svg>`;
+  container.innerHTML = `<svg class="life-board ${preview ? 'board-preview' : ''}" viewBox="0 0 1120 680" role="img" aria-label="${esc(t('life.ui.boardLabel'))}">${defs}<rect class="map-base" width="1120" height="680" rx="22"/>${scenery()}<path class="map-road-shadow" d="${road}"/><path class="map-road" d="${road}"/>${tiles}${labels}<g class="map-start-sign" transform="translate(103 605)"><rect x="-55" y="-15" width="110" height="30" rx="15"/><text text-anchor="middle" y="5">${esc(t('life.ui.start'))}</text></g><g class="map-finish-sign" transform="translate(815 56)"><rect x="-75" y="-17" width="150" height="34" rx="17"/><text text-anchor="middle" y="5">${esc(t('life.ui.retirement'))}</text></g><g class="board-pawns"></g><g class="map-compass" transform="translate(1060 625)"><circle r="27"/><path d="m0-20 7 20-7 20-7-20Z"/><text y="-34" text-anchor="middle">N</text></g></svg>${expandable ? `<button type="button" class="icon-button board-expand" data-action="expand-board" aria-label="${esc(t('life.ui.zoomBoard'))}" title="${esc(t('life.ui.zoomBoard'))}">${icon('expand')}</button>` : ''}`;
   const layer = container.querySelector('.board-pawns');
   const pawnElements = new Map();
   players.forEach((player,index) => {

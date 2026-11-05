@@ -34,6 +34,10 @@ svg { display: block; }
 .auth-nav .level-tag { color: var(--life-green); background: var(--life-mint); border-radius: var(--life-radius-xs); padding: .1rem .3rem; font-size: var(--life-text-xs); }
 .auth-nav .badge-pill { color: var(--life-ink); }
 .auth-nav .nav-link, .auth-nav .btn { border: 0; background: none; color: var(--life-green); padding: .3rem; font-size: var(--life-text-sm); }
+.auth-profile-link { display: inline-flex; align-items: center; gap: .4rem; min-width: 0; max-width: 230px; }
+.auth-profile-link .player-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.auth-btn { background: var(--life-transparent); border: 1px solid var(--life-line); border-radius: var(--life-radius-xs); padding: .35rem .6rem; color: var(--life-muted); font-size: var(--life-text-xs); font-weight: 800; }
+.auth-btn:hover { background: var(--life-mint); color: var(--life-green); }
 .lang-switch { display: flex; gap: .3rem; padding-left: 1rem; border-left: 1px solid var(--life-line); }
 .lang-btn { background: var(--life-transparent); border: 1px solid var(--life-transparent); border-radius: var(--life-radius-xs); padding: .3rem; opacity: .45; }
 .lang-btn svg { width: 21px; height: 14px; border-radius: 2px; }
@@ -130,7 +134,10 @@ summary::-webkit-details-marker { display: none; }
 .how-grid p { margin-top: .6rem; color: var(--life-muted); font-size: var(--life-text-sm); line-height: 1.7; }
 .life-footer { max-width: 1344px; margin: 2rem auto 0; padding: 1.5rem 0; border-top: 1px solid var(--life-line); display: flex; justify-content: space-between; gap: 1rem; font-size: var(--life-text-xs); color: var(--life-muted); }
 .life-footer a { text-decoration: none; }
-.board-container { min-width: 0; }
+.board-container { min-width: 0; position: relative; }
+.board-expand { position: absolute; right: .6rem; top: .6rem; width: 30px; height: 30px; background: var(--life-paper); border-color: var(--life-grass-dark); opacity: .85; }
+.board-expand:hover { opacity: 1; }
+.board-expand .icon { width: 1rem; height: 1rem; }
 .life-board { width: 100%; height: auto; overflow: hidden; border-radius: var(--life-radius); }
 .home-board-card .life-board { border-radius: 0; }
 .map-base { fill: var(--life-map-bg); }
@@ -388,6 +395,14 @@ dd { margin: 0; }
 .result-actions p { flex: 0 0 100%; text-align: center; color: var(--life-muted); font-size: var(--life-text-xs); }
 .help-dialog { max-width: 540px; width: calc(100% - 2rem); padding: 1.6rem; border: 1px solid var(--life-line); border-radius: var(--life-radius); background: var(--life-paper); color: var(--life-ink); box-shadow: var(--life-shadow-raised); max-height: calc(100dvh - 3rem); }
 .help-dialog::backdrop { background: var(--life-overlay); backdrop-filter: blur(4px); }
+.board-dialog { width: calc(100% - 2rem); max-width: 1320px; max-height: calc(100dvh - 2rem); border: 1px solid var(--life-line); border-radius: var(--life-radius); padding: 1.2rem; color: var(--life-ink); background: var(--life-paper); box-shadow: var(--life-shadow-raised); }
+.board-dialog::backdrop { background: var(--life-overlay); backdrop-filter: blur(4px); }
+.board-dialog .dialog-head { gap: 1rem; }
+.board-dialog h2 { font-size: var(--life-text-lg); font-weight: 950; }
+.board-dialog .dialog-head p { font-size: var(--life-text-xs); color: var(--life-muted); margin-top: .4rem; }
+.board-scroll { max-height: calc(100dvh - 11rem); overflow: auto; border-radius: var(--life-radius-sm); overscroll-behavior: contain; }
+.board-scroll:focus-visible { outline: none; box-shadow: var(--life-focus); }
+.board-dialog-canvas { min-width: 1050px; }
 .dialog-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
 .help-dialog h2 { font-size: var(--life-text-xl); font-weight: 950; }
 .help-dialog>p { color: var(--life-muted); margin-top: .8rem; font-size: var(--life-text-sm); line-height: 1.7; }
@@ -462,6 +477,15 @@ dd { margin: 0; }
   .nav-links, .auth-nav { gap: .55rem; }
   .nav-links .back-games { display: none; }
   .nav-link, .auth-nav .nav-link { font-size: var(--life-text-xs); }
+  .life-nav:has(.nav-toggle) .nav-container { position: relative; }
+  .life-nav .nav-toggle { display: inline-flex; flex-direction: column; justify-content: center; align-items: center; gap: 4px; width: 34px; height: 34px; padding: .4rem; margin-left: auto; border: 1px solid var(--life-line); border-radius: var(--life-radius-xs); background: var(--life-transparent); }
+  .nav-toggle>span { display: block; width: 16px; height: 1.5px; background: var(--life-green); }
+  .life-nav:has(.nav-toggle) .nav-links { display: none; position: absolute; top: calc(100% - 1px); left: 1rem; right: 1rem; border: 1px solid var(--life-line); border-radius: var(--life-radius-sm); background: var(--life-paper); box-shadow: var(--life-shadow-raised); padding: 1rem; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
+  .life-nav.is-menu-open:has(.nav-toggle) .nav-links { display: flex; }
+  .life-nav.is-menu-open .back-games { display: block; }
+  .life-nav:has(.nav-toggle) .auth-nav { order: 2; width: 100%; justify-content: space-between; padding-top: .75rem; border-top: 1px solid var(--life-line); }
+  .life-nav:has(.nav-toggle) .lang-switch { margin-left: auto; border-left: 0; }
+  .life-nav:has(.nav-toggle) .auth-profile-link { max-width: 220px; }
   .auth-nav .auth-user-link { font-size: .65rem; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .auth-nav .level-tag, .auth-nav .badge-pill, .auth-nav .auth-logout { display: none; }
   .lang-switch { padding-left: .5rem; gap: .1rem; }
@@ -591,6 +615,9 @@ dd { margin: 0; }
   .help-dialog { padding: 1.3rem; }
   .help-dialog h2 { font-size: 1.7rem; }
   .help-dialog>p, .help-dialog ol { font-size: var(--life-text-xs); }
+}
+@media (hover: none) {
+  .button-primary:hover:not(:disabled), .choice-option:hover:not(:disabled) { transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

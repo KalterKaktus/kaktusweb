@@ -1,7 +1,7 @@
 import { createGame, applyAction, scorePlayer } from '../shared/engine.mjs';
 import { CAREERS, HOUSES } from '../shared/catalog.mjs';
 import { t, ready, onLanguageChange, money, esc, label, icon } from './text.js';
-import { createBoard, wheelMarkup, spinWheel } from './board.js';
+import { createBoard, wheelMarkup, spinWheel, points } from './board.js';
 import { soundEnabled, toggleSound, play } from './audio.js';
 
 const app = document.querySelector('#app');
@@ -33,9 +33,10 @@ function classifyError(cause) {
   const key = String(cause?.key || cause?.message || '');
   if (cause?.status === 401 || /auth|login|session/i.test(key)) return 'auth';
   if (/full|occupied/i.test(key)) return 'full';
+  if (/setup|migration|unavailable|configuration|not_configured|server/i.test(key)) return 'setup';
   if (cause?.status === 409) return 'action';
   if (cause?.status === 404 || /not_found|invalid_code/i.test(key)) return 'invalid';
-  if ([500,501,502,503].includes(cause?.status) || /setup|migration|unavailable|configuration|not_configured|server/i.test(key)) return 'setup';
+  if ([500,501,502,503].includes(cause?.status)) return 'setup';
   if (!cause?.status || /network|fetch|timeout/i.test(key)) return 'network';
   return 'generic';
 }
@@ -83,7 +84,7 @@ function actionPanel() {
 function journal() {
   const entries = [...(state.log||[])].reverse();
   const visible = journalExpanded?entries:entries.slice(0,6);
-  return `<section class="journal-card"><header><div><p class="eyebrow">${text('journal')}</p><h2>${text('journalHint')}</h2></div><span class="journal-count">${entries.length}</span></header><ol class="journal-entries">${visible.length?visible.map(entry=>{const playerIndex=state.players.findIndex(p=>p.id===entry.playerId); const vars={...entry,...entry.params,name:state.players[playerIndex]?.name||'',amount:money(entry.amount??entry.params?.amount??0)}; if(entry.choiceKey)vars.choice=t(entry.choiceKey);if(vars.careerKey)vars.career=t(vars.careerKey);if(vars.houseKey)vars.house=t(vars.houseKey); return `<li><span class="journal-dot player-color-${Math.max(0,playerIndex)}"></span><div><small>${esc(state.players[playerIndex]?.name||'')}</small><p>${esc(t(entry.key||'life.ui.unknownLog',vars))}</p></div></li>`;}).join(''):`<li><p>${text('journalEmpty')}</p></li>`}</ol>${entries.length>6?button('journal',journalExpanded?'hideAll':'showAll','button-quiet button-small'):''}</section>`;
+  return `<section class="journal-card"><header><div><p class="eyebrow">${text('journal')}</p><h2>${text('journalHint')}</h2></div><span class="journal-count">${entries.length}</span></header><ol class="journal-entries">${visible.length?visible.map(entry=>{const playerIndex=state.players.findIndex(p=>p.id===entry.playerId); const vars={...entry,...entry.params,name:state.players[playerIndex]?.name||'',amount:money(entry.amount??entry.params?.amount??0),upkeep:money(entry.upkeep??entry.params?.upkeep??0)}; if(entry.choiceKey)vars.choice=t(entry.choiceKey);if(vars.careerKey)vars.career=t(vars.careerKey);if(vars.houseKey)vars.house=t(vars.houseKey); return `<li><span class="journal-dot player-color-${Math.max(0,playerIndex)}"></span><div><small>${esc(state.players[playerIndex]?.name||'')}</small><p>${esc(t(entry.key||'life.ui.unknownLog',vars))}</p></div></li>`;}).join(''):`<li><p>${text('journalEmpty')}</p></li>`}</ol>${entries.length>6?button('journal',journalExpanded?'hideAll':'showAll','button-quiet button-small'):''}</section>`;
 }
 function gameView() {
   return `${header()}${banner()}<div class="game-topline"><div><p class="eyebrow">${text('routeLabel')}</p><h1>${text('routeTitle')}</h1></div>${mode==='local'?`<span class="local-badge">${icon('home')}${text('localOnly')}</span>`:''}</div><div class="play-layout"><div class="board-column"><section class="game-board-card"><div id="board" class="board-container"></div><div class="board-legend" aria-label="${text('legend')}"><span><i class="legend-payday">◈</i>${text('legendPayday')}</span><span><i class="legend-event">✦</i>${text('legendEvent')}</span><span><i class="legend-choice">★</i>${text('legendChoice')}</span><span><i class="legend-tax">−</i>${text('legendTax')}</span><span><i class="legend-market">↗</i>${text('legendMarket')}</span></div></section><div class="players-grid">${state.players.map(playerCard).join('')}</div></div><div class="action-column">${actionPanel()}</div></div>${journal()}<div class="game-bottom">${button('home','leave','button-quiet button-small',busy,'back')}<span>${text(mode==='local'?'localSaved':'leaveHint')}</span></div>`;
@@ -136,6 +137,7 @@ async function acceptState(next) {
   const changedRoll=next?.lastRoll && next.lastRoll.id !== previous?.lastRoll?.id && previous;
   const serial=++updateSerial;
   if(changedRoll && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if(next.status==='finished') state={...next,status:'playing'};
     animation=true;render({fromPlayers:previous.players});
     announce(t('life.ui.landed',{name:next.players.find(p=>p.id===next.lastRoll.playerId)?.name,value:next.lastRoll.value,to:next.lastRoll.to}));
     // Choice stops still show the wheel before the decision becomes actionable.
@@ -146,7 +148,7 @@ async function acceptState(next) {
     const p=previous.players.find(player=>player.id===next.lastRoll.playerId);
     await board?.move(next.lastRoll.playerId,p?.position??next.lastRoll.from,next.lastRoll.to);
     if(serial !== updateSerial)return;
-    animation=false;render();
+    state=next;animation=false;render();
   } else { animation=false;render(); }
   if(next?.status==='finished'&&previous?.status!=='finished'){play('finish');announce(t('life.ui.finishTitle'));}
 }
@@ -196,6 +198,17 @@ function showHelp() {
   dialog.innerHTML=`<div class="dialog-head"><span class="section-icon">${icon('route')}</span>${tool('close-help','dismiss','close')}</div><h2>${text('helpTitle')}</h2><p>${text('helpIntro')}</p><ol>${['helpTurns','helpEconomy','helpEnd','helpSave'].map(key=>`<li>${text(key)}</li>`).join('')}</ol>${button('close-help','understood','button-primary button-full')}`;
   document.body.append(dialog);dialog.addEventListener('click',event=>{if(event.target.closest('[data-action="close-help"]'))dialog.close();});dialog.addEventListener('close',()=>dialog.remove());dialog.showModal();
 }
+function showBoard() {
+  document.querySelector('#life-map-dialog')?.remove();
+  const dialog=document.createElement('dialog');dialog.id='life-map-dialog';dialog.className='board-dialog';
+  dialog.innerHTML=`<div class="dialog-head"><div><h2>${text('routeTitle')}</h2><p>${text('panBoard')}</p></div>${tool('close-map','dismiss','close')}</div><div class="board-scroll" tabindex="0" aria-label="${text('boardLabel')}"><div class="board-dialog-canvas"></div></div>`;
+  document.body.append(dialog);
+  createBoard(dialog.querySelector('.board-dialog-canvas'),state?.players||[],{expandable:false});
+  dialog.addEventListener('click',event=>{if(event.target.closest('[data-action="close-map"]'))dialog.close();});
+  dialog.addEventListener('close',()=>dialog.remove());dialog.showModal();
+  const scroll=dialog.querySelector('.board-scroll');
+  if(state)scroll.scrollLeft=Math.max(0,points[currentPlayer().position].x/1120*1050-scroll.clientWidth/2);
+}
 
 app.addEventListener('submit',event=>{
   event.preventDefault();const form=event.target;
@@ -208,6 +221,7 @@ app.addEventListener('click',async event=>{
   const action=target.dataset.action;if(target.tagName==='A')event.preventDefault();
   if(action==='sound'){toggleSound();if(!animation)render();}
   if(action==='help')showHelp();
+  if(action==='expand-board')showBoard();
   if(action==='dismiss'){error=null;render();}
   if(action==='home')goHome();
   if(action==='create')runOnline(api=>api.createRoom());

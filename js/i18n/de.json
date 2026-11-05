@@ -2806,6 +2806,8 @@
             "helpSave": "Online wird jeder bestätigte Zug im privaten Raum gespeichert. Ein lokales Übungsspiel wird nur in diesem Browser gespeichert.",
             "understood": "Alles klar",
             "storageUnavailable": "Der Browser kann das lokale Spiel nicht speichern. Lasst dieses Fenster geöffnet.",
+            "zoomBoard": "Brett vergrößern",
+            "panBoard": "Verschiebt die Karte, um euren Lebensweg in Ruhe anzusehen.",
             "mapMilestone": {
                 "departure": "Dein Anfang",
                 "qualification": "Ausbildung & Beruf",
