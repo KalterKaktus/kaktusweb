@@ -16,11 +16,11 @@
 
 ## Veröffentlichung – Freigabe inzwischen erteilt
 
-Der Benutzer hat Veröffentlichung und Weiterarbeit ausdrücklich autorisiert. Supabase-Verbindung ist als nächster technischer Zugang gewählt, aber noch nicht bestätigt.
+Der Benutzer hat Veröffentlichung und Weiterarbeit ausdrücklich autorisiert. Supabase-Verbindung und produktive Migration sind bestätigt.
 
-- [ ] Supabase-Erweiterung tatsächlich hinzufügen/anmelden; letzter bestätigter Status `installed:false`.
+- [x] Supabase-Erweiterung tatsächlich hinzufügen/anmelden; Projektzugriff bestätigt.
 
-- [ ] Vorbereitete Migration `20261105120000_kaktuslife.sql` auf dem produktiven Supabase-Projekt anwenden.
+- [x] Migration `20261105120000_kaktuslife.sql` produktiv anwenden und Rechte/RPCs prüfen (Version `20261105214557`).
 - [ ] Veröffentlichung/Deployment der geprüften Änderungen.
 - [ ] Echte Online-Abnahme mit zwei unterschiedlichen Site-Accounts, möglichst PC und Smartphone, inklusive Unterbrechung, Abschluss und neuer Partie.
 
