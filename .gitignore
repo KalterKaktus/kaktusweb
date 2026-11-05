@@ -17,3 +17,10 @@ tools/raw/
 # Isolated Lucky Lounge React development; compiled site assets are tracked.
 games/LuckyLounge/app/node_modules/
 games/LuckyLounge/app/dist/
+
+# Obsidian device layout/cache; shared vault notes and preferences remain versioned.
+games/KaktusLife/brain/.obsidian/workspace*.json
+games/KaktusLife/brain/.obsidian/cache/
+games/KaktusLife/brain/.trash/
+games/KaktusLife/node_modules/
+games/KaktusLife/test-results/

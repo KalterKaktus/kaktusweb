@@ -1,0 +1,48 @@
+# KaktusLife
+
+Eigenständiges Brettspiel für genau zwei Menschen unter `/games/KaktusLife/`. Native ES-Module, eigene SVG-Brettwelt, DE/RU, synthetisierte Töne und eine gemeinsame Regelimplementierung für Online-Spiel und lokale Übung. Kein Frontend-Build erforderlich.
+
+## Lokal ansehen
+
+Vom Repository-Stamm:
+
+```sh
+node games/KaktusLife/tools/preview.mjs
+```
+
+Öffne `http://127.0.0.1:4178/games/KaktusLife/`. Unter „Gemeinsam an einem Gerät“ spielen zwei Menschen abwechselnd mit lokalem automatischem Spielstand. Der statische Vorschauserver stellt keinen Online-Spielserver bereit.
+
+## Online-Integration
+
+Die bestehende Site-Anmeldung wird übernommen. Serverautorität liegt in `netlify/functions/kaktuslife.mjs`, atomare Persistenz in der vorbereiteten Supabase-Migration. Browser haben keine direkten Spieltabellenrechte.
+
+**Produktive Migration und Deployment sind noch nicht angewendet.** Vorgehen, API, Umgebungsvariablen und Abnahme: [BACKEND.md](BACKEND.md). Eine lokale Prüfung ersetzt keine Abnahme mit zwei echten Accounts auf dem freigegebenen Zielsystem.
+
+## Tests
+
+Ohne zusätzliche Pakete vom Repository-Stamm:
+
+```sh
+node --test games/KaktusLife/tests/*.test.mjs
+node games/KaktusLife/tests/balance.mjs 10000
+```
+
+Für lokale PostgreSQL- und Browserintegration zuerst im Spielordner `pnpm install --frozen-lockfile`. Die gepinnten Pakete sind reine Entwicklungsabhängigkeiten und werden von der Website nicht geladen.
+
+```sh
+pnpm test:sql
+pnpm test:integration
+pnpm test:browser
+```
+
+Der Browsertest verwendet unter Windows installiertes Chrome, andernfalls Playwright Chromium. Optional `KAKTUSLIFE_BROWSER_EXECUTABLE` setzen. Das Testsystem nutzt eine lokale PGlite/PostgreSQL-Instanz, die tatsächliche Migration und Netlify-Funktion, künstliche Accounts und isolierte Auth-Antworten. Es kontaktiert keine produktiven Dienste. Im beschleunigten Fixture werden ausschließlich Test-Anfragezeitstempel zurückgesetzt, damit die produktive Schreibbegrenzung vollständige Schnelltests nicht absichtlich stoppt. Die Begrenzung selbst wird im SQL-Test überprüft.
+
+Screenshots entstehen in `test-results/` oder `KAKTUSLIFE_QA_OUTPUT`. Sie sind nicht versioniert.
+
+## Projektgedächtnis
+
+Der bestehende Obsidian-Vault liegt unter `brain/`. Einstieg: [brain/Start.md](brain/Start.md), aktueller Integrations- und Prüfstand: [brain/Fortschritt.md](brain/Fortschritt.md). Regeln und Zahlen: `shared/catalog.mjs`, `shared/engine.mjs`, [shared/RULES.md](shared/RULES.md).
+
+Nach Textänderungen `node games/KaktusLife/tests/sync-translations.mjs` ausführen, beide Site-Dictionaries versionieren und die Cache-Version in `js/i18n.js` erhöhen. Das Skript erhält andere Spiele und Sprachen.
+
+Alle Grafiken, Symbole, Kartentexte und Klänge wurden für KaktusLife erstellt. Es werden keine Originalassets oder Texte eines anderen Brettspiels verwendet.

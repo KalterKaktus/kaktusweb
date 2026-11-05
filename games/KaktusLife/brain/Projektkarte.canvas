@@ -1,0 +1,23 @@
+{
+  "nodes": [
+    {"id":"start","type":"file","file":"Start.md","x":0,"y":0,"width":380,"height":260,"color":"4"},
+    {"id":"vision","type":"file","file":"Vision.md","x":-470,"y":-330,"width":360,"height":260},
+    {"id":"rules","type":"file","file":"Spielregeln.md","x":0,"y":-330,"width":380,"height":260,"color":"3"},
+    {"id":"balance","type":"file","file":"Wirtschaft und Balancing.md","x":490,"y":-330,"width":380,"height":260,"color":"3"},
+    {"id":"architecture","type":"file","file":"Architektur.md","x":-470,"y":330,"width":360,"height":300,"color":"5"},
+    {"id":"multiplayer","type":"file","file":"Multiplayer.md","x":0,"y":330,"width":380,"height":300,"color":"5"},
+    {"id":"progress","type":"file","file":"Fortschritt.md","x":490,"y":0,"width":380,"height":260,"color":"4"},
+    {"id":"tasks","type":"file","file":"Offene Aufgaben.md","x":490,"y":330,"width":380,"height":300,"color":"1"},
+    {"id":"design","type":"file","file":"Designsystem.md","x":-470,"y":0,"width":360,"height":260,"color":"6"}
+  ],
+  "edges": [
+    {"id":"a","fromNode":"start","fromSide":"top","toNode":"rules","toSide":"bottom"},
+    {"id":"b","fromNode":"start","fromSide":"left","toNode":"vision","toSide":"right"},
+    {"id":"c","fromNode":"start","fromSide":"left","toNode":"design","toSide":"right"},
+    {"id":"d","fromNode":"rules","fromSide":"right","toNode":"balance","toSide":"left"},
+    {"id":"e","fromNode":"start","fromSide":"bottom","toNode":"architecture","toSide":"top"},
+    {"id":"f","fromNode":"architecture","fromSide":"right","toNode":"multiplayer","toSide":"left"},
+    {"id":"g","fromNode":"start","fromSide":"right","toNode":"progress","toSide":"left"},
+    {"id":"h","fromNode":"progress","fromSide":"bottom","toNode":"tasks","toSide":"top"}
+  ]
+}
